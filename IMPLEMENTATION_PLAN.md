@@ -48,7 +48,7 @@
   - **Learning**: The join endpoint's first-joiner lead assignment (count check → insert) has a theoretical race condition under concurrent requests. Low risk for small-group app with rate limiting, but if ever needed, wrap in a DB transaction with `FOR UPDATE` lock on the participants count query.
 - [x] **3.7 Event expiry** — lazy evaluation on GET /event/:code, background sweep every 6 hours for stale events → Spec 03 §3.10 [COMPLETE]
 - [x] **3.8 Checkout & webhook endpoints** — Stripe session creation, webhook handler with signature validation + idempotency (check stripe_session_id), event creation (generateEventCode with retry), Resend confirmation email, GET /checkout/success for event code retrieval → Spec 03 §3.3, §3.8 [COMPLETE]
-- [ ] **3.9 Admin auth & dashboard** — POST /admin/login (JWT, 8h expiry), admin middleware (Bearer token), GET /admin/dashboard → Spec 03 §3.7
+- [x] **3.9 Admin auth & dashboard** — POST /admin/login (JWT, 8h expiry), admin middleware (Bearer token), GET /admin/dashboard → Spec 03 §3.7 [COMPLETE]
 - [ ] **3.10 Admin event endpoints** — GET /admin/events (paginated, filtered by status), GET /admin/events/:id (with stripe_payment_id), PATCH /admin/events/:id (status update) → Spec 03 §3.7
 - [ ] **3.11 Admin route & stop CRUD** — routes CRUD with referential integrity check on delete (409), stops CRUD with reorder (PUT reorder with stop_ids array), validation via shared schemas → Spec 03 §3.7
 - [ ] **3.12 Admin S3 upload** — pre-signed URL generation (5min expiry), file validation via shared imageUploadSchema → Spec 03 §3.7
