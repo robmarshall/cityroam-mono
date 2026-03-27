@@ -41,6 +41,8 @@ export type {
   AdminEventListResponse,
   AdminEventDetailResponse,
   AdminRouteDetailResponse,
+  AdminRouteListResponse,
+  AdminStopReorderResponse,
 } from "./api.js";
 
 export type { ApiErrorResponse, ApiErrorCode } from "./api-errors.js";

@@ -98,3 +98,11 @@ export interface AdminRouteDetailResponse {
   route: Route;
   stops: Stop[];
 }
+
+export interface AdminRouteListResponse {
+  routes: Array<Route & { stop_count: number }>;
+}
+
+export interface AdminStopReorderResponse {
+  success: boolean;
+}

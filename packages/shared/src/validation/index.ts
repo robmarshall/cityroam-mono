@@ -10,6 +10,7 @@ export {
   stopSchema,
   imageUploadSchema,
   adminUpdateEventStatusSchema,
+  stopReorderSchema,
 } from "./admin-input.js";
 
 export {

@@ -50,7 +50,8 @@
 - [x] **3.8 Checkout & webhook endpoints** — Stripe session creation, webhook handler with signature validation + idempotency (check stripe_session_id), event creation (generateEventCode with retry), Resend confirmation email, GET /checkout/success for event code retrieval → Spec 03 §3.3, §3.8 [COMPLETE]
 - [x] **3.9 Admin auth & dashboard** — POST /admin/login (JWT, 8h expiry), admin middleware (Bearer token), GET /admin/dashboard → Spec 03 §3.7 [COMPLETE]
 - [x] **3.10 Admin event endpoints** — GET /admin/events (paginated, filtered by status), GET /admin/events/:id (with stripe_payment_id), PATCH /admin/events/:id (status update) → Spec 03 §3.7 [COMPLETE]
-- [ ] **3.11 Admin route & stop CRUD** — routes CRUD with referential integrity check on delete (409), stops CRUD with reorder (PUT reorder with stop_ids array), validation via shared schemas → Spec 03 §3.7
+- [x] **3.11 Admin route & stop CRUD** — routes CRUD with referential integrity check on delete (409), stops CRUD with reorder (PUT reorder with stop_ids array), validation via shared schemas → Spec 03 §3.7 [COMPLETE]
+  - **Learning**: Stop reorder and delete-renumber must use single CASE-expression UPDATEs inside a transaction to avoid unique constraint violations on `(route_id, stop_number)` when stops swap positions. Sequential UPDATE loops will fail.
 - [ ] **3.12 Admin S3 upload** — pre-signed URL generation (5min expiry), file validation via shared imageUploadSchema → Spec 03 §3.7
 - [ ] **3.13 Admin message bank CRUD** — list (filterable by type including over-length), create, update, delete → Spec 03 §3.7
 - [ ] **3.14 API core tests** — all endpoint tests, session middleware, admin auth, rate limiting, error handling, CORS preflight handling → Spec 03 §Backend Tests
@@ -122,6 +123,9 @@
 - [ ] **10.2 Structured logging** — ensure all API processes use structured JSON logging (method, path, status, duration, error details). Log LLM call durations. Log prompt-injection/inappropriate events for monitoring.
 
 ## Learnings
+- Multi-step DB mutations (reorder, delete-with-renumber, create-with-counter-update) MUST use `db.transaction()`. The `stops` table has a UNIQUE constraint on `(route_id, stop_number)`, so sequential stop_number updates during reorder will cause constraint violations when stops swap positions. Fix: either use a single UPDATE with CASE expression or set temp values first, always inside a transaction. This applies to ALL insert+update pairs, not just updates.
+- Referential integrity checks (e.g., "does this route have events?") must be inside the same transaction as the subsequent delete to avoid TOCTOU races.
+- Array-of-IDs reorder endpoints must validate uniqueness (`new Set(ids).size === ids.length`) in addition to checking membership and count. Duplicate IDs can pass length checks against the DB count in edge cases.
 - When creating a centralized env module, all other modules (redis, db, middleware) must import from it rather than reading `process.env` directly. Otherwise the validation layer is bypassed and env access is inconsistent.
 - CORS origin checks in dev mode should use URL parsing or exact hostname matching, not `String.includes()` — substring matching on "localhost" would accept malicious domains containing that substring.
 - Any package that imports a library at the TypeScript level should list it as an explicit dependency, even if it's available transitively. Transitive deps can disappear on version bumps.
