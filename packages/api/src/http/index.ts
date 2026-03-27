@@ -17,6 +17,10 @@ import {
   startIncomingSubscriber,
   stopIncomingSubscriber,
 } from "../services/pipeline/incoming-subscriber.js";
+import {
+  startIdleTimer,
+  stopIdleTimer,
+} from "../services/pipeline/idle-timer.js";
 
 const app = new Hono();
 
@@ -63,6 +67,7 @@ const port = Number(env.PORT);
 const server = serve({ fetch: app.fetch, port }, () => {
   console.log(`[http] server listening on port ${port}`);
   startExpirySweep();
+  startIdleTimer();
   startIncomingSubscriber().catch((err) =>
     console.error("[http] failed to start incoming subscriber:", err),
   );
@@ -72,6 +77,7 @@ const server = serve({ fetch: app.fetch, port }, () => {
 async function shutdown() {
   console.log("[http] shutting down...");
   stopExpirySweep();
+  stopIdleTimer();
   await stopIncomingSubscriber();
   server.close();
   await Promise.all([disconnectRedis(), disconnectDb()]);
