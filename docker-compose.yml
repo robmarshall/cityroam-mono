@@ -11,3 +11,43 @@ services:
     environment:
       - GIT_USER_NAME=Rob
       - GIT_USER_EMAIL=hello@robertmarshall.dev
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - cityroam-network
+
+  # Local development: SameSite=None cookies require HTTPS in browsers.
+  # localhost is exempt from the Secure requirement, so use localhost for local dev.
+  # Alternatively, use mkcert to generate local SSL certs.
+
+  postgres:
+    image: postgres:16
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: cityroam
+      POSTGRES_PASSWORD: cityroam
+      POSTGRES_DB: cityroam
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - cityroam-network
+
+  redis:
+    image: redis:7
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - cityroam-network
+
+volumes:
+  postgres-data:
+  redis-data:
+
+networks:
+  cityroam-network:
+    driver: bridge
