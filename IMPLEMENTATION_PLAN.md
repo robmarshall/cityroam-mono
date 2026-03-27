@@ -107,6 +107,10 @@
 - [ ] **10.1 End-to-end integration test** — user message flows from WS → Redis incoming → HTTP pipeline → Redis messages → WS broadcast. Verify full message lifecycle.
 - [ ] **10.2 Structured logging** — ensure all API processes use structured JSON logging (method, path, status, duration, error details). Log LLM call durations. Log prompt-injection/inappropriate events for monitoring.
 
+## Learnings
+- Scaffolding packages should include all stack-defining dependencies from the spec (e.g., hono for api, tailwindcss for frontend packages), not just the build tooling. This avoids needing to retroactively add them during implementation of later tasks.
+- Tailwind v4 uses `@tailwindcss/vite` for Vite projects and `@tailwindcss/postcss` for Next.js projects.
+
 ## Notes
 - Phase 1.0 (docker-compose for postgres + redis) is the first task — developers need local DB/Redis immediately
 - Phases 4 and 5 can be developed in parallel once Phase 3 is complete

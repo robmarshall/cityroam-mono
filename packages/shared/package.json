@@ -1,0 +1,21 @@
+{
+  "name": "@cityroam/shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./types": "./src/types/index.ts",
+    "./validation": "./src/validation/index.ts",
+    "./constants": "./src/constants/index.ts",
+    "./utils": "./src/utils/index.ts",
+    "./tailwind": "./src/tailwind/preset.ts",
+    "./analytics": "./src/analytics/index.ts"
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5"
+  }
+}

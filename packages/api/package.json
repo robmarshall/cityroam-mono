@@ -1,0 +1,19 @@
+{
+  "name": "@cityroam/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/http/index.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@cityroam/shared": "*",
+    "hono": "^4",
+    "@hono/node-server": "^1"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "tsx": "^4"
+  }
+}
