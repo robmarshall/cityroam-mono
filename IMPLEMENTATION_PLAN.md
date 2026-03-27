@@ -12,7 +12,7 @@
 - [x] **1.3 Shared package — types** — entity types (with left_reason on Participant), enums (with MessageBankType including over-length), WebSocket message types, API response types (EventDetailResponse with current_participant for auto-rejoin, JoinEventResponse with token for WS auth), API error types, Redis pub/sub payload types, LLM types → Spec 01 §1.3
 - [x] **1.4 Shared package — validation schemas** — Zod schemas for user input, admin input, API requests → Spec 01 §1.4 [COMPLETE]
 - [x] **1.5 Shared package — utilities** — generateEventCode, buildEventUrl(baseDomain, code), buildS3Key, buildS3Url(cdnBaseUrl, key), formatTimestamp, isValidEventCode → Spec 01 §1.6
-- [ ] **1.6 Shared package — Tailwind preset** — brand colours, chat bubble colours (bubble-self, bubble-other, bubble-guide), system-text, font family → Spec 01 §1.7
+- [x] **1.6 Shared package — Tailwind preset** — brand colours, chat bubble colours (bubble-self, bubble-other, bubble-guide), system-text, font family → Spec 01 §1.7
   - **Learning**: Tailwind v4 uses CSS-first `@theme` blocks instead of JS config. The `./tailwind` export now points to `preset.css` for CSS `@import`, with `./tailwind/values` for programmatic TS access. Both must be kept in sync.
 - [ ] **1.7 Shared package — PostHog catalogue** — event names, typed properties, type-safe trackEvent helper → Spec 01 §1.8
 - [ ] **1.8 Shared package — backend tests** — unit tests for all utilities, validation schemas, and constants → Spec 01 §Backend Tests
