@@ -1,0 +1,20 @@
+export type EventStatus =
+  | "NOT_STARTED"
+  | "WAITING"
+  | "IN_PROGRESS"
+  | "COMPLETED"
+  | "EXPIRED";
+
+export type SenderType = "user" | "guide" | "system";
+
+export type ParticipantLeftReason = "voluntary" | "timeout";
+
+export type MessageBankType =
+  | "success"
+  | "failure"
+  | "hint-exhausted"
+  | "clarification"
+  | "unknown-answer"
+  | "opening"
+  | "completion"
+  | "over-length";
