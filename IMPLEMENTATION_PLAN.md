@@ -97,6 +97,7 @@
 - [ ] **5.5 Connection management** — Map<eventCode, Map<participantId, WebSocket>>, cleanup on disconnect, graceful shutdown with close code 1001 + Redis unsubscribe → Spec 05 §5.7
 - [ ] **5.6 WS health check** — GET /health on WS server, Redis connectivity + active connection count → Spec 05 §5.9
 - [ ] **5.7 WebSocket tests** — connection auth, message handling, pub/sub subscriptions, presence, connection lifecycle, graceful shutdown → Spec 05 §Backend Tests
+  - **Learning**: `TypingPayload` uses a flat type with nullable `participant_name`/`participant_id` fields rather than a discriminated union. When handling `participant_typing` vs `guide_typing` branches, non-null assertions on these fields are necessary. If the shared types are ever refactored, consider a discriminated union to make this type-safe.
 
 ## Phase 6: Frontend App (depends on Phase 3; WebSocket features depend on Phase 5)
 

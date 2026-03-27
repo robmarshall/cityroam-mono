@@ -1,0 +1,125 @@
+import { redis } from "../redis/client.js";
+import { PARTICIPANT_OFFLINE_TIMEOUT_MS } from "@cityroam/shared/constants";
+import { db } from "../db/index.js";
+import { participants } from "../db/schema/index.js";
+import { eq, and, count } from "drizzle-orm";
+import { publishControl } from "../redis/pubsub.js";
+
+const PRESENCE_TTL_SECONDS = 900; // 15 minutes
+
+function presenceKey(eventCode: string, participantId: string): string {
+  return `presence:${eventCode}:${participantId}`;
+}
+
+export async function updatePresence(
+  eventCode: string,
+  participantId: string,
+): Promise<void> {
+  const key = presenceKey(eventCode, participantId);
+  await redis.set(key, new Date().toISOString(), "EX", PRESENCE_TTL_SECONDS);
+}
+
+export async function getPresence(
+  eventCode: string,
+  participantId: string,
+): Promise<string | null> {
+  return redis.get(presenceKey(eventCode, participantId));
+}
+
+let sweepInterval: ReturnType<typeof setInterval> | null = null;
+
+export function startPresenceSweep(
+  hasConnectionFn: (participantId: string, eventCode: string) => boolean,
+  getEventCodesFn: () => string[],
+): void {
+  if (sweepInterval) return;
+
+  sweepInterval = setInterval(async () => {
+    const eventCodes = getEventCodesFn();
+
+    for (const code of eventCodes) {
+      try {
+        const keys = await redis.keys(`presence:${code}:*`);
+
+        for (const key of keys) {
+          const lastSeenIso = await redis.get(key);
+          if (!lastSeenIso) continue;
+
+          const lastSeenAt = new Date(lastSeenIso).getTime();
+          const elapsed = Date.now() - lastSeenAt;
+
+          if (elapsed <= PARTICIPANT_OFFLINE_TIMEOUT_MS) continue;
+
+          // Parse participantId from key format presence:{eventCode}:{participantId}
+          const parts = key.split(":");
+          const participantId = parts[2];
+          if (!participantId) continue;
+
+          // Only timeout if participant has no active WS connection
+          if (hasConnectionFn(participantId, code)) continue;
+
+          // Look up participant for event_id and display_name
+          const [participant] = await db
+            .select({
+              id: participants.id,
+              event_id: participants.event_id,
+              display_name: participants.display_name,
+            })
+            .from(participants)
+            .where(eq(participants.id, participantId))
+            .limit(1);
+
+          if (!participant) continue;
+
+          // Update DB: mark inactive
+          await db
+            .update(participants)
+            .set({
+              is_active: false,
+              left_at: new Date(),
+              left_reason: "timeout",
+            })
+            .where(eq(participants.id, participantId));
+
+          // Count remaining active participants for this event
+          const [result] = await db
+            .select({ value: count() })
+            .from(participants)
+            .where(
+              and(
+                eq(participants.event_id, participant.event_id),
+                eq(participants.is_active, true),
+              ),
+            );
+
+          const participantCount = Number(result?.value ?? 0);
+
+          // Publish control event
+          await publishControl(code, {
+            type: "participant_left",
+            data: {
+              name: participant.display_name,
+              participant_count: participantCount,
+              reason: "timeout",
+            },
+          });
+
+          // Clean up the presence key
+          await redis.del(key);
+        }
+      } catch (err) {
+        console.error(
+          `[presence] sweep error for event ${code}:`,
+          err instanceof Error ? err.message : err,
+        );
+      }
+    }
+  }, 60_000);
+}
+
+export function stopPresenceSweep(): void {
+  if (sweepInterval) {
+    clearInterval(sweepInterval);
+    sweepInterval = null;
+  }
+}
