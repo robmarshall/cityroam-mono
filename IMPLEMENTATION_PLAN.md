@@ -10,7 +10,7 @@
 - [x] **1.1 Monorepo & root config** — npm workspaces, tsconfig.base.json, root scripts, .env.example (including REVIEW_LINK), .gitignore, .nvmrc, package scaffolding for all 5 packages with correct exports config → Spec 01 §1.1-1.2
 - [x] **1.2 Shared package — constants** — all game limits, timeouts, event lifecycle, event code config → Spec 01 §1.5
 - [x] **1.3 Shared package — types** — entity types (with left_reason on Participant), enums (with MessageBankType including over-length), WebSocket message types, API response types (EventDetailResponse with current_participant for auto-rejoin, JoinEventResponse with token for WS auth), API error types, Redis pub/sub payload types, LLM types → Spec 01 §1.3
-- [ ] **1.4 Shared package — validation schemas** — Zod schemas for user input, admin input, API requests → Spec 01 §1.4
+- [x] **1.4 Shared package — validation schemas** — Zod schemas for user input, admin input, API requests → Spec 01 §1.4 [COMPLETE]
 - [ ] **1.5 Shared package — utilities** — generateEventCode, buildEventUrl(baseDomain, code), buildS3Key, buildS3Url(cdnBaseUrl, key), formatTimestamp, isValidEventCode → Spec 01 §1.6
 - [ ] **1.6 Shared package — Tailwind preset** — brand colours, chat bubble colours (bubble-self, bubble-other, bubble-guide), system-text, font family → Spec 01 §1.7
 - [ ] **1.7 Shared package — PostHog catalogue** — event names, typed properties, type-safe trackEvent helper → Spec 01 §1.8
