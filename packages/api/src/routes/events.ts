@@ -61,7 +61,8 @@ eventRoutes.get("/event/:code", async (c) => {
   if (
     event.expires_at &&
     new Date(event.expires_at) < new Date() &&
-    event.status !== "COMPLETED"
+    event.status !== "COMPLETED" &&
+    event.status !== "EXPIRED"
   ) {
     await db
       .update(events)

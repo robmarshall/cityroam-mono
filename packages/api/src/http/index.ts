@@ -10,6 +10,7 @@ import {
   errorHandler,
 } from "../middleware/index.js";
 import { eventRoutes } from "../routes/events.js";
+import { startExpirySweep, stopExpirySweep } from "../services/event-expiry.js";
 
 const app = new Hono();
 
@@ -49,11 +50,13 @@ const port = Number(env.PORT);
 
 const server = serve({ fetch: app.fetch, port }, () => {
   console.log(`[http] server listening on port ${port}`);
+  startExpirySweep();
 });
 
 // Graceful shutdown
 async function shutdown() {
   console.log("[http] shutting down...");
+  stopExpirySweep();
   server.close();
   await Promise.all([disconnectRedis(), disconnectDb()]);
   process.exit(0);
