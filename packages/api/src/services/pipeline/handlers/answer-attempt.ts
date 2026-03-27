@@ -61,7 +61,7 @@ Player message: "${userMessage}"`;
  * Persist a guide message using the three-step write sequence: DB → cache → pub/sub.
  * Returns the created message payload.
  */
-async function writeGuideMessage(
+export async function writeGuideMessage(
   eventId: string,
   eventCode: string,
   stepNumber: number,
@@ -101,7 +101,7 @@ async function writeGuideMessage(
 /**
  * Get a random active message from the specified bank type.
  */
-async function getRandomMessageBank(type: string): Promise<string | null> {
+export async function getRandomMessageBank(type: string): Promise<string | null> {
   const rows = await db
     .select({ content: schema.messageBanks.content })
     .from(schema.messageBanks)
@@ -279,4 +279,4 @@ async function handleIncorrectAnswer(
   await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, failureMsg);
 }
 
-export { buildAnswerMatchPrompt, writeGuideMessage, getRandomMessageBank };
+export { buildAnswerMatchPrompt };
