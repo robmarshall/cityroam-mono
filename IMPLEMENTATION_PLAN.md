@@ -64,7 +64,7 @@
 ## Phase 4: AI Guide Pipeline (depends on Phase 3)
 
 - [x] **4.0 HTTP process incoming subscriber** — background Redis subscriber using pattern `event:*:incoming`, extract event code from channel name, pass payload to pipeline orchestrator. Runs in same Node.js event loop as HTTP server → Spec 09 §9.3.2
-- [ ] **4.1 LLM service interface + DeepSeek implementation** — abstract LLMService interface, DeepSeek implementation with JSON mode, 30s timeout, null return on failure → Spec 04 §4.1
+- [x] **4.1 LLM service interface + DeepSeek implementation** — abstract LLMService interface, DeepSeek implementation with JSON mode, 30s timeout, null return on failure → Spec 04 §4.1
 - [ ] **4.2 Layer 1 pre-filter** — empty/short/long message handling (over-length bank), participant rate limiting via Redis → Spec 04 §4.2
 - [ ] **4.3 Layer 2 intent classification** — DeepSeek call with classification prompt (embedded in spec), JSON parse failure = no guide response (message stored), LLM timeout = clarification fallback → Spec 04 §4.3
 - [ ] **4.4 Answer attempt handler** — answer matching LLM call (prompt embedded in spec), correct flow (success bank + fun fact + directions + next clue + image URL resolution via buildS3Url), incorrect flow (failure bank + hint nudge after 3 wrongs) → Spec 04 §4.4
