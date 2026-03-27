@@ -18,6 +18,8 @@
     "seed": "tsx src/db/seed.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1018.0",
+    "@aws-sdk/s3-request-presigner": "^3.1018.0",
     "@cityroam/shared": "*",
     "@hono/node-server": "^1",
     "drizzle-orm": "^0.45.1",

@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { eq, sql, count, desc, and, asc, inArray } from "drizzle-orm";
-import { adminLoginSchema, adminUpdateEventStatusSchema, routeSchema, stopSchema, stopReorderSchema } from "@cityroam/shared/validation";
+import { adminLoginSchema, adminUpdateEventStatusSchema, routeSchema, stopSchema, stopReorderSchema, imageUploadRequestSchema } from "@cityroam/shared/validation";
+import { generatePresignedUploadUrl } from "../services/s3.js";
 import type { AdminDashboardResponse, AdminEventListResponse, AdminEventDetailResponse, AdminRouteDetailResponse, AdminRouteListResponse } from "@cityroam/shared/types";
 import { env } from "../env.js";
 import { db } from "../db/index.js";
@@ -243,6 +244,28 @@ adminRoutes.patch("/admin/events/:id", adminAuth, async (c) => {
     .where(eq(events.id, id));
 
   return c.json({ success: true, status }, 200);
+});
+
+// ── S3 Upload ───────────────────────────────────────────────────────
+
+// POST /admin/upload — generate pre-signed S3 PUT URL for image upload
+adminRoutes.post("/admin/upload", adminAuth, async (c) => {
+  const body = await c.req.json();
+  const { filename, content_type } = imageUploadRequestSchema.parse(body);
+
+  // Sanitize filename: strip path separators, keep only safe characters
+  const sanitized = filename.replace(/[^a-zA-Z0-9._-]/g, "_").replace(/^_+|_+$/g, "");
+  if (!sanitized) {
+    throw new AppError(400, "Filename contains no valid characters", "INVALID_FILENAME");
+  }
+  // Prefix with timestamp to avoid collisions
+  const uniqueFilename = `${Date.now()}_${sanitized}`;
+
+  // Use a generic upload path (route/stop association happens when the stop is updated)
+  const key = `uploads/${uniqueFilename}`;
+
+  const result = await generatePresignedUploadUrl(key, content_type);
+  return c.json(result, 200);
 });
 
 // ── Route CRUD ──────────────────────────────────────────────────────

@@ -40,7 +40,16 @@ export const imageUploadSchema = z.object({
     "Only JPEG and PNG images are allowed"
   ),
   size: z.number().max(MAX_IMAGE_SIZE_BYTES, "Image must be at most 5MB"),
-  filename: z.string().min(1, "Filename is required"),
+  filename: z.string().trim().min(1, "Filename is required"),
+});
+
+/** Server-side schema for POST /admin/upload request body */
+export const imageUploadRequestSchema = z.object({
+  filename: z.string().trim().min(1, "Filename is required"),
+  content_type: z.string().refine(
+    (val) => ALLOWED_IMAGE_TYPES.includes(val),
+    "Only JPEG and PNG images are allowed"
+  ),
 });
 
 export const adminUpdateEventStatusSchema = z.object({
