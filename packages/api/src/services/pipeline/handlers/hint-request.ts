@@ -3,6 +3,7 @@ import { buildS3Key, buildS3Url } from "@cityroam/shared/utils";
 import { db, schema } from "../../../db/index.js";
 import { env } from "../../../env.js";
 import { writeGuideMessage, getRandomMessageBank } from "./answer-attempt.js";
+import { handleHuntCompletion } from "./hunt-completion.js";
 
 /**
  * Context needed by the hint-request handler.
@@ -124,8 +125,15 @@ async function handleHintExhaustion(
       const imageUrl = buildS3Url(env.AWS_CDN_BASE_URL, s3Key);
       await writeGuideMessage(ctx.eventId, ctx.eventCode, nextStopNumber, "", imageUrl);
     }
+  } else {
+    // Last stop — hints exhausted, trigger hunt completion
+    await handleHuntCompletion({
+      eventId: ctx.eventId,
+      eventCode: ctx.eventCode,
+      routeId: ctx.routeId,
+      currentStop: ctx.currentStop,
+    });
   }
-  // If no next stop → completion is handled by the orchestrator (task 4.9)
 
   // 4. Update event: advance stop, reset counters
   await db

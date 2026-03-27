@@ -6,6 +6,7 @@ import type { LLMService } from "../../llm/interface.js";
 import { db, schema } from "../../../db/index.js";
 import { appendMessage, publishMessage } from "../../../redis/index.js";
 import { incrementGuideResponseCount } from "../guide-response-cap.js";
+import { handleHuntCompletion } from "./hunt-completion.js";
 import { env } from "../../../env.js";
 
 /**
@@ -240,8 +241,15 @@ async function handleCorrectAnswer(
       const imageUrl = buildS3Url(env.AWS_CDN_BASE_URL, s3Key);
       await writeGuideMessage(ctx.eventId, ctx.eventCode, nextStopNumber, "", imageUrl);
     }
+  } else {
+    // Last stop completed — trigger hunt completion
+    await handleHuntCompletion({
+      eventId: ctx.eventId,
+      eventCode: ctx.eventCode,
+      routeId: ctx.routeId,
+      currentStop: ctx.currentStop,
+    });
   }
-  // If no next stop → completion is handled by the orchestrator (task 4.9)
 
   // 4. Update event: advance stop, reset counters
   await db
