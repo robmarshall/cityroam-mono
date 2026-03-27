@@ -1,0 +1,36 @@
+/*
+ * City Roam shared Tailwind v4 theme preset
+ * Import in consuming packages: @import "@cityroam/shared/tailwind";
+ */
+
+@theme {
+  /* Brand colours — shade scale */
+  --color-brand-50: #E6F3FF;
+  --color-brand-100: #CCE7FF;
+  --color-brand-200: #99CFFF;
+  --color-brand-300: #66B7FF;
+  --color-brand-400: #339FFF;
+  --color-brand-500: #007AFF;
+  --color-brand-600: #0062CC;
+  --color-brand-700: #004999;
+  --color-brand-800: #003166;
+  --color-brand-900: #001833;
+
+  /* Chat bubble colours */
+  --color-bubble-self: #007AFF;
+  --color-bubble-other: #E9E9EB;
+  --color-bubble-guide: #F2F2F7;
+  --color-system-text: #8E8E93;
+
+  /* Font family — system font stack */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+  /* Border radius tokens */
+  --radius-bubble: 1.125rem;
+  --radius-card: 0.75rem;
+  --radius-button: 0.5rem;
+
+  /* Spacing tokens */
+  --spacing-chat-gap: 0.25rem;
+  --spacing-message-group: 0.75rem;
+}

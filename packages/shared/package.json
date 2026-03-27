@@ -8,7 +8,8 @@
     "./validation": "./src/validation/index.ts",
     "./constants": "./src/constants/index.ts",
     "./utils": "./src/utils/index.ts",
-    "./tailwind": "./src/tailwind/preset.ts",
+    "./tailwind": "./src/tailwind/preset.css",
+    "./tailwind/values": "./src/tailwind/preset.ts",
     "./analytics": "./src/analytics/index.ts"
   },
   "scripts": {
