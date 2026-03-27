@@ -56,7 +56,10 @@
   - **Learning**: Stop creation has a race condition — the max stop_number query runs outside the transaction. Should be moved inside with a lock. Low risk given admin-only usage but worth fixing.
   - **Learning**: Admin route `:id` path params lack UUID format validation — invalid UUIDs cause raw Postgres errors (500) instead of clean 400s. Consider adding `z.string().uuid()` validation on all admin ID params.
 - [x] **3.13 Admin message bank CRUD** — list (filterable by type including over-length), create, update, delete → Spec 03 §3.7 [COMPLETE]
-- [ ] **3.14 API core tests** — all endpoint tests, session middleware, admin auth, rate limiting, error handling, CORS preflight handling → Spec 03 §Backend Tests
+- [x] **3.14 API core tests** — all endpoint tests, session middleware, admin auth, rate limiting, error handling, CORS preflight handling → Spec 03 §Backend Tests
+  - **Learning**: Test app in helpers.ts duplicates production app setup (middleware + routes). Consider extracting a shared `createApp()` function so tests exercise the real app assembly. Currently health check tests test a copy, not the production route.
+  - **Learning**: The `(db as any).xxx` pattern for Drizzle mock chains works but provides zero compile-time safety. A typed mock interface would catch method renames. Mock chains also don't validate WHERE clause arguments — tests pass even if filter logic is removed.
+  - **Learning**: Zod v3/v4 mismatch between API (v3) and shared package (v4) means validation errors from shared schemas are caught as generic 500s instead of structured 400s. Tests work around this with loose assertions (`toBeGreaterThanOrEqual(400)`). Should be resolved by aligning Zod versions.
 
 ## Phase 4: AI Guide Pipeline (depends on Phase 3)
 
