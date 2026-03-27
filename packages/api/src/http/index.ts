@@ -10,6 +10,7 @@ import {
   errorHandler,
 } from "../middleware/index.js";
 import { eventRoutes } from "../routes/events.js";
+import { checkoutRoutes } from "../routes/checkout.js";
 import { startExpirySweep, stopExpirySweep } from "../services/event-expiry.js";
 
 const app = new Hono();
@@ -44,6 +45,9 @@ app.get("/health", async (c) => {
 
 // Event routes
 app.route("/", eventRoutes);
+
+// Checkout & webhook routes
+app.route("/", checkoutRoutes);
 
 // Start server
 const port = Number(env.PORT);
