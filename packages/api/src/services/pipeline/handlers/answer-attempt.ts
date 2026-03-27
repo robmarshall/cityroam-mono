@@ -5,6 +5,7 @@ import { buildS3Key, buildS3Url } from "@cityroam/shared/utils";
 import type { LLMService } from "../../llm/interface.js";
 import { db, schema } from "../../../db/index.js";
 import { appendMessage, publishMessage } from "../../../redis/index.js";
+import { incrementGuideResponseCount } from "../guide-response-cap.js";
 import { env } from "../../../env.js";
 
 /**
@@ -94,6 +95,9 @@ export async function writeGuideMessage(
 
   await appendMessage(eventCode, payload);
   await publishMessage(eventCode, payload);
+
+  // Increment guide response count after each guide message
+  await incrementGuideResponseCount(eventId);
 
   return payload;
 }
