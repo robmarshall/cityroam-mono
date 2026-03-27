@@ -68,7 +68,7 @@
 - [x] **4.2 Layer 1 pre-filter** — empty/short/long message handling (over-length bank), participant rate limiting via Redis → Spec 04 §4.2
 - [x] **4.3 Layer 2 intent classification** — DeepSeek call with classification prompt (embedded in spec), JSON parse failure = no guide response (message stored), LLM timeout = clarification fallback → Spec 04 §4.3
 - [x] **4.4 Answer attempt handler** — answer matching LLM call (prompt embedded in spec), correct flow (success bank + fun fact + directions + next clue + image URL resolution via buildS3Url), incorrect flow (failure bank + hint nudge after 3 wrongs) → Spec 04 §4.4
-- [ ] **4.5 Hint request handler** — programmatic hint sequence from stop's hints array, exhaustion = answer reveal ({{ANSWER}} replacement) + advance stop with full correct-answer flow → Spec 04 §4.5
+- [x] **4.5 Hint request handler** — programmatic hint sequence from stop's hints array, exhaustion = answer reveal ({{ANSWER}} replacement) + advance stop with full correct-answer flow → Spec 04 §4.5
 - [ ] **4.6 Question handler** — DeepSeek call with stop data (prompt embedded in spec), answer/unknown routing, LLM failure = clarification bank → Spec 04 §4.6
 - [ ] **4.7 Silent/no-op handlers** — off-topic (stored, no response), contextual-comment (stored, logged), prompt-injection (delete message from DB + cache, log hash), inappropriate (delete message, log), clarification (bank response) → Spec 04 §4.7
 - [ ] **4.8 Guide response cap** — MAX_GUIDE_RESPONSES_PER_EVENT check before any handler, increment guide_response_count after each guide message, system message when cap reached → Spec 04 §4.8
