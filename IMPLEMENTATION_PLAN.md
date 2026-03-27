@@ -67,7 +67,7 @@
 - [x] **4.1 LLM service interface + DeepSeek implementation** — abstract LLMService interface, DeepSeek implementation with JSON mode, 30s timeout, null return on failure → Spec 04 §4.1
 - [x] **4.2 Layer 1 pre-filter** — empty/short/long message handling (over-length bank), participant rate limiting via Redis → Spec 04 §4.2
 - [x] **4.3 Layer 2 intent classification** — DeepSeek call with classification prompt (embedded in spec), JSON parse failure = no guide response (message stored), LLM timeout = clarification fallback → Spec 04 §4.3
-- [ ] **4.4 Answer attempt handler** — answer matching LLM call (prompt embedded in spec), correct flow (success bank + fun fact + directions + next clue + image URL resolution via buildS3Url), incorrect flow (failure bank + hint nudge after 3 wrongs) → Spec 04 §4.4
+- [x] **4.4 Answer attempt handler** — answer matching LLM call (prompt embedded in spec), correct flow (success bank + fun fact + directions + next clue + image URL resolution via buildS3Url), incorrect flow (failure bank + hint nudge after 3 wrongs) → Spec 04 §4.4
 - [ ] **4.5 Hint request handler** — programmatic hint sequence from stop's hints array, exhaustion = answer reveal ({{ANSWER}} replacement) + advance stop with full correct-answer flow → Spec 04 §4.5
 - [ ] **4.6 Question handler** — DeepSeek call with stop data (prompt embedded in spec), answer/unknown routing, LLM failure = clarification bank → Spec 04 §4.6
 - [ ] **4.7 Silent/no-op handlers** — off-topic (stored, no response), contextual-comment (stored, logged), prompt-injection (delete message from DB + cache, log hash), inappropriate (delete message, log), clarification (bank response) → Spec 04 §4.7
