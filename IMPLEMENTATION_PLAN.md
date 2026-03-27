@@ -52,7 +52,7 @@
 - [x] **3.10 Admin event endpoints** — GET /admin/events (paginated, filtered by status), GET /admin/events/:id (with stripe_payment_id), PATCH /admin/events/:id (status update) → Spec 03 §3.7 [COMPLETE]
 - [x] **3.11 Admin route & stop CRUD** — routes CRUD with referential integrity check on delete (409), stops CRUD with reorder (PUT reorder with stop_ids array), validation via shared schemas → Spec 03 §3.7 [COMPLETE]
   - **Learning**: Stop reorder and delete-renumber must use single CASE-expression UPDATEs inside a transaction to avoid unique constraint violations on `(route_id, stop_number)` when stops swap positions. Sequential UPDATE loops will fail.
-- [ ] **3.12 Admin S3 upload** — pre-signed URL generation (5min expiry), file validation via shared imageUploadSchema → Spec 03 §3.7
+- [x] **3.12 Admin S3 upload** — pre-signed URL generation (5min expiry), file validation via shared imageUploadSchema → Spec 03 §3.7 [COMPLETE]
   - **Learning**: Stop creation has a race condition — the max stop_number query runs outside the transaction. Should be moved inside with a lock. Low risk given admin-only usage but worth fixing.
   - **Learning**: Admin route `:id` path params lack UUID format validation — invalid UUIDs cause raw Postgres errors (500) instead of clean 400s. Consider adding `z.string().uuid()` validation on all admin ID params.
 - [ ] **3.13 Admin message bank CRUD** — list (filterable by type including over-length), create, update, delete → Spec 03 §3.7
