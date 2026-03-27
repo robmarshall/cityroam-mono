@@ -12,6 +12,7 @@ export {
   imageUploadRequestSchema,
   adminUpdateEventStatusSchema,
   stopReorderSchema,
+  messageBankSchema,
 } from "./admin-input.js";
 
 export {

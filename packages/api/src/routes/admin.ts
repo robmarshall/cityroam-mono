@@ -1,11 +1,11 @@
 import { Hono } from "hono";
 import { eq, sql, count, desc, and, asc, inArray } from "drizzle-orm";
-import { adminLoginSchema, adminUpdateEventStatusSchema, routeSchema, stopSchema, stopReorderSchema, imageUploadRequestSchema } from "@cityroam/shared/validation";
+import { adminLoginSchema, adminUpdateEventStatusSchema, routeSchema, stopSchema, stopReorderSchema, imageUploadRequestSchema, messageBankSchema } from "@cityroam/shared/validation";
 import { generatePresignedUploadUrl } from "../services/s3.js";
-import type { AdminDashboardResponse, AdminEventListResponse, AdminEventDetailResponse, AdminRouteDetailResponse, AdminRouteListResponse } from "@cityroam/shared/types";
+import type { AdminDashboardResponse, AdminEventListResponse, AdminEventDetailResponse, AdminRouteDetailResponse, AdminRouteListResponse, AdminMessageBankListResponse } from "@cityroam/shared/types";
 import { env } from "../env.js";
 import { db } from "../db/index.js";
-import { events, participants, messages, routes, stops } from "../db/schema/index.js";
+import { events, participants, messages, routes, stops, messageBanks } from "../db/schema/index.js";
 import { AppError } from "../middleware/error-handler.js";
 import { adminAuth, signAdminToken } from "../middleware/admin.js";
 
@@ -704,6 +704,116 @@ adminRoutes.delete("/admin/routes/:id/stops/:stopId", adminAuth, async (c) => {
       })
       .where(eq(routes.id, routeId));
   });
+
+  return c.json({ success: true }, 200);
+});
+
+// ── Message Bank CRUD ────────────────────────────────────────────────
+
+// GET /admin/message-banks — list all, filterable by type
+adminRoutes.get("/admin/message-banks", adminAuth, async (c) => {
+  const typeFilter = c.req.query("type");
+
+  const whereClause = typeFilter
+    ? eq(messageBanks.type, typeFilter)
+    : undefined;
+
+  const rows = await db
+    .select()
+    .from(messageBanks)
+    .where(whereClause)
+    .orderBy(asc(messageBanks.type), desc(messageBanks.created_at));
+
+  const response: AdminMessageBankListResponse = {
+    message_banks: rows.map((m) => ({
+      id: m.id,
+      type: m.type,
+      content: m.content,
+      is_active: m.is_active,
+      created_at: m.created_at.toISOString(),
+      updated_at: m.updated_at.toISOString(),
+    })),
+  };
+
+  return c.json(response, 200);
+});
+
+// POST /admin/message-banks — create a message bank entry
+adminRoutes.post("/admin/message-banks", adminAuth, async (c) => {
+  const body = await c.req.json();
+  const data = messageBankSchema.parse(body);
+
+  const [entry] = await db
+    .insert(messageBanks)
+    .values({
+      type: data.type,
+      content: data.content,
+      is_active: data.is_active,
+    })
+    .returning();
+
+  return c.json({
+    message_bank: {
+      id: entry.id,
+      type: entry.type,
+      content: entry.content,
+      is_active: entry.is_active,
+      created_at: entry.created_at.toISOString(),
+      updated_at: entry.updated_at.toISOString(),
+    },
+  }, 201);
+});
+
+// PUT /admin/message-banks/:id — update a message bank entry
+adminRoutes.put("/admin/message-banks/:id", adminAuth, async (c) => {
+  const id = c.req.param("id");
+  const body = await c.req.json();
+  const data = messageBankSchema.parse(body);
+
+  const existing = await db.query.messageBanks.findFirst({
+    where: eq(messageBanks.id, id),
+  });
+
+  if (!existing) {
+    throw new AppError(404, "Message bank entry not found", "MESSAGE_BANK_NOT_FOUND");
+  }
+
+  const [updated] = await db
+    .update(messageBanks)
+    .set({
+      type: data.type,
+      content: data.content,
+      is_active: data.is_active,
+      updated_at: new Date(),
+    })
+    .where(eq(messageBanks.id, id))
+    .returning();
+
+  return c.json({
+    message_bank: {
+      id: updated.id,
+      type: updated.type,
+      content: updated.content,
+      is_active: updated.is_active,
+      created_at: updated.created_at.toISOString(),
+      updated_at: updated.updated_at.toISOString(),
+    },
+  }, 200);
+});
+
+// DELETE /admin/message-banks/:id — delete a message bank entry
+adminRoutes.delete("/admin/message-banks/:id", adminAuth, async (c) => {
+  const id = c.req.param("id");
+
+  const existing = await db.query.messageBanks.findFirst({
+    where: eq(messageBanks.id, id),
+  });
+
+  if (!existing) {
+    throw new AppError(404, "Message bank entry not found", "MESSAGE_BANK_NOT_FOUND");
+  }
+
+  await db.delete(messageBanks).where(eq(messageBanks.id, id));
 
   return c.json({ success: true }, 200);
 });

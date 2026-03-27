@@ -59,3 +59,18 @@ export const adminUpdateEventStatusSchema = z.object({
 export const stopReorderSchema = z.object({
   stop_ids: z.array(z.string().uuid()).min(1, "At least one stop ID is required"),
 });
+
+export const messageBankSchema = z.object({
+  type: z.enum([
+    "success",
+    "failure",
+    "hint-exhausted",
+    "clarification",
+    "unknown-answer",
+    "opening",
+    "completion",
+    "over-length",
+  ]),
+  content: z.string().trim().min(1, "Content is required"),
+  is_active: z.boolean().optional().default(true),
+});

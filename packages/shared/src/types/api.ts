@@ -106,3 +106,14 @@ export interface AdminRouteListResponse {
 export interface AdminStopReorderResponse {
   success: boolean;
 }
+
+export interface AdminMessageBankListResponse {
+  message_banks: Array<{
+    id: string;
+    type: string;
+    content: string;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+  }>;
+}

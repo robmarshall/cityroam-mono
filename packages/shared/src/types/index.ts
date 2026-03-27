@@ -43,6 +43,7 @@ export type {
   AdminRouteDetailResponse,
   AdminRouteListResponse,
   AdminStopReorderResponse,
+  AdminMessageBankListResponse,
 } from "./api.js";
 
 export type { ApiErrorResponse, ApiErrorCode } from "./api-errors.js";
