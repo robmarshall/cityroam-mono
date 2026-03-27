@@ -102,6 +102,8 @@
 ## Phase 6: Frontend App (depends on Phase 3; WebSocket features depend on Phase 5)
 
 - [ ] **6.1 App package setup** — Vite + React + TypeScript + Tailwind (shared preset) + React Router v6 + Headless UI + PostHog, React Context (participant, event, WS connection), fetch wrapper with credentials:include and VITE_API_URL prefix → Spec 06 §6.1
+  - **Learning**: PostHog analytics module must be imported at the app entry point (main.tsx) as a side-effect import to ensure initialization on mount. Module-level `posthog.init()` only runs when the module is actually imported.
+  - **Learning**: Spec 6.2 names the play route component `ChatPage`, not `PlayPage`. Always cross-reference component names against the spec route table.
 - [ ] **6.2 Join screen** — display name input (shared displayNameSchema validation), submit button, auto-rejoin via GET /event/:code with current_participant check, error states (not found, full, expired, completed, network), redirect based on event status → Spec 06 §6.3
 - [ ] **6.3 Waiting lobby** — participant list with online dots, lead start button (POST /event/:code/start), WS connection (token from join response context as query param), listen for participant_joined/left/game_started events → Spec 06 §6.4
 - [ ] **6.4 SMS-style chat UI** — message bubbles (right=self blue, left=others grey, left=guide light grey), sender names, timestamps (5min gap), input area (Visual Viewport API for mobile keyboard, multi-line up to 3 lines, Enter=send/Shift+Enter=newline), scroll behaviour with "new messages" pill, image display with Headless UI fullscreen overlay → Spec 06 §6.5

@@ -10,8 +10,11 @@
   },
   "dependencies": {
     "@cityroam/shared": "*",
+    "@headlessui/react": "^2.2.9",
+    "posthog-js": "^1.364.1",
     "react": "^19",
-    "react-dom": "^19"
+    "react-dom": "^19",
+    "react-router-dom": "^6.30.3"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4",

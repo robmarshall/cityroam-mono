@@ -1,12 +1,20 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-
-function App() {
-  return <div>City Roam App</div>;
-}
+import "./index.css";
+import "./lib/analytics";
+import { ParticipantProvider } from "./contexts/ParticipantContext";
+import { EventProvider } from "./contexts/EventContext";
+import { WebSocketProvider } from "./contexts/WebSocketContext";
+import AppRouter from "./router";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <App />
+    <ParticipantProvider>
+      <EventProvider>
+        <WebSocketProvider>
+          <AppRouter />
+        </WebSocketProvider>
+      </EventProvider>
+    </ParticipantProvider>
   </React.StrictMode>,
 );
