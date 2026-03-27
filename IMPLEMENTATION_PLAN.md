@@ -14,7 +14,7 @@
 - [x] **1.5 Shared package — utilities** — generateEventCode, buildEventUrl(baseDomain, code), buildS3Key, buildS3Url(cdnBaseUrl, key), formatTimestamp, isValidEventCode → Spec 01 §1.6
 - [x] **1.6 Shared package — Tailwind preset** — brand colours, chat bubble colours (bubble-self, bubble-other, bubble-guide), system-text, font family → Spec 01 §1.7
   - **Learning**: Tailwind v4 uses CSS-first `@theme` blocks instead of JS config. The `./tailwind` export now points to `preset.css` for CSS `@import`, with `./tailwind/values` for programmatic TS access. Both must be kept in sync.
-- [ ] **1.7 Shared package — PostHog catalogue** — event names, typed properties, type-safe trackEvent helper → Spec 01 §1.8
+- [x] **1.7 Shared package — PostHog catalogue** — event names, typed properties, type-safe trackEvent helper → Spec 01 §1.8
 - [ ] **1.8 Shared package — backend tests** — unit tests for all utilities, validation schemas, and constants → Spec 01 §Backend Tests
 
 ## Phase 2: Data Layer (depends on Phase 1)
@@ -111,6 +111,7 @@
 ## Learnings
 - Scaffolding packages should include all stack-defining dependencies from the spec (e.g., hono for api, tailwindcss for frontend packages), not just the build tooling. This avoids needing to retroactively add them during implementation of later tasks.
 - Tailwind v4 uses `@tailwindcss/vite` for Vite projects and `@tailwindcss/postcss` for Next.js projects.
+- When implementing typed interfaces, always cross-reference the full property definitions in the project-spec (§2.2.6), not just the spec summary in the deliverables section (§1.8). The deliverables section may say "typed properties per event" without listing the exact shapes.
 
 ## Notes
 - Phase 1.0 (docker-compose for postgres + redis) is the first task — developers need local DB/Redis immediately
