@@ -60,17 +60,12 @@ export async function resolveSession(c: any): Promise<SessionContext | null> {
   // Redis fast path
   const session = await getSession(token);
   if (session) {
-    const participant = await db.query.participants.findFirst({
-      where: eq(participants.token, token),
-      columns: { display_name: true, is_lead: true, is_active: true },
-    });
-    if (!participant || !participant.is_active) return null;
     return {
       participant_id: session.participant_id,
       event_id: session.event_id,
       event_code: session.event_code,
-      display_name: participant.display_name,
-      is_lead: participant.is_lead,
+      display_name: session.display_name,
+      is_lead: session.is_lead,
     };
   }
 
@@ -101,6 +96,8 @@ export async function resolveSession(c: any): Promise<SessionContext | null> {
     participant_id: participant.id,
     event_id: participant.event_id,
     event_code: eventCode,
+    display_name: participant.display_name,
+    is_lead: participant.is_lead,
   });
 
   return {

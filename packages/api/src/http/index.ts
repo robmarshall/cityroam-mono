@@ -9,6 +9,7 @@ import {
   requestLogger,
   errorHandler,
 } from "../middleware/index.js";
+import { eventRoutes } from "../routes/events.js";
 
 const app = new Hono();
 
@@ -39,6 +40,9 @@ app.get("/health", async (c) => {
     healthy ? 200 : 503,
   );
 });
+
+// Event routes
+app.route("/", eventRoutes);
 
 // Start server
 const port = Number(env.PORT);

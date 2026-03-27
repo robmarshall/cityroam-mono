@@ -5,6 +5,8 @@ export interface SessionData {
   participant_id: string;
   event_id: string;
   event_code: string;
+  display_name: string;
+  is_lead: boolean;
 }
 
 const SESSION_TTL_SECONDS = SESSION_TOKEN_EXPIRY_HOURS * 60 * 60;
