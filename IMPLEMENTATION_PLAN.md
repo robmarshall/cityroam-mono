@@ -37,7 +37,7 @@
   - **Learning**: Any Redis module that deserializes data (JSON.parse) must wrap in try-catch — Redis data is a system boundary. Return null/skip on parse failure.
   - **Learning**: INCR+EXPIRE for rate limiting must be atomic via Lua script (redis.eval/defineCommand) to prevent keys persisting forever if the process crashes between the two commands.
 - [x] **3.3 Redis pub/sub helpers** — channel naming (`event:{code}:incoming/messages/typing/control`), publish/subscribe helper functions, payload serialization/deserialization matching defined schemas → Spec 09 §9.3
-- [x] **3.4 Session/auth middleware** — cookie-based participant auth (cookie name: cityroam_session, SameSite=None, Secure, HttpOnly, Domain from COOKIE_DOMAIN env), Redis fast path + DB fallback with re-population → Spec 03 §3.2, §3.4
+- [x] **3.4 Session/auth middleware** — cookie-based participant auth (cookie name: cityroam_session, SameSite=None, Secure, HttpOnly, Domain from COOKIE_DOMAIN env), Redis fast path + DB fallback with re-population → Spec 03 §3.2, §3.4 [COMPLETE]
   - **Learning**: Redis fast path still queries DB for `display_name`/`is_lead`/`is_active` because `SessionData` only stores `participant_id`, `event_id`, `event_code`. Consider extending `SessionData` to include these fields in a future optimization pass to eliminate DB hits on the hot auth path.
   - **Learning**: No custom Hono Env type exists yet — `c.set("session" as any, ...)` is used. When routes start consuming session context via `c.get("session")`, define an `AppEnv` type with `Variables: { session: SessionContext }` and propagate it through the app.
 - [ ] **3.5 Health check endpoint** — GET /health with DB (SELECT 1) + Redis (PING) connectivity checks, 503 on failure → Spec 03 §3.9
