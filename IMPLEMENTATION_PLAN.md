@@ -16,6 +16,7 @@
   - **Learning**: Tailwind v4 uses CSS-first `@theme` blocks instead of JS config. The `./tailwind` export now points to `preset.css` for CSS `@import`, with `./tailwind/values` for programmatic TS access. Both must be kept in sync.
 - [x] **1.7 Shared package — PostHog catalogue** — event names, typed properties, type-safe trackEvent helper → Spec 01 §1.8
 - [ ] **1.8 Shared package — backend tests** — unit tests for all utilities, validation schemas, and constants → Spec 01 §Backend Tests
+  - **Learning**: `eventCodeSchema` (Zod, user-input) accepts 6–8 chars while `isValidEventCode()` (util) requires exactly 8. This is by design but should be documented or harmonised in a future pass — could cause confusion if event codes ever change length.
 
 ## Phase 2: Data Layer (depends on Phase 1)
 
