@@ -29,6 +29,29 @@ export async function getMessages(
   });
 }
 
+/**
+ * Remove a single message from the cached list by its ID.
+ * Scans the list, finds the entry matching the ID, and removes it.
+ */
+export async function removeMessage(
+  code: string,
+  messageId: string,
+): Promise<void> {
+  const key = chatKey(code);
+  const raw = await redis.lrange(key, 0, -1);
+  for (const entry of raw) {
+    try {
+      const parsed = JSON.parse(entry) as ChatMessagePayload;
+      if (parsed.id === messageId) {
+        await redis.lrem(key, 1, entry);
+        return;
+      }
+    } catch {
+      // Skip corrupt entries
+    }
+  }
+}
+
 export async function getMessagesSince(
   code: string,
   since: string,

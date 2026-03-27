@@ -14,6 +14,7 @@ export {
   appendMessage,
   getMessages,
   getMessagesSince,
+  removeMessage,
 } from "./chat-cache.js";
 
 // Re-export rate limiting
