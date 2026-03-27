@@ -30,7 +30,7 @@
 
 ## Phase 3: API Core (depends on Phase 1 + 2)
 
-- [ ] **3.1 API package setup** — Hono framework, dual entry points (src/http/index.ts, src/ws/index.ts), env loading with startup validation (including REVIEW_LINK), DB pool (Drizzle), CORS with credentials (SameSite=None), structured JSON request logging, error handling middleware with consistent ApiErrorResponse shape → Spec 03 §3.1, §3.2, §3.6
+- [x] **3.1 API package setup** — Hono framework, dual entry points (src/http/index.ts, src/ws/index.ts), env loading with startup validation (including REVIEW_LINK), DB pool (Drizzle), CORS with credentials (SameSite=None), structured JSON request logging, error handling middleware with consistent ApiErrorResponse shape → Spec 03 §3.1, §3.2, §3.6
   - **Learning**: env.ts centralises all process.env access — other modules must import `env` from env.ts, never read process.env directly. Dev mode uses placeholder values for non-critical vars so the app can start without all secrets.
   - **Learning**: WS server intentionally omits CORS middleware (no browser-facing routes) and DB health check (no DB usage). HTTP server has both.
 - [ ] **3.2 Redis client setup** — ioredis with 2 instances per process (commands + pub/sub), session store (set/get/delete with TTL), chat cache (RPUSH/LRANGE with 24h TTL), rate limiting (INCR+EXPIRE fixed window for join/guide/participant limits) → Spec 09 §9.1, §9.2, §9.4, §9.7
