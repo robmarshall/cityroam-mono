@@ -1,0 +1,13 @@
+services:
+  dev:
+    build: .
+    volumes:
+      - .:/workspace
+      - /mnt/c/Users/rober/.claude:/home/dev/.claude    # WSL path to Windows
+      - /mnt/c/Users/rober/.ssh:/home/dev/.ssh:ro       # WSL path to Windows
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+    environment:
+      - GIT_USER_NAME=Rob
+      - GIT_USER_EMAIL=hello@robertmarshall.dev

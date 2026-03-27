@@ -1,0 +1,11 @@
+{
+  "name": "city-roam-v2",
+  "private": true,
+  "scripts": {
+    "loop": "bash run.sh",
+    "loop:plan": "bash run.sh plan",
+    "docker:build": "docker compose up -d --build",
+    "docker:shell": "docker compose exec dev bash",
+    "docker:down": "docker compose down"
+  }
+}
