@@ -46,7 +46,7 @@
   - **Learning**: Query params used in DB queries (like `?since=`) must be validated at the boundary. `new Date(invalidString)` produces `Invalid Date` whose `.getTime()` is NaN, causing silent filter bypasses.
   - **Learning**: `setSession()` should store `display_name` and `is_lead` alongside the core IDs so the auth middleware Redis fast-path can skip the DB query. Update `SessionData` interface in redis/session.ts when fixing.
   - **Learning**: The join endpoint's first-joiner lead assignment (count check → insert) has a theoretical race condition under concurrent requests. Low risk for small-group app with rate limiting, but if ever needed, wrap in a DB transaction with `FOR UPDATE` lock on the participants count query.
-- [ ] **3.7 Event expiry** — lazy evaluation on GET /event/:code, background sweep every 6 hours for stale events → Spec 03 §3.10
+- [x] **3.7 Event expiry** — lazy evaluation on GET /event/:code, background sweep every 6 hours for stale events → Spec 03 §3.10 [COMPLETE]
 - [ ] **3.8 Checkout & webhook endpoints** — Stripe session creation, webhook handler with signature validation + idempotency (check stripe_session_id), event creation (generateEventCode with retry), Resend confirmation email, GET /checkout/success for event code retrieval → Spec 03 §3.3, §3.8
 - [ ] **3.9 Admin auth & dashboard** — POST /admin/login (JWT, 8h expiry), admin middleware (Bearer token), GET /admin/dashboard → Spec 03 §3.7
 - [ ] **3.10 Admin event endpoints** — GET /admin/events (paginated, filtered by status), GET /admin/events/:id (with stripe_payment_id), PATCH /admin/events/:id (status update) → Spec 03 §3.7
