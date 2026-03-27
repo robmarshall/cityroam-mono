@@ -5,6 +5,7 @@ export {
 } from "./user-input.js";
 
 export {
+  adminLoginSchema,
   routeSchema,
   stopSchema,
   imageUploadSchema,
