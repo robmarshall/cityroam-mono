@@ -42,3 +42,7 @@ export const imageUploadSchema = z.object({
   size: z.number().max(MAX_IMAGE_SIZE_BYTES, "Image must be at most 5MB"),
   filename: z.string().min(1, "Filename is required"),
 });
+
+export const adminUpdateEventStatusSchema = z.object({
+  status: z.enum(["NOT_STARTED", "WAITING", "IN_PROGRESS", "COMPLETED", "EXPIRED"]),
+});

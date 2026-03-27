@@ -9,6 +9,7 @@ export {
   routeSchema,
   stopSchema,
   imageUploadSchema,
+  adminUpdateEventStatusSchema,
 } from "./admin-input.js";
 
 export {
