@@ -83,6 +83,10 @@
   - **Learning**: The orchestrator is the top-level pipeline entry point — it MUST have a catch block that logs errors with context (eventCode, messageId) since the upstream Redis subscriber silently swallows exceptions. Don't rely on caller error handling for observability.
   - **Learning**: `incrementGuideResponseCount` is handled inside `writeGuideMessage` (answer-attempt.ts), not in the orchestrator. Don't import it in orchestrator — it's the handlers' responsibility.
 - [ ] **4.12 AI pipeline tests** — all handler tests, pre-filter, classification, LLM mocking, response cap, completion flow, idle timeout, image URL resolution, full pipeline integration → Spec 04 §Backend Tests
+  - **Learning**: When mocking Drizzle's chained API in tests, use `mockResolvedValue`/`mockResolvedValueOnce` (not `mockReturnValue`) for methods that are part of an awaited chain (e.g. `.where()`, `.returning()`). JS auto-wraps sync values in Promise.resolve() so tests pass either way, but using the correct async mock catches more real bugs.
+  - **Learning**: Don't forget the contextual-comment handler — it's easy to miss because it shares a file with the other silent handlers but has distinct logging behaviour (logs intent for analysis).
+  - **Learning**: Orchestrator tests must exercise the full routing path for ALL classification types — not just answer-attempt. prompt-injection/inappropriate in particular require verifying the retroactive user message deletion (step 13 of §4.11). Mocking handlers isn't enough; assert they were called AND that side effects (deletion, logging) occurred.
+  - **Learning**: For "silent" handler tests (off-topic, contextual-comment), always add negative assertions (`db.delete` not called) to verify the user message is preserved — the spec distinguishes between "stored" (off-topic) and "deleted" (prompt-injection).
 
 ## Phase 5: WebSocket Process (depends on Phase 3, parallel with Phase 4)
 
