@@ -90,13 +90,13 @@
 
 ## Phase 5: WebSocket Process (depends on Phase 3, parallel with Phase 4)
 
-- [ ] **5.1 WS server setup + connection auth** — Hono WS entry at /ws/:code, token from query param, validation against Redis/DB session store, defined close codes (4001 invalid token, 4002 expired, 4003 not found, 4004 completed/expired, 4005 not active) → Spec 05 §5.1-5.2
-- [ ] **5.2 Client message handling** — user_message (validate via chatMessageSchema, publish to event:{code}:incoming with IncomingMessagePayload, NO direct DB write or broadcast), typing_start/stop (Redis key with TTL + typing channel publish), ping/pong (+ presence update) → Spec 05 §5.3
-- [ ] **5.3 Redis pub/sub subscriptions** — subscribe to messages/typing/control channels per event, subscription lifecycle (sub on first connect, unsub on last disconnect, track active subs), broadcast with correct message type mapping (BroadcastMessagePayload → ChatMessagePayload, ControlEventPayload → typed events, TypingPayload → participant/guide typing) → Spec 05 §5.4
-- [ ] **5.4 Presence tracking** — heartbeat updates on connect/ping, 60s background interval scanning presence keys, 10-minute timeout detection (PARTICIPANT_OFFLINE_TIMEOUT_MS) with DB update (is_active=false, left_reason=timeout) + participant_left control event. Only timeout participants with no active WS connection → Spec 05 §5.6
-- [ ] **5.5 Connection management** — Map<eventCode, Map<participantId, WebSocket>>, cleanup on disconnect, graceful shutdown with close code 1001 + Redis unsubscribe → Spec 05 §5.7
-- [ ] **5.6 WS health check** — GET /health on WS server, Redis connectivity + active connection count → Spec 05 §5.9
-- [ ] **5.7 WebSocket tests** — connection auth, message handling, pub/sub subscriptions, presence, connection lifecycle, graceful shutdown → Spec 05 §Backend Tests
+- [x] **5.1 WS server setup + connection auth** — Hono WS entry at /ws/:code, token from query param, validation against Redis/DB session store, defined close codes (4001 invalid token, 4002 expired, 4003 not found, 4004 completed/expired, 4005 not active) → Spec 05 §5.1-5.2
+- [x] **5.2 Client message handling** — user_message (validate via chatMessageSchema, publish to event:{code}:incoming with IncomingMessagePayload, NO direct DB write or broadcast), typing_start/stop (Redis key with TTL + typing channel publish), ping/pong (+ presence update) → Spec 05 §5.3
+- [x] **5.3 Redis pub/sub subscriptions** — subscribe to messages/typing/control channels per event, subscription lifecycle (sub on first connect, unsub on last disconnect, track active subs), broadcast with correct message type mapping (BroadcastMessagePayload → ChatMessagePayload, ControlEventPayload → typed events, TypingPayload → participant/guide typing) → Spec 05 §5.4
+- [x] **5.4 Presence tracking** — heartbeat updates on connect/ping, 60s background interval scanning presence keys, 10-minute timeout detection (PARTICIPANT_OFFLINE_TIMEOUT_MS) with DB update (is_active=false, left_reason=timeout) + participant_left control event. Only timeout participants with no active WS connection → Spec 05 §5.6
+- [x] **5.5 Connection management** — Map<eventCode, Map<participantId, WebSocket>>, cleanup on disconnect, graceful shutdown with close code 1001 + Redis unsubscribe → Spec 05 §5.7
+- [x] **5.6 WS health check** — GET /health on WS server, Redis connectivity + active connection count → Spec 05 §5.9
+- [x] **5.7 WebSocket tests** — connection auth, message handling, pub/sub subscriptions, presence, connection lifecycle, graceful shutdown → Spec 05 §Backend Tests
   - **Learning**: `TypingPayload` uses a flat type with nullable `participant_name`/`participant_id` fields rather than a discriminated union. When handling `participant_typing` vs `guide_typing` branches, non-null assertions on these fields are necessary. If the shared types are ever refactored, consider a discriminated union to make this type-safe.
 
 ## Phase 6: Frontend App (depends on Phase 3; WebSocket features depend on Phase 5)
