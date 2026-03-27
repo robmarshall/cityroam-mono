@@ -1,7 +1,7 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { env } from "../env.js";
-import { redis, disconnectRedis } from "../redis.js";
+import { redis, disconnectRedis } from "../redis/index.js";
 import { requestLogger, errorHandler } from "../middleware/index.js";
 
 const app = new Hono();

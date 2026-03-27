@@ -3,7 +3,7 @@ import { Hono } from "hono";
 import { sql } from "drizzle-orm";
 import { env } from "../env.js";
 import { db, disconnectDb } from "../db/index.js";
-import { redis, disconnectRedis } from "../redis.js";
+import { redis, disconnectRedis } from "../redis/index.js";
 import {
   createCorsMiddleware,
   requestLogger,
