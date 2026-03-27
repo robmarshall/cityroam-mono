@@ -8,7 +8,7 @@
 
 - [x] **1.0 Docker compose for local dev** — postgres + redis services, shared network, .env loading. Developers need DB/Redis running before anything else → Spec 10 §10.1 (partial — just postgres + redis initially, full compose in 9.1)
 - [x] **1.1 Monorepo & root config** — npm workspaces, tsconfig.base.json, root scripts, .env.example (including REVIEW_LINK), .gitignore, .nvmrc, package scaffolding for all 5 packages with correct exports config → Spec 01 §1.1-1.2
-- [ ] **1.2 Shared package — constants** — all game limits, timeouts, event lifecycle, event code config → Spec 01 §1.5
+- [x] **1.2 Shared package — constants** — all game limits, timeouts, event lifecycle, event code config → Spec 01 §1.5
 - [ ] **1.3 Shared package — types** — entity types (with left_reason on Participant), enums (with MessageBankType including over-length), WebSocket message types, API response types (EventDetailResponse with current_participant for auto-rejoin, JoinEventResponse with token for WS auth), API error types, Redis pub/sub payload types, LLM types → Spec 01 §1.3
 - [ ] **1.4 Shared package — validation schemas** — Zod schemas for user input, admin input, API requests → Spec 01 §1.4
 - [ ] **1.5 Shared package — utilities** — generateEventCode, buildEventUrl(baseDomain, code), buildS3Key, buildS3Url(cdnBaseUrl, key), formatTimestamp, isValidEventCode → Spec 01 §1.6
