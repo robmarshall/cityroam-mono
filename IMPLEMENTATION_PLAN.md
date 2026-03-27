@@ -55,7 +55,7 @@
 - [x] **3.12 Admin S3 upload** — pre-signed URL generation (5min expiry), file validation via shared imageUploadSchema → Spec 03 §3.7 [COMPLETE]
   - **Learning**: Stop creation has a race condition — the max stop_number query runs outside the transaction. Should be moved inside with a lock. Low risk given admin-only usage but worth fixing.
   - **Learning**: Admin route `:id` path params lack UUID format validation — invalid UUIDs cause raw Postgres errors (500) instead of clean 400s. Consider adding `z.string().uuid()` validation on all admin ID params.
-- [ ] **3.13 Admin message bank CRUD** — list (filterable by type including over-length), create, update, delete → Spec 03 §3.7
+- [x] **3.13 Admin message bank CRUD** — list (filterable by type including over-length), create, update, delete → Spec 03 §3.7 [COMPLETE]
 - [ ] **3.14 API core tests** — all endpoint tests, session middleware, admin auth, rate limiting, error handling, CORS preflight handling → Spec 03 §Backend Tests
 
 ## Phase 4: AI Guide Pipeline (depends on Phase 3)
