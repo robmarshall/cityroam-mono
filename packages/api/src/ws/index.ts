@@ -1,31 +1,18 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
-import { sql } from "drizzle-orm";
 import { env } from "../env.js";
-import { db, disconnectDb } from "../db/index.js";
 import { redis, disconnectRedis } from "../redis.js";
-import {
-  createCorsMiddleware,
-  requestLogger,
-  errorHandler,
-} from "../middleware/index.js";
+import { requestLogger, errorHandler } from "../middleware/index.js";
 
 const app = new Hono();
 
 // Global middleware
-app.use("*", createCorsMiddleware());
 app.use("*", requestLogger);
 app.onError(errorHandler);
 
 // Health check
 app.get("/health", async (c) => {
-  const checks = { db: "ok" as string, redis: "ok" as string };
-
-  try {
-    await db.execute(sql`SELECT 1`);
-  } catch {
-    checks.db = "error";
-  }
+  const checks = { redis: "ok" as string, active_connections: 0 };
 
   try {
     await redis.ping();
@@ -33,7 +20,7 @@ app.get("/health", async (c) => {
     checks.redis = "error";
   }
 
-  const healthy = checks.db === "ok" && checks.redis === "ok";
+  const healthy = checks.redis === "ok";
   return c.json(
     { status: healthy ? "ok" : "degraded", ...checks },
     healthy ? 200 : 503,
@@ -41,17 +28,17 @@ app.get("/health", async (c) => {
 });
 
 // Start server
-const port = Number(env.PORT);
+const port = Number(env.WS_PORT);
 
 const server = serve({ fetch: app.fetch, port }, () => {
-  console.log(`[http] server listening on port ${port}`);
+  console.log(`[ws] server listening on port ${port}`);
 });
 
 // Graceful shutdown
 async function shutdown() {
-  console.log("[http] shutting down...");
+  console.log("[ws] shutting down...");
   server.close();
-  await Promise.all([disconnectRedis(), disconnectDb()]);
+  await disconnectRedis();
   process.exit(0);
 }
 

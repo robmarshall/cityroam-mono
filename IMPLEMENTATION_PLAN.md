@@ -31,6 +31,8 @@
 ## Phase 3: API Core (depends on Phase 1 + 2)
 
 - [ ] **3.1 API package setup** — Hono framework, dual entry points (src/http/index.ts, src/ws/index.ts), env loading with startup validation (including REVIEW_LINK), DB pool (Drizzle), CORS with credentials (SameSite=None), structured JSON request logging, error handling middleware with consistent ApiErrorResponse shape → Spec 03 §3.1, §3.2, §3.6
+  - **Learning**: env.ts centralises all process.env access — other modules must import `env` from env.ts, never read process.env directly. Dev mode uses placeholder values for non-critical vars so the app can start without all secrets.
+  - **Learning**: WS server intentionally omits CORS middleware (no browser-facing routes) and DB health check (no DB usage). HTTP server has both.
 - [ ] **3.2 Redis client setup** — ioredis with 2 instances per process (commands + pub/sub), session store (set/get/delete with TTL), chat cache (RPUSH/LRANGE with 24h TTL), rate limiting (INCR+EXPIRE fixed window for join/guide/participant limits) → Spec 09 §9.1, §9.2, §9.4, §9.7
 - [ ] **3.3 Redis pub/sub helpers** — channel naming (`event:{code}:incoming/messages/typing/control`), publish/subscribe helper functions, payload serialization/deserialization matching defined schemas → Spec 09 §9.3
 - [ ] **3.4 Session/auth middleware** — cookie-based participant auth (cookie name: cityroam_session, SameSite=None, Secure, HttpOnly, Domain from COOKIE_DOMAIN env), Redis fast path + DB fallback with re-population → Spec 03 §3.2, §3.4
@@ -112,6 +114,9 @@
 - [ ] **10.2 Structured logging** — ensure all API processes use structured JSON logging (method, path, status, duration, error details). Log LLM call durations. Log prompt-injection/inappropriate events for monitoring.
 
 ## Learnings
+- When creating a centralized env module, all other modules (redis, db, middleware) must import from it rather than reading `process.env` directly. Otherwise the validation layer is bypassed and env access is inconsistent.
+- CORS origin checks in dev mode should use URL parsing or exact hostname matching, not `String.includes()` — substring matching on "localhost" would accept malicious domains containing that substring.
+- Any package that imports a library at the TypeScript level should list it as an explicit dependency, even if it's available transitively. Transitive deps can disappear on version bumps.
 - Scaffolding packages should include all stack-defining dependencies from the spec (e.g., hono for api, tailwindcss for frontend packages), not just the build tooling. This avoids needing to retroactively add them during implementation of later tasks.
 - Tailwind v4 uses `@tailwindcss/vite` for Vite projects and `@tailwindcss/postcss` for Next.js projects.
 - When implementing typed interfaces, always cross-reference the full property definitions in the project-spec (§2.2.6), not just the spec summary in the deliverables section (§1.8). The deliverables section may say "typed properties per event" without listing the exact shapes.

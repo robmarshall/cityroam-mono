@@ -4,6 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev:http": "tsx watch src/http/index.ts",
+    "dev:ws": "tsx watch src/ws/index.ts",
+    "start:http": "node dist/http/index.js",
+    "start:ws": "node dist/ws/index.js",
     "dev": "tsx watch src/http/index.ts",
     "build": "tsc",
     "db:generate": "drizzle-kit generate",
@@ -18,6 +22,8 @@
     "@hono/node-server": "^1",
     "drizzle-orm": "^0.45.1",
     "hono": "^4",
+    "zod": "^3",
+    "ioredis": "^5.10.1",
     "postgres": "^3.4.8"
   },
   "devDependencies": {
