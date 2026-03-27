@@ -13,6 +13,10 @@ import { eventRoutes } from "../routes/events.js";
 import { checkoutRoutes } from "../routes/checkout.js";
 import { adminRoutes } from "../routes/admin.js";
 import { startExpirySweep, stopExpirySweep } from "../services/event-expiry.js";
+import {
+  startIncomingSubscriber,
+  stopIncomingSubscriber,
+} from "../services/pipeline/incoming-subscriber.js";
 
 const app = new Hono();
 
@@ -59,12 +63,16 @@ const port = Number(env.PORT);
 const server = serve({ fetch: app.fetch, port }, () => {
   console.log(`[http] server listening on port ${port}`);
   startExpirySweep();
+  startIncomingSubscriber().catch((err) =>
+    console.error("[http] failed to start incoming subscriber:", err),
+  );
 });
 
 // Graceful shutdown
 async function shutdown() {
   console.log("[http] shutting down...");
   stopExpirySweep();
+  await stopIncomingSubscriber();
   server.close();
   await Promise.all([disconnectRedis(), disconnectDb()]);
   process.exit(0);
