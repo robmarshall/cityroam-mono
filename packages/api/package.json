@@ -5,15 +5,25 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/http/index.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/db/migrate.ts",
+    "db:seed": "tsx src/db/seed.ts",
+    "db:push": "drizzle-kit push",
+    "migrate": "tsx src/db/migrate.ts",
+    "seed": "tsx src/db/seed.ts"
   },
   "dependencies": {
     "@cityroam/shared": "*",
+    "@hono/node-server": "^1",
+    "drizzle-orm": "^0.45.1",
     "hono": "^4",
-    "@hono/node-server": "^1"
+    "postgres": "^3.4.8"
   },
   "devDependencies": {
-    "typescript": "^5",
-    "tsx": "^4"
+    "@types/node": "^25.5.0",
+    "drizzle-kit": "^0.31.10",
+    "tsx": "^4",
+    "typescript": "^5"
   }
 }

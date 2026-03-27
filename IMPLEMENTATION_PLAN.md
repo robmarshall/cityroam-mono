@@ -20,11 +20,13 @@
 
 ## Phase 2: Data Layer (depends on Phase 1)
 
-- [ ] **2.1 Database schema & migrations** — Drizzle ORM schema + Drizzle Kit migrations for routes, events, participants (with left_reason), messages, stops, message_banks (with over-length type). Handle circular FK (events.lead_participant_id → participants) → Spec 02 §2.1-2.2
-- [ ] **2.2 Seed data — message banks** — all message bank entries enumerated in spec (7 success, 7 failure, 3 hint-exhausted, 3 clarification, 3 unknown-answer, 3 over-length, 3 opening templates, 3 completion templates) → Spec 02 §2.3
-- [ ] **2.3 Seed data — development route** — Leeds City Centre Discovery route with 3 stops (Town Hall, Corn Exchange, Leeds Minster) including directions, clues, accepted answers, hints, fun facts, and Google Maps links → Spec 02 §2.4
-- [ ] **2.4 Indexes** — events.code, events.status, messages(event_id, created_at), participants(event_id), participants(token), stops(route_id, stop_number), message_banks(type) → Spec 02 §2.5
-- [ ] **2.5 Database tests** — migration up/down, seed data (message banks + dev route), FK constraints, unique constraints, check constraints, circular FK → Spec 02 §Backend Tests
+- [x] **2.1 Database schema & migrations** — Drizzle ORM schema + Drizzle Kit migrations for routes, events, participants (with left_reason), messages, stops, message_banks (with over-length type). Handle circular FK (events.lead_participant_id → participants) → Spec 02 §2.1-2.2
+  - **Learning**: Drizzle's `.unique()` on a column creates both a UNIQUE constraint and an implicit index. Adding an explicit `index()` on the same column is redundant but harmless. The spec lists `events.code` under §2.5 Indexes — the unique constraint satisfies this.
+  - **Learning**: Circular FK between events.lead_participant_id → participants handled via deferred ALTER TABLE in migrate.ts (not in Drizzle schema), using `DEFERRABLE INITIALLY DEFERRED` with idempotent DO $$ block.
+- [x] **2.2 Seed data — message banks** — all message bank entries enumerated in spec (7 success, 7 failure, 3 hint-exhausted, 3 clarification, 3 unknown-answer, 3 over-length, 3 opening templates, 3 completion templates) → Spec 02 §2.3
+- [x] **2.3 Seed data — development route** — Leeds City Centre Discovery route with 3 stops (Town Hall, Corn Exchange, Leeds Minster) including directions, clues, accepted answers, hints, fun facts, and Google Maps links → Spec 02 §2.4
+- [x] **2.4 Indexes** — events.code, events.status, messages(event_id, created_at), participants(event_id), participants(token), stops(route_id, stop_number), message_banks(type) → Spec 02 §2.5
+- [x] **2.5 Database tests** — migration up/down, seed data (message banks + dev route), FK constraints, unique constraints, check constraints, circular FK → Spec 02 §Backend Tests
 
 ## Phase 3: API Core (depends on Phase 1 + 2)
 
