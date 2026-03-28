@@ -157,7 +157,7 @@
   - **Learning**: Redis healthcheck must account for `requirepass` — use `CMD-SHELL` with conditional auth flag: `redis-cli ${REDIS_PASSWORD:+-a $REDIS_PASSWORD} ping`.
 - [x] **9.4 Environment variable documentation** — all vars per package in .env.example (including REVIEW_LINK), startup validation in API listing all missing vars → Spec 10 §10.5
   - **Learning**: `validateEnv()` must check `process.env[key]` directly in production mode, not `getEnvValue()` which includes DEFAULTS. Otherwise DATABASE_URL/REDIS_URL silently fall back to localhost defaults in production, bypassing the whole point of startup validation.
-- [ ] **9.5 Database operations** — migrate/seed scripts runnable standalone and via docker-compose exec → Spec 10 §10.6
+- [x] **9.5 Database operations** — migrate/seed scripts runnable standalone and via docker-compose exec → Spec 10 §10.6
 
 ## Phase 10: Integration & Polish
 
