@@ -2,6 +2,9 @@ import { eq, and } from "drizzle-orm";
 import type { LLMService } from "../../llm/interface.js";
 import { db, schema } from "../../../db/index.js";
 import { writeGuideMessage, getRandomMessageBank } from "./answer-attempt.js";
+import { createLogger } from "../../../lib/logger.js";
+
+const log = createLogger("question");
 
 /**
  * Context needed by the question handler.
@@ -74,9 +77,7 @@ export async function handleQuestion(
   });
 
   if (!currentStopData) {
-    console.error(
-      `[question] Stop not found: route=${ctx.routeId} stop=${ctx.currentStop}`,
-    );
+    log.error("stop not found", { routeId: ctx.routeId, currentStop: ctx.currentStop });
     const fallback = await getRandomMessageBank("clarification");
     if (fallback) {
       await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback);
@@ -90,7 +91,7 @@ export async function handleQuestion(
   });
 
   if (!routeData) {
-    console.error(`[question] Route not found: ${ctx.routeId}`);
+    log.error("route not found", { routeId: ctx.routeId });
     const fallback = await getRandomMessageBank("clarification");
     if (fallback) {
       await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback);
@@ -131,7 +132,7 @@ export async function handleQuestion(
 
   // LLM failure / timeout → clarification bank
   if (result === null) {
-    console.error("[question] LLM returned null (timeout or failure)");
+    log.error("LLM returned null", { reason: "timeout or failure" });
     const clarification = await getRandomMessageBank("clarification");
     if (clarification) {
       await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, clarification);
@@ -158,7 +159,7 @@ export async function handleQuestion(
   }
 
   // Invalid JSON structure → clarification bank
-  console.error(`[question] Invalid LLM result: ${JSON.stringify(result)}`);
+  log.error("invalid LLM result", { result: JSON.stringify(result) });
   const clarification = await getRandomMessageBank("clarification");
   if (clarification) {
     await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, clarification);

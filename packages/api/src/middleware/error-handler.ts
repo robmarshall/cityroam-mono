@@ -1,6 +1,9 @@
 import type { ErrorHandler } from "hono";
 import { z } from "zod";
 import { env } from "../env.js";
+import { createLogger } from "../lib/logger.js";
+
+const log = createLogger("error-handler");
 
 export class AppError extends Error {
   constructor(
@@ -29,7 +32,7 @@ export const errorHandler: ErrorHandler = (err, c) => {
       ? "Internal server error"
       : err.message || "Internal server error";
 
-  console.error("[error]", err);
+  log.error("unhandled error", { error: err instanceof Error ? err.message : String(err), stack: err instanceof Error ? err.stack : undefined });
 
   return c.json({ error: message, code: "INTERNAL_ERROR" }, 500);
 };

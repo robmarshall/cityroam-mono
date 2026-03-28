@@ -12,8 +12,11 @@ import { env } from "../env.js";
 import { db } from "../db/index.js";
 import { events, routes } from "../db/schema/index.js";
 import { AppError } from "../middleware/index.js";
+import { createLogger } from "../lib/logger.js";
 
 export const checkoutRoutes = new Hono();
+
+const log = createLogger("checkout");
 
 function getStripe(): Stripe {
   return new Stripe(env.STRIPE_SECRET_KEY);
@@ -91,7 +94,7 @@ checkoutRoutes.post("/webhook/stripe", async (c) => {
     });
 
     if (!activeRoute) {
-      console.error("[webhook] No active route found — cannot create event");
+      log.error("no active route found");
       return c.json({ received: true }, 200);
     }
 
@@ -109,7 +112,7 @@ checkoutRoutes.post("/webhook/stripe", async (c) => {
     }
 
     if (!eventCode) {
-      console.error("[webhook] Failed to generate unique event code after 5 attempts");
+      log.error("failed to generate unique event code", { attempts: 5 });
       return c.json({ received: true }, 200);
     }
 
@@ -139,7 +142,7 @@ checkoutRoutes.post("/webhook/stripe", async (c) => {
           html: buildConfirmationEmail(eventUrl, eventCode),
         });
       } catch (emailErr) {
-        console.error("[webhook] Failed to send confirmation email:", emailErr);
+        log.error("failed to send confirmation email", { error: emailErr instanceof Error ? emailErr.message : String(emailErr) });
       }
     }
   }

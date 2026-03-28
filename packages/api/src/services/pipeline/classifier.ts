@@ -1,5 +1,8 @@
 import type { IntentClassification } from "@cityroam/shared/types";
 import type { LLMService } from "../llm/interface.js";
+import { createLogger } from "../../lib/logger.js";
+
+const log = createLogger("classifier");
 
 const VALID_INTENTS: ReadonlySet<IntentClassification["type"]> = new Set([
   "answer-attempt",
@@ -60,7 +63,7 @@ export async function classifyIntent(
   const result = await llm.classify(prompt);
 
   if (result === null) {
-    console.error("[classifier] LLM returned null (timeout or failure)");
+    log.error("LLM returned null", { reason: "timeout or failure" });
     return null;
   }
 
@@ -70,9 +73,7 @@ export async function classifyIntent(
     typeof parsed.type !== "string" ||
     !VALID_INTENTS.has(parsed.type as IntentClassification["type"])
   ) {
-    console.error(
-      `[classifier] Invalid classification result: ${JSON.stringify(result)}`,
-    );
+    log.error("invalid classification result", { result: JSON.stringify(result) });
     return null;
   }
 

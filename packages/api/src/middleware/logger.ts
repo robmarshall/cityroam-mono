@@ -1,4 +1,7 @@
 import type { MiddlewareHandler } from "hono";
+import { createLogger } from "../lib/logger.js";
+
+const log = createLogger("http");
 
 export const requestLogger: MiddlewareHandler = async (c, next) => {
   const start = Date.now();
@@ -7,16 +10,8 @@ export const requestLogger: MiddlewareHandler = async (c, next) => {
 
   await next();
 
-  const duration = Date.now() - start;
+  const duration_ms = Date.now() - start;
   const status = c.res.status;
 
-  console.log(
-    JSON.stringify({
-      timestamp: new Date().toISOString(),
-      method,
-      path,
-      status,
-      duration_ms: duration,
-    })
-  );
+  log.info("request", { method, path, status, duration_ms });
 };

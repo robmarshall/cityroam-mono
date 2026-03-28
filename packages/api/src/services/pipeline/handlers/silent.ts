@@ -1,8 +1,11 @@
 import { eq } from "drizzle-orm";
 import { createHash } from "node:crypto";
 import { db, schema } from "../../../db/index.js";
+import { createLogger } from "../../../lib/logger.js";
 import { removeMessage } from "../../../redis/index.js";
 import { writeGuideMessage, getRandomMessageBank } from "./answer-attempt.js";
+
+const log = createLogger("pipeline");
 
 /**
  * Context needed by silent/no-op handlers.
@@ -44,9 +47,7 @@ export async function handleOffTopic(
 export async function handleContextualComment(
   ctx: SilentHandlerContext,
 ): Promise<SilentHandlerResult> {
-  console.log(
-    `[contextual-comment] event=${ctx.eventCode} messageId=${ctx.messageId}`,
-  );
+  log.info("contextual-comment", { eventCode: ctx.eventCode, messageId: ctx.messageId });
   return { handled: true, deleted: false };
 }
 
@@ -65,9 +66,7 @@ export async function handlePromptInjection(
     .digest("hex")
     .slice(0, 16);
 
-  console.warn(
-    `[prompt-injection] event=${ctx.eventCode} messageId=${ctx.messageId} hash=${contentHash}`,
-  );
+  log.warn("prompt-injection detected", { eventCode: ctx.eventCode, messageId: ctx.messageId, contentHash: contentHash });
 
   // Delete from DB
   await db
@@ -88,9 +87,7 @@ export async function handlePromptInjection(
 export async function handleInappropriate(
   ctx: SilentHandlerContext,
 ): Promise<SilentHandlerResult> {
-  console.warn(
-    `[inappropriate] event=${ctx.eventCode} messageId=${ctx.messageId}`,
-  );
+  log.warn("inappropriate content detected", { eventCode: ctx.eventCode, messageId: ctx.messageId });
 
   // Delete from DB
   await db

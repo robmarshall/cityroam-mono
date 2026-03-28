@@ -5,6 +5,9 @@ import { db, schema } from "../../../db/index.js";
 import { appendMessage, publishMessage, publishControl } from "../../../redis/index.js";
 import { getRandomMessageBank } from "./answer-attempt.js";
 import { env } from "../../../env.js";
+import { createLogger } from "../../../lib/logger.js";
+
+const log = createLogger("hunt-completion");
 
 /**
  * Context needed by the hunt-completion handler.
@@ -41,7 +44,7 @@ export async function handleHuntCompletion(
   });
 
   if (!route) {
-    console.error(`[hunt-completion] Route not found: ${ctx.routeId}`);
+    log.error("route not found", { routeId: ctx.routeId });
     return;
   }
 

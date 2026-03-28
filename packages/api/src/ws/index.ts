@@ -19,6 +19,9 @@ import {
   closeAllConnections,
 } from "./connections.js";
 import { subscribeEvent, unsubscribeEvent, unsubscribeAll } from "./subscriptions.js";
+import { createLogger } from "../lib/logger.js";
+
+const log = createLogger("ws");
 
 validateEnv("ws");
 
@@ -88,10 +91,7 @@ app.get(
         try {
           await handleClientMessage(raw, data, session);
         } catch (err) {
-          console.error(
-            `[ws] message handler error for ${session.event_code}/${session.participant_id}:`,
-            err instanceof Error ? err.message : err,
-          );
+          log.error("message handler error", { eventCode: session.event_code, participantId: session.participant_id, error: err instanceof Error ? err.message : String(err) });
         }
       },
 
@@ -106,10 +106,7 @@ app.get(
       },
 
       onError(err) {
-        console.error(
-          `[ws] error for ${session.event_code}/${session.participant_id}:`,
-          err instanceof Error ? err.message : err,
-        );
+        log.error("websocket error", { eventCode: session.event_code, participantId: session.participant_id, error: err instanceof Error ? err.message : String(err) });
       },
     };
   }),
@@ -119,7 +116,7 @@ app.get(
 const port = Number(env.WS_PORT);
 
 const server = serve({ fetch: app.fetch, port }, () => {
-  console.log(`[ws] server listening on port ${port}`);
+  log.info("server listening", { port });
   startPresenceSweep(hasConnection, getAllEventCodes);
 });
 
@@ -127,7 +124,7 @@ injectWebSocket(server);
 
 // Graceful shutdown
 async function shutdown() {
-  console.log("[ws] shutting down...");
+  log.info("shutting down");
   stopPresenceSweep();
   closeAllConnections(1001, "Server shutting down");
   await unsubscribeAll();

@@ -21,6 +21,9 @@ import {
   startIdleTimer,
   stopIdleTimer,
 } from "../services/pipeline/idle-timer.js";
+import { createLogger } from "../lib/logger.js";
+
+const log = createLogger("http");
 
 validateEnv("http");
 
@@ -67,17 +70,17 @@ app.route("/", adminRoutes);
 const port = Number(env.PORT);
 
 const server = serve({ fetch: app.fetch, port }, () => {
-  console.log(`[http] server listening on port ${port}`);
+  log.info("server listening", { port });
   startExpirySweep();
   startIdleTimer();
   startIncomingSubscriber().catch((err) =>
-    console.error("[http] failed to start incoming subscriber:", err),
+    log.error("failed to start incoming subscriber", { error: err instanceof Error ? err.message : String(err) }),
   );
 });
 
 // Graceful shutdown
 async function shutdown() {
-  console.log("[http] shutting down...");
+  log.info("shutting down");
   stopExpirySweep();
   stopIdleTimer();
   await stopIncomingSubscriber();

@@ -1,6 +1,9 @@
 import { and, lt, notInArray } from "drizzle-orm";
 import { db } from "../db/index.js";
 import { events } from "../db/schema/index.js";
+import { createLogger } from "../lib/logger.js";
+
+const log = createLogger("expiry-sweep");
 
 const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
 
@@ -23,7 +26,7 @@ export async function sweepExpiredEvents(): Promise<number> {
     .returning({ id: events.id });
 
   if (result.length > 0) {
-    console.log(`[expiry-sweep] marked ${result.length} event(s) as EXPIRED`);
+    log.info("expired events", { count: result.length });
   }
 
   return result.length;
@@ -38,16 +41,16 @@ export function startExpirySweep(): void {
 
   // Run once on startup, then every 6 hours
   sweepExpiredEvents().catch((err) =>
-    console.error("[expiry-sweep] initial sweep failed:", err),
+    log.error("sweep failed", { error: err instanceof Error ? err.message : String(err) }),
   );
 
   sweepTimer = setInterval(() => {
     sweepExpiredEvents().catch((err) =>
-      console.error("[expiry-sweep] sweep failed:", err),
+      log.error("sweep failed", { error: err instanceof Error ? err.message : String(err) }),
     );
   }, SIX_HOURS_MS);
 
-  console.log("[expiry-sweep] background sweep started (every 6h)");
+  log.info("background sweep started", { interval_hours: 6 });
 }
 
 /**

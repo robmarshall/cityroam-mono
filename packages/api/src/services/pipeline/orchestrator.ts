@@ -1,3 +1,4 @@
+import { createLogger } from "../../lib/logger.js";
 import { eq, and } from "drizzle-orm";
 import type {
   IncomingMessagePayload,
@@ -37,6 +38,7 @@ import {
 } from "./handlers/silent.js";
 import type { SilentHandlerContext } from "./handlers/silent.js";
 
+const log = createLogger("pipeline");
 const llm = new DeepSeekService();
 
 /**
@@ -58,9 +60,7 @@ export async function processIncomingMessage(
     timestamp,
   } = payload;
 
-  console.log(
-    `[pipeline] received message from ${participantName} in event ${eventCode}: ${incomingMessageId}`,
-  );
+  log.info("received message", { participantName, eventCode, messageId: incomingMessageId });
 
   // Step 1: Load event data
   const event = await db.query.events.findFirst({
@@ -77,15 +77,13 @@ export async function processIncomingMessage(
   });
 
   if (!event) {
-    console.error(`[pipeline] Event not found: ${eventId}`);
+    log.error("event not found", { eventId });
     return;
   }
 
   // Step 2: Check event is IN_PROGRESS
   if (event.status !== "IN_PROGRESS") {
-    console.log(
-      `[pipeline] Ignoring message for event ${eventCode} with status ${event.status}`,
-    );
+    log.info("ignoring message for non-active event", { eventCode, status: event.status });
     return;
   }
 
@@ -275,10 +273,7 @@ export async function processIncomingMessage(
       removeFromIdleTracking(eventCode);
     }
   } catch (error) {
-    console.error(
-      `[pipeline] Error processing message ${incomingMessageId} in event ${eventCode}:`,
-      error,
-    );
+    log.error("pipeline error", { messageId: incomingMessageId, eventCode, error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
     throw error;
   } finally {
     // Step 14: Always turn off guide typing

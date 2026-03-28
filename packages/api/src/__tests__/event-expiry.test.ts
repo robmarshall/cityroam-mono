@@ -68,7 +68,10 @@ describe("sweepExpiredEvents", () => {
     await sweepExpiredEvents();
 
     expect(consoleSpy).toHaveBeenCalledWith(
-      "[expiry-sweep] marked 1 event(s) as EXPIRED",
+      expect.stringContaining('"component":"expiry-sweep"'),
+    );
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining('"count":1'),
     );
     consoleSpy.mockRestore();
   });
@@ -81,7 +84,7 @@ describe("sweepExpiredEvents", () => {
     await sweepExpiredEvents();
 
     expect(consoleSpy).not.toHaveBeenCalledWith(
-      expect.stringContaining("[expiry-sweep]"),
+      expect.stringContaining('"component":"expiry-sweep"'),
     );
     consoleSpy.mockRestore();
   });

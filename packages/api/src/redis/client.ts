@@ -1,5 +1,8 @@
 import Redis from "ioredis";
 import { env } from "../env.js";
+import { createLogger } from "../lib/logger.js";
+
+const log = createLogger("redis");
 
 export const redis = new Redis(env.REDIS_URL, {
   maxRetriesPerRequest: null,
@@ -12,11 +15,11 @@ export const redisSub = new Redis(env.REDIS_URL, {
 });
 
 redis.on("error", (err) => {
-  console.error("[redis:cmd] connection error:", err.message);
+  log.error("command client error", { error: err.message });
 });
 
 redisSub.on("error", (err) => {
-  console.error("[redis:sub] connection error:", err.message);
+  log.error("subscription client error", { error: err.message });
 });
 
 export async function disconnectRedis(): Promise<void> {

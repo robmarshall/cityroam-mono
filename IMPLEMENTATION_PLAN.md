@@ -161,7 +161,7 @@
 
 ## Phase 10: Integration & Polish
 
-- [ ] **10.1 End-to-end integration test** — user message flows from WS → Redis incoming → HTTP pipeline → Redis messages → WS broadcast. Verify full message lifecycle.
+- [x] **10.1 End-to-end integration test** — user message flows from WS → Redis incoming → HTTP pipeline → Redis messages → WS broadcast. Verify full message lifecycle.
 - [ ] **10.2 Structured logging** — ensure all API processes use structured JSON logging (method, path, status, duration, error details). Log LLM call durations. Log prompt-injection/inappropriate events for monitoring.
 
 ## Learnings
@@ -169,6 +169,7 @@
 - Referential integrity checks (e.g., "does this route have events?") must be inside the same transaction as the subsequent delete to avoid TOCTOU races.
 - Array-of-IDs reorder endpoints must validate uniqueness (`new Set(ids).size === ids.length`) in addition to checking membership and count. Duplicate IDs can pass length checks against the DB count in edge cases.
 - When creating a centralized env module, all other modules (redis, db, middleware) must import from it rather than reading `process.env` directly. Otherwise the validation layer is bypassed and env access is inconsistent.
+- When converting console.log/error to structured logging, avoid adding new fields (especially PII like emails) that weren't in the original log calls. Structured logs make it easy to add context, but PII in logs creates compliance risk.
 - CORS origin checks in dev mode should use URL parsing or exact hostname matching, not `String.includes()` — substring matching on "localhost" would accept malicious domains containing that substring.
 - Any package that imports a library at the TypeScript level should list it as an explicit dependency, even if it's available transitively. Transitive deps can disappear on version bumps.
 - Scaffolding packages should include all stack-defining dependencies from the spec (e.g., hono for api, tailwindcss for frontend packages), not just the build tooling. This avoids needing to retroactively add them during implementation of later tasks.

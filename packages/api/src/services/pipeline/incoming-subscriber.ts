@@ -1,5 +1,8 @@
 import { subscribeToIncomingPattern } from "../../redis/index.js";
 import { processIncomingMessage } from "./orchestrator.js";
+import { createLogger } from "../../lib/logger.js";
+
+const log = createLogger("incoming-sub");
 
 let unsubscribe: (() => Promise<void>) | null = null;
 
@@ -14,11 +17,11 @@ export async function startIncomingSubscriber(): Promise<void> {
 
   unsubscribe = await subscribeToIncomingPattern((_code, payload) => {
     processIncomingMessage(payload).catch((err) =>
-      console.error("[incoming-sub] pipeline error:", err),
+      log.error("pipeline error", { error: err instanceof Error ? err.message : String(err) }),
     );
   });
 
-  console.log("[incoming-sub] subscribed to event:*:incoming");
+  log.info("subscribed to event:*:incoming");
 }
 
 /**
@@ -28,6 +31,6 @@ export async function stopIncomingSubscriber(): Promise<void> {
   if (unsubscribe) {
     await unsubscribe();
     unsubscribe = null;
-    console.log("[incoming-sub] unsubscribed");
+    log.info("unsubscribed");
   }
 }

@@ -8,6 +8,9 @@ import { appendMessage, publishMessage } from "../../../redis/index.js";
 import { incrementGuideResponseCount } from "../guide-response-cap.js";
 import { handleHuntCompletion } from "./hunt-completion.js";
 import { env } from "../../../env.js";
+import { createLogger } from "../../../lib/logger.js";
+
+const log = createLogger("answer-attempt");
 
 /**
  * Context needed by the answer-attempt handler.
@@ -144,9 +147,7 @@ export async function handleAnswerAttempt(
   });
 
   if (!currentStopData) {
-    console.error(
-      `[answer-attempt] Stop not found: route=${ctx.routeId} stop=${ctx.currentStop}`,
-    );
+    log.error("stop not found", { routeId: ctx.routeId, currentStop: ctx.currentStop });
     const fallback = await getRandomMessageBank("clarification");
     if (fallback) {
       await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback);
@@ -179,7 +180,7 @@ export async function handleAnswerAttempt(
 
   // JSON parse failure or LLM failure → clarification bank (never silently drop answer attempts)
   if (matchResult === null) {
-    console.error("[answer-attempt] LLM returned null or invalid result, falling back to clarification");
+    log.error("LLM returned null or invalid result, falling back to clarification");
     const clarification = await getRandomMessageBank("clarification");
     if (clarification) {
       await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, clarification);

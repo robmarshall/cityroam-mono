@@ -1,5 +1,8 @@
 import { env } from "../../env.js";
+import { createLogger } from "../../lib/logger.js";
 import type { LLMService } from "./interface.js";
+
+const log = createLogger("llm");
 
 const DEEPSEEK_API_URL = "https://api.deepseek.com/chat/completions";
 const TIMEOUT_MS = 30_000;
@@ -14,6 +17,7 @@ export class DeepSeekService implements LLMService {
   async classify(prompt: string): Promise<object | null> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+    const start = Date.now();
 
     try {
       const response = await fetch(DEEPSEEK_API_URL, {
@@ -32,9 +36,7 @@ export class DeepSeekService implements LLMService {
       });
 
       if (!response.ok) {
-        console.error(
-          `[llm] DeepSeek API error: ${response.status} ${response.statusText}`,
-        );
+        log.error("API error", { status: response.status, statusText: response.statusText, duration_ms: Date.now() - start });
         return null;
       }
 
@@ -42,24 +44,26 @@ export class DeepSeekService implements LLMService {
       const content = data.choices?.[0]?.message?.content;
 
       if (!content) {
-        console.error("[llm] DeepSeek returned empty content");
+        log.error("empty content", { duration_ms: Date.now() - start });
         return null;
       }
 
-      return JSON.parse(content);
+      const result = JSON.parse(content);
+      log.info("call complete", { duration_ms: Date.now() - start });
+      return result;
     } catch (error: unknown) {
+      const duration_ms = Date.now() - start;
       if (error instanceof SyntaxError) {
-        // JSON parse failure — distinct from timeout/network failure
-        console.error("[llm] Failed to parse DeepSeek response as JSON");
+        log.error("JSON parse failure", { duration_ms });
         return null;
       }
 
       const isAbort =
         error instanceof DOMException && error.name === "AbortError";
       if (isAbort) {
-        console.error("[llm] DeepSeek call timed out after 30s");
+        log.error("timeout", { duration_ms, timeout_ms: TIMEOUT_MS });
       } else {
-        console.error("[llm] DeepSeek call failed:", error);
+        log.error("call failed", { duration_ms, error: error instanceof Error ? error.message : String(error) });
       }
       return null;
     } finally {

@@ -582,7 +582,7 @@ describe("silent handlers", () => {
 
     // Intent is logged for future analysis
     expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining("[contextual-comment]"),
+      expect.stringContaining('"message":"contextual-comment"'),
     );
 
     consoleSpy.mockRestore();

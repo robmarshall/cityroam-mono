@@ -4,6 +4,9 @@ import { db, schema } from "../../../db/index.js";
 import { env } from "../../../env.js";
 import { writeGuideMessage, getRandomMessageBank } from "./answer-attempt.js";
 import { handleHuntCompletion } from "./hunt-completion.js";
+import { createLogger } from "../../../lib/logger.js";
+
+const log = createLogger("hint-request");
 
 /**
  * Context needed by the hint-request handler.
@@ -44,9 +47,7 @@ export async function handleHintRequest(
   });
 
   if (!currentStopData) {
-    console.error(
-      `[hint-request] Stop not found: route=${ctx.routeId} stop=${ctx.currentStop}`,
-    );
+    log.error("stop not found", { routeId: ctx.routeId, currentStop: ctx.currentStop });
     const fallback = await getRandomMessageBank("clarification");
     if (fallback) {
       await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback);

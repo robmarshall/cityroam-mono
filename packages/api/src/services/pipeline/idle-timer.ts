@@ -6,6 +6,9 @@ import {
 import type { ChatMessagePayload } from "@cityroam/shared/types";
 import { db, schema } from "../../db/index.js";
 import { appendMessage, publishMessage } from "../../redis/index.js";
+import { createLogger } from "../../lib/logger.js";
+
+const log = createLogger("idle-timer");
 
 /**
  * Idle state for a tracked event.
@@ -174,7 +177,7 @@ async function scanIdleEvents(): Promise<void> {
         state.nudgeSent = true;
       }
     } catch (err) {
-      console.error(`[idle-timer] error scanning event ${eventCode}:`, err);
+      log.error("scan error", { eventCode, error: err instanceof Error ? err.message : String(err) });
     }
   }
 }
@@ -185,7 +188,7 @@ async function scanIdleEvents(): Promise<void> {
 export function startIdleTimer(): void {
   if (scanInterval) return; // Already running
   scanInterval = setInterval(scanIdleEvents, SCAN_INTERVAL_MS);
-  console.log("[idle-timer] started scanning every 60s");
+  log.info("started scanning", { interval_ms: SCAN_INTERVAL_MS });
 }
 
 /**
@@ -196,7 +199,7 @@ export function stopIdleTimer(): void {
     clearInterval(scanInterval);
     scanInterval = null;
     trackedEvents.clear();
-    console.log("[idle-timer] stopped");
+    log.info("stopped");
   }
 }
 

@@ -4,6 +4,9 @@ import { db } from "../db/index.js";
 import { participants } from "../db/schema/index.js";
 import { eq, and, count } from "drizzle-orm";
 import { publishControl } from "../redis/pubsub.js";
+import { createLogger } from "../lib/logger.js";
+
+const log = createLogger("presence");
 
 const PRESENCE_TTL_SECONDS = 900; // 15 minutes
 
@@ -108,10 +111,7 @@ export function startPresenceSweep(
           await redis.del(key);
         }
       } catch (err) {
-        console.error(
-          `[presence] sweep error for event ${code}:`,
-          err instanceof Error ? err.message : err,
-        );
+        log.error("sweep error", { eventCode: code, error: err instanceof Error ? err.message : String(err) });
       }
     }
   }, 60_000);

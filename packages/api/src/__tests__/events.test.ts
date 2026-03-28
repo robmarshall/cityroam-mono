@@ -99,7 +99,7 @@ function makeSessionData(overrides: Record<string, unknown> = {}) {
   return {
     participant_id: "p-id",
     event_id: "e-id",
-    event_code: "ABCD2345",
+    event_code: "abcd2345",
     display_name: "Lead",
     is_lead: true,
     ...overrides,
@@ -135,7 +135,7 @@ describe("GET /event/:code", () => {
   });
 
   it("returns event details (200) for valid code", async () => {
-    const event = mockEvent({ code: "ABCD2345", status: "NOT_STARTED" });
+    const event = mockEvent({ code: "abcd2345", status: "NOT_STARTED" });
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
 
     // resolveSession: no cookie, returns null (default mock).
@@ -146,11 +146,11 @@ describe("GET /event/:code", () => {
     ];
     mockedDb.where.mockResolvedValueOnce(participantRows);
 
-    const res = await app.request("/event/ABCD2345");
+    const res = await app.request("/event/abcd2345");
     expect(res.status).toBe(200);
 
     const body = await res.json();
-    expect(body.event.code).toBe("ABCD2345");
+    expect(body.event.code).toBe("abcd2345");
     expect(body.event.status).toBe("NOT_STARTED");
     expect(body.participants).toHaveLength(2);
     expect(body.lead_name).toBe("Alice");
@@ -160,7 +160,7 @@ describe("GET /event/:code", () => {
   it("returns 404 for missing event", async () => {
     mockedDb.query.events.findFirst.mockResolvedValueOnce(undefined);
 
-    const res = await app.request("/event/ABCD2345");
+    const res = await app.request("/event/abcd2345");
     expect(res.status).toBe(404);
 
     const body = await res.json();
@@ -168,7 +168,7 @@ describe("GET /event/:code", () => {
   });
 
   it("returns current_participant when session cookie matches event code", async () => {
-    const event = mockEvent({ code: "ABCD2345", status: "WAITING" });
+    const event = mockEvent({ code: "abcd2345", status: "WAITING" });
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
 
     // Mock getSession from the session module (used by middleware)
@@ -180,7 +180,7 @@ describe("GET /event/:code", () => {
     ];
     mockedDb.where.mockResolvedValueOnce(participantRows);
 
-    const res = await app.request("/event/ABCD2345", {
+    const res = await app.request("/event/abcd2345", {
       headers: { Cookie: "cityroam_session=fake-token" },
     });
     expect(res.status).toBe(200);
@@ -194,14 +194,14 @@ describe("GET /event/:code", () => {
   });
 
   it("returns current_participant: null without cookie", async () => {
-    const event = mockEvent({ code: "ABCD2345", status: "WAITING" });
+    const event = mockEvent({ code: "abcd2345", status: "WAITING" });
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
 
     // No cookie, so resolveSession returns null
     const participantRows: any[] = [];
     mockedDb.where.mockResolvedValueOnce(participantRows);
 
-    const res = await app.request("/event/ABCD2345");
+    const res = await app.request("/event/abcd2345");
     expect(res.status).toBe(200);
 
     const body = await res.json();
@@ -210,7 +210,7 @@ describe("GET /event/:code", () => {
 
   it("lazy expiry: marks expired event as EXPIRED on access", async () => {
     const event = mockEvent({
-      code: "ABCD2345",
+      code: "abcd2345",
       status: "IN_PROGRESS",
       expires_at: pastDate(1),
     });
@@ -222,7 +222,7 @@ describe("GET /event/:code", () => {
       .mockResolvedValueOnce(undefined) // expiry update chain
       .mockResolvedValueOnce([]); // participant list (empty)
 
-    const res = await app.request("/event/ABCD2345");
+    const res = await app.request("/event/abcd2345");
     expect(res.status).toBe(200);
 
     const body = await res.json();
@@ -249,7 +249,7 @@ describe("POST /event/:code/join", () => {
   });
 
   it("success - creates participant, returns 201 with participant/token/event/messages", async () => {
-    const event = mockEvent({ id: "e-id", code: "ABCD2345", status: "WAITING" });
+    const event = mockEvent({ id: "e-id", code: "abcd2345", status: "WAITING" });
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
 
     // 1) active count query: [{ count: 2 }]
@@ -275,7 +275,7 @@ describe("POST /event/:code/join", () => {
     // Messages from Redis
     vi.mocked(getMessages).mockResolvedValueOnce([]);
 
-    const res = await app.request("/event/ABCD2345/join", {
+    const res = await app.request("/event/abcd2345/join", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ display_name: "TestUser" }),
@@ -287,20 +287,20 @@ describe("POST /event/:code/join", () => {
     expect(body.participant.display_name).toBe("TestUser");
     expect(body.participant.is_lead).toBe(false);
     expect(body.token).toBeDefined();
-    expect(body.event.code).toBe("ABCD2345");
+    expect(body.event.code).toBe("abcd2345");
     expect(body.messages).toEqual([]);
     expect(body.participants).toHaveLength(2);
 
     // Session was stored in Redis (via events route, which uses redis/index.js)
     expect(setSession).toHaveBeenCalled();
     // Control event published
-    expect(publishControl).toHaveBeenCalledWith("ABCD2345", expect.objectContaining({
+    expect(publishControl).toHaveBeenCalledWith("abcd2345", expect.objectContaining({
       type: "participant_joined",
     }));
   });
 
   it("first joiner becomes lead, status transitions to WAITING", async () => {
-    const event = mockEvent({ id: "e-id", code: "ABCD2345", status: "NOT_STARTED" });
+    const event = mockEvent({ id: "e-id", code: "abcd2345", status: "NOT_STARTED" });
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
 
     // 1) active count: 0
@@ -326,7 +326,7 @@ describe("POST /event/:code/join", () => {
 
     vi.mocked(getMessages).mockResolvedValueOnce([]);
 
-    const res = await app.request("/event/ABCD2345/join", {
+    const res = await app.request("/event/abcd2345/join", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ display_name: "FirstUser" }),
@@ -350,7 +350,7 @@ describe("POST /event/:code/join", () => {
   it("rejects invalid display name (Zod error -> 400)", async () => {
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    const res = await app.request("/event/ABCD2345/join", {
+    const res = await app.request("/event/abcd2345/join", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ display_name: "" }),
@@ -372,13 +372,13 @@ describe("POST /event/:code/join", () => {
   });
 
   it("enforces MAX_PARTICIPANTS cap (403, EVENT_FULL)", async () => {
-    const event = mockEvent({ id: "e-id", code: "ABCD2345", status: "WAITING" });
+    const event = mockEvent({ id: "e-id", code: "abcd2345", status: "WAITING" });
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
 
     // active count: 10 (at MAX_PARTICIPANTS limit)
     mockedDb.where.mockResolvedValueOnce([{ count: 10 }]);
 
-    const res = await app.request("/event/ABCD2345/join", {
+    const res = await app.request("/event/abcd2345/join", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ display_name: "Latecomer" }),
@@ -393,7 +393,7 @@ describe("POST /event/:code/join", () => {
   it("rate limited - 429 when checkJoinRateLimit returns allowed: false", async () => {
     vi.mocked(checkJoinRateLimit).mockResolvedValueOnce({ allowed: false, current: 21, limit: 20 });
 
-    const res = await app.request("/event/ABCD2345/join", {
+    const res = await app.request("/event/abcd2345/join", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ display_name: "Spammer" }),
@@ -425,7 +425,7 @@ describe("POST /event/:code/start", () => {
       makeSessionData({ is_lead: false }) as any
     );
 
-    const res = await app.request("/event/ABCD2345/start", {
+    const res = await app.request("/event/abcd2345/start", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -445,10 +445,10 @@ describe("POST /event/:code/start", () => {
     );
 
     // Event is IN_PROGRESS, not WAITING
-    const event = mockEvent({ id: "e-id", code: "ABCD2345", status: "IN_PROGRESS", route_id: "r-id" });
+    const event = mockEvent({ id: "e-id", code: "abcd2345", status: "IN_PROGRESS", route_id: "r-id" });
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
 
-    const res = await app.request("/event/ABCD2345/start", {
+    const res = await app.request("/event/abcd2345/start", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -469,7 +469,7 @@ describe("POST /event/:code/start", () => {
 
     const event = mockEvent({
       id: "e-id",
-      code: "ABCD2345",
+      code: "abcd2345",
       status: "WAITING",
       route_id: "r-id",
     });
@@ -517,7 +517,7 @@ describe("POST /event/:code/start", () => {
     });
     mockedDb.returning.mockResolvedValueOnce([openingMessage]);
 
-    const res = await app.request("/event/ABCD2345/start", {
+    const res = await app.request("/event/abcd2345/start", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -532,21 +532,21 @@ describe("POST /event/:code/start", () => {
 
     // Verify message was cached and published
     expect(appendMessage).toHaveBeenCalledWith(
-      "ABCD2345",
+      "abcd2345",
       expect.objectContaining({
         sender_type: "guide",
         content: expect.stringContaining("Leeds"),
       })
     );
     expect(publishMessage).toHaveBeenCalledWith(
-      "ABCD2345",
+      "abcd2345",
       expect.objectContaining({
         sender_type: "guide",
       })
     );
 
     // Verify game_started control event
-    expect(publishControl).toHaveBeenCalledWith("ABCD2345", {
+    expect(publishControl).toHaveBeenCalledWith("abcd2345", {
       type: "game_started",
       data: { started_by: "Lead" },
     });
@@ -571,7 +571,7 @@ describe("POST /event/:code/leave", () => {
       makeSessionData({ is_lead: false, display_name: "Bob" }) as any
     );
 
-    const event = mockEvent({ id: "e-id", code: "ABCD2345", status: "IN_PROGRESS" });
+    const event = mockEvent({ id: "e-id", code: "abcd2345", status: "IN_PROGRESS" });
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
 
     // 1) update participant to inactive: db.update().set().where()
@@ -580,7 +580,7 @@ describe("POST /event/:code/leave", () => {
       .mockResolvedValueOnce(undefined)       // update participant chain
       .mockResolvedValueOnce([{ count: 3 }]); // count remaining
 
-    const res = await app.request("/event/ABCD2345/leave", {
+    const res = await app.request("/event/abcd2345/leave", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -605,7 +605,7 @@ describe("POST /event/:code/leave", () => {
     expect(deleteSession).toHaveBeenCalledWith("fake-token");
 
     // Control event published
-    expect(publishControl).toHaveBeenCalledWith("ABCD2345", {
+    expect(publishControl).toHaveBeenCalledWith("abcd2345", {
       type: "participant_left",
       data: {
         name: "Bob",
@@ -625,7 +625,7 @@ describe("POST /event/:code/leave", () => {
       makeSessionData({ participant_id: "lead-p", is_lead: true, display_name: "Lead" }) as any
     );
 
-    const event = mockEvent({ id: "e-id", code: "ABCD2345", status: "WAITING" });
+    const event = mockEvent({ id: "e-id", code: "abcd2345", status: "WAITING" });
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
 
     // Find next lead via db.query.participants.findFirst
@@ -646,7 +646,7 @@ describe("POST /event/:code/leave", () => {
       .mockResolvedValueOnce(undefined)       // update event lead
       .mockResolvedValueOnce([{ count: 2 }]); // count remaining
 
-    const res = await app.request("/event/ABCD2345/leave", {
+    const res = await app.request("/event/abcd2345/leave", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -661,7 +661,7 @@ describe("POST /event/:code/leave", () => {
     expect(mockedDb.set).toHaveBeenCalledWith({ lead_participant_id: "next-lead" });
 
     // Control event published
-    expect(publishControl).toHaveBeenCalledWith("ABCD2345", expect.objectContaining({
+    expect(publishControl).toHaveBeenCalledWith("abcd2345", expect.objectContaining({
       type: "participant_left",
     }));
   });
@@ -681,7 +681,7 @@ describe("GET /event/:code/messages", () => {
   });
 
   it("returns messages in order (200)", async () => {
-    const event = mockEvent({ id: "e-id", code: "ABCD2345" });
+    const event = mockEvent({ id: "e-id", code: "abcd2345" });
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
 
     const cachedMessages = [
@@ -708,7 +708,7 @@ describe("GET /event/:code/messages", () => {
     ];
     vi.mocked(getMessages).mockResolvedValueOnce(cachedMessages as any);
 
-    const res = await app.request("/event/ABCD2345/messages");
+    const res = await app.request("/event/abcd2345/messages");
     expect(res.status).toBe(200);
 
     const body = await res.json();
@@ -718,7 +718,7 @@ describe("GET /event/:code/messages", () => {
   });
 
   it("respects 'since' filter", async () => {
-    const event = mockEvent({ id: "e-id", code: "ABCD2345" });
+    const event = mockEvent({ id: "e-id", code: "abcd2345" });
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
 
     const sinceMessages = [
@@ -735,7 +735,7 @@ describe("GET /event/:code/messages", () => {
     ];
     vi.mocked(getMessagesSince).mockResolvedValueOnce(sinceMessages as any);
 
-    const res = await app.request("/event/ABCD2345/messages?since=2026-01-01T00:02:00.000Z");
+    const res = await app.request("/event/abcd2345/messages?since=2026-01-01T00:02:00.000Z");
     expect(res.status).toBe(200);
 
     const body = await res.json();
@@ -743,6 +743,6 @@ describe("GET /event/:code/messages", () => {
     expect(body.messages[0].id).toBe("msg-3");
 
     // Verify getMessagesSince was called with the code and since param
-    expect(getMessagesSince).toHaveBeenCalledWith("ABCD2345", "2026-01-01T00:02:00.000Z");
+    expect(getMessagesSince).toHaveBeenCalledWith("abcd2345", "2026-01-01T00:02:00.000Z");
   });
 });
