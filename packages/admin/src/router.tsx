@@ -2,10 +2,10 @@ import { lazy, Suspense } from "react";
 import {
   createBrowserRouter,
   Navigate,
-  Outlet,
   RouterProvider,
 } from "react-router-dom";
 import { useAuth } from "./contexts/AuthContext";
+import AdminLayout from "./components/AdminLayout";
 
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
@@ -34,7 +34,7 @@ function ProtectedLayout() {
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-  return <Outlet />;
+  return <AdminLayout />;
 }
 
 export const router = createBrowserRouter(

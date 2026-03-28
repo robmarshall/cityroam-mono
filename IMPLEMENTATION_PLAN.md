@@ -130,7 +130,7 @@
 ## Phase 8: Admin Panel (depends on Phase 3)
 
 - [x] **8.1 Admin package setup** — Vite + React + TypeScript + Tailwind (shared preset), localStorage JWT auth, fetch wrapper with Authorization header, no PostHog → Spec 08 §8.1-8.2 [COMPLETE]
-- [ ] **8.2 Login + protected routes** — login form (POST /admin/login), JWT storage in localStorage, 401 redirect, logout → Spec 08 §8.2
+- [x] **8.2 Login + protected routes** — login form (POST /admin/login), JWT storage in localStorage, 401 redirect, logout → Spec 08 §8.2
 - [ ] **8.3 Dashboard** — event counts by status (stat cards), revenue count, recent events list (last 10, click to detail) → Spec 08 §8.3
 - [ ] **8.4 Events management** — paginated table with status filter, detail view (full event info, Stripe payment ID with copy button, participants table, message log) → Spec 08 §8.4-8.5
 - [ ] **8.5 Route & stop editor** — route form (shared routeSchema validation, auto-calculated total_stops), stops list with drag reorder, stop editor (tag/chip input for accepted_answers, ordered hints 2-3, image upload to S3 with preview, google_maps_link) → Spec 08 §8.6-8.8
