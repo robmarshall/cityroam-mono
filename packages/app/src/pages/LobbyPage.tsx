@@ -11,7 +11,11 @@ import { api, ApiError } from "../lib/api";
 import { trackEvent } from "../lib/analytics";
 import { useParticipant } from "../contexts/ParticipantContext";
 import { useEvent } from "../contexts/EventContext";
-import { useWebSocket } from "../contexts/WebSocketContext";
+import {
+  useWebSocket,
+  REJOIN_CLOSE_CODES,
+  FATAL_CLOSE_CODES,
+} from "../contexts/WebSocketContext";
 
 export default function LobbyPage() {
   const { code } = useParams<{ code: string }>();
@@ -24,7 +28,14 @@ export default function LobbyPage() {
     addParticipant,
     removeParticipant,
   } = useEvent();
-  const { status: wsStatus, lastMessage, connect, disconnect } = useWebSocket();
+  const {
+    status: wsStatus,
+    lastMessage,
+    closeCode,
+    maxAttemptsReached,
+    connect,
+    manualRetry,
+  } = useWebSocket();
 
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +55,14 @@ export default function LobbyPage() {
       navigate(`/hunt/${code}/complete`, { replace: true });
     }
   }, [event?.status, code, navigate]);
+
+  // Handle close codes — redirect to join on auth failure
+  useEffect(() => {
+    if (closeCode === null || !code) return;
+    if (REJOIN_CLOSE_CODES.has(closeCode)) {
+      navigate(`/hunt/${code}`, { replace: true });
+    }
+  }, [closeCode, code, navigate]);
 
   // Connect WebSocket on mount
   useEffect(() => {
@@ -141,8 +160,41 @@ export default function LobbyPage() {
   const leadName = participants.find((p) => p.is_lead)?.display_name;
   const activeParticipants = participants.filter((p) => p.is_active);
 
+  // Determine fatal error message from close code
+  const fatalMessage =
+    closeCode !== null && FATAL_CLOSE_CODES.has(closeCode)
+      ? closeCode === 4003
+        ? "Event not found."
+        : closeCode === 4004
+          ? "This event has ended."
+          : "You are no longer active in this event."
+      : null;
+
   return (
     <div className="flex min-h-svh flex-col bg-white">
+      {/* Connection status banners */}
+      {wsStatus === "reconnecting" && (
+        <div className="shrink-0 bg-yellow-400 px-4 py-1.5 text-center text-sm font-medium text-yellow-900">
+          Reconnecting...
+        </div>
+      )}
+      {maxAttemptsReached && (
+        <div className="flex shrink-0 items-center justify-center gap-3 bg-red-500 px-4 py-2 text-center text-sm font-medium text-white">
+          <span>Unable to reconnect</span>
+          <button
+            onClick={manualRetry}
+            className="rounded-md bg-white/20 px-3 py-0.5 text-sm font-semibold hover:bg-white/30"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+      {fatalMessage && (
+        <div className="shrink-0 bg-red-500 px-4 py-1.5 text-center text-sm font-medium text-white">
+          {fatalMessage}
+        </div>
+      )}
+
       <div className="flex flex-1 flex-col items-center justify-center px-4">
         <h1 className="mb-6 text-center text-2xl font-bold text-gray-900">
           Waiting for players
@@ -194,11 +246,6 @@ export default function LobbyPage() {
         {/* Connection status */}
         {wsStatus === "connecting" && (
           <p className="mt-4 text-sm text-gray-400">Connecting...</p>
-        )}
-        {wsStatus === "disconnected" && (
-          <p className="mt-4 text-sm text-red-400">
-            Disconnected. Trying to reconnect...
-          </p>
         )}
       </div>
     </div>

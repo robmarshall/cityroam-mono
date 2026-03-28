@@ -5,8 +5,14 @@ import {
   useCallback,
   useRef,
   useEffect,
+  useState,
   type ReactNode,
 } from "react";
+import { WEBSOCKET_PING_INTERVAL_MS } from "@cityroam/shared/constants";
+import type { ChatMessagePayload, MessageHistoryResponse } from "@cityroam/shared/types";
+import { POSTHOG_EVENTS } from "@cityroam/shared/analytics";
+import { api } from "../lib/api";
+import { trackEvent } from "../lib/analytics";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -18,21 +24,61 @@ type ConnectionStatus =
   | "connected"
   | "reconnecting";
 
+/** Custom close codes sent by the WS server */
+const CLOSE_CODE_INVALID_TOKEN = 4001;
+const CLOSE_CODE_EXPIRED_SESSION = 4002;
+const CLOSE_CODE_NOT_FOUND = 4003;
+const CLOSE_CODE_COMPLETED_OR_EXPIRED = 4004;
+const CLOSE_CODE_NOT_ACTIVE = 4005;
+
+/** Close codes that should redirect to the join screen (auth failure) */
+export const REJOIN_CLOSE_CODES = new Set([CLOSE_CODE_INVALID_TOKEN, CLOSE_CODE_EXPIRED_SESSION]);
+
+/** Close codes that should show an error and NOT reconnect */
+export const FATAL_CLOSE_CODES = new Set([
+  CLOSE_CODE_NOT_FOUND,
+  CLOSE_CODE_COMPLETED_OR_EXPIRED,
+  CLOSE_CODE_NOT_ACTIVE,
+]);
+
+/** All custom close codes — never auto-reconnect on these */
+const NO_RECONNECT_CODES = new Set([...REJOIN_CLOSE_CODES, ...FATAL_CLOSE_CODES]);
+
+const MAX_RECONNECT_ATTEMPTS = 10;
+
+/** Exponential backoff delays: 1s, 2s, 4s, 8s, 16s (capped) */
+function getBackoffDelay(attempt: number): number {
+  return Math.min(1000 * Math.pow(2, attempt), 16_000);
+}
+
 interface WebSocketState {
   status: ConnectionStatus;
   lastMessage: unknown;
+  closeCode: number | null;
+  reconnectAttempt: number;
+  maxAttemptsReached: boolean;
 }
 
 type WebSocketAction =
   | { type: "STATUS_CHANGE"; status: ConnectionStatus }
-  | { type: "MESSAGE_RECEIVED"; message: unknown };
+  | { type: "MESSAGE_RECEIVED"; message: unknown }
+  | { type: "CLOSE_CODE"; code: number | null }
+  | { type: "RECONNECT_ATTEMPT"; attempt: number }
+  | { type: "MAX_ATTEMPTS_REACHED" }
+  | { type: "RESET_RECONNECT" };
 
-interface WebSocketContextValue {
+export interface WebSocketContextValue {
   status: ConnectionStatus;
   lastMessage: unknown;
+  closeCode: number | null;
+  reconnectAttempt: number;
+  maxAttemptsReached: boolean;
+  catchUpMessages: ChatMessagePayload[];
   send: (message: object) => void;
   connect: (code: string, token: string) => void;
   disconnect: () => void;
+  manualRetry: () => void;
+  clearCatchUpMessages: () => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -42,6 +88,9 @@ interface WebSocketContextValue {
 const initialState: WebSocketState = {
   status: "disconnected",
   lastMessage: null,
+  closeCode: null,
+  reconnectAttempt: 0,
+  maxAttemptsReached: false,
 };
 
 function wsReducer(
@@ -53,6 +102,14 @@ function wsReducer(
       return { ...state, status: action.status };
     case "MESSAGE_RECEIVED":
       return { ...state, lastMessage: action.message };
+    case "CLOSE_CODE":
+      return { ...state, closeCode: action.code };
+    case "RECONNECT_ATTEMPT":
+      return { ...state, reconnectAttempt: action.attempt };
+    case "MAX_ATTEMPTS_REACHED":
+      return { ...state, maxAttemptsReached: true, status: "disconnected" };
+    case "RESET_RECONNECT":
+      return { ...state, reconnectAttempt: 0, maxAttemptsReached: false, closeCode: null };
   }
 }
 
@@ -71,60 +128,221 @@ const WS_BASE_URL: string = import.meta.env.VITE_WS_URL ?? "ws://localhost:3001"
 export function WebSocketProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(wsReducer, initialState);
   const socketRef = useRef<WebSocket | null>(null);
+  const pingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const connectionParamsRef = useRef<{ code: string; token: string } | null>(null);
+  const reconnectAttemptRef = useRef(0);
+  const lastMessageTimestampRef = useRef<string | null>(null);
+  const disconnectedAtRef = useRef<number | null>(null);
+  const [catchUpMessages, setCatchUpMessages] = useState<ChatMessagePayload[]>([]);
+  const intentionalDisconnectRef = useRef(false);
 
-  const disconnect = useCallback(() => {
-    if (socketRef.current) {
-      socketRef.current.close();
-      socketRef.current = null;
+  // Use a ref for connectInternal so the close handler always calls the latest version
+  const connectInternalRef = useRef<(code: string, token: string, isReconnect: boolean) => void>(
+    () => {},
+  );
+
+  // -------------------------------------------------------------------------
+  // Cleanup helpers
+  // -------------------------------------------------------------------------
+
+  const clearPingInterval = useCallback(() => {
+    if (pingIntervalRef.current) {
+      clearInterval(pingIntervalRef.current);
+      pingIntervalRef.current = null;
     }
-    dispatch({ type: "STATUS_CHANGE", status: "disconnected" });
   }, []);
 
-  const connect = useCallback(
+  const clearReconnectTimer = useCallback(() => {
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
+  }, []);
+
+  // -------------------------------------------------------------------------
+  // Ping keep-alive
+  // -------------------------------------------------------------------------
+
+  const startPing = useCallback(() => {
+    clearPingInterval();
+    pingIntervalRef.current = setInterval(() => {
+      if (socketRef.current?.readyState === WebSocket.OPEN) {
+        socketRef.current.send(JSON.stringify({ type: "ping", payload: {} }));
+      }
+    }, WEBSOCKET_PING_INTERVAL_MS);
+  }, [clearPingInterval]);
+
+  // -------------------------------------------------------------------------
+  // Catch-up messages after reconnection
+  // -------------------------------------------------------------------------
+
+  const fetchCatchUpMessages = useCallback(async (code: string) => {
+    const since = lastMessageTimestampRef.current;
+    if (!since) return;
+
+    try {
+      const path = `/event/${encodeURIComponent(code)}/messages?since=${encodeURIComponent(since)}`;
+      const response = await api.get<MessageHistoryResponse>(path);
+      if (response.messages.length > 0) {
+        setCatchUpMessages(response.messages);
+
+        // Update last message timestamp to the newest catch-up message
+        const newest = response.messages[response.messages.length - 1];
+        lastMessageTimestampRef.current = newest.created_at;
+      }
+    } catch {
+      // Catch-up failure is non-fatal — messages may arrive via WS
+    }
+  }, []);
+
+  // -------------------------------------------------------------------------
+  // Reconnect scheduling
+  // -------------------------------------------------------------------------
+
+  const scheduleReconnect = useCallback(
     (code: string, token: string) => {
+      clearReconnectTimer();
+
+      const attempt = reconnectAttemptRef.current;
+      if (attempt >= MAX_RECONNECT_ATTEMPTS) {
+        dispatch({ type: "MAX_ATTEMPTS_REACHED" });
+        return;
+      }
+
+      reconnectAttemptRef.current = attempt + 1;
+      dispatch({ type: "RECONNECT_ATTEMPT", attempt: attempt + 1 });
+      dispatch({ type: "STATUS_CHANGE", status: "reconnecting" });
+
+      const delay = getBackoffDelay(attempt);
+      reconnectTimerRef.current = setTimeout(() => {
+        connectInternalRef.current(code, token, true);
+      }, delay);
+    },
+    [clearReconnectTimer],
+  );
+
+  // -------------------------------------------------------------------------
+  // Core connection logic
+  // -------------------------------------------------------------------------
+
+  const connectInternal = useCallback(
+    (code: string, token: string, isReconnect: boolean) => {
       // Close any existing connection first
       if (socketRef.current) {
         socketRef.current.close();
         socketRef.current = null;
       }
 
-      dispatch({ type: "STATUS_CHANGE", status: "connecting" });
+      dispatch({ type: "STATUS_CHANGE", status: isReconnect ? "reconnecting" : "connecting" });
 
       const url = `${WS_BASE_URL}/ws/${encodeURIComponent(code)}?token=${encodeURIComponent(token)}`;
       const ws = new WebSocket(url);
       socketRef.current = ws;
 
       ws.addEventListener("open", () => {
-        if (socketRef.current === ws) {
-          dispatch({ type: "STATUS_CHANGE", status: "connected" });
+        if (socketRef.current !== ws) return;
+
+        dispatch({ type: "STATUS_CHANGE", status: "connected" });
+        dispatch({ type: "RESET_RECONNECT" });
+        reconnectAttemptRef.current = 0;
+
+        // Start ping keep-alive
+        startPing();
+
+        // If reconnecting, fetch catch-up messages and track analytics
+        if (isReconnect) {
+          fetchCatchUpMessages(code);
+
+          const offlineDuration = disconnectedAtRef.current
+            ? Math.round((Date.now() - disconnectedAtRef.current) / 1000)
+            : 0;
+          trackEvent(POSTHOG_EVENTS.PARTICIPANT_RECONNECTED, {
+            event_code: code,
+            offline_duration_seconds: offlineDuration,
+          });
+          disconnectedAtRef.current = null;
         }
       });
 
       ws.addEventListener("message", (event: MessageEvent) => {
-        if (socketRef.current === ws) {
-          try {
-            const data: unknown = JSON.parse(String(event.data));
-            dispatch({ type: "MESSAGE_RECEIVED", message: data });
-          } catch {
-            // Non-JSON message — store raw string
-            dispatch({ type: "MESSAGE_RECEIVED", message: event.data });
+        if (socketRef.current !== ws) return;
+        try {
+          const data = JSON.parse(String(event.data)) as { type: string; payload: unknown };
+          dispatch({ type: "MESSAGE_RECEIVED", message: data });
+
+          // Track last chat_message timestamp for catch-up
+          if (data.type === "chat_message") {
+            const payload = data.payload as ChatMessagePayload;
+            lastMessageTimestampRef.current = payload.created_at;
           }
+        } catch {
+          dispatch({ type: "MESSAGE_RECEIVED", message: event.data });
         }
       });
 
-      ws.addEventListener("close", () => {
-        if (socketRef.current === ws) {
-          socketRef.current = null;
+      ws.addEventListener("close", (event: CloseEvent) => {
+        if (socketRef.current !== ws) return;
+        socketRef.current = null;
+        clearPingInterval();
+
+        const closeCode = event.code;
+        dispatch({ type: "CLOSE_CODE", code: closeCode });
+
+        // If intentional disconnect, don't reconnect
+        if (intentionalDisconnectRef.current) {
           dispatch({ type: "STATUS_CHANGE", status: "disconnected" });
+          intentionalDisconnectRef.current = false;
+          return;
         }
+
+        // Custom close codes — don't reconnect
+        if (NO_RECONNECT_CODES.has(closeCode)) {
+          dispatch({ type: "STATUS_CHANGE", status: "disconnected" });
+          return;
+        }
+
+        // Unexpected disconnect — attempt reconnect
+        disconnectedAtRef.current = Date.now();
+        scheduleReconnect(code, token);
       });
 
       ws.addEventListener("error", () => {
-        // The close event will fire after error, so we let close handle cleanup.
+        // The close event fires after error, so let close handle cleanup.
       });
     },
-    [],
+    [startPing, clearPingInterval, fetchCatchUpMessages, scheduleReconnect],
   );
+
+  // Keep connectInternalRef in sync
+  connectInternalRef.current = connectInternal;
+
+  // -------------------------------------------------------------------------
+  // Public API
+  // -------------------------------------------------------------------------
+
+  const connect = useCallback(
+    (code: string, token: string) => {
+      connectionParamsRef.current = { code, token };
+      intentionalDisconnectRef.current = false;
+      reconnectAttemptRef.current = 0;
+      dispatch({ type: "RESET_RECONNECT" });
+      connectInternal(code, token, false);
+    },
+    [connectInternal],
+  );
+
+  const disconnect = useCallback(() => {
+    intentionalDisconnectRef.current = true;
+    clearReconnectTimer();
+    clearPingInterval();
+    if (socketRef.current) {
+      socketRef.current.close();
+      socketRef.current = null;
+    }
+    dispatch({ type: "STATUS_CHANGE", status: "disconnected" });
+    connectionParamsRef.current = null;
+  }, [clearReconnectTimer, clearPingInterval]);
 
   const send = useCallback((message: object) => {
     if (socketRef.current?.readyState === WebSocket.OPEN) {
@@ -132,24 +350,44 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const manualRetry = useCallback(() => {
+    const params = connectionParamsRef.current;
+    if (!params) return;
+    reconnectAttemptRef.current = 0;
+    dispatch({ type: "RESET_RECONNECT" });
+    connectInternal(params.code, params.token, true);
+  }, [connectInternal]);
+
+  const clearCatchUpMessages = useCallback(() => {
+    setCatchUpMessages([]);
+  }, []);
+
   // Clean up on unmount
   useEffect(() => {
     return () => {
+      clearPingInterval();
+      clearReconnectTimer();
       if (socketRef.current) {
         socketRef.current.close();
         socketRef.current = null;
       }
     };
-  }, []);
+  }, [clearPingInterval, clearReconnectTimer]);
 
   return (
     <WebSocketContext
       value={{
         status: state.status,
         lastMessage: state.lastMessage,
+        closeCode: state.closeCode,
+        reconnectAttempt: state.reconnectAttempt,
+        maxAttemptsReached: state.maxAttemptsReached,
+        catchUpMessages,
         send,
         connect,
         disconnect,
+        manualRetry,
+        clearCatchUpMessages,
       }}
     >
       {children}

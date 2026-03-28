@@ -16,10 +16,15 @@ import type {
   ParticipantJoinedPayload,
   ParticipantLeftPayload,
   HuntCompletePayload,
+  ErrorPayload,
 } from "@cityroam/shared/types";
 import { useParticipant } from "../contexts/ParticipantContext";
 import { useEvent } from "../contexts/EventContext";
-import { useWebSocket } from "../contexts/WebSocketContext";
+import {
+  useWebSocket,
+  REJOIN_CLOSE_CODES,
+  FATAL_CLOSE_CODES,
+} from "../contexts/WebSocketContext";
 
 // 5-minute gap for timestamp separators
 const TIMESTAMP_GAP_MS = 5 * 60 * 1000;
@@ -27,18 +32,39 @@ const TIMESTAMP_GAP_MS = 5 * 60 * 1000;
 // Max textarea height (~3 lines)
 const MAX_INPUT_HEIGHT = 72;
 
+// How long to show the "Connected" banner after reconnecting
+const CONNECTED_BANNER_DURATION_MS = 2000;
+
+const FATAL_CLOSE_MESSAGES: Record<number, string> = {
+  4003: "Event not found.",
+  4004: "This event has ended.",
+  4005: "You are no longer active in this event.",
+};
+
 export default function ChatPage() {
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
   const { participant } = useParticipant();
   const { event } = useEvent();
-  const { lastMessage, send } = useWebSocket();
+  const {
+    status: wsStatus,
+    lastMessage,
+    closeCode,
+    maxAttemptsReached,
+    catchUpMessages,
+    send,
+    manualRetry,
+    clearCatchUpMessages,
+  } = useWebSocket();
 
   const [messages, setMessages] = useState<ChatMessagePayload[]>([]);
   const [inputText, setInputText] = useState("");
   const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
   const [hasNewMessages, setHasNewMessages] = useState(false);
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
+  const [showConnectedBanner, setShowConnectedBanner] = useState(false);
+  const [errorToast, setErrorToast] = useState<string | null>(null);
+  const wasReconnectingRef = useRef(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -51,6 +77,40 @@ export default function ChatPage() {
       navigate(`/hunt/${code ?? ""}`, { replace: true });
     }
   }, [participant, event, code, navigate]);
+
+  // Handle close codes — redirect to join on auth failure
+  useEffect(() => {
+    if (closeCode === null || !code) return;
+    if (REJOIN_CLOSE_CODES.has(closeCode)) {
+      navigate(`/hunt/${code}`, { replace: true });
+    }
+  }, [closeCode, code, navigate]);
+
+  // Track reconnecting → connected transition for banner
+  useEffect(() => {
+    if (wsStatus === "reconnecting") {
+      wasReconnectingRef.current = true;
+    } else if (wsStatus === "connected" && wasReconnectingRef.current) {
+      wasReconnectingRef.current = false;
+      setShowConnectedBanner(true);
+      const timer = setTimeout(() => setShowConnectedBanner(false), CONNECTED_BANNER_DURATION_MS);
+      return () => clearTimeout(timer);
+    }
+  }, [wsStatus]);
+
+  // Process catch-up messages from reconnection
+  useEffect(() => {
+    if (catchUpMessages.length === 0) return;
+
+    setMessages((prev) => {
+      const existingIds = new Set(prev.map((m) => m.id));
+      const newMessages = catchUpMessages.filter((m) => !existingIds.has(m.id));
+      if (newMessages.length === 0) return prev;
+      return [...prev, ...newMessages];
+    });
+
+    clearCatchUpMessages();
+  }, [catchUpMessages, clearCatchUpMessages]);
 
   // Handle incoming WebSocket messages
   useEffect(() => {
@@ -93,6 +153,12 @@ export default function ChatPage() {
           replace: true,
           state: { summary: payload.summary },
         });
+        break;
+      }
+      case "error": {
+        const payload = msg.payload as ErrorPayload;
+        setErrorToast(payload.message);
+        setTimeout(() => setErrorToast(null), 4000);
         break;
       }
     }
@@ -181,8 +247,49 @@ export default function ChatPage() {
 
   const isValidMessage = chatMessageSchema.safeParse(inputText.trim()).success;
 
+  // Determine if we should show a fatal error for close codes
+  const fatalMessage =
+    closeCode !== null && FATAL_CLOSE_CODES.has(closeCode)
+      ? FATAL_CLOSE_MESSAGES[closeCode] ?? "Connection closed."
+      : null;
+
   return (
     <div ref={chatContainerRef} className="flex h-svh flex-col bg-white">
+      {/* Connection status banners */}
+      {wsStatus === "reconnecting" && (
+        <div className="shrink-0 bg-yellow-400 px-4 py-1.5 text-center text-sm font-medium text-yellow-900">
+          Reconnecting...
+        </div>
+      )}
+      {showConnectedBanner && wsStatus === "connected" && (
+        <div className="shrink-0 bg-green-500 px-4 py-1.5 text-center text-sm font-medium text-white">
+          Connected
+        </div>
+      )}
+      {maxAttemptsReached && (
+        <div className="flex shrink-0 items-center justify-center gap-3 bg-red-500 px-4 py-2 text-center text-sm font-medium text-white">
+          <span>Unable to reconnect</span>
+          <button
+            onClick={manualRetry}
+            className="rounded-md bg-white/20 px-3 py-0.5 text-sm font-semibold hover:bg-white/30"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+      {fatalMessage && (
+        <div className="shrink-0 bg-red-500 px-4 py-1.5 text-center text-sm font-medium text-white">
+          {fatalMessage}
+        </div>
+      )}
+
+      {/* Error toast */}
+      {errorToast && (
+        <div className="absolute left-1/2 top-4 z-20 -translate-x-1/2 rounded-lg bg-red-600 px-4 py-2 text-sm text-white shadow-lg">
+          {errorToast}
+        </div>
+      )}
+
       {/* Messages area */}
       <div
         ref={messagesContainerRef}
