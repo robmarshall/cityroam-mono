@@ -21,7 +21,9 @@
     "seed": "npm -w @cityroam/api run seed",
     "docker:build": "docker compose up -d --build",
     "docker:shell": "docker compose exec dev bash",
-    "docker:down": "docker compose down"
+    "docker:down": "docker compose down",
+    "docker:migrate": "docker compose exec api-http npm run migrate",
+    "docker:seed": "docker compose exec api-http npm run seed"
   },
   "devDependencies": {
     "npm-run-all2": "^7.0.2",
