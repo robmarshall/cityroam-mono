@@ -148,7 +148,7 @@
 
 ## Phase 9: Deployment & Infrastructure (finalize after all above)
 
-- [ ] **9.1 Full docker-compose** — all 7 services (postgres, redis, api-http, api-ws, app, marketing, admin), shared network, volumes for hot reload, HTTPS notes for SameSite=None → Spec 10 §10.1
+- [x] **9.1 Full docker-compose** — all 7 services (postgres, redis, api-http, api-ws, app, marketing, admin), shared network, volumes for hot reload, HTTPS notes for SameSite=None → Spec 10 §10.1
 - [ ] **9.2 Production Dockerfiles** — multi-stage builds: API (shared for http/ws commands), marketing (Next.js), app (Vite → nginx with SPA fallback at /app/), admin (Vite → nginx with SPA fallback) → Spec 10 §10.2
 - [ ] **9.3 Coolify deployment config** — service definitions, Traefik routing rules (marketing root, /app/* to app, api.domain to HTTP, api.domain/ws/* to WS, admin.domain), SSL via Let's Encrypt → Spec 10 §10.3-10.4
 - [ ] **9.4 Environment variable documentation** — all vars per package in .env.example (including REVIEW_LINK), startup validation in API listing all missing vars → Spec 10 §10.5
