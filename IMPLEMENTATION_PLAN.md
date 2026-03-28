@@ -152,7 +152,9 @@
 - [x] **9.2 Production Dockerfiles** — multi-stage builds: API (shared for http/ws commands), marketing (Next.js), app (Vite → nginx with SPA fallback at /app/), admin (Vite → nginx with SPA fallback) → Spec 10 §10.2
   - **Learning**: When Dockerfiles copy individual source files (not whole directories), new config files are easy to miss. The marketing Dockerfile missed `postcss.config.mjs` needed for Tailwind CSS v4. Consider copying the whole package directory after package.json to avoid this class of bug.
   - **Learning**: nginx configs for SPA apps should use `try_files $uri /app/index.html` (without `$uri/`) to avoid directory listing risk. Production hardening (security headers, gzip, asset caching, server_tokens off) can be added in a follow-up pass.
-- [ ] **9.3 Coolify deployment config** — service definitions, Traefik routing rules (marketing root, /app/* to app, api.domain to HTTP, api.domain/ws/* to WS, admin.domain), SSL via Let's Encrypt → Spec 10 §10.3-10.4
+- [x] **9.3 Coolify deployment config** — service definitions, Traefik routing rules (marketing root, /app/* to app, api.domain to HTTP, api.domain/ws/* to WS, admin.domain), SSL via Let's Encrypt → Spec 10 §10.3-10.4
+  - **Learning**: Subdomain-deployed SPAs (admin) must use `base: "/"` in Vite and serve from nginx root `/`, not a path prefix like `/admin/`. Path prefixes are only for apps served under a parent domain path (like app at `domain.com/app/`). The Dockerfile copy destination, vite base, and nginx location block must all agree.
+  - **Learning**: Redis healthcheck must account for `requirepass` — use `CMD-SHELL` with conditional auth flag: `redis-cli ${REDIS_PASSWORD:+-a $REDIS_PASSWORD} ping`.
 - [ ] **9.4 Environment variable documentation** — all vars per package in .env.example (including REVIEW_LINK), startup validation in API listing all missing vars → Spec 10 §10.5
 - [ ] **9.5 Database operations** — migrate/seed scripts runnable standalone and via docker-compose exec → Spec 10 §10.6
 
