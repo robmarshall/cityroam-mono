@@ -29,7 +29,7 @@ RUN npm run build --workspace=packages/admin
 FROM nginx:alpine
 
 # Copy built assets
-COPY --from=builder /app/packages/admin/dist /usr/share/nginx/html/admin
+COPY --from=builder /app/packages/admin/dist /usr/share/nginx/html
 
 # Copy nginx config with SPA fallback
 COPY packages/admin/nginx.conf /etc/nginx/conf.d/default.conf
