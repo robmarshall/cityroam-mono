@@ -136,7 +136,7 @@ export default function EventsListPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
-                {data.events.map((event) => {
+                {data.events.map((event: AdminEventListResponse["events"][number]) => {
                   const colors = STATUS_COLORS[event.status];
                   return (
                     <tr

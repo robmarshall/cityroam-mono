@@ -1,44 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { AdminDashboardResponse } from "@cityroam/shared/types";
-import type { EventStatus } from "@cityroam/shared/types";
 import { api, ApiError } from "../lib/api";
 import { useAuthFetch } from "../contexts/AuthContext";
-
-const STATUS_LABELS: Record<EventStatus, string> = {
-  NOT_STARTED: "Not Started",
-  WAITING: "Waiting",
-  IN_PROGRESS: "In Progress",
-  COMPLETED: "Completed",
-  EXPIRED: "Expired",
-};
-
-const STATUS_COLORS: Record<EventStatus, { bg: string; text: string }> = {
-  NOT_STARTED: { bg: "bg-gray-100", text: "text-gray-700" },
-  WAITING: { bg: "bg-yellow-100", text: "text-yellow-700" },
-  IN_PROGRESS: { bg: "bg-blue-100", text: "text-blue-700" },
-  COMPLETED: { bg: "bg-green-100", text: "text-green-700" },
-  EXPIRED: { bg: "bg-red-100", text: "text-red-700" },
-};
-
-const STATUS_ORDER: EventStatus[] = [
-  "NOT_STARTED",
-  "WAITING",
-  "IN_PROGRESS",
-  "COMPLETED",
-  "EXPIRED",
-];
-
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+import { STATUS_LABELS, STATUS_COLORS, STATUS_ORDER, formatDate } from "../lib/event-utils";
 
 export default function DashboardPage() {
   const [data, setData] = useState<AdminDashboardResponse | null>(null);
@@ -160,7 +125,7 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
-                {data.recent_events.map((event) => {
+                {data.recent_events.map((event: AdminDashboardResponse["recent_events"][number]) => {
                   const colors = STATUS_COLORS[event.status];
                   return (
                     <tr

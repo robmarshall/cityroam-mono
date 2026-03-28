@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { eq, sql, count, desc, and, asc, inArray } from "drizzle-orm";
+import { eq, sql, count, desc, and, asc, inArray, type SQL } from "drizzle-orm";
 import { adminLoginSchema, adminUpdateEventStatusSchema, routeSchema, stopSchema, stopReorderSchema, imageUploadRequestSchema, messageBankSchema } from "@cityroam/shared/validation";
 import { generatePresignedUploadUrl } from "../services/s3.js";
 import type { AdminDashboardResponse, AdminEventListResponse, AdminEventDetailResponse, AdminRouteDetailResponse, AdminRouteListResponse, AdminMessageBankListResponse } from "@cityroam/shared/types";
@@ -500,14 +500,14 @@ adminRoutes.post("/admin/routes/:id/stops", adminAuth, async (c) => {
     throw new AppError(404, "Route not found", "ROUTE_NOT_FOUND");
   }
 
-  // Determine next stop_number
-  const maxStopResult = await db
-    .select({ max: sql<number>`COALESCE(MAX(${stops.stop_number}), 0)` })
-    .from(stops)
-    .where(eq(stops.route_id, routeId));
-  const nextStopNumber = Number(maxStopResult[0]?.max ?? 0) + 1;
-
   const [stop] = await db.transaction(async (tx) => {
+    // Determine next stop_number inside transaction to prevent race conditions
+    const maxStopResult = await tx
+      .select({ max: sql<number>`COALESCE(MAX(${stops.stop_number}), 0)` })
+      .from(stops)
+      .where(eq(stops.route_id, routeId));
+    const nextStopNumber = Number(maxStopResult[0]?.max ?? 0) + 1;
+
     const [inserted] = await tx
       .insert(stops)
       .values({
@@ -575,31 +575,31 @@ adminRoutes.put("/admin/routes/:id/stops/reorder", adminAuth, async (c) => {
     throw new AppError(400, "Duplicate stop IDs", "DUPLICATE_STOP_IDS");
   }
 
-  // Verify all stop_ids belong to this route
-  const routeStops = await db
-    .select({ id: stops.id })
-    .from(stops)
-    .where(eq(stops.route_id, routeId));
-
-  const routeStopIds = new Set(routeStops.map((s) => s.id));
-
-  for (const stopId of stop_ids) {
-    if (!routeStopIds.has(stopId)) {
-      throw new AppError(400, `Stop ${stopId} does not belong to this route`, "INVALID_STOP_ID");
-    }
-  }
-
-  if (stop_ids.length !== routeStops.length) {
-    throw new AppError(400, "All stops must be included in the reorder", "INCOMPLETE_STOP_LIST");
-  }
-
-  // Update stop_numbers atomically using a CASE expression to avoid
-  // unique constraint violations when stops swap positions
+  // Validate and update atomically inside a single transaction to avoid TOCTOU race
   await db.transaction(async (tx) => {
+    const routeStops = await tx
+      .select({ id: stops.id })
+      .from(stops)
+      .where(eq(stops.route_id, routeId));
+
+    const routeStopIds = new Set(routeStops.map((s) => s.id));
+
+    for (const stopId of stop_ids) {
+      if (!routeStopIds.has(stopId)) {
+        throw new AppError(400, `Stop ${stopId} does not belong to this route`, "INVALID_STOP_ID");
+      }
+    }
+
+    if (stop_ids.length !== routeStops.length) {
+      throw new AppError(400, "All stops must be included in the reorder", "INCOMPLETE_STOP_LIST");
+    }
+
+    // Update stop_numbers atomically using a CASE expression to avoid
+    // unique constraint violations when stops swap positions
     const now = new Date();
     const cases = stop_ids
-      .map((id, i) => sql`WHEN ${stops.id} = ${id} THEN ${i + 1}`)
-      .reduce((acc, c) => sql`${acc} ${c}`);
+      .map((id: string, i: number) => sql`WHEN ${stops.id} = ${id} THEN ${i + 1}`)
+      .reduce((acc: SQL, c: SQL) => sql`${acc} ${c}`);
 
     await tx
       .update(stops)

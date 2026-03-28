@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import type {
   AdminEventDetailResponse,
   SenderType,
+  Participant,
 } from "@cityroam/shared/types";
 import { api, ApiError } from "../lib/api";
 import { useAuthFetch } from "../contexts/AuthContext";
@@ -182,7 +183,7 @@ export default function EventDetailPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
-                {participants.map((p) => (
+                {participants.map((p: Participant) => (
                   <tr key={p.id}>
                     <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900">
                       {p.display_name}
