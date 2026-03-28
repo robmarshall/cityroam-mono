@@ -166,6 +166,13 @@ adminRoutes.get("/admin/events/:id", adminAuth, async (c) => {
     throw new AppError(404, "Event not found", "EVENT_NOT_FOUND");
   }
 
+  const route = event.route_id
+    ? await db.query.routes.findFirst({
+        where: eq(routes.id, event.route_id),
+        columns: { name: true },
+      })
+    : null;
+
   const eventParticipants = await db
     .select()
     .from(participants)
@@ -197,6 +204,7 @@ adminRoutes.get("/admin/events/:id", adminAuth, async (c) => {
       stripe_session_id: event.stripe_session_id,
       stripe_payment_id: event.stripe_payment_id,
     },
+    route_name: route?.name ?? null,
     participants: eventParticipants.map((p) => ({
       id: p.id,
       event_id: p.event_id,
