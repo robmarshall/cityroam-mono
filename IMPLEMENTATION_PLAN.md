@@ -162,7 +162,7 @@
 ## Phase 10: Integration & Polish
 
 - [x] **10.1 End-to-end integration test** — user message flows from WS → Redis incoming → HTTP pipeline → Redis messages → WS broadcast. Verify full message lifecycle.
-- [ ] **10.2 Structured logging** — ensure all API processes use structured JSON logging (method, path, status, duration, error details). Log LLM call durations. Log prompt-injection/inappropriate events for monitoring.
+- [x] **10.2 Structured logging** — ensure all API processes use structured JSON logging (method, path, status, duration, error details). Log LLM call durations. Log prompt-injection/inappropriate events for monitoring.
 
 ## Learnings
 - Multi-step DB mutations (reorder, delete-with-renumber, create-with-counter-update) MUST use `db.transaction()`. The `stops` table has a UNIQUE constraint on `(route_id, stop_number)`, so sequential stop_number updates during reorder will cause constraint violations when stops swap positions. Fix: either use a single UPDATE with CASE expression or set temp values first, always inside a transaction. This applies to ALL insert+update pairs, not just updates.
