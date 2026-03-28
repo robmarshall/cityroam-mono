@@ -1,7 +1,7 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { sql } from "drizzle-orm";
-import { env } from "../env.js";
+import { env, validateEnv } from "../env.js";
 import { db, disconnectDb } from "../db/index.js";
 import { redis, disconnectRedis } from "../redis/index.js";
 import {
@@ -21,6 +21,8 @@ import {
   startIdleTimer,
   stopIdleTimer,
 } from "../services/pipeline/idle-timer.js";
+
+validateEnv("http");
 
 const app = new Hono();
 

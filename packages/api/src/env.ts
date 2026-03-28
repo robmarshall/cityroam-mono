@@ -9,29 +9,29 @@ const DEFAULTS: Record<string, string> = {
 
 const DEV_PLACEHOLDER = "dev-placeholder";
 
-const REQUIRED_VARS = [
+const HTTP_REQUIRED_VARS = [
   "DATABASE_URL",
   "REDIS_URL",
   "STRIPE_SECRET_KEY",
   "STRIPE_WEBHOOK_SECRET",
   "STRIPE_PRICE_ID",
   "RESEND_API_KEY",
-  "RESEND_FROM_EMAIL",
   "DEEPSEEK_API_KEY",
   "AWS_ACCESS_KEY_ID",
   "AWS_SECRET_ACCESS_KEY",
   "AWS_S3_BUCKET",
   "AWS_REGION",
-  "AWS_CDN_BASE_URL",
   "ADMIN_USERNAME",
   "ADMIN_PASSWORD",
   "SESSION_SECRET",
   "COOKIE_DOMAIN",
   "REVIEW_LINK",
-  "MARKETING_URL",
-  "APP_URL",
-  "ADMIN_URL",
-  "BASE_DOMAIN",
+] as const;
+
+const WS_REQUIRED_VARS = [
+  "DATABASE_URL",
+  "REDIS_URL",
+  "COOKIE_DOMAIN",
 ] as const;
 
 /** Vars that must be set even in development mode. */
@@ -41,18 +41,22 @@ function getEnvValue(key: string): string | undefined {
   return process.env[key] ?? DEFAULTS[key];
 }
 
-export function validateEnv(): void {
+export function validateEnv(target: "http" | "ws"): void {
   const isDev =
     (process.env.NODE_ENV ?? DEFAULTS.NODE_ENV) === "development";
 
-  const requiredToCheck = isDev ? DEV_REQUIRED_VARS : REQUIRED_VARS;
+  const fullList = target === "http" ? HTTP_REQUIRED_VARS : WS_REQUIRED_VARS;
+  const requiredToCheck = isDev ? DEV_REQUIRED_VARS : fullList;
 
-  const missing = requiredToCheck.filter((key) => !getEnvValue(key));
+  const missing = requiredToCheck.filter((key) =>
+    isDev ? !getEnvValue(key) : !process.env[key],
+  );
 
   if (missing.length > 0) {
-    throw new Error(
+    console.error(
       `Missing required environment variables:\n${missing.map((k) => `  - ${k}`).join("\n")}`,
     );
+    process.exit(1);
   }
 }
 
@@ -100,8 +104,5 @@ function buildEnv() {
     WS_PORT: process.env.WS_PORT ?? DEFAULTS.WS_PORT,
   } as const;
 }
-
-// Validate on import
-validateEnv();
 
 export const env: ReturnType<typeof buildEnv> = buildEnv();

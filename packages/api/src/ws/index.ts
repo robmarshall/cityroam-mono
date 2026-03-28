@@ -1,7 +1,7 @@
 import { serve } from "@hono/node-server";
 import { createNodeWebSocket } from "@hono/node-ws";
 import { Hono } from "hono";
-import { env } from "../env.js";
+import { env, validateEnv } from "../env.js";
 import { redis, disconnectRedis } from "../redis/index.js";
 import { disconnectDb } from "../db/index.js";
 import { requestLogger, errorHandler } from "../middleware/index.js";
@@ -19,6 +19,8 @@ import {
   closeAllConnections,
 } from "./connections.js";
 import { subscribeEvent, unsubscribeEvent, unsubscribeAll } from "./subscriptions.js";
+
+validateEnv("ws");
 
 const app = new Hono();
 
