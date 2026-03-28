@@ -149,7 +149,7 @@
 ## Phase 9: Deployment & Infrastructure (finalize after all above)
 
 - [x] **9.1 Full docker-compose** — all 7 services (postgres, redis, api-http, api-ws, app, marketing, admin), shared network, volumes for hot reload, HTTPS notes for SameSite=None → Spec 10 §10.1
-- [ ] **9.2 Production Dockerfiles** — multi-stage builds: API (shared for http/ws commands), marketing (Next.js), app (Vite → nginx with SPA fallback at /app/), admin (Vite → nginx with SPA fallback) → Spec 10 §10.2
+- [x] **9.2 Production Dockerfiles** — multi-stage builds: API (shared for http/ws commands), marketing (Next.js), app (Vite → nginx with SPA fallback at /app/), admin (Vite → nginx with SPA fallback) → Spec 10 §10.2
   - **Learning**: When Dockerfiles copy individual source files (not whole directories), new config files are easy to miss. The marketing Dockerfile missed `postcss.config.mjs` needed for Tailwind CSS v4. Consider copying the whole package directory after package.json to avoid this class of bug.
   - **Learning**: nginx configs for SPA apps should use `try_files $uri /app/index.html` (without `$uri/`) to avoid directory listing risk. Production hardening (security headers, gzip, asset caching, server_tokens off) can be added in a follow-up pass.
 - [ ] **9.3 Coolify deployment config** — service definitions, Traefik routing rules (marketing root, /app/* to app, api.domain to HTTP, api.domain/ws/* to WS, admin.domain), SSL via Let's Encrypt → Spec 10 §10.3-10.4
