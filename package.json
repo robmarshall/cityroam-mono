@@ -9,12 +9,16 @@
     "dev:marketing": "npm -w @cityroam/marketing run dev",
     "dev:app": "npm -w @cityroam/app run dev",
     "dev:api": "npm -w @cityroam/api run dev",
+    "dev:api:http": "npm -w @cityroam/api run dev:http",
+    "dev:api:ws": "npm -w @cityroam/api run dev:ws",
     "dev:admin": "npm -w @cityroam/admin run dev",
     "build": "npm -ws --if-present run build",
     "test": "npm -ws --if-present run test",
     "typecheck": "npm -ws --if-present run typecheck",
     "loop": "bash run.sh",
     "loop:plan": "bash run.sh plan",
+    "migrate": "npm -w @cityroam/api run migrate",
+    "seed": "npm -w @cityroam/api run seed",
     "docker:build": "docker compose up -d --build",
     "docker:shell": "docker compose exec dev bash",
     "docker:down": "docker compose down"
@@ -22,5 +26,8 @@
   "devDependencies": {
     "npm-run-all2": "^7.0.2",
     "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.60.0"
   }
 }
