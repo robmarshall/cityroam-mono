@@ -7,10 +7,20 @@ import {
   type ChangeEvent,
 } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Dialog, DialogPanel, DialogBackdrop } from "@headlessui/react";
+import {
+  Dialog,
+  DialogPanel,
+  DialogBackdrop,
+  DialogTitle,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+} from "@headlessui/react";
 import { chatMessageSchema } from "@cityroam/shared/validation";
 import { formatTimestamp } from "@cityroam/shared/utils";
 import { TYPING_INDICATOR_DEBOUNCE_MS } from "@cityroam/shared/constants";
+import { POSTHOG_EVENTS } from "@cityroam/shared/analytics";
 import type {
   ChatMessagePayload,
   WebSocketMessage,
@@ -21,6 +31,8 @@ import type {
   GuideTypingPayload,
   ParticipantTypingPayload,
 } from "@cityroam/shared/types";
+import { api } from "../lib/api";
+import { trackEvent } from "../lib/analytics";
 import { useParticipant } from "../contexts/ParticipantContext";
 import { useEvent } from "../contexts/EventContext";
 import {
@@ -47,8 +59,8 @@ const FATAL_CLOSE_MESSAGES: Record<number, string> = {
 export default function ChatPage() {
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
-  const { participant } = useParticipant();
-  const { event } = useEvent();
+  const { participant, clearParticipant } = useParticipant();
+  const { event, clearEvent } = useEvent();
   const {
     status: wsStatus,
     lastMessage,
@@ -56,6 +68,7 @@ export default function ChatPage() {
     maxAttemptsReached,
     catchUpMessages,
     send,
+    disconnect,
     manualRetry,
     clearCatchUpMessages,
   } = useWebSocket();
@@ -69,6 +82,8 @@ export default function ChatPage() {
   const [errorToast, setErrorToast] = useState<string | null>(null);
   const [guideTyping, setGuideTyping] = useState(false);
   const [participantsTyping, setParticipantsTyping] = useState<Map<string, number>>(new Map());
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
+  const [leaving, setLeaving] = useState(false);
   const participantsTypingRef = useRef(participantsTyping);
   participantsTypingRef.current = participantsTyping;
   const wasReconnectingRef = useRef(false);
@@ -322,6 +337,26 @@ export default function ChatPage() {
     setHasNewMessages(false);
   };
 
+  // Leave hunt
+  const handleLeave = useCallback(async () => {
+    if (!code || leaving) return;
+    setLeaving(true);
+    try {
+      await api.post(`/event/${code}/leave`);
+      trackEvent(POSTHOG_EVENTS.HUNT_ABANDONED, {
+        event_code: code,
+        current_stop: event?.current_stop ?? 1,
+        duration_minutes: 0,
+      });
+    } catch {
+      // Best-effort — proceed with local cleanup regardless
+    }
+    disconnect();
+    clearParticipant();
+    clearEvent();
+    navigate(`/hunt/${code}`, { replace: true });
+  }, [code, leaving, event, disconnect, clearParticipant, clearEvent, navigate]);
+
   if (!participant || !event || !code) return null;
 
   const isValidMessage = chatMessageSchema.safeParse(inputText.trim()).success;
@@ -334,6 +369,33 @@ export default function ChatPage() {
 
   return (
     <div ref={chatContainerRef} className="flex h-svh flex-col bg-white">
+      {/* Header with menu */}
+      <div className="flex shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 py-2">
+        <h1 className="text-sm font-semibold text-gray-900">City Roam</h1>
+        <Menu as="div" className="relative">
+          <MenuButton className="rounded-full p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700" aria-label="Options menu">
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="12" cy="5" r="2" />
+              <circle cx="12" cy="12" r="2" />
+              <circle cx="12" cy="19" r="2" />
+            </svg>
+          </MenuButton>
+          <MenuItems
+            transition
+            className="absolute right-0 z-30 mt-1 w-40 origin-top-right rounded-lg bg-white shadow-lg ring-1 ring-black/5 transition duration-100 data-[closed]:scale-95 data-[closed]:opacity-0"
+          >
+            <MenuItem>
+              <button
+                onClick={() => setShowLeaveDialog(true)}
+                className="flex w-full items-center px-4 py-2.5 text-sm text-red-600 data-[focus]:bg-gray-50"
+              >
+                Leave Hunt
+              </button>
+            </MenuItem>
+          </MenuItems>
+        </Menu>
+      </div>
+
       {/* Connection status banners */}
       {wsStatus === "reconnecting" && (
         <div className="shrink-0 bg-yellow-400 px-4 py-1.5 text-center text-sm font-medium text-yellow-900">
@@ -457,6 +519,41 @@ export default function ChatPage() {
           </button>
         </div>
       </div>
+
+      {/* Leave confirmation dialog */}
+      <Dialog
+        open={showLeaveDialog}
+        onClose={() => !leaving && setShowLeaveDialog(false)}
+        className="relative z-50"
+      >
+        <DialogBackdrop className="fixed inset-0 bg-black/40" />
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <DialogPanel className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+            <DialogTitle className="text-lg font-semibold text-gray-900">
+              Leave Hunt?
+            </DialogTitle>
+            <p className="mt-2 text-sm text-gray-600">
+              You'll be removed from the hunt. You can rejoin later by opening the link again.
+            </p>
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => setShowLeaveDialog(false)}
+                disabled={leaving}
+                className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleLeave}
+                disabled={leaving}
+                className="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                {leaving ? "Leaving..." : "Leave"}
+              </button>
+            </div>
+          </DialogPanel>
+        </div>
+      </Dialog>
 
       {/* Fullscreen image overlay */}
       <Dialog

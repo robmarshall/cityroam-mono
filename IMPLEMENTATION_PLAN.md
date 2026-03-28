@@ -111,7 +111,9 @@
 - [x] **6.5 WebSocket integration** — connect/send/receive, auto-reconnect with exponential backoff (1s→16s, max 10 attempts), close-code-aware behaviour (4001/4002 → rejoin, 4003-4005 → error), catch-up via GET messages?since=, manual retry button after max attempts → Spec 06 §6.5
   - **Learning**: Connection banners (reconnecting/connected/fatal) were added in ChatPage and LobbyPage as part of WS integration. Task 6.6 should focus on typing indicators only, since connection state UI is already done. Fatal close code message mapping is duplicated between ChatPage (Record) and LobbyPage (inline ternary) — 6.6 could unify this.
 - [x] **6.6 Typing indicators + connection state** — guide pulsing dots in bubble, participant "[Name] is typing..." / "Multiple people are typing...", reconnecting/connected banners, debounce at TYPING_INDICATOR_DEBOUNCE_MS → Spec 06 §6.5
-- [ ] **6.7 Leave hunt + completion screen** — leave menu (three dots) with confirmation dialog (POST /event/:code/leave), completion screen with summary + Google/TripAdvisor review links + Web Share API button → Spec 06 §6.5-6.6
+- [x] **6.7 Leave hunt + completion screen** — leave menu (three dots) with confirmation dialog (POST /event/:code/leave), completion screen with summary + configurable review link (VITE_REVIEW_LINK) + Web Share API button → Spec 06 §6.5-6.6
+  - **Learning**: Frontend review link buttons on CompletePage must use configurable URLs (VITE_REVIEW_LINK), not hardcoded generic URLs. The backend already uses REVIEW_LINK env var for completion message templates — the frontend buttons should be consistent with this configuration.
+  - **Learning**: The spec mentions both Google Reviews and TripAdvisor, but a single configurable VITE_REVIEW_LINK env var is cleaner than hardcoding multiple platforms. The operator sets whichever review link they prefer.
 
 ## Phase 7: Marketing Site (depends on Phase 3)
 

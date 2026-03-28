@@ -5,6 +5,7 @@ interface ImportMetaEnv {
   readonly VITE_WS_URL: string;
   readonly VITE_POSTHOG_KEY?: string;
   readonly VITE_POSTHOG_HOST?: string;
+  readonly VITE_REVIEW_LINK?: string;
 }
 
 interface ImportMeta {
