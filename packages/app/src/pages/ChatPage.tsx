@@ -10,6 +10,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Dialog, DialogPanel, DialogBackdrop } from "@headlessui/react";
 import { chatMessageSchema } from "@cityroam/shared/validation";
 import { formatTimestamp } from "@cityroam/shared/utils";
+import { TYPING_INDICATOR_DEBOUNCE_MS } from "@cityroam/shared/constants";
 import type {
   ChatMessagePayload,
   WebSocketMessage,
@@ -17,6 +18,8 @@ import type {
   ParticipantLeftPayload,
   HuntCompletePayload,
   ErrorPayload,
+  GuideTypingPayload,
+  ParticipantTypingPayload,
 } from "@cityroam/shared/types";
 import { useParticipant } from "../contexts/ParticipantContext";
 import { useEvent } from "../contexts/EventContext";
@@ -64,7 +67,13 @@ export default function ChatPage() {
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
   const [showConnectedBanner, setShowConnectedBanner] = useState(false);
   const [errorToast, setErrorToast] = useState<string | null>(null);
+  const [guideTyping, setGuideTyping] = useState(false);
+  const [participantsTyping, setParticipantsTyping] = useState<Map<string, number>>(new Map());
+  const participantsTypingRef = useRef(participantsTyping);
+  participantsTypingRef.current = participantsTyping;
   const wasReconnectingRef = useRef(false);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isTypingRef = useRef(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -145,6 +154,15 @@ export default function ChatPage() {
           ...prev,
           makeSystemMessage(`${payload.name} left the hunt`),
         ]);
+        // Clear typing indicator for the leaving participant
+        setParticipantsTyping((prev) => {
+          const existingTimer = prev.get(payload.name);
+          if (existingTimer == null) return prev;
+          clearTimeout(existingTimer);
+          const next = new Map(prev);
+          next.delete(payload.name);
+          return next;
+        });
         break;
       }
       case "hunt_complete": {
@@ -152,6 +170,36 @@ export default function ChatPage() {
         navigate(`/hunt/${code}/complete`, {
           replace: true,
           state: { summary: payload.summary },
+        });
+        break;
+      }
+      case "guide_typing": {
+        const payload = msg.payload as GuideTypingPayload;
+        setGuideTyping(payload.is_typing);
+        break;
+      }
+      case "participant_typing": {
+        const payload = msg.payload as ParticipantTypingPayload;
+        setParticipantsTyping((prev) => {
+          const next = new Map(prev);
+          if (payload.is_typing) {
+            // Set a timeout to auto-clear this participant's typing state
+            const existingTimer = next.get(payload.name);
+            if (existingTimer) clearTimeout(existingTimer);
+            const timer = window.setTimeout(() => {
+              setParticipantsTyping((p) => {
+                const updated = new Map(p);
+                updated.delete(payload.name);
+                return updated;
+              });
+            }, TYPING_INDICATOR_DEBOUNCE_MS + 500);
+            next.set(payload.name, timer);
+          } else {
+            const existingTimer = next.get(payload.name);
+            if (existingTimer) clearTimeout(existingTimer);
+            next.delete(payload.name);
+          }
+          return next;
         });
         break;
       }
@@ -164,12 +212,12 @@ export default function ChatPage() {
     }
   }, [lastMessage, code, navigate, isUserScrolledUp]);
 
-  // Auto-scroll to bottom on new messages (unless user has scrolled up)
+  // Auto-scroll to bottom on new messages or typing indicators (unless user has scrolled up)
   useEffect(() => {
     if (!isUserScrolledUp && messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages, isUserScrolledUp]);
+  }, [messages, guideTyping, participantsTyping, isUserScrolledUp]);
 
   // Track scroll position
   const handleScroll = useCallback(() => {
@@ -207,6 +255,32 @@ export default function ChatPage() {
     };
   }, []);
 
+  // Send typing_start/typing_stop with debounce
+  const sendTypingStop = useCallback(() => {
+    if (isTypingRef.current) {
+      isTypingRef.current = false;
+      send({ type: "typing_stop", payload: {} });
+    }
+  }, [send]);
+
+  const handleTypingActivity = useCallback(() => {
+    if (!isTypingRef.current) {
+      isTypingRef.current = true;
+      send({ type: "typing_start", payload: {} });
+    }
+    // Reset the debounce timer
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(sendTypingStop, TYPING_INDICATOR_DEBOUNCE_MS);
+  }, [send, sendTypingStop]);
+
+  // Cleanup typing timeout and participant typing timers on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      participantsTypingRef.current.forEach((timer) => clearTimeout(timer));
+    };
+  }, []);
+
   // Send message
   const handleSend = useCallback(() => {
     const trimmed = inputText.trim();
@@ -215,11 +289,13 @@ export default function ChatPage() {
 
     send({ type: "user_message", payload: { text: trimmed } });
     setInputText("");
+    sendTypingStop();
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
 
     if (inputRef.current) {
       inputRef.current.style.height = "auto";
     }
-  }, [inputText, send]);
+  }, [inputText, send, sendTypingStop]);
 
   // Handle keyboard input
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -232,6 +308,9 @@ export default function ChatPage() {
   // Auto-resize textarea
   const handleInputChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setInputText(e.target.value);
+    if (e.target.value.trim()) {
+      handleTypingActivity();
+    }
     const textarea = e.target;
     textarea.style.height = "auto";
     textarea.style.height = `${Math.min(textarea.scrollHeight, MAX_INPUT_HEIGHT)}px`;
@@ -309,6 +388,35 @@ export default function ChatPage() {
             onImageClick={setFullscreenImage}
           />
         ))}
+
+        {/* Guide typing indicator — pulsing dots in guide bubble */}
+        {guideTyping && (
+          <div className="mb-chat-gap flex justify-start">
+            <div className="max-w-[75%]">
+              <div className="mb-0.5 flex items-center gap-1 text-xs text-system-text">
+                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                </svg>
+                <span>Guide</span>
+              </div>
+              <div className="inline-flex items-center gap-1 rounded-2xl rounded-bl-sm bg-bubble-guide px-4 py-3">
+                <span className="typing-dot inline-block h-2 w-2 rounded-full bg-gray-500" />
+                <span className="typing-dot inline-block h-2 w-2 rounded-full bg-gray-500" />
+                <span className="typing-dot inline-block h-2 w-2 rounded-full bg-gray-500" />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Participant typing indicator */}
+        {participantsTyping.size > 0 && (
+          <div className="mb-1 px-1 text-xs text-system-text">
+            {participantsTyping.size === 1
+              ? `${[...participantsTyping.keys()][0]} is typing...`
+              : "Multiple people are typing..."}
+          </div>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
 
