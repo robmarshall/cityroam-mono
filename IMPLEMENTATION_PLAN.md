@@ -132,8 +132,18 @@
 - [x] **8.1 Admin package setup** — Vite + React + TypeScript + Tailwind (shared preset), localStorage JWT auth, fetch wrapper with Authorization header, no PostHog → Spec 08 §8.1-8.2 [COMPLETE]
 - [x] **8.2 Login + protected routes** — login form (POST /admin/login), JWT storage in localStorage, 401 redirect, logout → Spec 08 §8.2
 - [x] **8.3 Dashboard** — event counts by status (stat cards), revenue count, recent events list (last 10, click to detail) → Spec 08 §8.3 [COMPLETE]
-- [ ] **8.4 Events management** — paginated table with status filter, detail view (full event info, Stripe payment ID with copy button, participants table, message log) → Spec 08 §8.4-8.5
-- [ ] **8.5 Route & stop editor** — route form (shared routeSchema validation, auto-calculated total_stops), stops list with drag reorder, stop editor (tag/chip input for accepted_answers, ordered hints 2-3, image upload to S3 with preview, google_maps_link) → Spec 08 §8.6-8.8
+- [x] **8.4 Events management** — paginated table with status filter, detail view (full event info, Stripe payment ID with copy button, participants table, message log) → Spec 08 §8.4-8.5 [COMPLETE]
+  - **Learning**: Admin pages share constants (STATUS_LABELS, STATUS_COLORS, formatDate) — extract to `packages/admin/src/lib/event-utils.ts` to avoid drift between list and detail views.
+  - **Learning**: Spec §8.5 requires "route name" in event detail. Backend joins routes table in GET /admin/events/:id to populate `route_name` on `AdminEventDetailResponse`.
+  - **Learning**: `AdminEventDetailResponse` uses full `Participant` entity type which includes `token` field. The frontend doesn't use it but it's exposed in the API response. Consider narrowing the participant type to exclude auth tokens in a future pass.
+- [x] **8.5 Route & stop editor** — route form (shared routeSchema validation, auto-calculated total_stops), stops list with drag reorder, stop editor (tag/chip input for accepted_answers, ordered hints 2-3, image upload to S3 with preview, google_maps_link) → Spec 08 §8.6-8.8 [COMPLETE]
+  - **Learning**: Drag-and-drop reorder must operate on the same array that is rendered. If stops are sorted into `sortedStops` for display, drag indices come from that sorted array — splice/reorder logic must use sorted indices or map them back to the source array. Otherwise items get swapped incorrectly.
+  - **Learning**: Always check `response.ok` after fetch to S3 presigned URLs. A failed PUT (403/500) should show an error, not silently add the key to the images list.
+  - **Learning**: When computing next stop_number via `MAX(stop_number)`, the query must run inside the same transaction as the INSERT to avoid race conditions with concurrent requests.
+  - **Learning**: Admin frontend catch blocks must handle non-ApiError exceptions (network failures, JSON parse errors) — add a fallback `else` branch that shows a generic error message to the user.
+  - **Learning**: Optimistic UI updates (e.g., drag-reorder) must revert on ALL error paths, not just known error types. If the catch block has an ApiError branch that calls fetchRoute() to revert, the non-ApiError branch must also revert — otherwise the UI stays out of sync with the server.
+  - **Learning**: When rendering nullable numeric values with unit suffixes (e.g., "30 mins"), the entire string including the unit must be conditional. `{value ?? '—'} mins` produces "— mins" — use a ternary: `{value != null ? \`${value} mins\` : '—'}`.
+  - **Learning**: Admin API endpoints that read data for validation before a transaction must move those reads inside the transaction. This applies to both writes (stop-create max query) and updates (reorder stop-count validation). Same TOCTOU pattern.
 - [ ] **8.6 Message bank editor** — type tabs (8 types including over-length), CRUD, minimum count warning (<5 active), template variable reference for opening/completion/hint-exhausted → Spec 08 §8.10
 
 ## Phase 9: Deployment & Infrastructure (finalize after all above)
