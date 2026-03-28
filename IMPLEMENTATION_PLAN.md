@@ -110,7 +110,7 @@
 - [x] **6.4 SMS-style chat UI** — message bubbles (right=self blue, left=others grey, left=guide light grey), sender names, timestamps (5min gap), input area (Visual Viewport API for mobile keyboard, multi-line up to 3 lines, Enter=send/Shift+Enter=newline), scroll behaviour with "new messages" pill, image display with Headless UI fullscreen overlay → Spec 06 §6.5
 - [x] **6.5 WebSocket integration** — connect/send/receive, auto-reconnect with exponential backoff (1s→16s, max 10 attempts), close-code-aware behaviour (4001/4002 → rejoin, 4003-4005 → error), catch-up via GET messages?since=, manual retry button after max attempts → Spec 06 §6.5
   - **Learning**: Connection banners (reconnecting/connected/fatal) were added in ChatPage and LobbyPage as part of WS integration. Task 6.6 should focus on typing indicators only, since connection state UI is already done. Fatal close code message mapping is duplicated between ChatPage (Record) and LobbyPage (inline ternary) — 6.6 could unify this.
-- [ ] **6.6 Typing indicators + connection state** — guide pulsing dots in bubble, participant "[Name] is typing..." / "Multiple people are typing...", reconnecting/connected banners, debounce at TYPING_INDICATOR_DEBOUNCE_MS → Spec 06 §6.5
+- [x] **6.6 Typing indicators + connection state** — guide pulsing dots in bubble, participant "[Name] is typing..." / "Multiple people are typing...", reconnecting/connected banners, debounce at TYPING_INDICATOR_DEBOUNCE_MS → Spec 06 §6.5
 - [ ] **6.7 Leave hunt + completion screen** — leave menu (three dots) with confirmation dialog (POST /event/:code/leave), completion screen with summary + Google/TripAdvisor review links + Web Share API button → Spec 06 §6.5-6.6
 
 ## Phase 7: Marketing Site (depends on Phase 3)
