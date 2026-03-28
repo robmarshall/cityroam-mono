@@ -58,6 +58,7 @@ adminRoutes.get("/admin/dashboard", adminAuth, async (c) => {
   // Recent events (last 10)
   const recentEvents = await db
     .select({
+      id: events.id,
       code: events.code,
       status: events.status,
       buyer_email: events.buyer_email,
@@ -71,6 +72,7 @@ adminRoutes.get("/admin/dashboard", adminAuth, async (c) => {
     counts: counts as AdminDashboardResponse["counts"],
     total_revenue_events,
     recent_events: recentEvents.map((e) => ({
+      id: e.id,
       code: e.code,
       status: e.status as AdminDashboardResponse["recent_events"][0]["status"],
       buyer_email: e.buyer_email ?? "",

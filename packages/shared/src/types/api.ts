@@ -66,6 +66,7 @@ export interface AdminDashboardResponse {
   counts: Record<EventStatus, number>;
   total_revenue_events: number;
   recent_events: Array<{
+    id: string;
     code: string;
     status: EventStatus;
     buyer_email: string;
