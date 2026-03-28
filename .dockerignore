@@ -1,0 +1,12 @@
+node_modules
+.git
+.next
+dist
+.env*
+.claude
+AUTOMATION_LOCK
+IN_PROGRESS.md
+IMPLEMENTATION_PLAN.md
+PROMPT_*.md
+specs
+*.log
