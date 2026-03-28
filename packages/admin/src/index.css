@@ -1,0 +1,15 @@
+@import "tailwindcss";
+@import "@cityroam/shared/tailwind";
+
+/* Base styles for the admin shell */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f9fafb;
+}

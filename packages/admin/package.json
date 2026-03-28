@@ -11,7 +11,8 @@
   "dependencies": {
     "@cityroam/shared": "*",
     "react": "^19",
-    "react-dom": "^19"
+    "react-dom": "^19",
+    "react-router-dom": "^6.30.3"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4",
