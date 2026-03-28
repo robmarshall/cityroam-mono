@@ -120,8 +120,9 @@
 - [x] **7.1 Marketing package setup** — Next.js + TypeScript + Tailwind (shared preset) + PostHog → Spec 07 §7.1
   - **Learning**: Tailwind v4 shared preset integration in globals.css uses `@import "@cityroam/shared/tailwind"` after `@import "tailwindcss"` — no tailwind.config needed. PostHog uses singleton pattern with SSR guard (`typeof window`) and type-safe `trackEvent` from shared analytics catalogue.
 - [x] **7.2 Landing page** — hero, how it works (3 steps), anchored pricing (£29/£49), single CTA, social proof placeholders, FAQ accordion, refund policy → Spec 07 §7.2
-- [ ] **7.3 Checkout flow** — CTA → loading state ("Redirecting to checkout...") → POST /checkout/create-session → Stripe redirect, error handling, cancel returns to / → Spec 07 §7.3
-- [ ] **7.4 Success page** — GET /checkout/success?session_id → event link display, copy button (clipboard), Web Share API with fallback, instructions, refund reminder, refresh-safe → Spec 07 §7.4
+- [x] **7.3 Checkout flow** — CTA → loading state ("Redirecting to checkout...") → POST /checkout/create-session → Stripe redirect, error handling, cancel returns to / → Spec 07 §7.3
+- [x] **7.4 Success page** — GET /checkout/success?session_id → event link display, copy button (clipboard), Web Share API with fallback, instructions, refund reminder, refresh-safe → Spec 07 §7.4
+  - **Learning**: Next.js App Router requires `useSearchParams()` to be inside a `<Suspense>` boundary for static generation. Extract the hook-using component and wrap with `<Suspense fallback={...}>` in the page's default export.
 - [ ] **7.5 SEO & meta** — title, OG tags, structured data (JSON-LD LocalBusiness/Product), sitemap, robots.txt → Spec 07 §7.5
 
 ## Phase 8: Admin Panel (depends on Phase 3)
