@@ -123,7 +123,9 @@
 - [x] **7.3 Checkout flow** — CTA → loading state ("Redirecting to checkout...") → POST /checkout/create-session → Stripe redirect, error handling, cancel returns to / → Spec 07 §7.3
 - [x] **7.4 Success page** — GET /checkout/success?session_id → event link display, copy button (clipboard), Web Share API with fallback, instructions, refund reminder, refresh-safe → Spec 07 §7.4
   - **Learning**: Next.js App Router requires `useSearchParams()` to be inside a `<Suspense>` boundary for static generation. Extract the hook-using component and wrap with `<Suspense fallback={...}>` in the page's default export.
-- [ ] **7.5 SEO & meta** — title, OG tags, structured data (JSON-LD LocalBusiness/Product), sitemap, robots.txt → Spec 07 §7.5
+- [x] **7.5 SEO & meta** — title, OG tags, structured data (JSON-LD LocalBusiness/Product), sitemap, robots.txt → Spec 07 §7.5 [COMPLETE v0.0.29]
+  - **Learning**: Next.js App Router has built-in `sitemap.ts` and `robots.ts` conventions — no need for `next-sitemap` package. Export a typed function returning `MetadataRoute.Sitemap` or `MetadataRoute.Robots`.
+  - **Note**: OG image asset (`/og-image.png` 1200x630) still needs to be created and placed in `packages/marketing/public/`.
 
 ## Phase 8: Admin Panel (depends on Phase 3)
 
