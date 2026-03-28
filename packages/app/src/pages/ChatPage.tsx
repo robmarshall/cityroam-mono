@@ -1,3 +1,447 @@
+import {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  type KeyboardEvent,
+  type ChangeEvent,
+} from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Dialog, DialogPanel, DialogBackdrop } from "@headlessui/react";
+import { chatMessageSchema } from "@cityroam/shared/validation";
+import { formatTimestamp } from "@cityroam/shared/utils";
+import type {
+  ChatMessagePayload,
+  WebSocketMessage,
+  ParticipantJoinedPayload,
+  ParticipantLeftPayload,
+  HuntCompletePayload,
+} from "@cityroam/shared/types";
+import { useParticipant } from "../contexts/ParticipantContext";
+import { useEvent } from "../contexts/EventContext";
+import { useWebSocket } from "../contexts/WebSocketContext";
+
+// 5-minute gap for timestamp separators
+const TIMESTAMP_GAP_MS = 5 * 60 * 1000;
+
+// Max textarea height (~3 lines)
+const MAX_INPUT_HEIGHT = 72;
+
 export default function ChatPage() {
-  return <div>Chat</div>;
+  const { code } = useParams<{ code: string }>();
+  const navigate = useNavigate();
+  const { participant } = useParticipant();
+  const { event } = useEvent();
+  const { lastMessage, send } = useWebSocket();
+
+  const [messages, setMessages] = useState<ChatMessagePayload[]>([]);
+  const [inputText, setInputText] = useState("");
+  const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
+  const [hasNewMessages, setHasNewMessages] = useState(false);
+  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+
+  // Guard: redirect to join if no session context
+  useEffect(() => {
+    if (!participant || !event || !code) {
+      navigate(`/hunt/${code ?? ""}`, { replace: true });
+    }
+  }, [participant, event, code, navigate]);
+
+  // Handle incoming WebSocket messages
+  useEffect(() => {
+    if (!lastMessage) return;
+    const msg = lastMessage as WebSocketMessage;
+
+    switch (msg.type) {
+      case "chat_message": {
+        const payload = msg.payload as ChatMessagePayload;
+        setMessages((prev) => {
+          // Deduplicate by message id
+          if (prev.some((m) => m.id === payload.id)) return prev;
+          return [...prev, payload];
+        });
+
+        if (isUserScrolledUp) {
+          setHasNewMessages(true);
+        }
+        break;
+      }
+      case "participant_joined": {
+        const payload = msg.payload as ParticipantJoinedPayload;
+        setMessages((prev) => [
+          ...prev,
+          makeSystemMessage(`${payload.name} joined the hunt`),
+        ]);
+        break;
+      }
+      case "participant_left": {
+        const payload = msg.payload as ParticipantLeftPayload;
+        setMessages((prev) => [
+          ...prev,
+          makeSystemMessage(`${payload.name} left the hunt`),
+        ]);
+        break;
+      }
+      case "hunt_complete": {
+        const payload = msg.payload as HuntCompletePayload;
+        navigate(`/hunt/${code}/complete`, {
+          replace: true,
+          state: { summary: payload.summary },
+        });
+        break;
+      }
+    }
+  }, [lastMessage, code, navigate, isUserScrolledUp]);
+
+  // Auto-scroll to bottom on new messages (unless user has scrolled up)
+  useEffect(() => {
+    if (!isUserScrolledUp && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isUserScrolledUp]);
+
+  // Track scroll position
+  const handleScroll = useCallback(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = container;
+    const isAtBottom = scrollHeight - scrollTop - clientHeight < 50;
+
+    setIsUserScrolledUp(!isAtBottom);
+    if (isAtBottom) {
+      setHasNewMessages(false);
+    }
+  }, []);
+
+  // Visual Viewport API for mobile keyboard
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+
+    const handleResize = () => {
+      const container = chatContainerRef.current;
+      if (container) {
+        container.style.height = `${viewport.height}px`;
+      }
+    };
+
+    viewport.addEventListener("resize", handleResize);
+    viewport.addEventListener("scroll", handleResize);
+    handleResize();
+
+    return () => {
+      viewport.removeEventListener("resize", handleResize);
+      viewport.removeEventListener("scroll", handleResize);
+    };
+  }, []);
+
+  // Send message
+  const handleSend = useCallback(() => {
+    const trimmed = inputText.trim();
+    const result = chatMessageSchema.safeParse(trimmed);
+    if (!result.success) return;
+
+    send({ type: "user_message", payload: { text: trimmed } });
+    setInputText("");
+
+    if (inputRef.current) {
+      inputRef.current.style.height = "auto";
+    }
+  }, [inputText, send]);
+
+  // Handle keyboard input
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  // Auto-resize textarea
+  const handleInputChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    setInputText(e.target.value);
+    const textarea = e.target;
+    textarea.style.height = "auto";
+    textarea.style.height = `${Math.min(textarea.scrollHeight, MAX_INPUT_HEIGHT)}px`;
+  };
+
+  // Scroll to bottom on pill click
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    setHasNewMessages(false);
+  };
+
+  if (!participant || !event || !code) return null;
+
+  const isValidMessage = chatMessageSchema.safeParse(inputText.trim()).success;
+
+  return (
+    <div ref={chatContainerRef} className="flex h-svh flex-col bg-white">
+      {/* Messages area */}
+      <div
+        ref={messagesContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto px-4 pb-2 pt-3"
+      >
+        {messages.map((msg, i) => (
+          <MessageRow
+            key={msg.id}
+            message={msg}
+            prevMessage={i > 0 ? messages[i - 1] : null}
+            isSelf={msg.participant_id === participant.id}
+            isFirstInGuideSequence={
+              msg.sender_type === "guide" &&
+              (i === 0 || messages[i - 1].sender_type !== "guide")
+            }
+            onImageClick={setFullscreenImage}
+          />
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* New messages pill */}
+      {hasNewMessages && (
+        <div className="absolute bottom-20 left-1/2 z-10 -translate-x-1/2">
+          <button
+            onClick={scrollToBottom}
+            className="rounded-full bg-brand-600 px-4 py-1.5 text-sm font-medium text-white shadow-lg"
+          >
+            New messages &darr;
+          </button>
+        </div>
+      )}
+
+      {/* Input area */}
+      <div className="shrink-0 border-t border-gray-200 bg-white px-4 py-2">
+        <div className="flex items-end gap-2">
+          <textarea
+            ref={inputRef}
+            value={inputText}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            placeholder="Type a message..."
+            rows={1}
+            className="flex-1 resize-none rounded-2xl border border-gray-300 px-4 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            style={{ maxHeight: `${MAX_INPUT_HEIGHT}px` }}
+          />
+          <button
+            onClick={handleSend}
+            disabled={!isValidMessage}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white transition-colors hover:bg-brand-700 disabled:opacity-40"
+            aria-label="Send message"
+          >
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Fullscreen image overlay */}
+      <Dialog
+        open={fullscreenImage !== null}
+        onClose={() => setFullscreenImage(null)}
+        className="relative z-50"
+      >
+        <DialogBackdrop
+          transition
+          className="fixed inset-0 bg-black/80 transition-opacity duration-200 data-[closed]:opacity-0"
+        />
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <DialogPanel
+            transition
+            className="relative transition-all duration-200 data-[closed]:scale-95 data-[closed]:opacity-0"
+          >
+            <button
+              onClick={() => setFullscreenImage(null)}
+              className="absolute -top-10 right-0 text-white hover:text-gray-300"
+              aria-label="Close"
+            >
+              <svg className="h-8 w-8" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+              </svg>
+            </button>
+            {fullscreenImage && (
+              <img
+                src={fullscreenImage}
+                alt=""
+                className="max-h-[85vh] max-w-[90vw] rounded-xl object-contain"
+              />
+            )}
+          </DialogPanel>
+        </div>
+      </Dialog>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// MessageRow — renders a single message with optional timestamp separator
+// ---------------------------------------------------------------------------
+
+interface MessageRowProps {
+  message: ChatMessagePayload;
+  prevMessage: ChatMessagePayload | null;
+  isSelf: boolean;
+  isFirstInGuideSequence: boolean;
+  onImageClick: (url: string) => void;
+}
+
+function MessageRow({
+  message,
+  prevMessage,
+  isSelf,
+  isFirstInGuideSequence,
+  onImageClick,
+}: MessageRowProps) {
+  const showTimestamp =
+    !prevMessage ||
+    new Date(message.created_at).getTime() -
+      new Date(prevMessage.created_at).getTime() >=
+      TIMESTAMP_GAP_MS;
+
+  return (
+    <>
+      {showTimestamp && (
+        <div className="my-3 text-center text-xs text-system-text">
+          {formatTimestamp(new Date(message.created_at))}
+        </div>
+      )}
+
+      {message.sender_type === "system" ? (
+        <SystemMessage content={message.content} />
+      ) : isSelf ? (
+        <SelfBubble message={message} onImageClick={onImageClick} />
+      ) : message.sender_type === "guide" ? (
+        <GuideBubble
+          message={message}
+          showLabel={isFirstInGuideSequence}
+          onImageClick={onImageClick}
+        />
+      ) : (
+        <OtherBubble message={message} onImageClick={onImageClick} />
+      )}
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Bubble components
+// ---------------------------------------------------------------------------
+
+function SystemMessage({ content }: { content: string }) {
+  return (
+    <div className="my-2 text-center text-sm text-system-text">{content}</div>
+  );
+}
+
+function SelfBubble({
+  message,
+  onImageClick,
+}: {
+  message: ChatMessagePayload;
+  onImageClick: (url: string) => void;
+}) {
+  return (
+    <div className="mb-chat-gap flex justify-end">
+      <div className="max-w-[75%] rounded-2xl rounded-br-sm bg-bubble-self px-3 py-2 text-white">
+        <p className="whitespace-pre-wrap break-words">{message.content}</p>
+        <MessageImage url={message.image_url} onClick={onImageClick} />
+      </div>
+    </div>
+  );
+}
+
+function GuideBubble({
+  message,
+  showLabel,
+  onImageClick,
+}: {
+  message: ChatMessagePayload;
+  showLabel: boolean;
+  onImageClick: (url: string) => void;
+}) {
+  return (
+    <div className="mb-chat-gap flex justify-start">
+      <div className="max-w-[75%]">
+        {showLabel && (
+          <div className="mb-0.5 flex items-center gap-1 text-xs text-system-text">
+            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+            </svg>
+            <span>Guide</span>
+          </div>
+        )}
+        <div className="rounded-2xl rounded-bl-sm bg-bubble-guide px-3 py-2 text-gray-900">
+          <p className="whitespace-pre-wrap break-words">{message.content}</p>
+          <MessageImage url={message.image_url} onClick={onImageClick} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OtherBubble({
+  message,
+  onImageClick,
+}: {
+  message: ChatMessagePayload;
+  onImageClick: (url: string) => void;
+}) {
+  return (
+    <div className="mb-chat-gap flex justify-start">
+      <div className="max-w-[75%]">
+        <div className="mb-0.5 text-xs text-system-text">
+          {message.sender_name}
+        </div>
+        <div className="rounded-2xl rounded-bl-sm bg-bubble-other px-3 py-2 text-gray-900">
+          <p className="whitespace-pre-wrap break-words">{message.content}</p>
+          <MessageImage url={message.image_url} onClick={onImageClick} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MessageImage({
+  url,
+  onClick,
+}: {
+  url: string | null;
+  onClick: (url: string) => void;
+}) {
+  if (!url) return null;
+  return (
+    <button onClick={() => onClick(url)} className="mt-1 block">
+      <img
+        src={url}
+        alt=""
+        className="max-w-[280px] rounded-xl"
+        loading="lazy"
+      />
+    </button>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function makeSystemMessage(content: string): ChatMessagePayload {
+  return {
+    id: crypto.randomUUID(),
+    sender_type: "system",
+    sender_name: "",
+    participant_id: null,
+    content,
+    image_url: null,
+    step_number: 0,
+    created_at: new Date().toISOString(),
+  };
 }
