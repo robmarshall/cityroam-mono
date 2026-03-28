@@ -10,6 +10,7 @@
   "dependencies": {
     "@cityroam/shared": "*",
     "next": "^15",
+    "posthog-js": "^1.364.1",
     "react": "^19",
     "react-dom": "^19"
   },
