@@ -144,7 +144,7 @@
   - **Learning**: Optimistic UI updates (e.g., drag-reorder) must revert on ALL error paths, not just known error types. If the catch block has an ApiError branch that calls fetchRoute() to revert, the non-ApiError branch must also revert — otherwise the UI stays out of sync with the server.
   - **Learning**: When rendering nullable numeric values with unit suffixes (e.g., "30 mins"), the entire string including the unit must be conditional. `{value ?? '—'} mins` produces "— mins" — use a ternary: `{value != null ? \`${value} mins\` : '—'}`.
   - **Learning**: Admin API endpoints that read data for validation before a transaction must move those reads inside the transaction. This applies to both writes (stop-create max query) and updates (reorder stop-count validation). Same TOCTOU pattern.
-- [ ] **8.6 Message bank editor** — type tabs (8 types including over-length), CRUD, minimum count warning (<5 active), template variable reference for opening/completion/hint-exhausted → Spec 08 §8.10
+- [x] **8.6 Message bank editor** — type tabs (8 types including over-length), CRUD, minimum count warning (<5 active), template variable reference for opening/completion/hint-exhausted → Spec 08 §8.10 [COMPLETE v0.0.34]
 
 ## Phase 9: Deployment & Infrastructure (finalize after all above)
 
