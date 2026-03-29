@@ -106,27 +106,27 @@ describe("formatTimestamp", () => {
 });
 
 describe("isValidEventCode", () => {
-  it("returns true for valid codes", () => {
-    expect(isValidEventCode("ABCDEFGH")).toBe(true);
+  it("returns true for valid lowercase codes", () => {
+    expect(isValidEventCode("abcdefgh")).toBe(true);
     expect(isValidEventCode("23456789")).toBe(true);
-    expect(isValidEventCode("AB3DEF4H")).toBe(true);
+    expect(isValidEventCode("ab3def4h")).toBe(true);
   });
 
   it("returns false for wrong length", () => {
-    expect(isValidEventCode("ABCDEFG")).toBe(false); // too short
-    expect(isValidEventCode("ABCDEFGHJ")).toBe(false); // too long
+    expect(isValidEventCode("abcdefg")).toBe(false); // too short
+    expect(isValidEventCode("abcdefghj")).toBe(false); // too long
     expect(isValidEventCode("")).toBe(false);
   });
 
   it("returns false for codes with ambiguous characters", () => {
-    expect(isValidEventCode("ABCDEFG0")).toBe(false); // contains 0
-    expect(isValidEventCode("ABCDEFGO")).toBe(false); // contains O
-    expect(isValidEventCode("ABCDEFG1")).toBe(false); // contains 1
-    expect(isValidEventCode("ABCDEFGI")).toBe(false); // contains I
-    expect(isValidEventCode("ABCDEFGL")).toBe(false); // contains L
+    expect(isValidEventCode("abcdefg0")).toBe(false); // contains 0
+    expect(isValidEventCode("abcdefgo")).toBe(false); // contains o
+    expect(isValidEventCode("abcdefg1")).toBe(false); // contains 1
+    expect(isValidEventCode("abcdefgi")).toBe(false); // contains i
+    expect(isValidEventCode("abcdefgl")).toBe(false); // contains l
   });
 
-  it("returns false for lowercase characters", () => {
-    expect(isValidEventCode("abcdefgh")).toBe(false);
+  it("returns false for uppercase characters", () => {
+    expect(isValidEventCode("ABCDEFGH")).toBe(false);
   });
 });

@@ -70,26 +70,27 @@ describe("chatMessageSchema", () => {
 });
 
 describe("eventCodeSchema", () => {
-  it("accepts valid event codes", () => {
-    expect(eventCodeSchema.parse("ABCDEFGH")).toBe("ABCDEFGH");
+  it("accepts valid lowercase event codes", () => {
+    expect(eventCodeSchema.parse("abcdefgh")).toBe("abcdefgh");
     expect(eventCodeSchema.parse("234567")).toBe("234567"); // 6 chars min
   });
 
+  it("normalises uppercase to lowercase", () => {
+    expect(eventCodeSchema.parse("ABCDEFGH")).toBe("abcdefgh");
+    expect(eventCodeSchema.parse("AbCdEfGh")).toBe("abcdefgh");
+  });
+
   it("rejects codes with ambiguous characters", () => {
-    expect(() => eventCodeSchema.parse("ABCDEFG0")).toThrow();
-    expect(() => eventCodeSchema.parse("ABCDEFGI")).toThrow();
+    expect(() => eventCodeSchema.parse("abcdefg0")).toThrow();
+    expect(() => eventCodeSchema.parse("abcdefgi")).toThrow();
   });
 
   it("rejects too-short codes", () => {
-    expect(() => eventCodeSchema.parse("ABCDE")).toThrow();
+    expect(() => eventCodeSchema.parse("abcde")).toThrow();
   });
 
   it("rejects too-long codes", () => {
-    expect(() => eventCodeSchema.parse("ABCDEFGHJ")).toThrow();
-  });
-
-  it("rejects lowercase", () => {
-    expect(() => eventCodeSchema.parse("abcdefgh")).toThrow();
+    expect(() => eventCodeSchema.parse("abcdefghj")).toThrow();
   });
 });
 

@@ -21,8 +21,9 @@ export const errorHandler: ErrorHandler = (err, c) => {
     return c.json({ error: err.message, code: err.code }, err.statusCode as any);
   }
 
-  if (err instanceof z.ZodError) {
-    const message = err.issues.map((issue) => issue.message).join(", ");
+  if (err instanceof z.ZodError || (err instanceof Error && err.name === "ZodError")) {
+    const issues = (err as z.ZodError).issues ?? (err as any).issues ?? [];
+    const message = issues.map((issue: any) => issue.message).join(", ");
     return c.json({ error: message, code: "INVALID_INPUT" }, 400);
   }
 

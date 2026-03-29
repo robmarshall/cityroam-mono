@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(docker ps:*)",
+      "Bash(docker compose:*)",
+      "Bash(netstat -ano)",
+      "Bash(for pid:*)",
+      "Bash(do echo:*)",
+      "Bash(wmic process:*)",
+      "Bash(done)",
+      "Bash(tasklist /FI \"PID eq 29804\" /FO TABLE)",
+      "Bash(tasklist /FI \"PID eq 14724\" /FO TABLE)",
+      "Bash(tasklist /FI \"PID eq 29188\" /FO TABLE)",
+      "Bash(tasklist /FI \"PID eq 29180\" /FO TABLE)",
+      "Bash(tasklist /FI \"PID eq 30376\" /FO TABLE)",
+      "Bash(tasklist.exe)",
+      "Bash(do taskkill.exe //F //PID $pid)",
+      "Bash(export DATABASE_URL=postgresql://cityroam:cityroam@localhost:5432/cityroam)",
+      "Bash(npx tsx:*)",
+      "Bash(DATABASE_URL=postgresql://cityroam:cityroam@localhost:5432/cityroam npx tsx -e \"process.stdout.write\\(''hello\\\\n''\\)\")",
+      "Bash(curl:*)"
+    ]
+  }
+}

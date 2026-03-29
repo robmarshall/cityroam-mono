@@ -21,4 +21,4 @@ export const SESSION_TOKEN_EXPIRY_HOURS = 24;
 
 // Event code
 export const EVENT_CODE_LENGTH = 8;
-export const EVENT_CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // no 0/O, 1/I/L
+export const EVENT_CODE_ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789"; // no 0/o, 1/i/l

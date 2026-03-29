@@ -32,4 +32,5 @@ const eventCodeRegex = new RegExp(`^[${EVENT_CODE_ALPHABET}]{6,${EVENT_CODE_LENG
 
 export const eventCodeSchema = z
   .string()
-  .regex(eventCodeRegex, "Invalid event code format");
+  .transform((s) => s.toLowerCase())
+  .pipe(z.string().regex(eventCodeRegex, "Invalid event code format"));

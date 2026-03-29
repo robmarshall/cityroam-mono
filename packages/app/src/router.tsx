@@ -11,7 +11,17 @@ const ChatPage = lazy(() => import("./pages/ChatPage"));
 const CompletePage = lazy(() => import("./pages/CompletePage"));
 
 function SuspenseWrapper({ children }: { children: React.ReactNode }) {
-  return <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>;
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-svh items-center justify-center bg-white">
+          <p className="text-system-text">Loading...</p>
+        </div>
+      }
+    >
+      {children}
+    </Suspense>
+  );
 }
 
 export const router = createBrowserRouter(

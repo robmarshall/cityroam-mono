@@ -35,6 +35,8 @@ timestamp() {
 # Parses Claude's stream-json output and displays it nicely
 # Requires jq for JSON parsing; falls back to raw output if unavailable
 parse_stream_json() {
+    local claude_pid="${1:-}"
+
     # Check if jq is available
     if ! command -v jq &> /dev/null; then
         echo -e "${YELLOW}[WARN] jq not found - showing raw output${NC}"
@@ -129,6 +131,12 @@ parse_stream_json() {
                     fi
                 fi
                 echo ""
+
+                # Session is complete - kill claude process immediately (no need to wait for cleanup)
+                if [ -n "$claude_pid" ] && kill -0 "$claude_pid" 2>/dev/null; then
+                    kill "$claude_pid" 2>/dev/null
+                fi
+                break
                 ;;
 
             "system")
@@ -152,9 +160,10 @@ parse_stream_json() {
                 ;;
 
             *)
-                # Unknown or unhandled message types - skip to reduce noise
-                # Uncomment below for debugging:
-                # echo -e "${DIM}[DEBUG] Unknown type: $msg_type${NC}"
+                # Show unrecognized message types for visibility into subagent/background activity
+                if [ -n "$msg_type" ]; then
+                    echo -e "${DIM}[Stream] $msg_type${NC}"
+                fi
                 ;;
         esac
 
@@ -235,10 +244,18 @@ print_iteration_complete() {
 
 # Signal handling for graceful shutdown
 STOP_REQUESTED=0
+CLAUDE_PID=""
+FIFO_PATH=""
 cleanup() {
     echo ""
     print_warning "Shutdown signal received. Completing current iteration gracefully..."
     STOP_REQUESTED=1
+    # Kill any running claude process
+    if [ -n "$CLAUDE_PID" ] && kill -0 "$CLAUDE_PID" 2>/dev/null; then
+        kill "$CLAUDE_PID" 2>/dev/null
+    fi
+    # Clean up FIFO
+    [ -n "$FIFO_PATH" ] && rm -f "$FIFO_PATH"
 }
 trap cleanup SIGINT SIGTERM
 
@@ -400,14 +417,32 @@ while true; do
     # --verbose: Detailed execution logging
     print_separator "Claude Output"
 
-    # Run Claude and parse the stream-json output for nice display
-    # Use process substitution to capture exit code properly
+    # Run Claude in background with a named pipe so we can:
+    # 1. Capture its PID to kill it immediately after result
+    # 2. Avoid the hang from process cleanup after session completes
+    FIFO_PATH=$(mktemp -u /tmp/claude_fifo_XXXXXX)
+    mkfifo "$FIFO_PATH"
+
     cat "$PROMPT_FILE" | claude -p \
         --dangerously-skip-permissions \
         --output-format=stream-json  \
         --model opus \
-        --verbose 2>&1 | parse_stream_json
-    CLAUDE_EXIT_CODE=${PIPESTATUS[1]:-$?}
+        --verbose > "$FIFO_PATH" 2>&1 &
+    CLAUDE_PID=$!
+
+    parse_stream_json "$CLAUDE_PID" < "$FIFO_PATH"
+
+    # Wait for process and capture exit code
+    wait "$CLAUDE_PID" 2>/dev/null
+    CLAUDE_EXIT_CODE=$?
+    # Exit codes 143 (SIGTERM) / 137 (SIGKILL) mean we killed it intentionally after result
+    if [ $CLAUDE_EXIT_CODE -eq 143 ] || [ $CLAUDE_EXIT_CODE -eq 137 ]; then
+        CLAUDE_EXIT_CODE=0
+    fi
+
+    CLAUDE_PID=""
+    rm -f "$FIFO_PATH"
+    FIFO_PATH=""
 
     print_separator ""
 

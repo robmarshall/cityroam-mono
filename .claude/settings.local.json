@@ -52,7 +52,20 @@
       "Bash(node_modules/.bin/tsc:*)",
       "Bash(node:*)",
       "Bash(npx drizzle-kit:*)",
-      "Bash(npm view:*)"
+      "Bash(npm view:*)",
+      "Bash(git log:*)",
+      "Read(//mnt/c/Users/rober/**)",
+      "Read(//c/Users/rober/projects/city-roam-v2/$HOME/**)",
+      "Read(//c/Users/rober/projects/city-roam-v2/$HOME/.claude/**)",
+      "Bash(python3 -c \"import datetime; print\\(datetime.datetime.fromtimestamp\\(1774720798\\)\\)\")",
+      "Bash(docker compose:*)",
+      "Bash(python3 -m json.tool)",
+      "Bash(node -e \"process.stdin.on\\(''''data'''',d=>console.log\\(JSON.stringify\\(JSON.parse\\(d\\),null,2\\)\\)\\)\")",
+      "Bash(grep -r \"test:e2e\\\\|e2e\" /c/Users/rober/projects/city-roam-v2/package.json /c/Users/rober/projects/city-roam-v2/packages/*/package.json)",
+      "Bash(grep -r \"describe\\\\|it\\\\|test\\\\|e2e\" /c/Users/rober/projects/city-roam-v2/packages/shared/src/*.test.ts)",
+      "Bash(grep:*)",
+      "Bash(grep -E \"\\\\.\\(ts\\)$\")",
+      "Bash(find /c/Users/rober/projects/city-roam-v2/packages -type f \\\\\\(-name *.ts -o -name *.tsx -o -name *.js -o -name *.jsx \\\\\\))"
     ],
     "deny": [],
     "ask": []

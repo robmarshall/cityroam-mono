@@ -41,6 +41,8 @@ function friendlyError(err: unknown): string {
         return "This hunt has expired.";
       case "EVENT_COMPLETED":
         return "This hunt has already finished.";
+      case "INVALID_INPUT":
+        return "That doesn't look like a valid hunt code. Double-check the link or code you were given.";
       default:
         if (err.status === 404) {
           return "This hunt doesn't exist. Check the link and try again.";

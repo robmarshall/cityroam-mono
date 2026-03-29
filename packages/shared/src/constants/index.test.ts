@@ -93,15 +93,15 @@ describe("constants", () => {
 
     it("EVENT_CODE_ALPHABET excludes ambiguous characters", () => {
       expect(EVENT_CODE_ALPHABET).not.toContain("0");
-      expect(EVENT_CODE_ALPHABET).not.toContain("O");
+      expect(EVENT_CODE_ALPHABET).not.toContain("o");
       expect(EVENT_CODE_ALPHABET).not.toContain("1");
-      expect(EVENT_CODE_ALPHABET).not.toContain("I");
-      expect(EVENT_CODE_ALPHABET).not.toContain("L");
+      expect(EVENT_CODE_ALPHABET).not.toContain("i");
+      expect(EVENT_CODE_ALPHABET).not.toContain("l");
     });
 
-    it("EVENT_CODE_ALPHABET contains expected characters", () => {
-      expect(EVENT_CODE_ALPHABET).toContain("A");
-      expect(EVENT_CODE_ALPHABET).toContain("Z");
+    it("EVENT_CODE_ALPHABET contains expected lowercase characters", () => {
+      expect(EVENT_CODE_ALPHABET).toContain("a");
+      expect(EVENT_CODE_ALPHABET).toContain("z");
       expect(EVENT_CODE_ALPHABET).toContain("2");
       expect(EVENT_CODE_ALPHABET).toContain("9");
     });
