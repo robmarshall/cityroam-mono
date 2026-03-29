@@ -233,68 +233,62 @@ export default function EventDetailPage() {
         {participants.length === 0 ? (
           <p className="text-sm text-gray-500">No participants yet.</p>
         ) : (
-          <div className="overflow-hidden rounded-lg border border-gray-200">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Name
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Role
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Status
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Joined
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Left
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Left Reason
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 bg-white">
-                {participants.map((p: Participant) => (
-                  <tr key={p.id}>
-                    <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900">
-                      {p.display_name}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3">
-                      {p.is_lead && (
-                        <span className="inline-flex rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
-                          Lead
-                        </span>
-                      )}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3">
-                      <span
-                        className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-                          p.is_active
-                            ? "bg-green-100 text-green-700"
-                            : "bg-gray-100 text-gray-500"
-                        }`}
-                      >
-                        {p.is_active ? "Active" : "Inactive"}
-                      </span>
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-500">
-                      {formatDate(p.joined_at)}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-500">
-                      {p.left_at ? formatDate(p.left_at) : "--"}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-500">
-                      {p.left_reason ?? "--"}
-                    </td>
+          <>
+            {/* Participant Summary */}
+            <ParticipantSummary participants={participants} />
+
+            {/* Participants Table */}
+            <div className="overflow-hidden rounded-lg border border-gray-200">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                      Name
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                      Role
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                      Status
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                      Joined
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                      Last Seen
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-gray-200 bg-white">
+                  {participants.map((p: Participant) => (
+                    <tr key={p.id}>
+                      <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900">
+                        {p.display_name}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3">
+                        {p.is_lead && (
+                          <span className="inline-flex rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
+                            Lead
+                          </span>
+                        )}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3">
+                        <ParticipantStatusBadge participant={p} />
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-500">
+                        {formatDate(p.joined_at)}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-500">
+                        {p.left_at
+                          ? formatDate(p.left_at)
+                          : formatDate(p.last_seen_at)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
 
@@ -341,6 +335,78 @@ export default function EventDetailPage() {
         )}
       </div>
     </div>
+  );
+}
+
+function ParticipantSummary({ participants }: { participants: Participant[] }) {
+  const total = participants.length;
+  const active = participants.filter((p) => p.is_active).length;
+  const left = participants.filter((p) => p.left_at != null).length;
+  const inactive = total - active - left;
+  const lead = participants.find((p) => p.is_lead);
+
+  return (
+    <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="rounded-lg bg-gray-50 p-3 text-center">
+        <p className="text-2xl font-bold text-gray-900">{total}</p>
+        <p className="text-xs text-gray-500">Total</p>
+      </div>
+      <div className="rounded-lg bg-green-50 p-3 text-center">
+        <p className="text-2xl font-bold text-green-700">{active}</p>
+        <p className="text-xs text-green-600">Online</p>
+      </div>
+      <div className="rounded-lg bg-yellow-50 p-3 text-center">
+        <p className="text-2xl font-bold text-yellow-700">{inactive}</p>
+        <p className="text-xs text-yellow-600">Offline</p>
+      </div>
+      <div className="rounded-lg bg-red-50 p-3 text-center">
+        <p className="text-2xl font-bold text-red-700">{left}</p>
+        <p className="text-xs text-red-600">Left</p>
+      </div>
+      {lead && (
+        <div className="col-span-2 flex items-center gap-2 rounded-lg bg-purple-50 p-3 lg:col-span-4">
+          <span className="inline-flex rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
+            Lead
+          </span>
+          <span className="text-sm font-medium text-purple-900">
+            {lead.display_name}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ParticipantStatusBadge({ participant: p }: { participant: Participant }) {
+  if (p.left_at != null) {
+    const reason =
+      p.left_reason === "voluntary"
+        ? "Left voluntarily"
+        : p.left_reason === "timeout"
+          ? "Timed out"
+          : "Left";
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-red-500" />
+        {reason}
+      </span>
+    );
+  }
+
+  if (p.is_active) {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500" />
+        Online
+      </span>
+    );
+  }
+
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-700">
+      <span className="inline-block h-1.5 w-1.5 rounded-full bg-yellow-500" />
+      Offline
+    </span>
   );
 }
 
