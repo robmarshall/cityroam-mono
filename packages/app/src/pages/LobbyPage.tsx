@@ -131,7 +131,7 @@ export default function LobbyPage() {
     try {
       await api.post(`/event/${code}/start`);
 
-      trackEvent(POSTHOG_EVENTS.HUNT_STARTED, {
+      trackEvent(POSTHOG_EVENTS.GAME_STARTED, {
         event_code: code,
         participant_count: participants.length,
       });

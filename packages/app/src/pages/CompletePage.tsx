@@ -34,7 +34,7 @@ export default function CompletePage() {
   // Track completion analytics once
   useEffect(() => {
     if (!code) return;
-    trackEvent(POSTHOG_EVENTS.HUNT_COMPLETED, {
+    trackEvent(POSTHOG_EVENTS.GAME_COMPLETED, {
       event_code: code,
       participant_count: participants.length || 1,
       duration_minutes: 0,

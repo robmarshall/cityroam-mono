@@ -156,7 +156,7 @@ export default function JoinPage() {
         setParticipants(data.participants);
 
         // Track analytics
-        trackEvent(POSTHOG_EVENTS.HUNT_JOINED, {
+        trackEvent(POSTHOG_EVENTS.GAME_JOINED, {
           event_code: data.event.code,
           is_lead: data.participant.is_lead,
           participant_count: data.participants.length,

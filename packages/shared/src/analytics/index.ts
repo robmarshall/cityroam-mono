@@ -20,10 +20,10 @@ export const POSTHOG_EVENTS = {
   EVENT_LINK_SHARED: "event_link_shared",
 
   // App events
-  HUNT_JOINED: "hunt_joined",
-  HUNT_STARTED: "hunt_started",
-  HUNT_COMPLETED: "hunt_completed",
-  HUNT_ABANDONED: "hunt_abandoned",
+  GAME_JOINED: "game_joined",
+  GAME_STARTED: "game_started",
+  GAME_COMPLETED: "game_completed",
+  GAME_ABANDONED: "game_abandoned",
   REVIEW_LINK_CLICKED: "review_link_clicked",
   PARTICIPANT_RECONNECTED: "participant_reconnected",
 } as const;
@@ -43,10 +43,10 @@ export interface PostHogEventProperties {
   [POSTHOG_EVENTS.CHECKOUT_COMPLETED]: { event_code: string };
   [POSTHOG_EVENTS.EVENT_LINK_COPIED]: { event_code: string };
   [POSTHOG_EVENTS.EVENT_LINK_SHARED]: { event_code: string; share_method: string };
-  [POSTHOG_EVENTS.HUNT_JOINED]: { event_code: string; is_lead: boolean; participant_count: number };
-  [POSTHOG_EVENTS.HUNT_STARTED]: { event_code: string; participant_count: number };
-  [POSTHOG_EVENTS.HUNT_COMPLETED]: { event_code: string; participant_count: number; duration_minutes: number; stops_completed: number };
-  [POSTHOG_EVENTS.HUNT_ABANDONED]: { event_code: string; current_stop: number; duration_minutes: number };
+  [POSTHOG_EVENTS.GAME_JOINED]: { event_code: string; is_lead: boolean; participant_count: number };
+  [POSTHOG_EVENTS.GAME_STARTED]: { event_code: string; participant_count: number };
+  [POSTHOG_EVENTS.GAME_COMPLETED]: { event_code: string; participant_count: number; duration_minutes: number; stops_completed: number };
+  [POSTHOG_EVENTS.GAME_ABANDONED]: { event_code: string; current_stop: number; duration_minutes: number };
   [POSTHOG_EVENTS.REVIEW_LINK_CLICKED]: { event_code: string; platform: "google" | "tripadvisor" };
   [POSTHOG_EVENTS.PARTICIPANT_RECONNECTED]: { event_code: string; offline_duration_seconds: number };
 }

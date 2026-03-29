@@ -343,7 +343,7 @@ export default function ChatPage() {
     setLeaving(true);
     try {
       await api.post(`/event/${code}/leave`);
-      trackEvent(POSTHOG_EVENTS.HUNT_ABANDONED, {
+      trackEvent(POSTHOG_EVENTS.GAME_ABANDONED, {
         event_code: code,
         current_stop: event?.current_stop ?? 1,
         duration_minutes: 0,
