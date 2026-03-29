@@ -183,7 +183,8 @@
 
 ## Phase 13: In-Game Name Change (depends on Phase 6)
 
-- [ ] **13.1 API endpoint for name change** — `POST /event/:code/name` (behind session auth): accepts `{ name: string }`, validates with existing display name schema, updates `participants.display_name` in DB, updates Redis session data, publishes a `name_changed` control event via Redis pub/sub with `{ participant_id, old_name, new_name }`. Rate limit to prevent spam (e.g. 3 changes per event per participant).
+- [x] **13.1 API endpoint for name change** — `POST /event/:code/name` (behind session auth): accepts `{ name: string }`, validates with existing display name schema, updates `participants.display_name` in DB, updates Redis session data, publishes a `name_changed` control event via Redis pub/sub with `{ participant_id, old_name, new_name }`. Rate limit to prevent spam (e.g. 3 changes per event per participant).
+  - **Learning**: 13.1 also implemented the shared types and WS broadcast handler needed for 13.2 (ControlEventPayload variant, NameChangedPayload, WS subscription case), since the endpoint depends on them. Task 13.2 remaining work is client-side: displaying system message in ChatPage when name_changed is received.
 - [ ] **13.2 WebSocket name_changed broadcast** — add `name_changed` to the control event types in shared types (`packages/shared/src/types/`). HTTP subscriber picks up the pub/sub event and broadcasts to all connected participants. App displays a system message like "Alice changed their name to Bob".
 - [ ] **13.3 In-game menu UI for name change** — add a "Change Name" option to the existing menu in ChatPage (the same menu that has "Leave Game"). Tapping opens an inline form or modal with the current name pre-filled, a text input, and Save/Cancel buttons. On save, calls the name change endpoint. Show loading state and error handling. The menu should list: Change Name, Leave Game.
 
