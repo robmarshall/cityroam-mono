@@ -102,4 +102,11 @@ services:
       - "traefik.http.services.api-ws.loadbalancer.healthcheck.interval=30s"
 
 volumes:
-  postg
+  postgres-data:
+  redis-data:
+
+networks:
+  cityroam-network:
+    driver: bridge
+  coolify:
+    external: true
