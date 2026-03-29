@@ -65,7 +65,9 @@
       "Bash(grep -r \"describe\\\\|it\\\\|test\\\\|e2e\" /c/Users/rober/projects/city-roam-v2/packages/shared/src/*.test.ts)",
       "Bash(grep:*)",
       "Bash(grep -E \"\\\\.\\(ts\\)$\")",
-      "Bash(find /c/Users/rober/projects/city-roam-v2/packages -type f \\\\\\(-name *.ts -o -name *.tsx -o -name *.js -o -name *.jsx \\\\\\))"
+      "Bash(find /c/Users/rober/projects/city-roam-v2/packages -type f \\\\\\(-name *.ts -o -name *.tsx -o -name *.js -o -name *.jsx \\\\\\))",
+      "Bash(rm -rf node_modules package-lock.json)",
+      "Bash(npm i:*)"
     ],
     "deny": [],
     "ask": []
