@@ -30,6 +30,7 @@ import type {
   ErrorPayload,
   GuideTypingPayload,
   ParticipantTypingPayload,
+  NameChangedPayload,
 } from "@cityroam/shared/types";
 import { api } from "../lib/api";
 import { trackEvent } from "../lib/analytics";
@@ -176,6 +177,25 @@ export default function ChatPage() {
           clearTimeout(existingTimer);
           const next = new Map(prev);
           next.delete(payload.name);
+          return next;
+        });
+        break;
+      }
+      case "name_changed": {
+        const payload = msg.payload as NameChangedPayload;
+        setMessages((prev) => [
+          ...prev,
+          makeSystemMessage(
+            `${payload.old_name} changed their name to ${payload.new_name}`
+          ),
+        ]);
+        // Update typing indicator key if participant was typing
+        setParticipantsTyping((prev) => {
+          const existingTimer = prev.get(payload.old_name);
+          if (existingTimer == null) return prev;
+          const next = new Map(prev);
+          next.delete(payload.old_name);
+          next.set(payload.new_name, existingTimer);
           return next;
         });
         break;
