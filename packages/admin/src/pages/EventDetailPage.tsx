@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import type {
   AdminEventDetailResponse,
+  Message,
   SenderType,
   Participant,
 } from "@cityroam/shared/types";
@@ -293,47 +294,7 @@ export default function EventDetailPage() {
       </div>
 
       {/* Message Log */}
-      <div>
-        <h2 className="mb-4 text-lg font-semibold text-gray-900">
-          Messages ({messages.length})
-        </h2>
-
-        {messages.length === 0 ? (
-          <p className="text-sm text-gray-500">No messages yet.</p>
-        ) : (
-          <div className="max-h-[600px] overflow-y-auto rounded-lg border border-gray-200 p-4 space-y-3">
-            {[...messages]
-              .sort(
-                (a, b) =>
-                  new Date(a.created_at).getTime() -
-                  new Date(b.created_at).getTime(),
-              )
-              .map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`rounded-lg border p-3 ${SENDER_COLORS[msg.sender_type]}`}
-                >
-                  <div className="mb-1 flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-900">
-                      {msg.sender_name}
-                    </span>
-                    <span
-                      className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${SENDER_BADGE_COLORS[msg.sender_type]}`}
-                    >
-                      {msg.sender_type}
-                    </span>
-                    <span className="ml-auto text-xs text-gray-500">
-                      {formatTime(msg.created_at)}
-                    </span>
-                  </div>
-                  <p className="whitespace-pre-wrap text-sm text-gray-800">
-                    {msg.content}
-                  </p>
-                </div>
-              ))}
-          </div>
-        )}
-      </div>
+      <MessageLog messages={messages} participants={participants} />
     </div>
   );
 }
@@ -417,6 +378,219 @@ function InfoCard({ label, value }: { label: string; value: string }) {
         {label}
       </p>
       <p className="mt-1 text-sm font-medium text-gray-900">{value}</p>
+    </div>
+  );
+}
+
+const SENDER_TYPE_OPTIONS: { value: SenderType | "all"; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "user", label: "User" },
+  { value: "guide", label: "Guide" },
+  { value: "system", label: "System" },
+];
+
+function MessageLog({
+  messages,
+  participants,
+}: {
+  messages: Message[];
+  participants: Participant[];
+}) {
+  const [senderTypeFilter, setSenderTypeFilter] = useState<SenderType | "all">("all");
+  const [participantFilter, setParticipantFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isAtBottom, setIsAtBottom] = useState(true);
+
+  // Unique participant names from messages (only user messages have meaningful names)
+  const participantNames = useMemo(() => {
+    const names = new Set<string>();
+    for (const msg of messages) {
+      if (msg.sender_type === "user" && msg.sender_name) {
+        names.add(msg.sender_name);
+      }
+    }
+    return Array.from(names).sort();
+  }, [messages]);
+
+  const sortedAndFiltered = useMemo(() => {
+    const sorted = [...messages].sort(
+      (a, b) =>
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+    );
+
+    return sorted.filter((msg) => {
+      if (senderTypeFilter !== "all" && msg.sender_type !== senderTypeFilter) {
+        return false;
+      }
+      if (participantFilter !== "all" && msg.sender_name !== participantFilter) {
+        return false;
+      }
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        return (
+          msg.content.toLowerCase().includes(q) ||
+          msg.sender_name.toLowerCase().includes(q)
+        );
+      }
+      return true;
+    });
+  }, [messages, senderTypeFilter, participantFilter, searchQuery]);
+
+  const handleScroll = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
+    setIsAtBottom(atBottom);
+  };
+
+  const scrollToBottom = () => {
+    const el = scrollRef.current;
+    if (el) {
+      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    }
+  };
+
+  const hasActiveFilters =
+    senderTypeFilter !== "all" || participantFilter !== "all" || searchQuery !== "";
+
+  return (
+    <div>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-gray-900">
+          Messages{" "}
+          <span className="text-base font-normal text-gray-500">
+            ({sortedAndFiltered.length}
+            {hasActiveFilters ? ` of ${messages.length}` : ""})
+          </span>
+        </h2>
+      </div>
+
+      {messages.length === 0 ? (
+        <p className="text-sm text-gray-500">No messages yet.</p>
+      ) : (
+        <>
+          {/* Filters */}
+          <div className="mb-3 flex flex-wrap items-center gap-3">
+            {/* Sender type filter */}
+            <div className="flex rounded-lg border border-gray-200 bg-white">
+              {SENDER_TYPE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setSenderTypeFilter(opt.value)}
+                  className={`px-3 py-1.5 text-xs font-medium transition-colors first:rounded-l-lg last:rounded-r-lg ${
+                    senderTypeFilter === opt.value
+                      ? "bg-blue-600 text-white"
+                      : "text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Participant name filter */}
+            {participantNames.length > 0 && (
+              <select
+                value={participantFilter}
+                onChange={(e) => setParticipantFilter(e.target.value)}
+                className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-700"
+              >
+                <option value="all">All participants</option>
+                {participantNames.map((name) => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            {/* Search */}
+            <input
+              type="text"
+              placeholder="Search messages..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-700 placeholder-gray-400 w-48"
+            />
+
+            {/* Clear filters */}
+            {hasActiveFilters && (
+              <button
+                onClick={() => {
+                  setSenderTypeFilter("all");
+                  setParticipantFilter("all");
+                  setSearchQuery("");
+                }}
+                className="text-xs text-blue-600 hover:text-blue-800"
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
+
+          {/* Message list */}
+          <div className="relative">
+            <div
+              ref={scrollRef}
+              onScroll={handleScroll}
+              className="max-h-[600px] overflow-y-auto rounded-lg border border-gray-200 p-4 space-y-3"
+            >
+              {sortedAndFiltered.length === 0 ? (
+                <p className="py-8 text-center text-sm text-gray-500">
+                  No messages match the current filters.
+                </p>
+              ) : (
+                sortedAndFiltered.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`rounded-lg border p-3 ${SENDER_COLORS[msg.sender_type]}`}
+                  >
+                    <div className="mb-1 flex items-center gap-2">
+                      <span className="text-sm font-medium text-gray-900">
+                        {msg.sender_name}
+                      </span>
+                      <span
+                        className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${SENDER_BADGE_COLORS[msg.sender_type]}`}
+                      >
+                        {msg.sender_type}
+                      </span>
+                      {msg.image_url && (
+                        <span className="text-xs text-gray-400">
+                          (has image)
+                        </span>
+                      )}
+                      <span className="ml-auto text-xs text-gray-500">
+                        {formatTime(msg.created_at)}
+                      </span>
+                    </div>
+                    <p className="whitespace-pre-wrap text-sm text-gray-800">
+                      {msg.content}
+                    </p>
+                    {msg.image_url && (
+                      <img
+                        src={msg.image_url}
+                        alt="Message attachment"
+                        className="mt-2 max-h-48 rounded-md"
+                      />
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Scroll to bottom button */}
+            {!isAtBottom && sortedAndFiltered.length > 0 && (
+              <button
+                onClick={scrollToBottom}
+                className="absolute bottom-4 right-6 rounded-full bg-blue-600 px-3 py-1.5 text-xs font-medium text-white shadow-md hover:bg-blue-700"
+              >
+                Scroll to latest
+              </button>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }
