@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { PostHogProvider } from "@/components/PostHogProvider";
+import { Header } from "@/components/Header";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://cityroam.co.uk";
 
@@ -75,6 +76,7 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <Header />
         <PostHogProvider>{children}</PostHogProvider>
       </body>
     </html>
