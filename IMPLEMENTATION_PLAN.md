@@ -197,6 +197,7 @@
 - Referential integrity checks (e.g., "does this route have events?") must be inside the same transaction as the subsequent delete to avoid TOCTOU races.
 - Array-of-IDs reorder endpoints must validate uniqueness (`new Set(ids).size === ids.length`) in addition to checking membership and count. Duplicate IDs can pass length checks against the DB count in edge cases.
 - When creating a centralized env module, all other modules (redis, db, middleware) must import from it rather than reading `process.env` directly. Otherwise the validation layer is bypassed and env access is inconsistent.
+- When using `arrayMove` from dnd-kit to reorder items in state, remember that it only reorders the array — it does NOT update sort-key fields (e.g., `stop_number`) on the objects. If the render path re-sorts by that field, the drag result will visually revert. Fix: update the sort-key field on each item after `arrayMove`.
 - When converting console.log/error to structured logging, avoid adding new fields (especially PII like emails) that weren't in the original log calls. Structured logs make it easy to add context, but PII in logs creates compliance risk.
 - CORS origin checks in dev mode should use URL parsing or exact hostname matching, not `String.includes()` — substring matching on "localhost" would accept malicious domains containing that substring.
 - Any package that imports a library at the TypeScript level should list it as an explicit dependency, even if it's available transitively. Transitive deps can disappear on version bumps.
