@@ -166,7 +166,7 @@
 
 ## Phase 11: Admin Event Detail Enhancements (depends on Phase 8)
 
-- [ ] **11.1 Add REFUNDED event status** — add `'REFUNDED'` to the event status check constraint (new migration), update `EventStatus` type in shared types, add to `adminUpdateEventStatusSchema` validation, add status label/colour in admin `event-utils.ts` (e.g. red/orange badge)
+- [x] **11.1 Add REFUNDED event status** [COMPLETE] — added REFUNDED to DB check constraint (migration), shared types/validation, admin UI (orange badge), API expiry/join/WS exclusions, and player-facing error handling
 - [ ] **11.2 Event progress tracking in detail view** — enhance EventDetailPage to show hunt progress: current stop number vs total stops (e.g. "Stop 2 of 5"), hints given, wrong attempts, guide responses used. Display as a progress bar or step indicator at the top of the event detail
 - [ ] **11.3 Participant summary in detail view** — add a summary section showing: total participants, active vs inactive count, lead participant highlighted. Enhance the existing participants table with clearer status indicators (online/offline/left with reason)
 - [ ] **11.4 Full chat history view** — enhance the existing messages section on EventDetailPage with: sender-type filtering (user/guide/system), search/filter by participant name, message count, and improved scroll UX for long conversations. Messages already load from `GET /admin/events/:id`
@@ -204,6 +204,9 @@
 - When implementing typed interfaces, always cross-reference the full property definitions in the project-spec (§2.2.6), not just the spec summary in the deliverables section (§1.8). The deliverables section may say "typed properties per event" without listing the exact shapes.
 - Redis pub/sub: ioredis `.on("message")` is additive — each call adds another listener. When implementing subscribe/unsubscribe lifecycles, store handler references so they can be removed with `.off()` on cleanup. Otherwise listeners accumulate and stale closures fire on every message.
 - Non-atomic INCR+EXPIRE and RPUSH+EXPIRE patterns (as spec'd in §9.7) have a theoretical crash-window race condition. Acceptable for MVP but consider Lua scripts or MULTI/EXEC for hardening later.
+- When adding a new terminal status (like REFUNDED), audit ALL client-side substring-match checks (e.g. `hasBlockingError` in JoinPage) — these won't automatically pick up the new status. Prefer checking against an explicit set of terminal statuses rather than error message substrings.
+- Player-facing copy should consistently use "hunt" (not "event") — "event" is the internal/admin term.
+- When adding a new status, audit initialization objects like `Record<Status, number>` counts — TypeScript won't catch missing keys if the value is cast with `as`. Also audit error/reason strings and code comments that enumerate statuses by name.
 
 ## Notes
 - Phase 1.0 (docker-compose for postgres + redis) is the first task — developers need local DB/Redis immediately
