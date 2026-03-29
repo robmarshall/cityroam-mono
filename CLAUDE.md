@@ -26,6 +26,17 @@ Monorepo (npm workspaces) with 5 packages:
 - API runs on port 3001, WS on 3002, app on 5173, admin on 5174, marketing on 3000
 - `.env` at project root is loaded by Vite (via `envDir`) and tsx (via `--env-file`)
 
+## LLM Route Authoring
+
+Documentation for programmatically creating and editing treasure hunt routes lives in `docs/llm-authoring/`. When asked to create or edit a route, read all four files first:
+
+- `api-reference.md` — API endpoints, auth, request/response formats
+- `content-guide.md` — How to write clues, hints, directions, fun facts
+- `guide-personality.md` — Guide tone, message bank types and examples
+- `data-model.md` — Entity relationships, AI pipeline behaviour, answer matching rules
+
+Use `POST /admin/routes/bulk` to create a complete route with all stops in one call. Use the individual CRUD endpoints for edits.
+
 # Preferences
 
 - Never autosave. Save should always be an intentional user action via an explicit "Save" button. This applies to all admin UI: forms, reorder actions, inline edits, etc.

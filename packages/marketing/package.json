@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@cityroam/shared": "*",
+    "motion": "^12.38.0",
     "next": "^15",
     "posthog-js": "^1.364.1",
     "react": "^19",

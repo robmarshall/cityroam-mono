@@ -60,6 +60,11 @@ export const stopReorderSchema = z.object({
   stop_ids: z.array(z.string().uuid()).min(1, "At least one stop ID is required"),
 });
 
+export const bulkRouteCreateSchema = z.object({
+  route: routeSchema,
+  stops: z.array(stopSchema).min(1, "At least one stop is required").max(30, "Maximum 30 stops per route"),
+});
+
 export const messageBankSchema = z.object({
   type: z.enum([
     "success",
