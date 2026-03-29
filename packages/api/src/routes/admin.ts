@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { eq, sql, count, desc, and, asc, inArray, type SQL } from "drizzle-orm";
+import Stripe from "stripe";
 import { adminLoginSchema, adminUpdateEventStatusSchema, routeSchema, stopSchema, stopReorderSchema, imageUploadRequestSchema, messageBankSchema } from "@cityroam/shared/validation";
 import { generatePresignedUploadUrl } from "../services/s3.js";
 import type { AdminDashboardResponse, AdminEventListResponse, AdminEventDetailResponse, AdminRouteDetailResponse, AdminRouteListResponse, AdminMessageBankListResponse } from "@cityroam/shared/types";
@@ -8,6 +9,9 @@ import { db } from "../db/index.js";
 import { events, participants, messages, routes, stops, messageBanks } from "../db/schema/index.js";
 import { AppError } from "../middleware/error-handler.js";
 import { adminAuth, signAdminToken } from "../middleware/admin.js";
+import { createLogger } from "../lib/logger.js";
+
+const log = createLogger("admin");
 
 export const adminRoutes = new Hono();
 
@@ -41,6 +45,7 @@ adminRoutes.get("/admin/dashboard", adminAuth, async (c) => {
     IN_PROGRESS: 0,
     COMPLETED: 0,
     EXPIRED: 0,
+    REFUNDED: 0,
   };
 
   for (const row of statusCounts) {
@@ -169,7 +174,7 @@ adminRoutes.get("/admin/events/:id", adminAuth, async (c) => {
   const route = event.route_id
     ? await db.query.routes.findFirst({
         where: eq(routes.id, event.route_id),
-        columns: { name: true },
+        columns: { name: true, total_stops: true },
       })
     : null;
 
@@ -205,6 +210,7 @@ adminRoutes.get("/admin/events/:id", adminAuth, async (c) => {
       stripe_payment_id: event.stripe_payment_id,
     },
     route_name: route?.name ?? null,
+    total_stops: route?.total_stops ?? null,
     participants: eventParticipants.map((p) => ({
       id: p.id,
       event_id: p.event_id,
@@ -254,6 +260,64 @@ adminRoutes.patch("/admin/events/:id", adminAuth, async (c) => {
     .where(eq(events.id, id));
 
   return c.json({ success: true, status }, 200);
+});
+
+// POST /admin/events/:id/refund — issue a Stripe refund and update status
+adminRoutes.post("/admin/events/:id/refund", adminAuth, async (c) => {
+  const id = c.req.param("id");
+
+  const event = await db.query.events.findFirst({
+    where: eq(events.id, id),
+  });
+
+  if (!event) {
+    throw new AppError(404, "Event not found", "EVENT_NOT_FOUND");
+  }
+
+  if (event.status === "REFUNDED") {
+    throw new AppError(409, "Event has already been refunded", "ALREADY_REFUNDED");
+  }
+
+  if (!event.stripe_payment_id) {
+    throw new AppError(400, "Event has no associated payment to refund", "NO_PAYMENT");
+  }
+
+  const stripe = new Stripe(env.STRIPE_SECRET_KEY);
+
+  try {
+    await stripe.refunds.create({
+      payment_intent: event.stripe_payment_id,
+    });
+  } catch (err) {
+    if (err instanceof Stripe.errors.StripeError) {
+      log.error("Stripe refund failed", {
+        event_id: id,
+        stripe_error_code: err.code,
+        stripe_error_type: err.type,
+      });
+
+      // Map common Stripe error codes to meaningful messages
+      if (err.code === "charge_already_refunded") {
+        // Stripe says already refunded — sync our status and return success
+        await db.update(events).set({ status: "REFUNDED" }).where(eq(events.id, id));
+        return c.json({ success: true, status: "REFUNDED" }, 200);
+      }
+
+      const message = err.message || "Stripe refund failed";
+      throw new AppError(502, message, "STRIPE_REFUND_FAILED");
+    }
+    throw err;
+  }
+
+  // Update event status to REFUNDED
+  await db
+    .update(events)
+    .set({ status: "REFUNDED" })
+    .where(eq(events.id, id));
+
+  log.info("Event refunded", { event_id: id, stripe_payment_id: event.stripe_payment_id });
+
+  return c.json({ success: true, status: "REFUNDED" }, 200);
 });
 
 // ── S3 Upload ───────────────────────────────────────────────────────

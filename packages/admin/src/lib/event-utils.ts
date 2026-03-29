@@ -6,6 +6,7 @@ export const STATUS_LABELS: Record<EventStatus, string> = {
   IN_PROGRESS: "In Progress",
   COMPLETED: "Completed",
   EXPIRED: "Expired",
+  REFUNDED: "Refunded",
 };
 
 export const STATUS_COLORS: Record<EventStatus, { bg: string; text: string }> = {
@@ -14,6 +15,7 @@ export const STATUS_COLORS: Record<EventStatus, { bg: string; text: string }> = 
   IN_PROGRESS: { bg: "bg-blue-100", text: "text-blue-700" },
   COMPLETED: { bg: "bg-green-100", text: "text-green-700" },
   EXPIRED: { bg: "bg-red-100", text: "text-red-700" },
+  REFUNDED: { bg: "bg-orange-100", text: "text-orange-700" },
 };
 
 export const STATUS_ORDER: EventStatus[] = [
@@ -22,6 +24,7 @@ export const STATUS_ORDER: EventStatus[] = [
   "IN_PROGRESS",
   "COMPLETED",
   "EXPIRED",
+  "REFUNDED",
 ];
 
 export function formatDate(iso: string): string {

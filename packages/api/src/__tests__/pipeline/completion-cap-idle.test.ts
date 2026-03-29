@@ -61,7 +61,7 @@ import {
   publishMessage,
   publishControl,
 } from "../../redis/index.js";
-import { handleHuntCompletion } from "../../services/pipeline/handlers/hunt-completion.js";
+import { handleGameCompletion } from "../../services/pipeline/handlers/game-completion.js";
 import {
   isGuideResponseCapReached,
   sendCapReachedMessage,
@@ -76,9 +76,9 @@ import {
   getTrackedEvents,
 } from "../../services/pipeline/idle-timer.js";
 
-// ── Hunt completion ─────────────────────────────────────────────────
+// ── Game completion ─────────────────────────────────────────────────
 
-describe("handleHuntCompletion", () => {
+describe("handleGameCompletion", () => {
   const ctx = {
     eventId: "event-1",
     eventCode: "ABCD1234",
@@ -117,8 +117,8 @@ describe("handleHuntCompletion", () => {
     (db as any).returning.mockResolvedValue([sysMsg]);
   });
 
-  it("sends completion message with populated template variables, sets COMPLETED, publishes hunt_complete", async () => {
-    await handleHuntCompletion(ctx);
+  it("sends completion message with populated template variables, sets COMPLETED, publishes game_complete", async () => {
+    await handleGameCompletion(ctx);
 
     // Event updated to COMPLETED
     expect(db.update).toHaveBeenCalled();
@@ -141,13 +141,13 @@ describe("handleHuntCompletion", () => {
 
     // Control event
     expect(publishControl).toHaveBeenCalledWith("ABCD1234", {
-      type: "hunt_complete",
+      type: "game_complete",
       data: { summary: expect.stringContaining("Portland") },
     });
   });
 
   it("uses sender_type system, not guide", async () => {
-    await handleHuntCompletion(ctx);
+    await handleGameCompletion(ctx);
 
     expect((db as any).values).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -320,7 +320,7 @@ describe("idle-timer", () => {
 
     expect((db as any).values).toHaveBeenCalledWith(
       expect.objectContaining({
-        content: "It's been a while \u2014 the hunt is paused. Send any message to pick up where you left off.",
+        content: "It's been a while \u2014 the game is paused. Send any message to pick up where you left off.",
         sender_type: "system",
       }),
     );

@@ -264,7 +264,7 @@ export async function processIncomingMessage(
       await handleIdleResume(eventId, eventCode);
     }
 
-    // Step 13: Remove from idle tracking if hunt completed during this pipeline run
+    // Step 13: Remove from idle tracking if game completed during this pipeline run
     const updatedEvent = await db.query.events.findFirst({
       where: eq(schema.events.id, eventId),
       columns: { status: true },

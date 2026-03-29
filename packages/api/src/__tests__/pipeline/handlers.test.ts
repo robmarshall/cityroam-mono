@@ -51,16 +51,16 @@ vi.mock("../../services/pipeline/guide-response-cap.js", () => ({
   sendCapReachedMessage: vi.fn().mockResolvedValue(undefined),
 }));
 
-// ── Mock hunt-completion ────────────────────────────────────────────
-vi.mock("../../services/pipeline/handlers/hunt-completion.js", () => ({
-  handleHuntCompletion: vi.fn().mockResolvedValue(undefined),
+// ── Mock game-completion ────────────────────────────────────────────
+vi.mock("../../services/pipeline/handlers/game-completion.js", () => ({
+  handleGameCompletion: vi.fn().mockResolvedValue(undefined),
 }));
 
 // ── Imports (after mocks) ───────────────────────────────────────────
 import { db } from "../../db/index.js";
 import { appendMessage, publishMessage, removeMessage } from "../../redis/index.js";
 import { incrementGuideResponseCount } from "../../services/pipeline/guide-response-cap.js";
-import { handleHuntCompletion } from "../../services/pipeline/handlers/hunt-completion.js";
+import { handleGameCompletion } from "../../services/pipeline/handlers/game-completion.js";
 
 import {
   handleAnswerAttempt,
@@ -232,7 +232,7 @@ describe("handleAnswerAttempt", () => {
     );
   });
 
-  it("correct answer on last stop: triggers hunt completion flow", async () => {
+  it("correct answer on last stop: triggers game completion flow", async () => {
     const currentStop = makeMockStop({ stop_number: 3 });
 
     // stops.findFirst: current stop found, next stop NOT found
@@ -249,7 +249,7 @@ describe("handleAnswerAttempt", () => {
     const result = await handleAnswerAttempt(llm, ctx, "Town Hall");
 
     expect(result).toEqual({ handled: true, correct: true });
-    expect(handleHuntCompletion).toHaveBeenCalledWith({
+    expect(handleGameCompletion).toHaveBeenCalledWith({
       eventId: "evt-1",
       eventCode: "ABC123",
       routeId: "route-1",

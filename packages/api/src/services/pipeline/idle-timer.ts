@@ -153,7 +153,7 @@ async function scanIdleEvents(): Promise<void> {
           state.eventId,
           eventCode,
           event.current_stop,
-          "It's been a while — the hunt is paused. Send any message to pick up where you left off.",
+          "It's been a while — the game is paused. Send any message to pick up where you left off.",
         );
         state.pauseSent = true;
         state.nudgeSent = true; // No need to send nudge if pause already sent

@@ -3,7 +3,7 @@ import { buildS3Key, buildS3Url } from "@cityroam/shared/utils";
 import { db, schema } from "../../../db/index.js";
 import { env } from "../../../env.js";
 import { writeGuideMessage, getRandomMessageBank } from "./answer-attempt.js";
-import { handleHuntCompletion } from "./hunt-completion.js";
+import { handleGameCompletion } from "./game-completion.js";
 import { createLogger } from "../../../lib/logger.js";
 
 const log = createLogger("hint-request");
@@ -127,8 +127,8 @@ async function handleHintExhaustion(
       await writeGuideMessage(ctx.eventId, ctx.eventCode, nextStopNumber, "", imageUrl);
     }
   } else {
-    // Last stop — hints exhausted, trigger hunt completion
-    await handleHuntCompletion({
+    // Last stop — hints exhausted, trigger game completion
+    await handleGameCompletion({
       eventId: ctx.eventId,
       eventCode: ctx.eventCode,
       routeId: ctx.routeId,

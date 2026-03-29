@@ -79,7 +79,7 @@ function CheckoutSuccessContent() {
 
   const handleShare = useCallback(async () => {
     const shareData = {
-      title: "Join my City Roam treasure hunt!",
+      title: "Join my City Roam adventure!",
       url: eventUrl,
     };
 
@@ -132,7 +132,7 @@ function LoadingState() {
   return (
     <>
       <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-brand-500" />
-      <p className="mt-6 text-lg text-gray-600">Setting up your hunt...</p>
+      <p className="mt-6 text-lg text-gray-600">Setting up your experience...</p>
     </>
   );
 }

@@ -16,10 +16,10 @@ export default function CompletePage() {
 
   const [shared, setShared] = useState(false);
 
-  // Extract summary from navigation state (passed from ChatPage on hunt_complete)
+  // Extract summary from navigation state (passed from ChatPage on game complete)
   const summary = (location.state as { summary?: string } | null)?.summary ?? null;
 
-  // Disconnect WS on mount — hunt is over
+  // Disconnect WS on mount — game is over
   useEffect(() => {
     disconnect();
   }, [disconnect]);
@@ -34,7 +34,7 @@ export default function CompletePage() {
   // Track completion analytics once
   useEffect(() => {
     if (!code) return;
-    trackEvent(POSTHOG_EVENTS.HUNT_COMPLETED, {
+    trackEvent(POSTHOG_EVENTS.GAME_COMPLETED, {
       event_code: code,
       participant_count: participants.length || 1,
       duration_minutes: 0,
@@ -58,9 +58,9 @@ export default function CompletePage() {
     if (!code) return;
 
     const shareData: ShareData = {
-      title: "City Roam - AI Treasure Hunt",
-      text: "I just completed an amazing AI-guided treasure hunt! Check it out:",
-      url: `${window.location.origin}/app/hunt/${code}`,
+      title: "City Roam - AI City Adventure",
+      text: "I just completed an amazing AI-guided city adventure! Check it out:",
+      url: `${window.location.origin}/app/event/${code}`,
     };
 
     if (navigator.share && navigator.canShare?.(shareData)) {
@@ -93,7 +93,7 @@ export default function CompletePage() {
   const handleDone = useCallback(() => {
     clearParticipant();
     clearEvent();
-    navigate(`/hunt/${code}`, { replace: true });
+    navigate(`/event/${code}`, { replace: true });
   }, [clearParticipant, clearEvent, navigate, code]);
 
   if (!code) return null;
@@ -113,7 +113,7 @@ export default function CompletePage() {
         </div>
 
         <h1 className="mb-3 text-center text-2xl font-bold text-gray-900">
-          Hunt Complete!
+          Game Complete!
         </h1>
 
         {/* Summary from the guide's completion message */}
@@ -123,7 +123,7 @@ export default function CompletePage() {
 
         {!summary && (
           <p className="mb-8 max-w-md text-center text-gray-600">
-            Well done! You've completed the treasure hunt. We hope you enjoyed
+            Well done! You've completed the game. We hope you enjoyed
             exploring the city.
           </p>
         )}

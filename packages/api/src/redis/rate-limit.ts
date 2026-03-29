@@ -64,3 +64,14 @@ export async function checkParticipantRateLimit(
     PARTICIPANT_RATE_LIMIT_WINDOW_MS,
   );
 }
+
+export async function checkNameChangeRateLimit(
+  code: string,
+  participantId: string,
+): Promise<RateLimitResult> {
+  return checkRateLimit(
+    `ratelimit:namechange:${code}:${participantId}`,
+    3,
+    86_400_000,
+  );
+}

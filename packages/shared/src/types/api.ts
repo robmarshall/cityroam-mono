@@ -91,6 +91,7 @@ export interface AdminEventListResponse {
 export interface AdminEventDetailResponse {
   event: Event;
   route_name: string | null;
+  total_stops: number | null;
   participants: Participant[];
   messages: Message[];
   stripe_payment_id: string | null;

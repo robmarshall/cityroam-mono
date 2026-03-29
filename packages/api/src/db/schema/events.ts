@@ -22,5 +22,5 @@ export const events = pgTable("events", {
 }, (table) => [
   index("events_code_idx").on(table.code),
   index("events_status_idx").on(table.status),
-  check("events_status_check", sql`${table.status} IN ('NOT_STARTED', 'WAITING', 'IN_PROGRESS', 'COMPLETED', 'EXPIRED')`),
+  check("events_status_check", sql`${table.status} IN ('NOT_STARTED', 'WAITING', 'IN_PROGRESS', 'COMPLETED', 'EXPIRED', 'REFUNDED')`),
 ]);

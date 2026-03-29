@@ -10,6 +10,23 @@ import {
   stopSchema,
   imageUploadSchema,
 } from "@cityroam/shared/validation";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { api, ApiError } from "../lib/api";
 import { useAuthFetch } from "../contexts/AuthContext";
 
@@ -109,6 +126,102 @@ const BTN_DANGER =
   "rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700";
 
 // ---------------------------------------------------------------------------
+// SortableStop — drag-and-drop list item
+// ---------------------------------------------------------------------------
+
+function SortableStop({
+  stop,
+  index,
+  onEdit,
+  onDelete,
+  isDeleting,
+}: {
+  stop: Stop;
+  index: number;
+  onEdit: () => void;
+  onDelete: () => void;
+  isDeleting: boolean;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: stop.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-4 py-3"
+    >
+      {/* Drag handle */}
+      <button
+        type="button"
+        className="mr-3 cursor-grab touch-none text-gray-400 hover:text-gray-600"
+        {...attributes}
+        {...listeners}
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+          <circle cx="5" cy="3" r="1.5" />
+          <circle cx="11" cy="3" r="1.5" />
+          <circle cx="5" cy="8" r="1.5" />
+          <circle cx="11" cy="8" r="1.5" />
+          <circle cx="5" cy="13" r="1.5" />
+          <circle cx="11" cy="13" r="1.5" />
+        </svg>
+      </button>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-medium text-blue-700">
+            {index + 1}
+          </span>
+          <span className="text-sm font-medium text-gray-900">
+            {stop.name}
+          </span>
+        </div>
+        <div className="mt-1 flex items-center gap-3 text-xs text-gray-500">
+          <span>
+            Clue:{" "}
+            {stop.clue.length > 60
+              ? stop.clue.slice(0, 60) + "..."
+              : stop.clue}
+          </span>
+          <span>
+            {stop.accepted_answers.length} answer
+            {stop.accepted_answers.length !== 1 ? "s" : ""}
+          </span>
+          <span>
+            {stop.hints.length} hint
+            {stop.hints.length !== 1 ? "s" : ""}
+          </span>
+        </div>
+      </div>
+      <div className="ml-4 flex items-center gap-2">
+        <button onClick={onEdit} className={BTN_SECONDARY}>
+          Edit
+        </button>
+        <button
+          onClick={onDelete}
+          disabled={isDeleting}
+          className={BTN_DANGER}
+        >
+          {isDeleting ? "Deleting..." : "Delete"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
@@ -140,9 +253,10 @@ export default function RouteEditorPage() {
   // Tag input for accepted_answers
   const [answerInput, setAnswerInput] = useState("");
 
-  // Drag state
-  const dragItem = useRef<number | null>(null);
-  const dragOverItem = useRef<number | null>(null);
+  // Reorder state — tracks whether local order differs from saved order
+  const savedStopIds = useRef<string[]>([]);
+  const [reorderedStopIds, setReorderedStopIds] = useState<string[] | null>(null);
+  const [savingOrder, setSavingOrder] = useState(false);
 
   // Image upload
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -159,6 +273,10 @@ export default function RouteEditorPage() {
       );
       setRoute(res.route);
       setStops(res.stops);
+      savedStopIds.current = [...res.stops]
+        .sort((a, b) => a.stop_number - b.stop_number)
+        .map((s) => s.id);
+      setReorderedStopIds(null);
       setRouteForm(routeToForm(res.route));
     } catch (err) {
       if (err instanceof ApiError && err.status === 404) {
@@ -444,49 +562,58 @@ export default function RouteEditorPage() {
     }
   }
 
-  // ------- Drag & Drop -------
-  // Drag indices refer to sortedStops (rendered order), so we operate on
-  // sortedStops and write back the full reordered array.
-  function handleDragStart(index: number) {
-    dragItem.current = index;
-  }
+  // ------- Drag & Drop (dnd-kit) -------
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
 
-  function handleDragEnter(index: number) {
-    dragOverItem.current = index;
-  }
-
-  async function handleDrop() {
-    if (dragItem.current === null || dragOverItem.current === null) return;
-    if (dragItem.current === dragOverItem.current) {
-      dragItem.current = null;
-      dragOverItem.current = null;
-      return;
-    }
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
 
     const sorted = [...stops].sort((a, b) => a.stop_number - b.stop_number);
-    const [removed] = sorted.splice(dragItem.current, 1);
-    sorted.splice(dragOverItem.current, 0, removed);
-    const reordered = sorted;
+    const oldIndex = sorted.findIndex((s) => s.id === active.id);
+    const newIndex = sorted.findIndex((s) => s.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
 
-    dragItem.current = null;
-    dragOverItem.current = null;
-
+    const reordered = arrayMove(sorted, oldIndex, newIndex).map((s, i) => ({
+      ...s,
+      stop_number: i + 1,
+    }));
     setStops(reordered);
 
+    // Check if reordered IDs differ from the saved order
+    const newIds = reordered.map((s) => s.id);
+    const changed = savedStopIds.current.some((sid, i) => sid !== newIds[i]);
+    setReorderedStopIds(changed ? newIds : null);
+  }
+
+  async function handleSaveOrder() {
+    if (!id || !reorderedStopIds) return;
+    setSavingOrder(true);
     try {
       await authFetch(() =>
         api.put(`/admin/routes/${id}/stops/reorder`, {
-          stop_ids: reordered.map((s) => s.id),
+          stop_ids: reorderedStopIds,
         }),
       );
+      setReorderedStopIds(null);
       await fetchRoute();
     } catch (err) {
       if (err instanceof ApiError && err.status !== 401) {
+        alert("Failed to save stop order.");
         await fetchRoute();
+        setReorderedStopIds(null);
       } else if (!(err instanceof ApiError)) {
         alert("An unexpected error occurred while reordering.");
         await fetchRoute();
+        setReorderedStopIds(null);
       }
+    } finally {
+      setSavingOrder(false);
     }
   }
 
@@ -688,59 +815,48 @@ export default function RouteEditorPage() {
             </p>
           ) : (
             <div className="mb-4 space-y-2">
-              {sortedStops.map((stop, index) => (
-                <div
-                  key={stop.id}
-                  draggable
-                  onDragStart={() => handleDragStart(index)}
-                  onDragEnter={() => handleDragEnter(index)}
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={handleDrop}
-                  className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-4 py-3 cursor-grab"
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={sortedStops.map((s) => s.id)}
+                  strategy={verticalListSortingStrategy}
                 >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-medium text-blue-700">
-                        {stop.stop_number}
-                      </span>
-                      <span className="text-sm font-medium text-gray-900">
-                        {stop.name}
-                      </span>
-                    </div>
-                    <div className="mt-1 flex items-center gap-3 text-xs text-gray-500">
-                      <span>
-                        Clue:{" "}
-                        {stop.clue.length > 60
-                          ? stop.clue.slice(0, 60) + "..."
-                          : stop.clue}
-                      </span>
-                      <span>
-                        {stop.accepted_answers.length} answer
-                        {stop.accepted_answers.length !== 1 ? "s" : ""}
-                      </span>
-                      <span>
-                        {stop.hints.length} hint
-                        {stop.hints.length !== 1 ? "s" : ""}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="ml-4 flex items-center gap-2">
-                    <button
-                      onClick={() => openEditStop(stop)}
-                      className={BTN_SECONDARY}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDeleteStop(stop.id)}
-                      disabled={deletingStopId === stop.id}
-                      className={BTN_DANGER}
-                    >
-                      {deletingStopId === stop.id ? "Deleting..." : "Delete"}
-                    </button>
-                  </div>
+                  {sortedStops.map((stop, index) => (
+                    <SortableStop
+                      key={stop.id}
+                      stop={stop}
+                      index={index}
+                      onEdit={() => openEditStop(stop)}
+                      onDelete={() => handleDeleteStop(stop.id)}
+                      isDeleting={deletingStopId === stop.id}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
+              {reorderedStopIds && (
+                <div className="flex items-center gap-2 pt-2">
+                  <button
+                    onClick={handleSaveOrder}
+                    disabled={savingOrder}
+                    className={BTN_PRIMARY}
+                  >
+                    {savingOrder ? "Saving..." : "Save Order"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setReorderedStopIds(null);
+                      fetchRoute();
+                    }}
+                    disabled={savingOrder}
+                    className={BTN_SECONDARY}
+                  >
+                    Cancel
+                  </button>
                 </div>
-              ))}
+              )}
             </div>
           )}
 

@@ -45,7 +45,7 @@ export function CTAButton({ location }: { location: "hero" | "pricing" | "faq" }
         disabled={loading}
         className="inline-flex items-center justify-center rounded-button bg-brand-500 px-8 py-4 text-lg font-semibold text-white transition-colors hover:bg-brand-600 active:bg-brand-700 disabled:opacity-70 disabled:cursor-not-allowed"
       >
-        {loading ? "Redirecting to checkout..." : "Book Your Hunt"}
+        {loading ? "Redirecting to checkout..." : "Book Your Experience"}
       </button>
       {error && (
         <p className="text-sm text-red-600">

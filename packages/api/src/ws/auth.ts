@@ -107,11 +107,11 @@ export async function authenticateConnection(
     };
   }
 
-  if (event.status === "COMPLETED" || event.status === "EXPIRED") {
+  if (event.status === "COMPLETED" || event.status === "EXPIRED" || event.status === "REFUNDED") {
     return {
       success: false,
       closeCode: WS_CLOSE_CODES.EVENT_COMPLETED_OR_EXPIRED,
-      reason: "Event is completed or expired",
+      reason: "Event is completed, expired, or refunded",
     };
   }
 

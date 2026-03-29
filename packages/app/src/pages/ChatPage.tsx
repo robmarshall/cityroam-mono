@@ -17,7 +17,7 @@ import {
   MenuItem,
   MenuItems,
 } from "@headlessui/react";
-import { chatMessageSchema } from "@cityroam/shared/validation";
+import { chatMessageSchema, displayNameSchema } from "@cityroam/shared/validation";
 import { formatTimestamp } from "@cityroam/shared/utils";
 import { TYPING_INDICATOR_DEBOUNCE_MS } from "@cityroam/shared/constants";
 import { POSTHOG_EVENTS } from "@cityroam/shared/analytics";
@@ -26,12 +26,13 @@ import type {
   WebSocketMessage,
   ParticipantJoinedPayload,
   ParticipantLeftPayload,
-  HuntCompletePayload,
+  GameCompletePayload,
   ErrorPayload,
   GuideTypingPayload,
   ParticipantTypingPayload,
+  NameChangedPayload,
 } from "@cityroam/shared/types";
-import { api } from "../lib/api";
+import { api, ApiError } from "../lib/api";
 import { trackEvent } from "../lib/analytics";
 import { useParticipant } from "../contexts/ParticipantContext";
 import { useEvent } from "../contexts/EventContext";
@@ -59,7 +60,7 @@ const FATAL_CLOSE_MESSAGES: Record<number, string> = {
 export default function ChatPage() {
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
-  const { participant, clearParticipant } = useParticipant();
+  const { participant, setParticipant, clearParticipant } = useParticipant();
   const { event, clearEvent } = useEvent();
   const {
     status: wsStatus,
@@ -84,6 +85,10 @@ export default function ChatPage() {
   const [participantsTyping, setParticipantsTyping] = useState<Map<string, number>>(new Map());
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const [showNameDialog, setShowNameDialog] = useState(false);
+  const [nameInput, setNameInput] = useState("");
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [savingName, setSavingName] = useState(false);
   const participantsTypingRef = useRef(participantsTyping);
   participantsTypingRef.current = participantsTyping;
   const wasReconnectingRef = useRef(false);
@@ -98,7 +103,7 @@ export default function ChatPage() {
   // Guard: redirect to join if no session context
   useEffect(() => {
     if (!participant || !event || !code) {
-      navigate(`/hunt/${code ?? ""}`, { replace: true });
+      navigate(`/event/${code ?? ""}`, { replace: true });
     }
   }, [participant, event, code, navigate]);
 
@@ -106,7 +111,7 @@ export default function ChatPage() {
   useEffect(() => {
     if (closeCode === null || !code) return;
     if (REJOIN_CLOSE_CODES.has(closeCode)) {
-      navigate(`/hunt/${code}`, { replace: true });
+      navigate(`/event/${code}`, { replace: true });
     }
   }, [closeCode, code, navigate]);
 
@@ -159,7 +164,7 @@ export default function ChatPage() {
         const payload = msg.payload as ParticipantJoinedPayload;
         setMessages((prev) => [
           ...prev,
-          makeSystemMessage(`${payload.name} joined the hunt`),
+          makeSystemMessage(`${payload.name} joined the game`),
         ]);
         break;
       }
@@ -167,7 +172,7 @@ export default function ChatPage() {
         const payload = msg.payload as ParticipantLeftPayload;
         setMessages((prev) => [
           ...prev,
-          makeSystemMessage(`${payload.name} left the hunt`),
+          makeSystemMessage(`${payload.name} left the game`),
         ]);
         // Clear typing indicator for the leaving participant
         setParticipantsTyping((prev) => {
@@ -180,9 +185,28 @@ export default function ChatPage() {
         });
         break;
       }
-      case "hunt_complete": {
-        const payload = msg.payload as HuntCompletePayload;
-        navigate(`/hunt/${code}/complete`, {
+      case "name_changed": {
+        const payload = msg.payload as NameChangedPayload;
+        setMessages((prev) => [
+          ...prev,
+          makeSystemMessage(
+            `${payload.old_name} changed their name to ${payload.new_name}`
+          ),
+        ]);
+        // Update typing indicator key if participant was typing
+        setParticipantsTyping((prev) => {
+          const existingTimer = prev.get(payload.old_name);
+          if (existingTimer == null) return prev;
+          const next = new Map(prev);
+          next.delete(payload.old_name);
+          next.set(payload.new_name, existingTimer);
+          return next;
+        });
+        break;
+      }
+      case "game_complete": {
+        const payload = msg.payload as GameCompletePayload;
+        navigate(`/event/${code}/complete`, {
           replace: true,
           state: { summary: payload.summary },
         });
@@ -337,13 +361,13 @@ export default function ChatPage() {
     setHasNewMessages(false);
   };
 
-  // Leave hunt
+  // Leave game
   const handleLeave = useCallback(async () => {
     if (!code || leaving) return;
     setLeaving(true);
     try {
       await api.post(`/event/${code}/leave`);
-      trackEvent(POSTHOG_EVENTS.HUNT_ABANDONED, {
+      trackEvent(POSTHOG_EVENTS.GAME_ABANDONED, {
         event_code: code,
         current_stop: event?.current_stop ?? 1,
         duration_minutes: 0,
@@ -354,8 +378,50 @@ export default function ChatPage() {
     disconnect();
     clearParticipant();
     clearEvent();
-    navigate(`/hunt/${code}`, { replace: true });
+    navigate(`/event/${code}`, { replace: true });
   }, [code, leaving, event, disconnect, clearParticipant, clearEvent, navigate]);
+
+  // Change display name
+  const openNameDialog = useCallback(() => {
+    if (!participant) return;
+    setNameInput(participant.display_name);
+    setNameError(null);
+    setShowNameDialog(true);
+  }, [participant]);
+
+  const handleChangeName = useCallback(async () => {
+    if (!code || savingName) return;
+    const trimmed = nameInput.trim();
+    const result = displayNameSchema.safeParse(trimmed);
+    if (!result.success) {
+      setNameError(result.error.issues[0]?.message ?? "Invalid name");
+      return;
+    }
+    if (participant && trimmed === participant.display_name) {
+      setShowNameDialog(false);
+      return;
+    }
+    setSavingName(true);
+    setNameError(null);
+    try {
+      await api.post<{ success: boolean; display_name: string }>(
+        `/event/${code}/name`,
+        { name: trimmed },
+      );
+      if (participant) {
+        setParticipant({ ...participant, display_name: trimmed });
+      }
+      setShowNameDialog(false);
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setNameError(err.message);
+      } else {
+        setNameError("Failed to change name. Please try again.");
+      }
+    } finally {
+      setSavingName(false);
+    }
+  }, [code, nameInput, savingName, participant, setParticipant]);
 
   if (!participant || !event || !code) return null;
 
@@ -386,10 +452,18 @@ export default function ChatPage() {
           >
             <MenuItem>
               <button
+                onClick={openNameDialog}
+                className="flex w-full items-center px-4 py-2.5 text-sm text-gray-700 data-[focus]:bg-gray-50"
+              >
+                Change Name
+              </button>
+            </MenuItem>
+            <MenuItem>
+              <button
                 onClick={() => setShowLeaveDialog(true)}
                 className="flex w-full items-center px-4 py-2.5 text-sm text-red-600 data-[focus]:bg-gray-50"
               >
-                Leave Hunt
+                Leave Game
               </button>
             </MenuItem>
           </MenuItems>
@@ -530,10 +604,10 @@ export default function ChatPage() {
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <DialogPanel className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
             <DialogTitle className="text-lg font-semibold text-gray-900">
-              Leave Hunt?
+              Leave Game?
             </DialogTitle>
             <p className="mt-2 text-sm text-gray-600">
-              You'll be removed from the hunt. You can rejoin later by opening the link again.
+              You'll be removed from the game. You can rejoin later by opening the link again.
             </p>
             <div className="mt-6 flex gap-3">
               <button
@@ -549,6 +623,61 @@ export default function ChatPage() {
                 className="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
               >
                 {leaving ? "Leaving..." : "Leave"}
+              </button>
+            </div>
+          </DialogPanel>
+        </div>
+      </Dialog>
+
+      {/* Change name dialog */}
+      <Dialog
+        open={showNameDialog}
+        onClose={() => !savingName && setShowNameDialog(false)}
+        className="relative z-50"
+      >
+        <DialogBackdrop className="fixed inset-0 bg-black/40" />
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <DialogPanel className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+            <DialogTitle className="text-lg font-semibold text-gray-900">
+              Change Name
+            </DialogTitle>
+            <div className="mt-3">
+              <input
+                type="text"
+                value={nameInput}
+                onChange={(e) => {
+                  setNameInput(e.target.value);
+                  setNameError(null);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleChangeName();
+                  }
+                }}
+                maxLength={30}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                placeholder="Enter your name"
+                autoFocus
+              />
+              {nameError && (
+                <p className="mt-1.5 text-xs text-red-600">{nameError}</p>
+              )}
+            </div>
+            <div className="mt-5 flex gap-3">
+              <button
+                onClick={() => setShowNameDialog(false)}
+                disabled={savingName}
+                className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleChangeName}
+                disabled={savingName}
+                className="flex-1 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
+              >
+                {savingName ? "Saving..." : "Save"}
               </button>
             </div>
           </DialogPanel>

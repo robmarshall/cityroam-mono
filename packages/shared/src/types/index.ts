@@ -26,7 +26,8 @@ export type {
   ParticipantJoinedPayload,
   ParticipantLeftPayload,
   GameStartedPayload,
-  HuntCompletePayload,
+  GameCompletePayload,
+  NameChangedPayload,
   PongPayload,
   ErrorPayload,
 } from "./websocket.js";

@@ -6,7 +6,7 @@ import type { LLMService } from "../../llm/interface.js";
 import { db, schema } from "../../../db/index.js";
 import { appendMessage, publishMessage } from "../../../redis/index.js";
 import { incrementGuideResponseCount } from "../guide-response-cap.js";
-import { handleHuntCompletion } from "./hunt-completion.js";
+import { handleGameCompletion } from "./game-completion.js";
 import { env } from "../../../env.js";
 import { createLogger } from "../../../lib/logger.js";
 
@@ -40,7 +40,7 @@ function buildAnswerMatchPrompt(
   acceptedAnswers: string[],
   userMessage: string,
 ): string {
-  return `You are an answer checker for a treasure hunt game. Your only job is to decide whether the player's message is a correct answer to the current clue.
+  return `You are an answer checker for a city exploration game. Your only job is to decide whether the player's message is a correct answer to the current clue.
 
 Clue: "${currentClue}"
 Accepted answers: ${JSON.stringify(acceptedAnswers)}
@@ -243,8 +243,8 @@ async function handleCorrectAnswer(
       await writeGuideMessage(ctx.eventId, ctx.eventCode, nextStopNumber, "", imageUrl);
     }
   } else {
-    // Last stop completed — trigger hunt completion
-    await handleHuntCompletion({
+    // Last stop completed — trigger game completion
+    await handleGameCompletion({
       eventId: ctx.eventId,
       eventCode: ctx.eventCode,
       routeId: ctx.routeId,

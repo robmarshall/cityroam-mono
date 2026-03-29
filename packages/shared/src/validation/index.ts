@@ -18,4 +18,5 @@ export {
 export {
   joinEventRequestSchema,
   startEventRequestSchema,
+  changeNameRequestSchema,
 } from "./api-requests.js";

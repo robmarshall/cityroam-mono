@@ -22,7 +22,7 @@ export interface TypingPayload {
 
 export type ControlEventPayload =
   | { type: "game_started"; data: { started_by: string } }
-  | { type: "hunt_complete"; data: { summary: string } }
+  | { type: "game_complete"; data: { summary: string } }
   | {
       type: "participant_joined";
       data: { name: string; participant_count: number };
@@ -34,4 +34,8 @@ export type ControlEventPayload =
         participant_count: number;
         reason: ParticipantLeftReason;
       };
+    }
+  | {
+      type: "name_changed";
+      data: { participant_id: string; old_name: string; new_name: string };
     };

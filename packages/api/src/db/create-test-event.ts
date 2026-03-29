@@ -22,7 +22,7 @@ async function main() {
   `;
 
   console.log("Created event:", result[0]);
-  console.log(`\nOpen: http://localhost:5173/app/hunt/${code}`);
+  console.log(`\nOpen: http://localhost:5173/app/event/${code}`);
   await sql.end();
 }
 

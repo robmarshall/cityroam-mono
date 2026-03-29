@@ -11,7 +11,7 @@ let sweepTimer: ReturnType<typeof setInterval> | null = null;
 
 /**
  * Expire all events whose expires_at has passed and are not already
- * COMPLETED or EXPIRED. Runs as a background sweep every 6 hours.
+ * COMPLETED, EXPIRED, or REFUNDED. Runs as a background sweep every 6 hours.
  */
 export async function sweepExpiredEvents(): Promise<number> {
   const result = await db
@@ -20,7 +20,7 @@ export async function sweepExpiredEvents(): Promise<number> {
     .where(
       and(
         lt(events.expires_at, new Date()),
-        notInArray(events.status, ["COMPLETED", "EXPIRED"]),
+        notInArray(events.status, ["COMPLETED", "EXPIRED", "REFUNDED"]),
       ),
     )
     .returning({ id: events.id });
