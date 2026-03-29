@@ -26,7 +26,7 @@ services:
       - cityroam-network
     restart: unless-stopped
 
-  redis:
+  cityroam-redis:
     image: redis:7
     command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD}"]
     volumes:
@@ -49,12 +49,12 @@ services:
       NODE_ENV: production
       PORT: "3001"
       DATABASE_URL: postgresql://${POSTGRES_USER:-cityroam}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-cityroam}
-      REDIS_URL: redis://${REDIS_PASSWORD:+:${REDIS_PASSWORD}@}redis:6379
+      REDIS_URL: redis://${REDIS_PASSWORD:+:${REDIS_PASSWORD}@}cityroam-redis:6379
     env_file: .env
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
+      cityroam-redis:
         condition: service_healthy
     networks:
       - cityroam-network
@@ -79,12 +79,12 @@ services:
       NODE_ENV: production
       WS_PORT: "3002"
       DATABASE_URL: postgresql://${POSTGRES_USER:-cityroam}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-cityroam}
-      REDIS_URL: redis://${REDIS_PASSWORD:+:${REDIS_PASSWORD}@}redis:6379
+      REDIS_URL: redis://${REDIS_PASSWORD:+:${REDIS_PASSWORD}@}cityroam-redis:6379
     env_file: .env
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
+      cityroam-redis:
         condition: service_healthy
     networks:
       - cityroam-network
