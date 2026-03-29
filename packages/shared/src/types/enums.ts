@@ -3,7 +3,8 @@ export type EventStatus =
   | "WAITING"
   | "IN_PROGRESS"
   | "COMPLETED"
-  | "EXPIRED";
+  | "EXPIRED"
+  | "REFUNDED";
 
 export type SenderType = "user" | "guide" | "system";
 

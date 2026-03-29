@@ -41,6 +41,7 @@ adminRoutes.get("/admin/dashboard", adminAuth, async (c) => {
     IN_PROGRESS: 0,
     COMPLETED: 0,
     EXPIRED: 0,
+    REFUNDED: 0,
   };
 
   for (const row of statusCounts) {

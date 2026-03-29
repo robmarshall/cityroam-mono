@@ -41,6 +41,8 @@ function friendlyError(err: unknown): string {
         return "This hunt has expired.";
       case "EVENT_COMPLETED":
         return "This hunt has already finished.";
+      case "EVENT_REFUNDED":
+        return "This hunt has been refunded.";
       case "INVALID_INPUT":
         return "That doesn't look like a valid hunt code. Double-check the link or code you were given.";
       default:
@@ -98,13 +100,15 @@ export default function JoinPage() {
         // Event exists but user has no session — check if joinable
         if (
           data.event.status === "COMPLETED" ||
-          data.event.status === "EXPIRED"
+          data.event.status === "EXPIRED" ||
+          data.event.status === "REFUNDED"
         ) {
-          setError(
-            data.event.status === "COMPLETED"
-              ? "This hunt has already finished."
-              : "This hunt has expired.",
-          );
+          const statusMessages: Record<string, string> = {
+            COMPLETED: "This hunt has already finished.",
+            EXPIRED: "This hunt has expired.",
+            REFUNDED: "This hunt has been refunded.",
+          };
+          setError(statusMessages[data.event.status] || "This hunt is no longer available.");
         }
       } catch (err) {
         if (cancelled) return;
@@ -188,7 +192,8 @@ export default function JoinPage() {
     error &&
     (error.includes("doesn't exist") ||
       error.includes("has expired") ||
-      error.includes("has already finished"));
+      error.includes("has already finished") ||
+      error.includes("has been refunded"));
 
   return (
     <div className="flex min-h-svh items-center justify-center bg-white px-4">

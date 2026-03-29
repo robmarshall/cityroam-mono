@@ -62,7 +62,8 @@ eventRoutes.get("/event/:code", async (c) => {
     event.expires_at &&
     new Date(event.expires_at) < new Date() &&
     event.status !== "COMPLETED" &&
-    event.status !== "EXPIRED"
+    event.status !== "EXPIRED" &&
+    event.status !== "REFUNDED"
   ) {
     await db
       .update(events)
@@ -140,6 +141,10 @@ eventRoutes.post("/event/:code/join", async (c) => {
 
   if (event.status === "COMPLETED") {
     throw new AppError(410, "Event is completed", "EVENT_COMPLETED");
+  }
+
+  if (event.status === "REFUNDED") {
+    throw new AppError(410, "Event has been refunded", "EVENT_REFUNDED");
   }
 
   // Count active participants

@@ -53,7 +53,7 @@ export const imageUploadRequestSchema = z.object({
 });
 
 export const adminUpdateEventStatusSchema = z.object({
-  status: z.enum(["NOT_STARTED", "WAITING", "IN_PROGRESS", "COMPLETED", "EXPIRED"]),
+  status: z.enum(["NOT_STARTED", "WAITING", "IN_PROGRESS", "COMPLETED", "EXPIRED", "REFUNDED"]),
 });
 
 export const stopReorderSchema = z.object({
