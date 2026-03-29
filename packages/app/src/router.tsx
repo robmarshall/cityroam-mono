@@ -27,7 +27,7 @@ function SuspenseWrapper({ children }: { children: React.ReactNode }) {
 export const router = createBrowserRouter(
   [
     {
-      path: "hunt/:code",
+      path: "event/:code",
       element: (
         <SuspenseWrapper>
           <JoinPage />
@@ -35,7 +35,7 @@ export const router = createBrowserRouter(
       ),
     },
     {
-      path: "hunt/:code/lobby",
+      path: "event/:code/lobby",
       element: (
         <SuspenseWrapper>
           <LobbyPage />
@@ -43,7 +43,7 @@ export const router = createBrowserRouter(
       ),
     },
     {
-      path: "hunt/:code/play",
+      path: "event/:code/play",
       element: (
         <SuspenseWrapper>
           <ChatPage />
@@ -51,7 +51,7 @@ export const router = createBrowserRouter(
       ),
     },
     {
-      path: "hunt/:code/complete",
+      path: "event/:code/complete",
       element: (
         <SuspenseWrapper>
           <CompletePage />

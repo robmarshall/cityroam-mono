@@ -98,7 +98,7 @@ export default function ChatPage() {
   // Guard: redirect to join if no session context
   useEffect(() => {
     if (!participant || !event || !code) {
-      navigate(`/hunt/${code ?? ""}`, { replace: true });
+      navigate(`/event/${code ?? ""}`, { replace: true });
     }
   }, [participant, event, code, navigate]);
 
@@ -106,7 +106,7 @@ export default function ChatPage() {
   useEffect(() => {
     if (closeCode === null || !code) return;
     if (REJOIN_CLOSE_CODES.has(closeCode)) {
-      navigate(`/hunt/${code}`, { replace: true });
+      navigate(`/event/${code}`, { replace: true });
     }
   }, [closeCode, code, navigate]);
 
@@ -182,7 +182,7 @@ export default function ChatPage() {
       }
       case "hunt_complete": {
         const payload = msg.payload as HuntCompletePayload;
-        navigate(`/hunt/${code}/complete`, {
+        navigate(`/event/${code}/complete`, {
           replace: true,
           state: { summary: payload.summary },
         });
@@ -354,7 +354,7 @@ export default function ChatPage() {
     disconnect();
     clearParticipant();
     clearEvent();
-    navigate(`/hunt/${code}`, { replace: true });
+    navigate(`/event/${code}`, { replace: true });
   }, [code, leaving, event, disconnect, clearParticipant, clearEvent, navigate]);
 
   if (!participant || !event || !code) return null;

@@ -60,7 +60,7 @@ export default function CompletePage() {
     const shareData: ShareData = {
       title: "City Roam - AI Treasure Hunt",
       text: "I just completed an amazing AI-guided treasure hunt! Check it out:",
-      url: `${window.location.origin}/app/hunt/${code}`,
+      url: `${window.location.origin}/app/event/${code}`,
     };
 
     if (navigator.share && navigator.canShare?.(shareData)) {
@@ -93,7 +93,7 @@ export default function CompletePage() {
   const handleDone = useCallback(() => {
     clearParticipant();
     clearEvent();
-    navigate(`/hunt/${code}`, { replace: true });
+    navigate(`/event/${code}`, { replace: true });
   }, [clearParticipant, clearEvent, navigate, code]);
 
   if (!code) return null;

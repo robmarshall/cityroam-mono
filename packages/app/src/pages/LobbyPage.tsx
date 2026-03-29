@@ -43,16 +43,16 @@ export default function LobbyPage() {
   // Guard: redirect to join if no session context
   useEffect(() => {
     if (!participant || !event || !code) {
-      navigate(`/hunt/${code ?? ""}`, { replace: true });
+      navigate(`/event/${code ?? ""}`, { replace: true });
     }
   }, [participant, event, code, navigate]);
 
   // If event is already IN_PROGRESS, redirect to play
   useEffect(() => {
     if (event?.status === "IN_PROGRESS") {
-      navigate(`/hunt/${code}/play`, { replace: true });
+      navigate(`/event/${code}/play`, { replace: true });
     } else if (event?.status === "COMPLETED") {
-      navigate(`/hunt/${code}/complete`, { replace: true });
+      navigate(`/event/${code}/complete`, { replace: true });
     }
   }, [event?.status, code, navigate]);
 
@@ -60,7 +60,7 @@ export default function LobbyPage() {
   useEffect(() => {
     if (closeCode === null || !code) return;
     if (REJOIN_CLOSE_CODES.has(closeCode)) {
-      navigate(`/hunt/${code}`, { replace: true });
+      navigate(`/event/${code}`, { replace: true });
     }
   }, [closeCode, code, navigate]);
 

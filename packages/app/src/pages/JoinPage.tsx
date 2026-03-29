@@ -19,13 +19,13 @@ function redirectForStatus(
 ) {
   switch (status) {
     case "IN_PROGRESS":
-      navigate(`/hunt/${code}/play`, { replace: true });
+      navigate(`/event/${code}/play`, { replace: true });
       break;
     case "COMPLETED":
-      navigate(`/hunt/${code}/complete`, { replace: true });
+      navigate(`/event/${code}/complete`, { replace: true });
       break;
     default:
-      navigate(`/hunt/${code}/lobby`, { replace: true });
+      navigate(`/event/${code}/lobby`, { replace: true });
       break;
   }
 }
