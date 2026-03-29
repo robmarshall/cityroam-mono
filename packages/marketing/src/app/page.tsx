@@ -30,7 +30,7 @@ export default function Home() {
             <Step
               number="1"
               title="Book"
-              description="Grab a hunt for your group. You'll get a unique link to share."
+              description="Book for your group. You'll get a unique link to share."
             />
             <Step
               number="2"

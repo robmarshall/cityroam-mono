@@ -7,7 +7,7 @@ import { trackEvent } from "@/lib/analytics";
 const FAQ_ITEMS = [
   {
     question: "How many people can play?",
-    answer: "Up to 10 people can join a single hunt. Everyone plays together on their own phone, sharing clues and solving puzzles as a group.",
+    answer: "Up to 10 people can join a single experience. Everyone plays together on their own phone, sharing clues and solving puzzles as a group.",
   },
   {
     question: "How long does it take?",
