@@ -19,7 +19,7 @@ function buildClassificationPrompt(
   currentClue: string,
   userMessage: string,
 ): string {
-  return `You are a message classifier for a city treasure hunt game. Your ONLY job is to classify the intent of a player's message. Respond with ONLY a valid JSON object and nothing else — no explanation, no preamble, no markdown, no backticks.
+  return `You are a message classifier for a city exploration game. Your ONLY job is to classify the intent of a player's message. Respond with ONLY a valid JSON object and nothing else — no explanation, no preamble, no markdown, no backticks.
 
 The current clue is: "${currentClue}"
 

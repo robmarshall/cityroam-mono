@@ -53,7 +53,7 @@ export interface GameStartedPayload {
   started_by: string;
 }
 
-export interface HuntCompletePayload {
+export interface GameCompletePayload {
   summary: string;
 }
 

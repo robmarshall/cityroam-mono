@@ -138,7 +138,7 @@ checkoutRoutes.post("/webhook/stripe", async (c) => {
         await resend.emails.send({
           from: env.RESEND_FROM_EMAIL,
           to: buyerEmail,
-          subject: "Your City Roam treasure hunt is booked!",
+          subject: "Your City Roam experience is booked!",
           html: buildConfirmationEmail(eventUrl, eventCode),
         });
       } catch (emailErr) {
@@ -190,7 +190,7 @@ function buildConfirmationEmail(eventUrl: string, eventCode: string): string {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
-  <h1 style="color: #2563eb; font-size: 24px;">Your treasure hunt is booked!</h1>
+  <h1 style="color: #2563eb; font-size: 24px;">Your experience is booked!</h1>
 
   <p>Your City Roam event is ready. Share the link below with your group to get started:</p>
 

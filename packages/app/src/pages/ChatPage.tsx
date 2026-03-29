@@ -26,7 +26,7 @@ import type {
   WebSocketMessage,
   ParticipantJoinedPayload,
   ParticipantLeftPayload,
-  HuntCompletePayload,
+  GameCompletePayload,
   ErrorPayload,
   GuideTypingPayload,
   ParticipantTypingPayload,
@@ -180,8 +180,8 @@ export default function ChatPage() {
         });
         break;
       }
-      case "hunt_complete": {
-        const payload = msg.payload as HuntCompletePayload;
+      case "game_complete": {
+        const payload = msg.payload as GameCompletePayload;
         navigate(`/event/${code}/complete`, {
           replace: true,
           state: { summary: payload.summary },

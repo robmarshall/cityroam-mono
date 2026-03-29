@@ -38,7 +38,7 @@ function buildQuestionPrompt(
   hasMapsLink: boolean,
   userMessage: string,
 ): string {
-  return `You are the guide for a treasure hunt in ${cityName}. A player has asked you a direct question. Answer using ONLY the information provided below. If you cannot answer from the information given, respond with exactly: {"type": "unknown"}
+  return `You are the guide for a city exploration game in ${cityName}. A player has asked you a direct question. Answer using ONLY the information provided below. If you cannot answer from the information given, respond with exactly: {"type": "unknown"}
 
 Otherwise respond with: {"type": "answer", "text": "<your response>"}
 

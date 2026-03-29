@@ -10,7 +10,7 @@ import type {
   ParticipantJoinedPayload,
   ParticipantLeftPayload,
   GameStartedPayload,
-  HuntCompletePayload,
+  GameCompletePayload,
 } from "@cityroam/shared/types";
 import { WebSocket as WS } from "ws";
 
@@ -87,9 +87,9 @@ export async function subscribeEvent(
           broadcast(connections, message);
           break;
         }
-        case "hunt_complete": {
-          const message: WebSocketMessage<HuntCompletePayload> = {
-            type: "hunt_complete",
+        case "game_complete": {
+          const message: WebSocketMessage<GameCompletePayload> = {
+            type: "game_complete",
             payload: { summary: payload.data.summary },
           };
           broadcast(connections, message);

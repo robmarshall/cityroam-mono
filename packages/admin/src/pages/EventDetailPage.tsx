@@ -221,11 +221,11 @@ export default function EventDetailPage() {
         </div>
       )}
 
-      {/* Hunt Progress */}
+      {/* Game Progress */}
       {data.total_stops != null && data.total_stops > 0 && (
         <div className="mb-6 rounded-lg border border-gray-200 bg-white p-4">
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-500">
-            Hunt Progress
+            Game Progress
           </h2>
           <div className="mb-2 flex items-baseline justify-between">
             <span className="text-lg font-bold text-gray-900">

@@ -48,7 +48,7 @@ const messageBankSeedData = [
   // Opening templates
   { type: "opening", content: "Welcome. I'll be your guide today — I know where we're going, you do the leg work.\n\nHere's how it works: I'll give you a clue at each stop, you figure it out, and we move on. Ask for a hint if you're stuck. Shouldn't take more than 90 minutes if you keep moving.\n\nRight. Head to {{FIRST_STOP_DIRECTIONS}}.\n\nWhen you get there, your first clue:\n\n\"{{FIRST_CLUE}}\"" },
   { type: "opening", content: "Right then, let's get started. I'll be guiding you through {{CITY_NAME}} today.\n\nThe rules are simple: I give clues, you solve them. Ask for hints if you're stuck — no shame in it.\n\nFirst up: {{FIRST_STOP_DIRECTIONS}}.\n\nYour clue:\n\n\"{{FIRST_CLUE}}\"" },
-  { type: "opening", content: "Welcome to the hunt. I'm your guide — dry wit, good directions, no patience for dawdling.\n\nI'll set the clues, you work them out. Hints are available if you get stuck. {{TOTAL_STOPS}} stops, roughly 90 minutes.\n\nTo begin: {{FIRST_STOP_DIRECTIONS}}.\n\nClue:\n\n\"{{FIRST_CLUE}}\"" },
+  { type: "opening", content: "Welcome to the game. I'm your guide — dry wit, good directions, no patience for dawdling.\n\nI'll set the clues, you work them out. Hints are available if you get stuck. {{TOTAL_STOPS}} stops, roughly 90 minutes.\n\nTo begin: {{FIRST_STOP_DIRECTIONS}}.\n\nClue:\n\n\"{{FIRST_CLUE}}\"" },
 
   // Completion templates
   { type: "completion", content: "That's the last one. Well done — you've made it through all {{TOTAL_STOPS}} stops and covered roughly {{DISTANCE_KM}}km of {{CITY_NAME}}.\n\nIf you enjoyed it, a Google review goes a long way: {{REVIEW_LINK}}\n\nNow go find a drink. You've earned it." },
@@ -59,7 +59,7 @@ const messageBankSeedData = [
 const devRouteData = {
   city: "Leeds",
   name: "Leeds City Centre Discovery",
-  description: "A short development route through the heart of Leeds for testing the treasure hunt experience.",
+  description: "A short development route through the heart of Leeds for testing the city exploration experience.",
   total_stops: 3,
   estimated_duration_mins: 30,
   estimated_distance_km: "1.5",

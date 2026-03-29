@@ -7,12 +7,12 @@ import { getRandomMessageBank } from "./answer-attempt.js";
 import { env } from "../../../env.js";
 import { createLogger } from "../../../lib/logger.js";
 
-const log = createLogger("hunt-completion");
+const log = createLogger("game-completion");
 
 /**
- * Context needed by the hunt-completion handler.
+ * Context needed by the game-completion handler.
  */
-export interface HuntCompletionContext {
+export interface GameCompletionContext {
   eventId: string;
   eventCode: string;
   routeId: string;
@@ -20,18 +20,18 @@ export interface HuntCompletionContext {
 }
 
 /**
- * Handle hunt completion — triggered when last stop is solved or hints exhausted
+ * Handle game completion — triggered when last stop is solved or hints exhausted
  * with no next stop remaining.
  *
  * 1. Select random active completion template from message_banks
  * 2. Populate template variables: {{TOTAL_STOPS}}, {{DISTANCE_KM}}, {{CITY_NAME}}, {{REVIEW_LINK}}
  * 3. Update event: status = COMPLETED, completed_at = now
  * 4. Persist completion message to DB (as system message)
- * 5. Publish hunt_complete to Redis control channel
+ * 5. Publish game_complete to Redis control channel
  * 6. Publish completion message to Redis messages channel
  */
-export async function handleHuntCompletion(
-  ctx: HuntCompletionContext,
+export async function handleGameCompletion(
+  ctx: GameCompletionContext,
 ): Promise<void> {
   // Load route data for template variables
   const route = await db.query.routes.findFirst({
@@ -50,7 +50,7 @@ export async function handleHuntCompletion(
 
   // Get completion template
   let completionMsg = await getRandomMessageBank("completion");
-  completionMsg = completionMsg ?? "Congratulations! You've completed the hunt.";
+  completionMsg = completionMsg ?? "Congratulations! You've completed the game.";
 
   // Populate template variables
   completionMsg = completionMsg
@@ -97,9 +97,9 @@ export async function handleHuntCompletion(
   await appendMessage(ctx.eventCode, payload);
   await publishMessage(ctx.eventCode, payload);
 
-  // Publish hunt_complete control event
+  // Publish game_complete control event
   await publishControl(ctx.eventCode, {
-    type: "hunt_complete",
+    type: "game_complete",
     data: { summary: completionMsg },
   });
 }
