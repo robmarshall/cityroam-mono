@@ -171,7 +171,7 @@
 - [x] **11.3 Participant summary in detail view** [COMPLETE] — added summary stat cards (total/online/offline/left) with lead participant highlight, unified Status column with colored badge indicators, and Last Seen timestamps
 - [x] **11.4 Full chat history view** [COMPLETE] — enhanced MessageLog with sender-type toggle filter, participant name dropdown, text search, filtered message counts, scroll-to-bottom button, and image display
 - [x] **11.5 Admin refund endpoint** [COMPLETE] — `POST /admin/events/:id/refund` (behind `adminAuth`): validate event has a `stripe_payment_id`, call Stripe Refunds API (`stripe.refunds.create({ payment_intent: stripe_payment_id })`), update event status to `REFUNDED` in DB, return updated event. Handle Stripe errors (already refunded, charge disputed, etc.) with meaningful error messages
-- [ ] **11.6 Refund UI with confirmation modal** — add "Issue Refund" button to EventDetailPage (visible only when event has a `stripe_payment_id` and status is not already `REFUNDED`). Button opens a confirmation modal ("Are you sure you want to refund this event? This action cannot be undone.") with Cancel and Confirm Refund actions. On confirm, call the refund endpoint, show success/error toast, refresh event data
+- [x] **11.6 Refund UI with confirmation modal** — add "Issue Refund" button to EventDetailPage (visible only when event has a `stripe_payment_id` and status is not already `REFUNDED`). Button opens a confirmation modal ("Are you sure you want to refund this event? This action cannot be undone.") with Cancel and Confirm Refund actions. On confirm, call the refund endpoint, show success/error toast, refresh event data
 
 ## Phase 12: Rename "Hunt" to Generic Language (depends on Phase 6)
 
