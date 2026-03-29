@@ -8,3 +8,7 @@ export const joinEventRequestSchema = z.object({
 export const startEventRequestSchema = z.object({
   token: z.string().min(1, "Participant token is required"),
 });
+
+export const changeNameRequestSchema = z.object({
+  name: displayNameSchema,
+});

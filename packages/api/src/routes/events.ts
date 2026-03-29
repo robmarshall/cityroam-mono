@@ -10,6 +10,7 @@ import type {
 import {
   joinEventRequestSchema,
   eventCodeSchema,
+  changeNameRequestSchema,
 } from "@cityroam/shared/validation";
 import { MAX_PARTICIPANTS } from "@cityroam/shared/constants";
 import { db } from "../db/index.js";
@@ -23,11 +24,13 @@ import {
 } from "../db/schema/index.js";
 import {
   setSession,
+  getSession,
   deleteSession,
   appendMessage,
   getMessages,
   getMessagesSince,
   checkJoinRateLimit,
+  checkNameChangeRateLimit,
   publishMessage,
   publishControl,
 } from "../redis/index.js";
@@ -479,6 +482,62 @@ eventRoutes.post("/event/:code/leave", sessionAuth, async (c) => {
   });
 
   return c.json({ success: true }, 200);
+});
+
+// ---------------------------------------------------------------------------
+// POST /event/:code/name (requires sessionAuth)
+// ---------------------------------------------------------------------------
+eventRoutes.post("/event/:code/name", sessionAuth, async (c) => {
+  const code = eventCodeSchema.parse(c.req.param("code"));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const session = (c as any).get("session") as SessionContext;
+
+  if (session.event_code !== code) {
+    throw new AppError(403, "Session does not match event", "UNAUTHORIZED");
+  }
+
+  const body = await c.req.json();
+  const { name } = changeNameRequestSchema.parse(body);
+
+  // Don't allow changing to the same name
+  if (name === session.display_name) {
+    return c.json({ success: true, display_name: name }, 200);
+  }
+
+  // Rate limit: 3 name changes per event per participant
+  const rateLimit = await checkNameChangeRateLimit(code, session.participant_id);
+  if (!rateLimit.allowed) {
+    throw new AppError(429, "Too many name changes", "RATE_LIMITED");
+  }
+
+  const oldName = session.display_name;
+
+  // Update display_name in DB
+  await db
+    .update(participants)
+    .set({ display_name: name })
+    .where(eq(participants.id, session.participant_id));
+
+  // Update Redis session data
+  const token = getCookie(c, COOKIE_NAME);
+  if (token) {
+    await setSession(token, {
+      ...session,
+      display_name: name,
+    });
+  }
+
+  // Publish name_changed control event
+  await publishControl(code, {
+    type: "name_changed",
+    data: {
+      participant_id: session.participant_id,
+      old_name: oldName,
+      new_name: name,
+    },
+  });
+
+  return c.json({ success: true, display_name: name }, 200);
 });
 
 // ---------------------------------------------------------------------------

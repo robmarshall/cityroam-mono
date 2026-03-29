@@ -11,6 +11,7 @@ import type {
   ParticipantLeftPayload,
   GameStartedPayload,
   GameCompletePayload,
+  NameChangedPayload,
 } from "@cityroam/shared/types";
 import { WebSocket as WS } from "ws";
 
@@ -113,6 +114,18 @@ export async function subscribeEvent(
               name: payload.data.name,
               participant_count: payload.data.participant_count,
               reason: payload.data.reason,
+            },
+          };
+          broadcast(connections, message);
+          break;
+        }
+        case "name_changed": {
+          const message: WebSocketMessage<NameChangedPayload> = {
+            type: "name_changed",
+            payload: {
+              participant_id: payload.data.participant_id,
+              old_name: payload.data.old_name,
+              new_name: payload.data.new_name,
             },
           };
           broadcast(connections, message);

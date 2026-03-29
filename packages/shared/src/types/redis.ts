@@ -34,4 +34,8 @@ export type ControlEventPayload =
         participant_count: number;
         reason: ParticipantLeftReason;
       };
+    }
+  | {
+      type: "name_changed";
+      data: { participant_id: string; old_name: string; new_name: string };
     };

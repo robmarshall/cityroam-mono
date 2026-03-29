@@ -22,6 +22,7 @@ export {
   checkJoinRateLimit,
   checkGuideRateLimit,
   checkParticipantRateLimit,
+  checkNameChangeRateLimit,
 } from "./rate-limit.js";
 
 // Re-export pub/sub

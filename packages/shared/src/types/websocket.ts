@@ -57,6 +57,12 @@ export interface GameCompletePayload {
   summary: string;
 }
 
+export interface NameChangedPayload {
+  participant_id: string;
+  old_name: string;
+  new_name: string;
+}
+
 export type PongPayload = Record<string, never>;
 
 export interface ErrorPayload {
