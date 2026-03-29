@@ -1,6 +1,11 @@
 # Stage 1: Build
 FROM node:20-alpine AS builder
 
+# Ensure devDependencies (typescript, etc.) are installed in this build-only
+# stage. Coolify injects NODE_ENV=production as a build arg which would skip
+# them. This stage is discarded — the runtime stage below sets NODE_ENV=production.
+ENV NODE_ENV=development
+
 WORKDIR /app
 
 # Copy root workspace config
