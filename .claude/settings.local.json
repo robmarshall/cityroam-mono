@@ -67,7 +67,13 @@
       "Bash(grep -E \"\\\\.\\(ts\\)$\")",
       "Bash(find /c/Users/rober/projects/city-roam-v2/packages -type f \\\\\\(-name *.ts -o -name *.tsx -o -name *.js -o -name *.jsx \\\\\\))",
       "Bash(rm -rf node_modules package-lock.json)",
-      "Bash(npm i:*)"
+      "Bash(npm i:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(gh repo:*)",
+      "Bash(gh.exe repo:*)",
+      "Bash(where gh:*)",
+      "Bash(cmd.exe /c \"where gh\")",
+      "Bash(where.exe gh:*)"
     ],
     "deny": [],
     "ask": []
