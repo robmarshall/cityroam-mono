@@ -159,7 +159,7 @@ export default function ChatPage() {
         const payload = msg.payload as ParticipantJoinedPayload;
         setMessages((prev) => [
           ...prev,
-          makeSystemMessage(`${payload.name} joined the hunt`),
+          makeSystemMessage(`${payload.name} joined the game`),
         ]);
         break;
       }
@@ -167,7 +167,7 @@ export default function ChatPage() {
         const payload = msg.payload as ParticipantLeftPayload;
         setMessages((prev) => [
           ...prev,
-          makeSystemMessage(`${payload.name} left the hunt`),
+          makeSystemMessage(`${payload.name} left the game`),
         ]);
         // Clear typing indicator for the leaving participant
         setParticipantsTyping((prev) => {
@@ -337,7 +337,7 @@ export default function ChatPage() {
     setHasNewMessages(false);
   };
 
-  // Leave hunt
+  // Leave game
   const handleLeave = useCallback(async () => {
     if (!code || leaving) return;
     setLeaving(true);
@@ -389,7 +389,7 @@ export default function ChatPage() {
                 onClick={() => setShowLeaveDialog(true)}
                 className="flex w-full items-center px-4 py-2.5 text-sm text-red-600 data-[focus]:bg-gray-50"
               >
-                Leave Hunt
+                Leave Game
               </button>
             </MenuItem>
           </MenuItems>
@@ -530,10 +530,10 @@ export default function ChatPage() {
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <DialogPanel className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
             <DialogTitle className="text-lg font-semibold text-gray-900">
-              Leave Hunt?
+              Leave Game?
             </DialogTitle>
             <p className="mt-2 text-sm text-gray-600">
-              You'll be removed from the hunt. You can rejoin later by opening the link again.
+              You'll be removed from the game. You can rejoin later by opening the link again.
             </p>
             <div className="mt-6 flex gap-3">
               <button

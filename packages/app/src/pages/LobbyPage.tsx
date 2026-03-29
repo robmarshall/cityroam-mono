@@ -145,7 +145,7 @@ export default function LobbyPage() {
       if (err instanceof ApiError) {
         setError(err.message);
       } else {
-        setError("Failed to start the hunt. Please try again.");
+        setError("Failed to start the game. Please try again.");
       }
       setStarting(false);
     }
@@ -235,11 +235,11 @@ export default function LobbyPage() {
             disabled={starting}
             className="w-full max-w-sm rounded-lg bg-brand-600 px-6 py-3 text-lg font-semibold text-white transition-colors hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {starting ? "Starting..." : "Start the Hunt"}
+            {starting ? "Starting..." : "Start the Game"}
           </button>
         ) : (
           <p className="text-center text-system-text">
-            Waiting for {leadName ?? "the lead"} to start the hunt...
+            Waiting for {leadName ?? "the lead"} to start the game...
           </p>
         )}
 

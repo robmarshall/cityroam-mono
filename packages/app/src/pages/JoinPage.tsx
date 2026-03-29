@@ -34,20 +34,20 @@ function friendlyError(err: unknown): string {
   if (err instanceof ApiError) {
     switch (err.code) {
       case "EVENT_NOT_FOUND":
-        return "This hunt doesn't exist. Check the link and try again.";
+        return "This event doesn't exist. Check the link and try again.";
       case "EVENT_FULL":
-        return "This hunt is full — no more spaces available.";
+        return "This event is full — no more spaces available.";
       case "EVENT_EXPIRED":
-        return "This hunt has expired.";
+        return "This event has expired.";
       case "EVENT_COMPLETED":
-        return "This hunt has already finished.";
+        return "This event has already finished.";
       case "EVENT_REFUNDED":
-        return "This hunt has been refunded.";
+        return "This event has been refunded.";
       case "INVALID_INPUT":
-        return "That doesn't look like a valid hunt code. Double-check the link or code you were given.";
+        return "That doesn't look like a valid event code. Double-check the link or code you were given.";
       default:
         if (err.status === 404) {
-          return "This hunt doesn't exist. Check the link and try again.";
+          return "This event doesn't exist. Check the link and try again.";
         }
         return err.message;
     }
@@ -104,11 +104,11 @@ export default function JoinPage() {
           data.event.status === "REFUNDED"
         ) {
           const statusMessages: Record<string, string> = {
-            COMPLETED: "This hunt has already finished.",
-            EXPIRED: "This hunt has expired.",
-            REFUNDED: "This hunt has been refunded.",
+            COMPLETED: "This event has already finished.",
+            EXPIRED: "This event has expired.",
+            REFUNDED: "This event has been refunded.",
           };
-          setError(statusMessages[data.event.status] || "This hunt is no longer available.");
+          setError(statusMessages[data.event.status] || "This event is no longer available.");
         }
       } catch (err) {
         if (cancelled) return;
@@ -199,7 +199,7 @@ export default function JoinPage() {
     <div className="flex min-h-svh items-center justify-center bg-white px-4">
       <div className="w-full max-w-sm">
         <h1 className="mb-8 text-center text-2xl font-bold text-gray-900">
-          Join the Hunt
+          Join the Team
         </h1>
 
         {error && (
@@ -244,7 +244,7 @@ export default function JoinPage() {
               disabled={loading || !displayName.trim()}
               className="w-full rounded-lg bg-brand-600 px-4 py-2.5 font-medium text-white transition-colors hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loading ? "Joining..." : "Join the Hunt"}
+              {loading ? "Joining..." : "Join the Team"}
             </button>
           </form>
         )}
