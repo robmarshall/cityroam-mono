@@ -61,5 +61,6 @@ WORKDIR /app/packages/api
 
 EXPOSE 3001
 
+# Register tsx so Node can import .ts files from @cityroam/shared
 # Default to HTTP server; override with CMD for WS
-CMD ["node", "dist/http/index.js"]
+CMD ["node", "--import", "tsx", "dist/http/index.js"]

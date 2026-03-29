@@ -6,10 +6,10 @@
   "scripts": {
     "dev:http": "tsx watch --env-file=../../.env src/http/index.ts",
     "dev:ws": "tsx watch --env-file=../../.env src/ws/index.ts",
-    "start:http": "node dist/http/index.js",
-    "start:ws": "node dist/ws/index.js",
-    "start:migrate": "node dist/db/migrate.js",
-    "start:seed": "node dist/db/seed.js",
+    "start:http": "node --import tsx dist/http/index.js",
+    "start:ws": "node --import tsx dist/ws/index.js",
+    "start:migrate": "node --import tsx dist/db/migrate.js",
+    "start:seed": "node --import tsx dist/db/seed.js",
     "dev": "tsx watch --env-file=../../.env src/http/index.ts",
     "build": "tsc",
     "db:generate": "drizzle-kit generate",
@@ -32,6 +32,7 @@
     "postgres": "^3.4.8",
     "resend": "^6.9.4",
     "stripe": "^21.0.1",
+    "tsx": "^4",
     "ws": "^8.20.0",
     "zod": "^3"
   },
@@ -39,11 +40,7 @@
     "@types/node": "^25.5.0",
     "@types/ws": "^8.18.1",
     "drizzle-kit": "^0.31.10",
-    "tsx": "^4",
     "typescript": "^5",
     "vitest": "^4.1.2"
   },
-  "optionalDependencies": {
-    "@esbuild/linux-x64": "^0.25.12"
-  }
-}
+ 

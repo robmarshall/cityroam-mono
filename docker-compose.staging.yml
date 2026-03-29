@@ -28,7 +28,7 @@ services:
 
   redis:
     image: redis:7
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
+    command: sh -c "redis-server --appendonly yes $${REDIS_PASSWORD:+--requirepass $$REDIS_PASSWORD}"
     volumes:
       - redis-data:/data
     healthcheck:
@@ -44,7 +44,7 @@ services:
     build:
       context: .
       dockerfile: packages/api/Dockerfile
-    command: ["node", "dist/http/index.js"]
+    command: ["node", "--import", "tsx", "dist/http/index.js"]
     environment:
       NODE_ENV: production
       PORT: "3001"
@@ -74,7 +74,7 @@ services:
     build:
       context: .
       dockerfile: packages/api/Dockerfile
-    command: ["node", "dist/ws/index.js"]
+    command: ["node", "--import", "tsx", "dist/ws/index.js"]
     environment:
       NODE_ENV: production
       WS_PORT: "3002"
@@ -102,11 +102,4 @@ services:
       - "traefik.http.services.api-ws.loadbalancer.healthcheck.interval=30s"
 
 volumes:
-  postgres-data:
-  redis-data:
-
-networks:
-  cityroam-network:
-    driver: bridge
-  coolify:
-    external: true
+  postg
