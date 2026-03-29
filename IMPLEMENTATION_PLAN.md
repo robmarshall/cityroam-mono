@@ -190,7 +190,7 @@
 
 ## Phase 14: Admin Route Editor UX (depends on Phase 8)
 
-- [ ] **14.1 Drag-and-drop stop reorder with dnd-kit** — install `@dnd-kit/core` + `@dnd-kit/sortable` + `@dnd-kit/utilities` in admin package. Replace the current stops list in RouteEditorPage with a sortable list using `DndContext`, `SortableContext`, and `useSortable` on each stop item. Reorder updates local state only (no auto-save). Add a "Save Order" button that becomes visible/enabled when the order has changed, which calls `PUT /admin/routes/:id/stops/reorder` with the new stop_ids array. Show success/error feedback after save.
+- [x] **14.1 Drag-and-drop stop reorder with dnd-kit** [COMPLETE] — install `@dnd-kit/core` + `@dnd-kit/sortable` + `@dnd-kit/utilities` in admin package. Replace the current stops list in RouteEditorPage with a sortable list using `DndContext`, `SortableContext`, and `useSortable` on each stop item. Reorder updates local state only (no auto-save). Add a "Save Order" button that becomes visible/enabled when the order has changed, which calls `PUT /admin/routes/:id/stops/reorder` with the new stop_ids array. Show success/error feedback after save.
 
 ## Learnings
 - Multi-step DB mutations (reorder, delete-with-renumber, create-with-counter-update) MUST use `db.transaction()`. The `stops` table has a UNIQUE constraint on `(route_id, stop_number)`, so sequential stop_number updates during reorder will cause constraint violations when stops swap positions. Fix: either use a single UPDATE with CASE expression or set temp values first, always inside a transaction. This applies to ALL insert+update pairs, not just updates.
