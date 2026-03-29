@@ -28,6 +28,8 @@ services:
 
   redis:
     image: redis:7
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
     command: sh -c "redis-server --appendonly yes $${REDIS_PASSWORD:+--requirepass $$REDIS_PASSWORD}"
     volumes:
       - redis-data:/data
