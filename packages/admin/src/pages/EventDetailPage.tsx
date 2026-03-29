@@ -123,20 +123,95 @@ export default function EventDetailPage() {
         </div>
       )}
 
+      {/* Hunt Progress */}
+      {data.total_stops != null && data.total_stops > 0 && (
+        <div className="mb-6 rounded-lg border border-gray-200 bg-white p-4">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-500">
+            Hunt Progress
+          </h2>
+          <div className="mb-2 flex items-baseline justify-between">
+            <span className="text-lg font-bold text-gray-900">
+              Stop {event.current_stop} of {data.total_stops}
+            </span>
+            <span className="text-sm text-gray-500">
+              {data.total_stops > 0
+                ? Math.round((event.current_stop / data.total_stops) * 100)
+                : 0}
+              %
+            </span>
+          </div>
+          {/* Progress bar */}
+          <div className="mb-4 h-3 w-full overflow-hidden rounded-full bg-gray-200">
+            <div
+              className="h-3 rounded-full bg-blue-600 transition-all"
+              style={{
+                width: `${data.total_stops > 0 ? (event.current_stop / data.total_stops) * 100 : 0}%`,
+              }}
+            />
+          </div>
+          {/* Step indicators */}
+          <div className="mb-4 flex justify-between">
+            {Array.from({ length: data.total_stops }, (_, i) => {
+              const stopNum = i + 1;
+              const isCompleted = stopNum <= event.current_stop;
+              const isCurrent = stopNum === event.current_stop;
+              return (
+                <div key={i} className="flex flex-col items-center">
+                  <div
+                    className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium ${
+                      isCompleted
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-200 text-gray-500"
+                    } ${isCurrent ? "ring-2 ring-blue-400 ring-offset-1" : ""}`}
+                  >
+                    {stopNum}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {/* Stats row */}
+          <div className="grid grid-cols-3 gap-4 border-t border-gray-100 pt-3">
+            <div className="text-center">
+              <p className="text-lg font-bold text-gray-900">
+                {event.hints_given}
+              </p>
+              <p className="text-xs text-gray-500">Hints Given</p>
+            </div>
+            <div className="text-center">
+              <p className="text-lg font-bold text-gray-900">
+                {event.wrong_attempts}
+              </p>
+              <p className="text-xs text-gray-500">Wrong Attempts</p>
+            </div>
+            <div className="text-center">
+              <p className="text-lg font-bold text-gray-900">
+                {event.guide_response_count}
+              </p>
+              <p className="text-xs text-gray-500">Guide Responses</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Event Info Grid */}
       <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <InfoCard label="Route" value={data.route_name ?? "Unknown"} />
         <InfoCard label="Buyer Email" value={event.buyer_email} />
-        <InfoCard label="Current Stop" value={String(event.current_stop)} />
-        <InfoCard label="Hints Given" value={String(event.hints_given)} />
-        <InfoCard
-          label="Wrong Attempts"
-          value={String(event.wrong_attempts)}
-        />
-        <InfoCard
-          label="Guide Responses"
-          value={String(event.guide_response_count)}
-        />
+        {(data.total_stops == null || data.total_stops === 0) && (
+          <>
+            <InfoCard label="Current Stop" value={String(event.current_stop)} />
+            <InfoCard label="Hints Given" value={String(event.hints_given)} />
+            <InfoCard
+              label="Wrong Attempts"
+              value={String(event.wrong_attempts)}
+            />
+            <InfoCard
+              label="Guide Responses"
+              value={String(event.guide_response_count)}
+            />
+          </>
+        )}
         <InfoCard label="Created" value={formatDate(event.created_at)} />
         <InfoCard
           label="Started"

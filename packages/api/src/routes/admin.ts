@@ -170,7 +170,7 @@ adminRoutes.get("/admin/events/:id", adminAuth, async (c) => {
   const route = event.route_id
     ? await db.query.routes.findFirst({
         where: eq(routes.id, event.route_id),
-        columns: { name: true },
+        columns: { name: true, total_stops: true },
       })
     : null;
 
@@ -206,6 +206,7 @@ adminRoutes.get("/admin/events/:id", adminAuth, async (c) => {
       stripe_payment_id: event.stripe_payment_id,
     },
     route_name: route?.name ?? null,
+    total_stops: route?.total_stops ?? null,
     participants: eventParticipants.map((p) => ({
       id: p.id,
       event_id: p.event_id,
