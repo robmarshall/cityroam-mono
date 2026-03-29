@@ -9,7 +9,7 @@
 # All other env vars should be set in Coolify per .env.example.
 
 services:
-  postgres:
+  cityroam-postgres:
     image: postgres:16
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-cityroam}
@@ -48,11 +48,11 @@ services:
     environment:
       NODE_ENV: production
       PORT: "3001"
-      DATABASE_URL: postgresql://${POSTGRES_USER:-cityroam}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-cityroam}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-cityroam}:${POSTGRES_PASSWORD}@cityroam-postgres:5432/${POSTGRES_DB:-cityroam}
       REDIS_URL: redis://${REDIS_PASSWORD:+:${REDIS_PASSWORD}@}cityroam-redis:6379
     env_file: .env
     depends_on:
-      postgres:
+      cityroam-postgres:
         condition: service_healthy
       cityroam-redis:
         condition: service_healthy
@@ -78,11 +78,11 @@ services:
     environment:
       NODE_ENV: production
       WS_PORT: "3002"
-      DATABASE_URL: postgresql://${POSTGRES_USER:-cityroam}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-cityroam}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-cityroam}:${POSTGRES_PASSWORD}@cityroam-postgres:5432/${POSTGRES_DB:-cityroam}
       REDIS_URL: redis://${REDIS_PASSWORD:+:${REDIS_PASSWORD}@}cityroam-redis:6379
     env_file: .env
     depends_on:
-      postgres:
+      cityroam-postgres:
         condition: service_healthy
       cityroam-redis:
         condition: service_healthy
