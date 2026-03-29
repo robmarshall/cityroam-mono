@@ -28,6 +28,10 @@ export default function EventDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [showRefundModal, setShowRefundModal] = useState(false);
+  const [refunding, setRefunding] = useState(false);
+  const [refundError, setRefundError] = useState<string | null>(null);
+  const [refundSuccess, setRefundSuccess] = useState(false);
   const authFetch = useAuthFetch();
 
   const fetchEvent = useCallback(async () => {
@@ -55,6 +59,25 @@ export default function EventDetailPage() {
     await navigator.clipboard.writeText(paymentId);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleRefund = async () => {
+    setRefunding(true);
+    setRefundError(null);
+    try {
+      await authFetch(() =>
+        api.post(`/admin/events/${id}/refund`),
+      );
+      setRefundSuccess(true);
+      setShowRefundModal(false);
+      fetchEvent();
+    } catch (err) {
+      if (err instanceof ApiError && err.status !== 401) {
+        setRefundError(err.message);
+      }
+    } finally {
+      setRefunding(false);
+    }
   };
 
   if (loading) {
@@ -104,6 +127,30 @@ export default function EventDetailPage() {
         </span>
       </div>
 
+      {/* Refund feedback */}
+      {refundSuccess && (
+        <div className="mb-4 rounded-md bg-green-50 p-3 text-sm text-green-700">
+          Refund issued successfully.
+          <button
+            onClick={() => setRefundSuccess(false)}
+            className="ml-2 font-medium underline"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+      {refundError && !showRefundModal && (
+        <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">
+          {refundError}
+          <button
+            onClick={() => setRefundError(null)}
+            className="ml-2 font-medium underline"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {/* Stripe Payment ID */}
       {data.stripe_payment_id && (
         <div className="mb-6 rounded-lg border border-purple-200 bg-purple-50 p-4">
@@ -120,6 +167,56 @@ export default function EventDetailPage() {
             >
               {copied ? "Copied!" : "Copy"}
             </button>
+            {event.status !== "REFUNDED" && (
+              <button
+                onClick={() => {
+                  setRefundError(null);
+                  setShowRefundModal(true);
+                }}
+                className="ml-auto rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700"
+              >
+                Issue Refund
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Refund confirmation modal */}
+      {showRefundModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="mx-4 w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+            <h3 className="mb-2 text-lg font-semibold text-gray-900">
+              Confirm Refund
+            </h3>
+            <p className="mb-4 text-sm text-gray-600">
+              Are you sure you want to refund this event? This action cannot be
+              undone.
+            </p>
+            {refundError && (
+              <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">
+                {refundError}
+              </div>
+            )}
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowRefundModal(false);
+                  setRefundError(null);
+                }}
+                disabled={refunding}
+                className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRefund}
+                disabled={refunding}
+                className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                {refunding ? "Refunding..." : "Confirm Refund"}
+              </button>
+            </div>
           </div>
         </div>
       )}
