@@ -37,7 +37,7 @@ export type PostHogEventName =
 
 export interface PostHogEventProperties {
   [POSTHOG_EVENTS.PAGE_VIEWED]: { page: string; referrer: string };
-  [POSTHOG_EVENTS.CTA_CLICKED]: { location: "hero" | "pricing" | "faq" };
+  [POSTHOG_EVENTS.CTA_CLICKED]: { location: string };
   [POSTHOG_EVENTS.FAQ_EXPANDED]: { question: string };
   [POSTHOG_EVENTS.CHECKOUT_STARTED]: { price: number };
   [POSTHOG_EVENTS.CHECKOUT_COMPLETED]: { event_code: string };
