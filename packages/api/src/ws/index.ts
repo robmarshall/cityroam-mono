@@ -1,6 +1,7 @@
 import { serve } from "@hono/node-server";
 import { createNodeWebSocket } from "@hono/node-ws";
 import { Hono } from "hono";
+import { WEBSOCKET_PING_INTERVAL_MS } from "@cityroam/shared/constants";
 import { env, validateEnv } from "../env.js";
 import { redis, disconnectRedis } from "../redis/index.js";
 import { disconnectDb } from "../db/index.js";
@@ -22,6 +23,13 @@ import { subscribeEvent, unsubscribeEvent, unsubscribeAll } from "./subscription
 import { createLogger } from "../lib/logger.js";
 
 const log = createLogger("ws");
+
+// Augment the ws.WebSocket type to track liveness for server-side ping
+declare module "ws" {
+  interface WebSocket {
+    isAlive: boolean;
+  }
+}
 
 validateEnv("ws");
 
@@ -73,14 +81,26 @@ app.get(
       async onOpen(_evt, ws) {
         const raw = ws.raw as import("ws").WebSocket;
 
-        // Register connection
-        const isFirst = addConnection(session.event_code, session.participant_id, raw);
+        // Register connection (may replace an existing one for the same participant)
+        const { isFirstForEvent, previousWs } = addConnection(session.event_code, session.participant_id, raw);
+
+        // Close the stale socket if the participant already had one
+        if (previousWs) {
+          log.info("replacing stale connection", { eventCode: session.event_code, participantId: session.participant_id });
+          previousWs.close(1000, "Replaced by new connection");
+        }
+
+        // Track pong responses for liveness detection
+        raw.isAlive = true;
+        raw.on("pong", () => { raw.isAlive = true; });
+
+        log.info("connection opened", { eventCode: session.event_code, participantId: session.participant_id });
 
         // Update presence
         await updatePresence(session.event_code, session.participant_id);
 
         // Subscribe to Redis channels if first connection for this event
-        if (isFirst) {
+        if (isFirstForEvent) {
           await subscribeEvent(session.event_code, getConnections);
         }
       },
@@ -95,9 +115,14 @@ app.get(
         }
       },
 
-      async onClose() {
-        // Remove connection from map
-        const wasLast = removeConnection(session.event_code, session.participant_id);
+      async onClose(evt, ws) {
+        const raw = ws.raw as import("ws").WebSocket;
+        const code = evt instanceof CloseEvent ? evt.code : undefined;
+        const reason = evt instanceof CloseEvent ? evt.reason : undefined;
+        log.info("connection closed", { eventCode: session.event_code, participantId: session.participant_id, code, reason });
+
+        // Only remove if this socket is still the registered one (not replaced by a reconnection)
+        const wasLast = removeConnection(session.event_code, session.participant_id, raw);
 
         // Unsubscribe from Redis channels if no more connections for this event
         if (wasLast) {
@@ -122,9 +147,35 @@ const server = serve({ fetch: app.fetch, port }, () => {
 
 injectWebSocket(server);
 
+// ---------------------------------------------------------------------------
+// Server-side WebSocket ping — keeps connections alive through proxies and
+// detects dead clients that didn't cleanly disconnect.
+// ---------------------------------------------------------------------------
+
+const pingInterval = setInterval(() => {
+  for (const eventCode of getAllEventCodes()) {
+    const eventConnections = getConnections(eventCode);
+    if (!eventConnections) continue;
+
+    for (const [participantId, ws] of eventConnections) {
+      if (!ws.isAlive) {
+        // Already missed one pong cycle — terminate the dead connection
+        log.warn("terminating unresponsive connection", { eventCode, participantId });
+        ws.terminate();
+        continue;
+      }
+
+      // Mark as not-alive; the pong handler in onOpen will reset this to true
+      ws.isAlive = false;
+      ws.ping();
+    }
+  }
+}, WEBSOCKET_PING_INTERVAL_MS);
+
 // Graceful shutdown
 async function shutdown() {
   log.info("shutting down");
+  clearInterval(pingInterval);
   stopPresenceSweep();
   closeAllConnections(1001, "Server shutting down");
   await unsubscribeAll();
