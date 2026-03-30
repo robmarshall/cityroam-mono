@@ -55,6 +55,22 @@ export default function EventDetailPage() {
     fetchEvent();
   }, [fetchEvent]);
 
+  // Silent auto-refresh every 5 seconds so new messages appear without manual reload
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const res = await authFetch(() =>
+          api.get<AdminEventDetailResponse>(`/admin/events/${id}`),
+        );
+        setData(res);
+      } catch {
+        // Silently ignore refresh errors — initial load handles error display
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [authFetch, id]);
+
   const handleCopyPaymentId = async (paymentId: string) => {
     await navigator.clipboard.writeText(paymentId);
     setCopied(true);
