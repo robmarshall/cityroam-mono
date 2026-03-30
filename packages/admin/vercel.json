@@ -1,5 +1,6 @@
 {
   "framework": "vite",
+  "installCommand": "npm install && npm rebuild esbuild",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
