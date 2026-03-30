@@ -60,7 +60,7 @@ const FATAL_CLOSE_MESSAGES: Record<number, string> = {
 export default function ChatPage() {
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
-  const { participant, setParticipant, clearParticipant } = useParticipant();
+  const { participant, token, setParticipant, clearParticipant } = useParticipant();
   const { event, clearEvent } = useEvent();
   const {
     status: wsStatus,
@@ -69,6 +69,7 @@ export default function ChatPage() {
     maxAttemptsReached,
     catchUpMessages,
     send,
+    connect,
     disconnect,
     manualRetry,
     clearCatchUpMessages,
@@ -106,6 +107,13 @@ export default function ChatPage() {
       navigate(`/event/${code ?? ""}`, { replace: true });
     }
   }, [participant, event, code, navigate]);
+
+  // Connect WebSocket if we landed here directly (e.g. auto-rejoin of IN_PROGRESS event)
+  useEffect(() => {
+    if (code && token && wsStatus === "disconnected") {
+      connect(code, token);
+    }
+  }, [code, token, connect, wsStatus]);
 
   // Handle close codes — redirect to join on auth failure
   useEffect(() => {
