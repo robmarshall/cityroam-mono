@@ -87,6 +87,7 @@ export default function JoinPage() {
         if (data.current_participant) {
           // User already has a session — populate context and redirect
           setParticipant(data.current_participant);
+          setToken(data.current_participant.token);
           setEvent({
             code: data.event.code,
             status: data.event.status,

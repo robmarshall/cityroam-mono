@@ -23,6 +23,7 @@ export interface EventDetailResponse {
     id: string;
     display_name: string;
     is_lead: boolean;
+    token: string;
   } | null;
 }
 
