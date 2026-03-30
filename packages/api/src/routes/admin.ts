@@ -1,7 +1,9 @@
 import { Hono } from "hono";
 import { eq, sql, count, desc, and, asc, inArray, type SQL } from "drizzle-orm";
 import Stripe from "stripe";
-import { adminLoginSchema, adminUpdateEventStatusSchema, routeSchema, stopSchema, stopReorderSchema, imageUploadRequestSchema, messageBankSchema, bulkRouteCreateSchema } from "@cityroam/shared/validation";
+import { adminLoginSchema, adminUpdateEventStatusSchema, adminCreateEventSchema, routeSchema, stopSchema, stopReorderSchema, imageUploadRequestSchema, messageBankSchema, bulkRouteCreateSchema } from "@cityroam/shared/validation";
+import { generateEventCode } from "@cityroam/shared/utils";
+import { EVENT_EXPIRY_DAYS } from "@cityroam/shared/constants";
 import { generatePresignedUploadUrl } from "../services/s3.js";
 import type { AdminDashboardResponse, AdminEventListResponse, AdminEventDetailResponse, AdminRouteDetailResponse, AdminRouteListResponse, AdminMessageBankListResponse } from "@cityroam/shared/types";
 import { env } from "../env.js";
@@ -157,6 +159,63 @@ adminRoutes.get("/admin/events", adminAuth, async (c) => {
   };
 
   return c.json(response, 200);
+});
+
+// POST /admin/events — create a free event (no Stripe)
+adminRoutes.post("/admin/events", adminAuth, async (c) => {
+  const body = await c.req.json();
+  const data = adminCreateEventSchema.parse(body);
+
+  // Verify route exists
+  const route = await db.query.routes.findFirst({
+    where: eq(routes.id, data.route_id),
+  });
+  if (!route) {
+    throw new AppError(404, "Route not found", "ROUTE_NOT_FOUND");
+  }
+
+  // Generate unique event code with retry on collision
+  let eventCode: string | null = null;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const candidate = generateEventCode();
+    const conflict = await db.query.events.findFirst({
+      where: eq(events.code, candidate),
+    });
+    if (!conflict) {
+      eventCode = candidate;
+      break;
+    }
+  }
+
+  if (!eventCode) {
+    log.error("failed to generate unique event code", { attempts: 5 });
+    throw new AppError(500, "Failed to generate unique event code", "CODE_GENERATION_FAILED");
+  }
+
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + (data.expires_in_days ?? EVENT_EXPIRY_DAYS));
+
+  const [created] = await db.insert(events).values({
+    code: eventCode,
+    status: "NOT_STARTED",
+    route_id: data.route_id,
+    buyer_email: data.buyer_email ?? null,
+    expires_at: expiresAt,
+  }).returning();
+
+  log.info("admin created free event", { code: eventCode, route_id: data.route_id });
+
+  return c.json({
+    event: {
+      id: created.id,
+      code: created.code,
+      status: created.status,
+      route_id: created.route_id,
+      buyer_email: created.buyer_email,
+      created_at: created.created_at.toISOString(),
+      expires_at: created.expires_at.toISOString(),
+    },
+  }, 201);
 });
 
 // GET /admin/events/:id — event detail with participants and messages

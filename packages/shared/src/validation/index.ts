@@ -11,6 +11,7 @@ export {
   imageUploadSchema,
   imageUploadRequestSchema,
   adminUpdateEventStatusSchema,
+  adminCreateEventSchema,
   stopReorderSchema,
   bulkRouteCreateSchema,
   messageBankSchema,
