@@ -76,13 +76,15 @@ eventRoutes.get("/event/:code", async (c) => {
   }
 
   // Optional session resolution
+  const token = getCookie(c, COOKIE_NAME);
   const session = await resolveSession(c);
   let currentParticipant: EventDetailResponse["current_participant"] = null;
-  if (session && session.event_code === code) {
+  if (session && session.event_code === code && token) {
     currentParticipant = {
       id: session.participant_id,
       display_name: session.display_name,
       is_lead: session.is_lead,
+      token,
     };
   }
 
