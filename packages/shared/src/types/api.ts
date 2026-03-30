@@ -110,6 +110,18 @@ export interface AdminStopReorderResponse {
   success: boolean;
 }
 
+export interface AdminCreateEventResponse {
+  event: {
+    id: string;
+    code: string;
+    status: string;
+    route_id: string;
+    buyer_email: string | null;
+    created_at: string;
+    expires_at: string;
+  };
+}
+
 export interface AdminMessageBankListResponse {
   message_banks: Array<{
     id: string;

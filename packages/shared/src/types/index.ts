@@ -44,6 +44,7 @@ export type {
   AdminRouteDetailResponse,
   AdminRouteListResponse,
   AdminStopReorderResponse,
+  AdminCreateEventResponse,
   AdminMessageBankListResponse,
 } from "./api.js";
 

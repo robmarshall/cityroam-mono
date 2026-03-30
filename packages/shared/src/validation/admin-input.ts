@@ -56,6 +56,12 @@ export const adminUpdateEventStatusSchema = z.object({
   status: z.enum(["NOT_STARTED", "WAITING", "IN_PROGRESS", "COMPLETED", "EXPIRED", "REFUNDED"]),
 });
 
+export const adminCreateEventSchema = z.object({
+  route_id: z.string().uuid("Valid route ID is required"),
+  buyer_email: z.string().email("Invalid email").optional(),
+  expires_in_days: z.number().int().min(1).max(365).optional(),
+});
+
 export const stopReorderSchema = z.object({
   stop_ids: z.array(z.string().uuid()).min(1, "At least one stop ID is required"),
 });
