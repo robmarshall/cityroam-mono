@@ -31,6 +31,7 @@ import type {
   GuideTypingPayload,
   ParticipantTypingPayload,
   NameChangedPayload,
+  MessageHistoryResponse,
 } from "@cityroam/shared/types";
 import { api, ApiError } from "../lib/api";
 import { trackEvent } from "../lib/analytics";
@@ -109,11 +110,42 @@ export default function ChatPage() {
   }, [participant, event, code, navigate]);
 
   // Connect WebSocket if we landed here directly (e.g. auto-rejoin of IN_PROGRESS event)
+  // Use a ref to avoid re-running when `connect` reference changes across renders.
+  const connectRef = useRef(connect);
+  connectRef.current = connect;
+  const hasConnectedRef = useRef(false);
+
   useEffect(() => {
-    if (code && token && wsStatus === "disconnected") {
-      connect(code, token);
+    if (code && token && wsStatus === "disconnected" && !hasConnectedRef.current) {
+      hasConnectedRef.current = true;
+      connectRef.current(code, token);
     }
-  }, [code, token, connect, wsStatus]);
+  }, [code, token, wsStatus]);
+
+  // Load full message history on mount (covers auto-rejoin where no messages are in state)
+  useEffect(() => {
+    if (!code || !token) return;
+    let cancelled = false;
+
+    async function loadHistory() {
+      try {
+        const response = await api.get<MessageHistoryResponse>(
+          `/event/${encodeURIComponent(code!)}/messages`,
+        );
+        if (cancelled || response.messages.length === 0) return;
+        setMessages((prev) => {
+          if (prev.length > 0) return prev; // Don't overwrite if messages already loaded
+          return response.messages;
+        });
+      } catch {
+        // Non-fatal — messages will arrive via WebSocket
+      }
+    }
+
+    loadHistory();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [code, token]);
 
   // Handle close codes — redirect to join on auth failure
   useEffect(() => {
