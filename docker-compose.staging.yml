@@ -62,7 +62,7 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.api-http.rule=Host(`${API_DOMAIN}`)"
+      - "traefik.http.routers.api-http.rule=Host(`api-staging.cityroam.co.uk`)"
       - "traefik.http.routers.api-http.entrypoints=https"
       - "traefik.http.routers.api-http.tls=true"
       - "traefik.http.routers.api-http.tls.certresolver=letsencrypt"
@@ -92,7 +92,7 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.api-ws.rule=Host(`${API_DOMAIN}`) && PathPrefix(`/ws/`)"
+      - "traefik.http.routers.api-ws.rule=Host(`api-staging.cityroam.co.uk`) && PathPrefix(`/ws/`)"
       - "traefik.http.routers.api-ws.entrypoints=https"
       - "traefik.http.routers.api-ws.tls=true"
       - "traefik.http.routers.api-ws.tls.certresolver=letsencrypt"
