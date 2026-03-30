@@ -1,6 +1,6 @@
 {
   "framework": "vite",
-  "installCommand": "cd ../.. && npm install --include=optional",
+  "installCommand": "cd ../.. && rm -rf node_modules packages/*/node_modules && npm install --include=optional",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
