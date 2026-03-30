@@ -6,39 +6,56 @@ import type { WebSocket } from "ws";
  */
 const connections = new Map<string, Map<string, WebSocket>>();
 
+export interface AddConnectionResult {
+  /** True if this is the first connection for the event (caller should subscribe to Redis). */
+  isFirstForEvent: boolean;
+  /** The previous WebSocket for this participant, if one was replaced (caller should close it). */
+  previousWs: WebSocket | null;
+}
+
 /**
  * Register a WebSocket connection for a participant in an event.
- * Returns true if this is the first connection for the event
- * (caller should subscribe to the event's Redis channel).
+ * If the participant already has a connection, the old one is returned
+ * so the caller can close it (preventing race conditions on close).
  */
 export function addConnection(
   eventCode: string,
   participantId: string,
   ws: WebSocket,
-): boolean {
+): AddConnectionResult {
   let eventMap = connections.get(eventCode);
-  const isFirst = !eventMap;
+  const isFirstForEvent = !eventMap;
 
   if (!eventMap) {
     eventMap = new Map<string, WebSocket>();
     connections.set(eventCode, eventMap);
   }
 
+  const previousWs = eventMap.get(participantId) ?? null;
   eventMap.set(participantId, ws);
-  return isFirst;
+  return { isFirstForEvent, previousWs };
 }
 
 /**
  * Remove a participant's WebSocket connection from an event.
+ * Only removes if the stored socket matches `ws` (identity check),
+ * preventing a stale close handler from removing a newer connection.
  * Returns true if this was the last connection for the event
  * (caller should unsubscribe from the event's Redis channel).
  */
 export function removeConnection(
   eventCode: string,
   participantId: string,
+  ws: WebSocket,
 ): boolean {
   const eventMap = connections.get(eventCode);
   if (!eventMap) {
+    return false;
+  }
+
+  // Only remove if the stored socket is the same instance
+  const stored = eventMap.get(participantId);
+  if (stored !== ws) {
     return false;
   }
 
