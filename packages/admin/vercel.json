@@ -1,6 +1,6 @@
 {
   "framework": "vite",
-  "installCommand": "rm -rf node_modules package-lock.json && cd ../.. && npm install",
+  "installCommand": "cd ../.. && npm install --include=optional",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
