@@ -1,11 +1,10 @@
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { POSTHOG_EVENTS } from "@cityroam/shared/analytics";
 import type {
   ParticipantJoinedPayload,
   ParticipantLeftPayload,
   GameStartedPayload,
-  WebSocketMessage,
 } from "@cityroam/shared/types";
 import { api, ApiError } from "../lib/api";
 import { trackEvent } from "../lib/analytics";
@@ -30,9 +29,9 @@ export default function LobbyPage() {
   } = useEvent();
   const {
     status: wsStatus,
-    lastMessage,
     closeCode,
     maxAttemptsReached,
+    subscribe,
     connect,
     manualRetry,
   } = useWebSocket();
@@ -74,54 +73,49 @@ export default function LobbyPage() {
     };
   }, [code, token, connect, wsStatus]);
 
-  // Handle incoming WebSocket messages
+  // Handle incoming WebSocket messages via subscription (no batching risk)
+  const participantsRef = useRef(participants);
+  participantsRef.current = participants;
+  const eventRef = useRef(event);
+  eventRef.current = event;
+
   useEffect(() => {
-    if (!lastMessage) return;
-
-    const msg = lastMessage as WebSocketMessage;
-
-    switch (msg.type) {
-      case "participant_joined": {
-        const payload = msg.payload as ParticipantJoinedPayload;
-        addParticipant({
-          id: crypto.randomUUID(),
-          display_name: payload.name,
-          is_lead: false,
-          is_active: true,
-        });
-        break;
-      }
-      case "participant_left": {
-        const payload = msg.payload as ParticipantLeftPayload;
-        // Find participant by name and remove them
-        const leaving = participants.find(
-          (p) => p.display_name === payload.name,
-        );
-        if (leaving) {
-          removeParticipant(leaving.id);
+    const unsubscribe = subscribe((msg) => {
+      switch (msg.type) {
+        case "participant_joined": {
+          const payload = msg.payload as ParticipantJoinedPayload;
+          addParticipant({
+            id: crypto.randomUUID(),
+            display_name: payload.name,
+            is_lead: false,
+            is_active: true,
+          });
+          break;
         }
-        break;
+        case "participant_left": {
+          const payload = msg.payload as ParticipantLeftPayload;
+          const leaving = participantsRef.current.find(
+            (p) => p.display_name === payload.name,
+          );
+          if (leaving) {
+            removeParticipant(leaving.id);
+          }
+          break;
+        }
+        case "game_started": {
+          const _payload = msg.payload as GameStartedPayload;
+          setEvent({
+            code: code!,
+            status: "IN_PROGRESS",
+            current_stop: eventRef.current?.current_stop ?? 1,
+          });
+          break;
+        }
       }
-      case "game_started": {
-        const _payload = msg.payload as GameStartedPayload;
-        setEvent({
-          code: code!,
-          status: "IN_PROGRESS",
-          current_stop: event?.current_stop ?? 1,
-        });
-        // Navigation handled by the status effect above
-        break;
-      }
-    }
-  }, [
-    lastMessage,
-    code,
-    event,
-    participants,
-    addParticipant,
-    removeParticipant,
-    setEvent,
-  ]);
+    });
+
+    return unsubscribe;
+  }, [subscribe, code, addParticipant, removeParticipant, setEvent]);
 
   const handleStart = useCallback(async () => {
     if (!code || starting) return;

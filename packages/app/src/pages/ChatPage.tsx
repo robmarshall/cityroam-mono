@@ -23,7 +23,6 @@ import { TYPING_INDICATOR_DEBOUNCE_MS } from "@cityroam/shared/constants";
 import { POSTHOG_EVENTS } from "@cityroam/shared/analytics";
 import type {
   ChatMessagePayload,
-  WebSocketMessage,
   ParticipantJoinedPayload,
   ParticipantLeftPayload,
   GameCompletePayload,
@@ -65,11 +64,11 @@ export default function ChatPage() {
   const { event, clearEvent } = useEvent();
   const {
     status: wsStatus,
-    lastMessage,
     closeCode,
     maxAttemptsReached,
     catchUpMessages,
     send,
+    subscribe,
     connect,
     disconnect,
     manualRetry,
@@ -91,6 +90,8 @@ export default function ChatPage() {
   const [nameInput, setNameInput] = useState("");
   const [nameError, setNameError] = useState<string | null>(null);
   const [savingName, setSavingName] = useState(false);
+  const isUserScrolledUpRef = useRef(isUserScrolledUp);
+  isUserScrolledUpRef.current = isUserScrolledUp;
   const participantsTypingRef = useRef(participantsTyping);
   participantsTypingRef.current = participantsTyping;
   const wasReconnectingRef = useRef(false);
@@ -181,115 +182,112 @@ export default function ChatPage() {
     clearCatchUpMessages();
   }, [catchUpMessages, clearCatchUpMessages]);
 
-  // Handle incoming WebSocket messages
+  // Handle incoming WebSocket messages via subscription (no batching risk)
   useEffect(() => {
-    if (!lastMessage) return;
-    const msg = lastMessage as WebSocketMessage;
+    const unsubscribe = subscribe((msg) => {
+      switch (msg.type) {
+        case "chat_message": {
+          const payload = msg.payload as ChatMessagePayload;
+          setMessages((prev) => {
+            if (prev.some((m) => m.id === payload.id)) return prev;
+            return [...prev, payload];
+          });
 
-    switch (msg.type) {
-      case "chat_message": {
-        const payload = msg.payload as ChatMessagePayload;
-        setMessages((prev) => {
-          // Deduplicate by message id
-          if (prev.some((m) => m.id === payload.id)) return prev;
-          return [...prev, payload];
-        });
-
-        if (isUserScrolledUp) {
-          setHasNewMessages(true);
-        }
-        break;
-      }
-      case "participant_joined": {
-        const payload = msg.payload as ParticipantJoinedPayload;
-        setMessages((prev) => [
-          ...prev,
-          makeSystemMessage(`${payload.name} joined the game`),
-        ]);
-        break;
-      }
-      case "participant_left": {
-        const payload = msg.payload as ParticipantLeftPayload;
-        setMessages((prev) => [
-          ...prev,
-          makeSystemMessage(`${payload.name} left the game`),
-        ]);
-        // Clear typing indicator for the leaving participant
-        setParticipantsTyping((prev) => {
-          const existingTimer = prev.get(payload.name);
-          if (existingTimer == null) return prev;
-          clearTimeout(existingTimer);
-          const next = new Map(prev);
-          next.delete(payload.name);
-          return next;
-        });
-        break;
-      }
-      case "name_changed": {
-        const payload = msg.payload as NameChangedPayload;
-        setMessages((prev) => [
-          ...prev,
-          makeSystemMessage(
-            `${payload.old_name} changed their name to ${payload.new_name}`
-          ),
-        ]);
-        // Update typing indicator key if participant was typing
-        setParticipantsTyping((prev) => {
-          const existingTimer = prev.get(payload.old_name);
-          if (existingTimer == null) return prev;
-          const next = new Map(prev);
-          next.delete(payload.old_name);
-          next.set(payload.new_name, existingTimer);
-          return next;
-        });
-        break;
-      }
-      case "game_complete": {
-        const payload = msg.payload as GameCompletePayload;
-        navigate(`/event/${code}/complete`, {
-          replace: true,
-          state: { summary: payload.summary },
-        });
-        break;
-      }
-      case "guide_typing": {
-        const payload = msg.payload as GuideTypingPayload;
-        setGuideTyping(payload.is_typing);
-        break;
-      }
-      case "participant_typing": {
-        const payload = msg.payload as ParticipantTypingPayload;
-        setParticipantsTyping((prev) => {
-          const next = new Map(prev);
-          if (payload.is_typing) {
-            // Set a timeout to auto-clear this participant's typing state
-            const existingTimer = next.get(payload.name);
-            if (existingTimer) clearTimeout(existingTimer);
-            const timer = window.setTimeout(() => {
-              setParticipantsTyping((p) => {
-                const updated = new Map(p);
-                updated.delete(payload.name);
-                return updated;
-              });
-            }, TYPING_INDICATOR_DEBOUNCE_MS + 500);
-            next.set(payload.name, timer);
-          } else {
-            const existingTimer = next.get(payload.name);
-            if (existingTimer) clearTimeout(existingTimer);
-            next.delete(payload.name);
+          if (isUserScrolledUpRef.current) {
+            setHasNewMessages(true);
           }
-          return next;
-        });
-        break;
+          break;
+        }
+        case "participant_joined": {
+          const payload = msg.payload as ParticipantJoinedPayload;
+          setMessages((prev) => [
+            ...prev,
+            makeSystemMessage(`${payload.name} joined the game`),
+          ]);
+          break;
+        }
+        case "participant_left": {
+          const payload = msg.payload as ParticipantLeftPayload;
+          setMessages((prev) => [
+            ...prev,
+            makeSystemMessage(`${payload.name} left the game`),
+          ]);
+          setParticipantsTyping((prev) => {
+            const existingTimer = prev.get(payload.name);
+            if (existingTimer == null) return prev;
+            clearTimeout(existingTimer);
+            const next = new Map(prev);
+            next.delete(payload.name);
+            return next;
+          });
+          break;
+        }
+        case "name_changed": {
+          const payload = msg.payload as NameChangedPayload;
+          setMessages((prev) => [
+            ...prev,
+            makeSystemMessage(
+              `${payload.old_name} changed their name to ${payload.new_name}`
+            ),
+          ]);
+          setParticipantsTyping((prev) => {
+            const existingTimer = prev.get(payload.old_name);
+            if (existingTimer == null) return prev;
+            const next = new Map(prev);
+            next.delete(payload.old_name);
+            next.set(payload.new_name, existingTimer);
+            return next;
+          });
+          break;
+        }
+        case "game_complete": {
+          const payload = msg.payload as GameCompletePayload;
+          navigate(`/event/${code}/complete`, {
+            replace: true,
+            state: { summary: payload.summary },
+          });
+          break;
+        }
+        case "guide_typing": {
+          const payload = msg.payload as GuideTypingPayload;
+          setGuideTyping(payload.is_typing);
+          break;
+        }
+        case "participant_typing": {
+          const payload = msg.payload as ParticipantTypingPayload;
+          setParticipantsTyping((prev) => {
+            const next = new Map(prev);
+            if (payload.is_typing) {
+              const existingTimer = next.get(payload.name);
+              if (existingTimer) clearTimeout(existingTimer);
+              const timer = window.setTimeout(() => {
+                setParticipantsTyping((p) => {
+                  const updated = new Map(p);
+                  updated.delete(payload.name);
+                  return updated;
+                });
+              }, TYPING_INDICATOR_DEBOUNCE_MS + 500);
+              next.set(payload.name, timer);
+            } else {
+              const existingTimer = next.get(payload.name);
+              if (existingTimer) clearTimeout(existingTimer);
+              next.delete(payload.name);
+            }
+            return next;
+          });
+          break;
+        }
+        case "error": {
+          const payload = msg.payload as ErrorPayload;
+          setErrorToast(payload.message);
+          setTimeout(() => setErrorToast(null), 4000);
+          break;
+        }
       }
-      case "error": {
-        const payload = msg.payload as ErrorPayload;
-        setErrorToast(payload.message);
-        setTimeout(() => setErrorToast(null), 4000);
-        break;
-      }
-    }
-  }, [lastMessage, code, navigate, isUserScrolledUp]);
+    });
+
+    return unsubscribe;
+  }, [subscribe, code, navigate]);
 
   // Auto-scroll to bottom on new messages or typing indicators (unless user has scrolled up)
   useEffect(() => {

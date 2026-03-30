@@ -9,10 +9,12 @@ import {
   type ReactNode,
 } from "react";
 import { WEBSOCKET_PING_INTERVAL_MS } from "@cityroam/shared/constants";
-import type { ChatMessagePayload, MessageHistoryResponse } from "@cityroam/shared/types";
+import type { ChatMessagePayload, WebSocketMessage, MessageHistoryResponse } from "@cityroam/shared/types";
 import { POSTHOG_EVENTS } from "@cityroam/shared/analytics";
 import { api } from "../lib/api";
 import { trackEvent } from "../lib/analytics";
+
+export type MessageCallback = (message: WebSocketMessage) => void;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -53,7 +55,6 @@ function getBackoffDelay(attempt: number): number {
 
 interface WebSocketState {
   status: ConnectionStatus;
-  lastMessage: unknown;
   closeCode: number | null;
   reconnectAttempt: number;
   maxAttemptsReached: boolean;
@@ -61,7 +62,6 @@ interface WebSocketState {
 
 type WebSocketAction =
   | { type: "STATUS_CHANGE"; status: ConnectionStatus }
-  | { type: "MESSAGE_RECEIVED"; message: unknown }
   | { type: "CLOSE_CODE"; code: number | null }
   | { type: "RECONNECT_ATTEMPT"; attempt: number }
   | { type: "MAX_ATTEMPTS_REACHED" }
@@ -69,12 +69,12 @@ type WebSocketAction =
 
 export interface WebSocketContextValue {
   status: ConnectionStatus;
-  lastMessage: unknown;
   closeCode: number | null;
   reconnectAttempt: number;
   maxAttemptsReached: boolean;
   catchUpMessages: ChatMessagePayload[];
   send: (message: object) => void;
+  subscribe: (callback: MessageCallback) => () => void;
   connect: (code: string, token: string) => void;
   disconnect: () => void;
   manualRetry: () => void;
@@ -87,7 +87,6 @@ export interface WebSocketContextValue {
 
 const initialState: WebSocketState = {
   status: "disconnected",
-  lastMessage: null,
   closeCode: null,
   reconnectAttempt: 0,
   maxAttemptsReached: false,
@@ -100,8 +99,6 @@ function wsReducer(
   switch (action.type) {
     case "STATUS_CHANGE":
       return { ...state, status: action.status };
-    case "MESSAGE_RECEIVED":
-      return { ...state, lastMessage: action.message };
     case "CLOSE_CODE":
       return { ...state, closeCode: action.code };
     case "RECONNECT_ATTEMPT":
@@ -136,6 +133,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
   const disconnectedAtRef = useRef<number | null>(null);
   const [catchUpMessages, setCatchUpMessages] = useState<ChatMessagePayload[]>([]);
   const intentionalDisconnectRef = useRef(false);
+  const subscribersRef = useRef<Set<MessageCallback>>(new Set());
 
   // Use a ref for connectInternal so the close handler always calls the latest version
   const connectInternalRef = useRef<(code: string, token: string, isReconnect: boolean) => void>(
@@ -268,8 +266,12 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
       ws.addEventListener("message", (event: MessageEvent) => {
         if (socketRef.current !== ws) return;
         try {
-          const data = JSON.parse(String(event.data)) as { type: string; payload: unknown };
-          dispatch({ type: "MESSAGE_RECEIVED", message: data });
+          const data = JSON.parse(String(event.data)) as WebSocketMessage;
+
+          // Deliver to all subscribers synchronously — no React batching risk
+          for (const cb of subscribersRef.current) {
+            try { cb(data); } catch { /* isolate subscriber errors */ }
+          }
 
           // Track last chat_message timestamp for catch-up
           if (data.type === "chat_message") {
@@ -277,7 +279,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
             lastMessageTimestampRef.current = payload.created_at;
           }
         } catch {
-          dispatch({ type: "MESSAGE_RECEIVED", message: event.data });
+          // Malformed JSON — ignore
         }
       });
 
@@ -358,6 +360,11 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const subscribe = useCallback((callback: MessageCallback) => {
+    subscribersRef.current.add(callback);
+    return () => { subscribersRef.current.delete(callback); };
+  }, []);
+
   const manualRetry = useCallback(() => {
     const params = connectionParamsRef.current;
     if (!params) return;
@@ -386,12 +393,12 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     <WebSocketContext
       value={{
         status: state.status,
-        lastMessage: state.lastMessage,
         closeCode: state.closeCode,
         reconnectAttempt: state.reconnectAttempt,
         maxAttemptsReached: state.maxAttemptsReached,
         catchUpMessages,
         send,
+        subscribe,
         connect,
         disconnect,
         manualRetry,
