@@ -117,8 +117,8 @@ app.get(
 
       async onClose(evt, ws) {
         const raw = ws.raw as import("ws").WebSocket;
-        const code = evt instanceof CloseEvent ? evt.code : undefined;
-        const reason = evt instanceof CloseEvent ? evt.reason : undefined;
+        const code = typeof evt === "object" && evt !== null && "code" in evt ? (evt as { code: number }).code : undefined;
+        const reason = typeof evt === "object" && evt !== null && "reason" in evt ? (evt as { reason: string }).reason : undefined;
         log.info("connection closed", { eventCode: session.event_code, participantId: session.participant_id, code, reason });
 
         // Only remove if this socket is still the registered one (not replaced by a reconnection)
