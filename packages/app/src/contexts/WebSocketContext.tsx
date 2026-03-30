@@ -123,7 +123,7 @@ const WebSocketContext = createContext<WebSocketContextValue | null>(null);
 // Provider
 // ---------------------------------------------------------------------------
 
-const WS_BASE_URL: string = import.meta.env.VITE_WS_URL ?? "ws://localhost:3001";
+const WS_BASE_URL: string = import.meta.env.VITE_WS_URL ?? "ws://localhost:3002";
 
 export function WebSocketProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(wsReducer, initialState);

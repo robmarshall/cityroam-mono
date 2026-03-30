@@ -3,6 +3,7 @@
 #
 # Required env vars in Coolify:
 #   API_DOMAIN          - e.g. api-staging.cityroam.co.uk
+#   WS_DOMAIN           - e.g. ws-staging.cityroam.co.uk (separate subdomain for WebSocket)
 #   POSTGRES_PASSWORD   - strong random password
 #   REDIS_PASSWORD      - strong random password
 #
@@ -67,7 +68,6 @@ services:
       - "traefik.http.routers.api-http.tls=true"
       - "traefik.http.routers.api-http.tls.certresolver=letsencrypt"
       - "traefik.http.services.api-http.loadbalancer.server.port=3001"
-      - "traefik.http.routers.api-http.priority=10"
       - "traefik.http.services.api-http.loadbalancer.healthcheck.path=/health"
       - "traefik.http.services.api-http.loadbalancer.healthcheck.interval=30s"
 
@@ -93,12 +93,11 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.api-ws.rule=Host(`api-staging.cityroam.co.uk`) && PathPrefix(`/ws/`)"
+      - "traefik.http.routers.api-ws.rule=Host(`ws-staging.cityroam.co.uk`)"
       - "traefik.http.routers.api-ws.entrypoints=https"
       - "traefik.http.routers.api-ws.tls=true"
       - "traefik.http.routers.api-ws.tls.certresolver=letsencrypt"
       - "traefik.http.services.api-ws.loadbalancer.server.port=3002"
-      - "traefik.http.routers.api-ws.priority=20"
       - "traefik.http.services.api-ws.loadbalancer.healthcheck.path=/health"
       - "traefik.http.services.api-ws.loadbalancer.healthcheck.interval=30s"
 
