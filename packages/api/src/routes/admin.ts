@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { eq, sql, count, desc, and, asc, inArray, type SQL } from "drizzle-orm";
 import Stripe from "stripe";
-import { adminLoginSchema, adminUpdateEventStatusSchema, routeSchema, stopSchema, stopReorderSchema, imageUploadRequestSchema, messageBankSchema } from "@cityroam/shared/validation";
+import { adminLoginSchema, adminUpdateEventStatusSchema, routeSchema, stopSchema, stopReorderSchema, imageUploadRequestSchema, messageBankSchema, bulkRouteCreateSchema } from "@cityroam/shared/validation";
 import { generatePresignedUploadUrl } from "../services/s3.js";
 import type { AdminDashboardResponse, AdminEventListResponse, AdminEventDetailResponse, AdminRouteDetailResponse, AdminRouteListResponse, AdminMessageBankListResponse } from "@cityroam/shared/types";
 import { env } from "../env.js";
@@ -546,6 +546,82 @@ adminRoutes.delete("/admin/routes/:id", adminAuth, async (c) => {
   });
 
   return c.json({ success: true }, 200);
+});
+
+// POST /admin/routes/bulk — create a route with all stops in one call
+adminRoutes.post("/admin/routes/bulk", adminAuth, async (c) => {
+  const body = await c.req.json();
+  const data = bulkRouteCreateSchema.parse(body);
+
+  const result = await db.transaction(async (tx) => {
+    const [route] = await tx
+      .insert(routes)
+      .values({
+        city: data.route.city,
+        name: data.route.name,
+        description: data.route.description ?? null,
+        total_stops: data.stops.length,
+        estimated_duration_mins: data.route.estimated_duration_mins,
+        estimated_distance_km: String(data.route.estimated_distance_km),
+        is_active: data.route.is_active,
+      })
+      .returning();
+
+    const insertedStops = [];
+    for (let i = 0; i < data.stops.length; i++) {
+      const s = data.stops[i];
+      const [inserted] = await tx
+        .insert(stops)
+        .values({
+          route_id: route.id,
+          stop_number: i + 1,
+          name: s.name,
+          directions_from_previous: s.directions_from_previous ?? "",
+          clue: s.clue,
+          accepted_answers: s.accepted_answers,
+          hints: s.hints,
+          correct_response: s.correct_response ?? null,
+          fun_fact: s.fun_fact ?? "",
+          images: s.images,
+          google_maps_link: s.google_maps_link || null,
+        })
+        .returning();
+      insertedStops.push(inserted);
+    }
+
+    return { route, stops: insertedStops };
+  });
+
+  return c.json({
+    route: {
+      id: result.route.id,
+      city: result.route.city,
+      name: result.route.name,
+      description: result.route.description ?? "",
+      total_stops: result.route.total_stops,
+      estimated_duration_mins: result.route.estimated_duration_mins,
+      estimated_distance_km: Number(result.route.estimated_distance_km),
+      is_active: result.route.is_active,
+      created_at: result.route.created_at.toISOString(),
+      updated_at: result.route.updated_at.toISOString(),
+    },
+    stops: result.stops.map((s) => ({
+      id: s.id,
+      route_id: s.route_id,
+      stop_number: s.stop_number,
+      name: s.name,
+      directions_from_previous: s.directions_from_previous,
+      clue: s.clue,
+      accepted_answers: s.accepted_answers as string[],
+      hints: s.hints as string[],
+      correct_response: s.correct_response ?? "",
+      fun_fact: s.fun_fact,
+      images: (s.images as string[]) ?? [],
+      google_maps_link: s.google_maps_link ?? "",
+      created_at: s.created_at.toISOString(),
+      updated_at: s.updated_at.toISOString(),
+    })),
+  }, 201);
 });
 
 // ── Stop CRUD ───────────────────────────────────────────────────────

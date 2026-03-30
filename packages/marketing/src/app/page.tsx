@@ -1,21 +1,27 @@
 import { CTAButton } from "@/components/CTAButton";
 import { FAQ } from "@/components/FAQ";
+import IphoneDemo from "@/components/IphoneDemo/IphoneDemo";
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-white">
       {/* Hero */}
-      <section className="px-6 py-24 text-center sm:py-32">
-        <div className="mx-auto max-w-3xl">
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-            AI-Guided Treasure Hunts in Leeds
-          </h1>
-          <p className="mt-6 text-lg leading-8 text-gray-600 sm:text-xl">
-            Solve clues, discover hidden gems, and explore the city with friends
-            &mdash; all guided by AI on your phone.
-          </p>
-          <div className="mt-10">
-            <CTAButton location="hero" />
+      <section className="px-6 py-24 sm:py-32 overflow-hidden">
+        <div className="mx-auto max-w-5xl flex flex-col items-center gap-12 lg:flex-row lg:items-center lg:gap-16">
+          <div className="flex-1 text-center lg:text-left">
+            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
+              AI-Guided Treasure Hunts in Leeds
+            </h1>
+            <p className="mt-6 text-lg leading-8 text-gray-600 sm:text-xl">
+              Solve clues, discover hidden gems, and explore the city with
+              friends &mdash; all guided by AI on your phone.
+            </p>
+            <div className="mt-10">
+              <CTAButton location="hero" />
+            </div>
+          </div>
+          <div className="relative flex-shrink-0 rotate-3 lg:rotate-6">
+            <IphoneDemo variant="hero" />
           </div>
         </div>
       </section>
@@ -71,8 +77,39 @@ export default function Home() {
         </div>
       </section>
 
-      {/* What's Included */}
+      {/* Just Your Phone */}
       <section className="bg-gray-50 px-6 py-20 sm:py-24">
+        <div className="mx-auto max-w-5xl flex flex-col items-center gap-12 md:flex-row md:gap-16">
+          <div className="flex-1 order-2 md:order-1">
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+              Just Take Your Phone
+            </h2>
+            <p className="mt-4 text-lg leading-relaxed text-gray-600">
+              No app to download. No equipment to carry. Just open your
+              phone&rsquo;s browser and start exploring.
+            </p>
+            <ul className="mt-8 space-y-4">
+              {[
+                { icon: "\ud83d\udcf1", text: "Works on any smartphone" },
+                { icon: "\u2601\ufe0f", text: "No downloads \u2014 runs in your browser" },
+                { icon: "\ud83d\udcac", text: "Chat-based AI guide walks you through" },
+                { icon: "\u23f8\ufe0f", text: "Pause and resume whenever you like" },
+              ].map((item, i) => (
+                <li key={i} className="flex items-center gap-3 text-gray-700">
+                  <span className="text-xl">{item.icon}</span>
+                  <span className="text-lg">{item.text}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="relative flex-shrink-0 order-1 md:order-2 -rotate-2 md:rotate-3">
+            <IphoneDemo variant="howItWorks" />
+          </div>
+        </div>
+      </section>
+
+      {/* What's Included */}
+      <section className="px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
             What&rsquo;s Included

@@ -73,7 +73,8 @@
       "Bash(gh.exe repo:*)",
       "Bash(where gh:*)",
       "Bash(cmd.exe /c \"where gh\")",
-      "Bash(where.exe gh:*)"
+      "Bash(where.exe gh:*)",
+      "Bash(find /mnt/c/Users/rober/projects/cityroam/city-roam-marketing -type f \\\\\\(-name *.tsx -o -name *.scss -o -name *.css -o -name *.ts \\\\\\))"
     ],
     "deny": [],
     "ask": []

@@ -1,0 +1,147 @@
+/* IPhone.module.css */
+.root {
+  position: relative;
+  height: 692em;
+  width: 342em;
+}
+
+.root *,
+.root *::before,
+.root *::after {
+  box-sizing: border-box;
+  display: block;
+}
+
+.side {
+  background: #000;
+  border-radius: 60em;
+  height: 100%;
+  padding: 15em 22em;
+  width: 100%;
+}
+
+.screen {
+  background: #000;
+  background-position: center center;
+  background-size: cover;
+  border-radius: 44em;
+  position: relative;
+  height: 658em;
+  width: 308em;
+  margin-left: -5em;
+  margin-top: 1em;
+  overflow: hidden;
+}
+
+.content {
+  height: 100%;
+  width: 100%;
+}
+
+.line::after,
+.line::before {
+  content: "";
+  position: absolute;
+  border: solid rgba(255, 255, 255, 0.4);
+  border-width: 0 5em;
+  height: 5em;
+  left: 0;
+  width: 100%;
+}
+
+.line::after {
+  top: 69em;
+}
+
+.line::before {
+  bottom: 71em;
+}
+
+.header {
+  background: #000;
+  border-bottom-left-radius: 18em;
+  border-bottom-right-radius: 18em;
+  height: 28em;
+  left: 50%;
+  margin-left: -62em;
+  position: absolute;
+  top: 12em;
+  width: 124em;
+}
+
+.sensor-1::after,
+.sensor-1::before,
+.sensor-2::after,
+.sensor-2::before {
+  content: "";
+  position: absolute;
+}
+
+.sensor-1::after {
+  background: #444;
+  border-radius: 50%;
+  height: 6em;
+  width: 6em;
+  left: 1%;
+  margin-left: 12.5em;
+  top: 10.5em;
+  box-shadow: 0em 0em 2em 1em navy inset;
+}
+
+.sensor-1::before {
+  background: rgb(20, 20, 20);
+  border-radius: 50%;
+  height: 12em;
+  width: 12em;
+  left: 1%;
+  margin-left: 10em;
+  top: 8em;
+}
+
+.sensor-2::before {
+  background: #131313;
+  border-radius: 1.5em;
+  height: 3em;
+  width: 54em;
+  left: 50%;
+  margin-left: -27em;
+  top: -3em;
+}
+
+.volume-button,
+.volume-button::after,
+.volume-button::before {
+  border-top-left-radius: 1.5px;
+  border-bottom-left-radius: 1.5px;
+  position: absolute;
+  left: 0;
+  width: 3em;
+  background-color: #2C2C2E;
+}
+
+.volume-button {
+  height: 26em;
+  left: -3em;
+  top: 122em;
+}
+
+.volume-button::after {
+  top: 48em;
+  height: 50em;
+}
+
+.volume-button::before {
+  top: 112em;
+  height: 50em;
+}
+
+.power-button {
+  border-top-right-radius: 1.5px;
+  border-bottom-right-radius: 1.5px;
+  position: absolute;
+  right: -3em;
+  height: 75em;
+  top: 175em;
+  width: 3em;
+  background-color: #2C2C2E;
+}
