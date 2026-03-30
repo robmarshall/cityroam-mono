@@ -296,6 +296,14 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
           return;
         }
 
+        // Server replaced this socket with a newer connection for the same
+        // participant — the new socket is already active so we must NOT
+        // auto-reconnect (that would create yet another connection and loop).
+        if (closeCode === 1000 && event.reason === "Replaced by new connection") {
+          dispatch({ type: "STATUS_CHANGE", status: "disconnected" });
+          return;
+        }
+
         // Custom close codes — don't reconnect
         if (NO_RECONNECT_CODES.has(closeCode)) {
           dispatch({ type: "STATUS_CHANGE", status: "disconnected" });
