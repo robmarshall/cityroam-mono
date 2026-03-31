@@ -837,7 +837,7 @@ function SelfBubble({
   return (
     <div className="mb-chat-gap flex justify-end">
       <div className="max-w-[75%] rounded-2xl rounded-br-sm bg-bubble-self px-3 py-2 text-white">
-        <p className="whitespace-pre-wrap break-words">{message.content}</p>
+        <p className="whitespace-pre-wrap break-words"><Linkify text={message.content} /></p>
         <MessageImage url={message.image_url} onClick={onImageClick} />
       </div>
     </div>
@@ -865,7 +865,7 @@ function GuideBubble({
           </div>
         )}
         <div className="rounded-2xl rounded-bl-sm bg-bubble-guide px-3 py-2 text-gray-900">
-          <p className="whitespace-pre-wrap break-words">{message.content}</p>
+          <p className="whitespace-pre-wrap break-words"><Linkify text={message.content} /></p>
           <MessageImage url={message.image_url} onClick={onImageClick} />
         </div>
       </div>
@@ -887,7 +887,7 @@ function OtherBubble({
           {message.sender_name}
         </div>
         <div className="rounded-2xl rounded-bl-sm bg-bubble-other px-3 py-2 text-gray-900">
-          <p className="whitespace-pre-wrap break-words">{message.content}</p>
+          <p className="whitespace-pre-wrap break-words"><Linkify text={message.content} /></p>
           <MessageImage url={message.image_url} onClick={onImageClick} />
         </div>
       </div>
@@ -912,6 +912,57 @@ function MessageImage({
         loading="lazy"
       />
     </button>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Linkify — detect URLs and render as clickable links
+// ---------------------------------------------------------------------------
+
+const URL_REGEX = /https?:\/\/[^\s<>)"']+/g;
+
+function Linkify({ text }: { text: string }) {
+  if (!text) return null;
+
+  const parts: (string | { url: string; key: number })[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  let keyCounter = 0;
+
+  const regex = new RegExp(URL_REGEX.source, "g");
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    parts.push({ url: match[0], key: keyCounter++ });
+    lastIndex = regex.lastIndex;
+  }
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+
+  if (parts.length === 1 && typeof parts[0] === "string") {
+    return <>{text}</>;
+  }
+
+  return (
+    <>
+      {parts.map((part) =>
+        typeof part === "string" ? (
+          part
+        ) : (
+          <a
+            key={part.key}
+            href={part.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline break-all"
+          >
+            {part.url}
+          </a>
+        ),
+      )}
+    </>
   );
 }
 

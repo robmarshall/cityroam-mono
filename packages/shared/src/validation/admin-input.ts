@@ -14,6 +14,12 @@ export const routeSchema = z.object({
   is_active: z.boolean().optional().default(true),
 });
 
+export const sequenceItemSchema = z.object({
+  content: z.string().default(""),
+  image_url: z.string().url("Invalid image URL").nullable().optional().default(null),
+  delay_ms: z.number().int().min(0).max(10000).default(0),
+});
+
 export const stopSchema = z.object({
   name: z.string().trim().min(1, "Stop name is required"),
   directions_from_previous: z.string().trim().optional(),
@@ -22,7 +28,9 @@ export const stopSchema = z.object({
     .array(z.string().trim().min(1))
     .min(1, "At least one accepted answer is required"),
   hints: z
-    .array(z.string().trim().min(1))
+    .array(
+      z.array(sequenceItemSchema).min(1, "Each hint must have at least one message"),
+    )
     .min(2, "At least 2 hints are required")
     .max(3, "At most 3 hints are allowed"),
   correct_response: z.string().trim().optional(),
@@ -74,6 +82,14 @@ export const stopReorderSchema = z.object({
 export const bulkRouteCreateSchema = z.object({
   route: routeSchema,
   stops: z.array(stopSchema).min(1, "At least one stop is required").max(30, "Maximum 30 stops per route"),
+});
+
+export const openingSequenceSchema = z.object({
+  name: z.string().trim().min(1, "Name is required"),
+  is_active: z.boolean().optional().default(true),
+  items: z
+    .array(sequenceItemSchema)
+    .min(1, "At least one message item is required"),
 });
 
 export const messageBankSchema = z.object({

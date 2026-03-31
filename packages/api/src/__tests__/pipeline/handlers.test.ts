@@ -109,7 +109,10 @@ function makeMockStop(overrides: Record<string, unknown> = {}) {
     name: "Town Hall",
     clue: "Find the tallest building in the square.",
     accepted_answers: ["Town Hall", "The Town Hall"],
-    hints: ["It has a clock tower.", "It faces the main square."],
+    hints: [
+      [{ content: "It has a clock tower.", image_url: null, delay_ms: 0 }],
+      [{ content: "It faces the main square.", image_url: null, delay_ms: 0 }],
+    ],
     fun_fact: "Built in 1890, the Town Hall survived two fires.",
     directions_from_previous: "Walk 200m north along Main Street.",
     images: ["photo1.jpg"],
@@ -418,7 +421,11 @@ describe("handleAnswerAttempt", () => {
 describe("handleHintRequest", () => {
   it("serves hints in sequence and increments hints_given", async () => {
     const stop = makeMockStop({
-      hints: ["Hint one.", "Hint two.", "Hint three."],
+      hints: [
+        [{ content: "Hint one.", image_url: null, delay_ms: 0 }],
+        [{ content: "Hint two.", image_url: null, delay_ms: 0 }],
+        [{ content: "Hint three.", image_url: null, delay_ms: 0 }],
+      ],
     });
 
     (db.query.stops.findFirst as ReturnType<typeof vi.fn>)
@@ -442,7 +449,9 @@ describe("handleHintRequest", () => {
 
   it("hints exhausted: reveals answer with {{ANSWER}} replaced, advances stop", async () => {
     const stop = makeMockStop({
-      hints: ["Only hint."],
+      hints: [
+        [{ content: "Only hint.", image_url: null, delay_ms: 0 }],
+      ],
       accepted_answers: ["Town Hall"],
     });
 

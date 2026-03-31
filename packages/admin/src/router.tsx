@@ -14,6 +14,7 @@ const EventDetailPage = lazy(() => import("./pages/EventDetailPage"));
 const RoutesListPage = lazy(() => import("./pages/RoutesListPage"));
 const RouteEditorPage = lazy(() => import("./pages/RouteEditorPage"));
 const MessageBanksPage = lazy(() => import("./pages/MessageBanksPage"));
+const OpeningSequencesPage = lazy(() => import("./pages/OpeningSequencesPage"));
 
 function SuspenseWrapper({ children }: { children: React.ReactNode }) {
   return (
@@ -107,6 +108,14 @@ export const router = createBrowserRouter(
           element: (
             <SuspenseWrapper>
               <MessageBanksPage />
+            </SuspenseWrapper>
+          ),
+        },
+        {
+          path: "opening-sequences",
+          element: (
+            <SuspenseWrapper>
+              <OpeningSequencesPage />
             </SuspenseWrapper>
           ),
         },

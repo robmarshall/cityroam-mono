@@ -189,7 +189,10 @@ export function mockStop(overrides: Record<string, unknown> = {}) {
     directions_from_previous: "Walk straight ahead",
     clue: "Find the big building",
     accepted_answers: ["town hall", "the town hall"],
-    hints: ["It has columns", "Look for the clock"],
+    hints: [
+      [{ content: "It has columns", image_url: null, delay_ms: 0 }],
+      [{ content: "Look for the clock", image_url: null, delay_ms: 0 }],
+    ],
     correct_response: "Well done!",
     fun_fact: "Built in 1858",
     images: [],
