@@ -537,10 +537,7 @@ describe("Admin Stop CRUD", () => {
     directions_from_previous: "Walk north",
     clue: "Find the big clock",
     accepted_answers: ["town hall"],
-    hints: [
-      [{ content: "Look up", image_url: null, delay_ms: 0 }],
-      [{ content: "It has columns", image_url: null, delay_ms: 0 }],
-    ],
+    hints: ["Look up", "It has columns"],
     correct_response: "Well done!",
     fun_fact: "Built in 1858",
     images: [],

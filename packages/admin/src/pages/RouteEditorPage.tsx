@@ -43,30 +43,16 @@ interface RouteForm {
   is_active: boolean;
 }
 
-interface HintItemForm {
-  content: string;
-  image_url: string;
-  delay_ms: number;
-}
-
 interface StopForm {
   name: string;
   directions_from_previous: string;
   clue: string;
   accepted_answers: string[];
-  hints: HintItemForm[][];
+  hints: string[];
   correct_response: string;
   fun_fact: string;
   images: string[];
   google_maps_link: string;
-}
-
-function emptyHintItem(): HintItemForm {
-  return { content: "", image_url: "", delay_ms: 0 };
-}
-
-function emptyHintSequence(): HintItemForm[] {
-  return [emptyHintItem()];
 }
 
 type FieldErrors = Record<string, string>;
@@ -105,7 +91,7 @@ const EMPTY_STOP_FORM: StopForm = {
   directions_from_previous: "",
   clue: "",
   accepted_answers: [],
-  hints: [emptyHintSequence(), emptyHintSequence()],
+  hints: ["", ""],
   correct_response: "",
   fun_fact: "",
   images: [],
@@ -118,13 +104,7 @@ function stopToForm(s: Stop): StopForm {
     directions_from_previous: s.directions_from_previous ?? "",
     clue: s.clue,
     accepted_answers: [...s.accepted_answers],
-    hints: s.hints.map((seq) =>
-      seq.map((item) => ({
-        content: item.content ?? "",
-        image_url: item.image_url ?? "",
-        delay_ms: item.delay_ms ?? 0,
-      })),
-    ),
+    hints: [...s.hints],
     correct_response: s.correct_response ?? "",
     fun_fact: s.fun_fact ?? "",
     images: [...(s.images ?? [])],
@@ -446,47 +426,20 @@ export default function RouteEditorPage() {
     );
   }
 
-  function updateHintItem(
-    hintIndex: number,
-    itemIndex: number,
-    field: keyof HintItemForm,
-    value: string | number,
-  ) {
-    const newHints = stopForm.hints.map((seq, hi) =>
-      hi === hintIndex
-        ? seq.map((item, ii) =>
-            ii === itemIndex ? { ...item, [field]: value } : item,
-          )
-        : seq,
-    );
-    updateStopField("hints", newHints);
-  }
-
-  function addHintItem(hintIndex: number) {
-    const newHints = stopForm.hints.map((seq, hi) =>
-      hi === hintIndex ? [...seq, emptyHintItem()] : seq,
-    );
-    updateStopField("hints", newHints);
-  }
-
-  function removeHintItem(hintIndex: number, itemIndex: number) {
-    const newHints = stopForm.hints.map((seq, hi) =>
-      hi === hintIndex ? seq.filter((_, ii) => ii !== itemIndex) : seq,
-    );
+  function updateHint(index: number, value: string) {
+    const newHints = [...stopForm.hints];
+    newHints[index] = value;
     updateStopField("hints", newHints);
   }
 
   function addHint() {
     if (stopForm.hints.length >= 3) return;
-    updateStopField("hints", [...stopForm.hints, emptyHintSequence()]);
+    updateStopField("hints", [...stopForm.hints, ""]);
   }
 
   function removeHint(index: number) {
     if (stopForm.hints.length <= 2) return;
-    updateStopField(
-      "hints",
-      stopForm.hints.filter((_, i) => i !== index),
-    );
+    updateStopField("hints", stopForm.hints.filter((_, i) => i !== index));
   }
 
   async function handleUploadImage(file: File) {
@@ -548,17 +501,7 @@ export default function RouteEditorPage() {
       directions_from_previous: stopForm.directions_from_previous || undefined,
       clue: stopForm.clue,
       accepted_answers: stopForm.accepted_answers,
-      hints: stopForm.hints
-        .map((seq) =>
-          seq
-            .filter((item) => item.content.trim() || item.image_url.trim())
-            .map((item) => ({
-              content: item.content,
-              image_url: item.image_url.trim() || null,
-              delay_ms: item.delay_ms,
-            })),
-        )
-        .filter((seq) => seq.length > 0),
+      hints: stopForm.hints.filter((h) => h.trim()),
       correct_response: stopForm.correct_response || undefined,
       fun_fact: stopForm.fun_fact || undefined,
       images: stopForm.images,
@@ -1041,119 +984,27 @@ export default function RouteEditorPage() {
                   <label className="mb-1 block text-sm font-medium text-gray-700">
                     Hints (2-3 required) *
                   </label>
-                  <div className="space-y-4">
-                    {stopForm.hints.map((hintSeq, hi) => (
-                      <div
-                        key={hi}
-                        className="rounded-lg border border-gray-200 bg-gray-50 p-3"
-                      >
-                        <div className="mb-2 flex items-center justify-between">
-                          <span className="text-xs font-medium text-gray-500">
-                            Hint {hi + 1}
-                          </span>
-                          {stopForm.hints.length > 2 && (
-                            <button
-                              type="button"
-                              onClick={() => removeHint(hi)}
-                              className="text-xs text-red-600 hover:text-red-800"
-                            >
-                              Remove hint
-                            </button>
-                          )}
+                  <div className="space-y-2">
+                    {stopForm.hints.map((hint, hi) => (
+                      <div key={hi} className="flex items-start gap-2">
+                        <div className="flex-1">
+                          <textarea
+                            value={hint}
+                            onChange={(e) => updateHint(hi, e.target.value)}
+                            placeholder={`Hint ${hi + 1}`}
+                            rows={2}
+                            className={INPUT_CLS}
+                          />
                         </div>
-                        <div className="space-y-3">
-                          {hintSeq.map((item, ii) => (
-                            <div
-                              key={ii}
-                              className="rounded border border-gray-200 bg-white p-2"
-                            >
-                              <div className="mb-1 flex items-center justify-between">
-                                <span className="text-xs text-gray-400">
-                                  Message {ii + 1}
-                                </span>
-                                {hintSeq.length > 1 && (
-                                  <button
-                                    type="button"
-                                    onClick={() => removeHintItem(hi, ii)}
-                                    className="text-xs text-red-500 hover:text-red-700"
-                                  >
-                                    Remove
-                                  </button>
-                                )}
-                              </div>
-                              <textarea
-                                value={item.content}
-                                onChange={(e) =>
-                                  updateHintItem(hi, ii, "content", e.target.value)
-                                }
-                                placeholder="Hint text (leave empty for image-only)"
-                                rows={2}
-                                className={INPUT_CLS}
-                              />
-                              <div className="mt-1 grid grid-cols-2 gap-2">
-                                <div>
-                                  <label className="block text-xs text-gray-400">
-                                    Image URL
-                                  </label>
-                                  <input
-                                    type="text"
-                                    value={item.image_url}
-                                    onChange={(e) =>
-                                      updateHintItem(hi, ii, "image_url", e.target.value)
-                                    }
-                                    placeholder="https://..."
-                                    className={INPUT_CLS}
-                                  />
-                                </div>
-                                <div>
-                                  <label className="block text-xs text-gray-400">
-                                    Delay (ms)
-                                  </label>
-                                  <div className="flex items-center gap-1">
-                                    <input
-                                      type="number"
-                                      value={item.delay_ms}
-                                      onChange={(e) =>
-                                        updateHintItem(
-                                          hi,
-                                          ii,
-                                          "delay_ms",
-                                          Math.max(0, parseInt(e.target.value) || 0),
-                                        )
-                                      }
-                                      min={0}
-                                      max={10000}
-                                      className="w-20 rounded-md border border-gray-300 px-2 py-1.5 text-sm"
-                                    />
-                                    {[500, 1000, 1500].map((preset) => (
-                                      <button
-                                        key={preset}
-                                        type="button"
-                                        onClick={() =>
-                                          updateHintItem(hi, ii, "delay_ms", preset)
-                                        }
-                                        className={`rounded px-1 py-0.5 text-xs ${
-                                          item.delay_ms === preset
-                                            ? "bg-blue-100 text-blue-700"
-                                            : "text-gray-400 hover:bg-gray-100"
-                                        }`}
-                                      >
-                                        {preset / 1000}s
-                                      </button>
-                                    ))}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => addHintItem(hi)}
-                          className="mt-2 text-xs text-blue-600 hover:text-blue-800"
-                        >
-                          + Add message to hint
-                        </button>
+                        {stopForm.hints.length > 2 && (
+                          <button
+                            type="button"
+                            onClick={() => removeHint(hi)}
+                            className="mt-1 text-xs text-red-600 hover:text-red-800"
+                          >
+                            Remove
+                          </button>
+                        )}
                       </div>
                     ))}
                   </div>

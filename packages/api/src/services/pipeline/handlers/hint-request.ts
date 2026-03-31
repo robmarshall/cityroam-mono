@@ -1,11 +1,10 @@
 import { eq, and } from "drizzle-orm";
-import type { SequenceItem } from "@cityroam/shared/types";
 import { buildS3Key, buildS3Url } from "@cityroam/shared/utils";
 import { db, schema } from "../../../db/index.js";
 import { env } from "../../../env.js";
 import { writeGuideMessage, getRandomMessageBank } from "./answer-attempt.js";
 import { handleGameCompletion } from "./game-completion.js";
-import { sendSequence } from "../../send-sequence.js";
+
 import { createLogger } from "../../../lib/logger.js";
 
 const log = createLogger("hint-request");
@@ -57,12 +56,12 @@ export async function handleHintRequest(
     return { handled: true, exhausted: false };
   }
 
-  const hints = (currentStopData.hints as SequenceItem[][]) ?? [];
+  const hints = (currentStopData.hints as string[]) ?? [];
 
   // If hints remain, serve the next one
   if (ctx.hintsGiven < hints.length) {
-    const hintSequence = hints[ctx.hintsGiven];
-    await sendSequence(ctx.eventId, ctx.eventCode, ctx.currentStop, hintSequence);
+    const hintText = hints[ctx.hintsGiven];
+    await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, hintText);
 
     // Increment hints_given on the event
     await db

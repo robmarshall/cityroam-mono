@@ -190,6 +190,7 @@ describe("GET /event/:code", () => {
       id: "p-id",
       display_name: "Lead",
       is_lead: true,
+      token: "fake-token",
     });
   });
 
@@ -483,8 +484,8 @@ describe("POST /event/:code/start", () => {
       is_active: true,
     });
     mockedDb.where
-      .mockResolvedValueOnce(undefined)      // update event chain
-      .mockResolvedValueOnce([template]);    // opening templates select
+      .mockResolvedValueOnce([template])     // opening templates select (in Promise.all)
+      .mockResolvedValueOnce(undefined);     // update event to IN_PROGRESS
 
     // First stop
     const stop = mockStop({

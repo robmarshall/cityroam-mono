@@ -29,13 +29,6 @@
       "when": 1774951485260,
       "tag": "0003_ambitious_bloodaxe",
       "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1774977117240,
-      "tag": "0004_workable_bloodscream",
-      "breakpoints": true
     }
   ]
 }

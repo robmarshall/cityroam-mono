@@ -4,7 +4,6 @@ import type {
   ParticipantLeftReason,
   SenderType,
 } from "./enums.js";
-import type { SequenceItem } from "./sequence.js";
 
 export interface Event {
   id: string;
@@ -73,7 +72,7 @@ export interface Stop {
   directions_from_previous: string;
   clue: string;
   accepted_answers: string[];
-  hints: SequenceItem[][];
+  hints: string[];
   correct_response: string;
   fun_fact: string;
   images: string[];

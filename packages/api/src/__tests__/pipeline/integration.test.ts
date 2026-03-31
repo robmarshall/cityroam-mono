@@ -152,10 +152,7 @@ const stopData = {
   directions_from_previous: "Walk along the main street",
   clue: "Find the building with large columns and a clock tower",
   accepted_answers: ["town hall", "the town hall", "leeds town hall"],
-  hints: [
-    [{ content: "It has columns", image_url: null, delay_ms: 0 }],
-    [{ content: "Look for the clock tower", image_url: null, delay_ms: 0 }],
-  ],
+  hints: ["It has columns", "Look for the clock tower"],
   correct_response: "Well done!",
   fun_fact: "Built in 1858 and designed by Cuthbert Brodrick",
   images: [],
@@ -172,9 +169,7 @@ const nextStopData = {
   directions_from_previous: "Head east down the street",
   clue: "Look for the distinctive oval-shaped building",
   accepted_answers: ["corn exchange", "the corn exchange"],
-  hints: [
-    [{ content: "It was designed for trading grain", image_url: null, delay_ms: 0 }],
-  ],
+  hints: ["It was designed for trading grain"],
   correct_response: "Excellent!",
   fun_fact: "Built in 1863, also designed by Cuthbert Brodrick",
   images: ["corn-exchange.jpg"],

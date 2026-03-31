@@ -60,12 +60,12 @@ describe("chatMessageSchema", () => {
     expect(() => chatMessageSchema.parse("a")).toThrow();
   });
 
-  it("rejects messages longer than 500 chars", () => {
-    expect(() => chatMessageSchema.parse("x".repeat(501))).toThrow();
+  it("rejects messages longer than 200 chars", () => {
+    expect(() => chatMessageSchema.parse("x".repeat(201))).toThrow();
   });
 
-  it("accepts messages at exactly 500 chars", () => {
-    expect(chatMessageSchema.parse("x".repeat(500))).toHaveLength(500);
+  it("accepts messages at exactly 200 chars", () => {
+    expect(chatMessageSchema.parse("x".repeat(200))).toHaveLength(200);
   });
 });
 

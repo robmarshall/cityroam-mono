@@ -4,4 +4,3 @@ export { participants } from "./participants.js";
 export { messages } from "./messages.js";
 export { stops } from "./stops.js";
 export { messageBanks } from "./message-banks.js";
-export { openingSequences, openingSequenceItems } from "./opening-sequences.js";

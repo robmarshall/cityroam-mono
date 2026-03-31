@@ -1,14 +1,14 @@
 import { Hono } from "hono";
 import { eq, sql, count, desc, and, asc, inArray, type SQL } from "drizzle-orm";
 import Stripe from "stripe";
-import { adminLoginSchema, adminUpdateEventStatusSchema, adminCreateEventSchema, routeSchema, stopSchema, stopReorderSchema, imageUploadRequestSchema, messageBankSchema, bulkRouteCreateSchema, openingSequenceSchema } from "@cityroam/shared/validation";
+import { adminLoginSchema, adminUpdateEventStatusSchema, adminCreateEventSchema, routeSchema, stopSchema, stopReorderSchema, imageUploadRequestSchema, messageBankSchema, bulkRouteCreateSchema } from "@cityroam/shared/validation";
 import { generateEventCode } from "@cityroam/shared/utils";
 import { EVENT_EXPIRY_DAYS } from "@cityroam/shared/constants";
 import { generatePresignedUploadUrl } from "../services/s3.js";
-import type { AdminDashboardResponse, AdminEventListResponse, AdminEventDetailResponse, AdminRouteDetailResponse, AdminRouteListResponse, AdminMessageBankListResponse, AdminOpeningSequenceListResponse, AdminOpeningSequenceDetailResponse, SequenceItem } from "@cityroam/shared/types";
+import type { AdminDashboardResponse, AdminEventListResponse, AdminEventDetailResponse, AdminRouteDetailResponse, AdminRouteListResponse, AdminMessageBankListResponse } from "@cityroam/shared/types";
 import { env } from "../env.js";
 import { db } from "../db/index.js";
-import { events, participants, messages, routes, stops, messageBanks, openingSequences, openingSequenceItems } from "../db/schema/index.js";
+import { events, participants, messages, routes, stops, messageBanks } from "../db/schema/index.js";
 import { AppError } from "../middleware/error-handler.js";
 import { adminAuth, signAdminToken } from "../middleware/admin.js";
 import { createLogger } from "../lib/logger.js";
@@ -529,7 +529,7 @@ adminRoutes.get("/admin/routes/:id", adminAuth, async (c) => {
       directions_from_previous: s.directions_from_previous,
       clue: s.clue,
       accepted_answers: s.accepted_answers as string[],
-      hints: s.hints as SequenceItem[][],
+      hints: s.hints as string[],
       correct_response: s.correct_response ?? "",
       fun_fact: s.fun_fact,
       images: (s.images as string[]) ?? [],
@@ -681,7 +681,7 @@ adminRoutes.post("/admin/routes/bulk", adminAuth, async (c) => {
       directions_from_previous: s.directions_from_previous,
       clue: s.clue,
       accepted_answers: s.accepted_answers as string[],
-      hints: s.hints as SequenceItem[][],
+      hints: s.hints as string[],
       correct_response: s.correct_response ?? "",
       fun_fact: s.fun_fact,
       images: (s.images as string[]) ?? [],
@@ -753,7 +753,7 @@ adminRoutes.post("/admin/routes/:id/stops", adminAuth, async (c) => {
       directions_from_previous: stop.directions_from_previous,
       clue: stop.clue,
       accepted_answers: stop.accepted_answers as string[],
-      hints: stop.hints as SequenceItem[][],
+      hints: stop.hints as string[],
       correct_response: stop.correct_response ?? "",
       fun_fact: stop.fun_fact,
       images: (stop.images as string[]) ?? [],
@@ -862,7 +862,7 @@ adminRoutes.put("/admin/routes/:id/stops/:stopId", adminAuth, async (c) => {
       directions_from_previous: updated.directions_from_previous,
       clue: updated.clue,
       accepted_answers: updated.accepted_answers as string[],
-      hints: updated.hints as SequenceItem[][],
+      hints: updated.hints as string[],
       correct_response: updated.correct_response ?? "",
       fun_fact: updated.fun_fact,
       images: (updated.images as string[]) ?? [],
@@ -1032,176 +1032,6 @@ adminRoutes.delete("/admin/message-banks/:id", adminAuth, async (c) => {
   }
 
   await db.delete(messageBanks).where(eq(messageBanks.id, id));
-
-  return c.json({ success: true }, 200);
-});
-
-// ── Opening Sequence CRUD ────────────────────────────────────────────
-
-// GET /admin/opening-sequences — list all with items
-adminRoutes.get("/admin/opening-sequences", adminAuth, async (c) => {
-  const seqs = await db
-    .select()
-    .from(openingSequences)
-    .orderBy(desc(openingSequences.created_at));
-
-  const items = seqs.length > 0
-    ? await db
-        .select()
-        .from(openingSequenceItems)
-        .where(inArray(openingSequenceItems.sequence_id, seqs.map((s) => s.id)))
-        .orderBy(asc(openingSequenceItems.sort_order))
-    : [];
-
-  const itemsBySequence = new Map<string, typeof items>();
-  for (const item of items) {
-    const list = itemsBySequence.get(item.sequence_id) ?? [];
-    list.push(item);
-    itemsBySequence.set(item.sequence_id, list);
-  }
-
-  const response: AdminOpeningSequenceListResponse = {
-    sequences: seqs.map((s) => ({
-      id: s.id,
-      name: s.name,
-      is_active: s.is_active,
-      items: (itemsBySequence.get(s.id) ?? []).map((i) => ({
-        id: i.id,
-        sort_order: i.sort_order,
-        content: i.content,
-        image_url: i.image_url,
-        delay_ms: i.delay_ms,
-      })),
-      created_at: s.created_at.toISOString(),
-      updated_at: s.updated_at.toISOString(),
-    })),
-  };
-
-  return c.json(response, 200);
-});
-
-// POST /admin/opening-sequences — create a sequence with items
-adminRoutes.post("/admin/opening-sequences", adminAuth, async (c) => {
-  const body = await c.req.json();
-  const data = openingSequenceSchema.parse(body);
-
-  const [seq] = await db
-    .insert(openingSequences)
-    .values({
-      name: data.name,
-      is_active: data.is_active,
-    })
-    .returning();
-
-  const itemValues = data.items.map((item, idx) => ({
-    sequence_id: seq.id,
-    sort_order: idx + 1,
-    content: item.content ?? "",
-    image_url: item.image_url ?? null,
-    delay_ms: item.delay_ms ?? 0,
-  }));
-
-  const createdItems = await db
-    .insert(openingSequenceItems)
-    .values(itemValues)
-    .returning();
-
-  const response: AdminOpeningSequenceDetailResponse = {
-    sequence: {
-      id: seq.id,
-      name: seq.name,
-      is_active: seq.is_active,
-      items: createdItems.map((i) => ({
-        id: i.id,
-        sort_order: i.sort_order,
-        content: i.content,
-        image_url: i.image_url,
-        delay_ms: i.delay_ms,
-      })),
-      created_at: seq.created_at.toISOString(),
-      updated_at: seq.updated_at.toISOString(),
-    },
-  };
-
-  return c.json(response, 201);
-});
-
-// PUT /admin/opening-sequences/:id — update sequence and replace items
-adminRoutes.put("/admin/opening-sequences/:id", adminAuth, async (c) => {
-  const id = c.req.param("id");
-  const body = await c.req.json();
-  const data = openingSequenceSchema.parse(body);
-
-  const existing = await db.query.openingSequences.findFirst({
-    where: eq(openingSequences.id, id),
-  });
-
-  if (!existing) {
-    throw new AppError(404, "Opening sequence not found", "NOT_FOUND");
-  }
-
-  // Update parent
-  const [updated] = await db
-    .update(openingSequences)
-    .set({
-      name: data.name,
-      is_active: data.is_active,
-      updated_at: new Date(),
-    })
-    .where(eq(openingSequences.id, id))
-    .returning();
-
-  // Replace items: delete old, insert new
-  await db
-    .delete(openingSequenceItems)
-    .where(eq(openingSequenceItems.sequence_id, id));
-
-  const itemValues = data.items.map((item, idx) => ({
-    sequence_id: id,
-    sort_order: idx + 1,
-    content: item.content ?? "",
-    image_url: item.image_url ?? null,
-    delay_ms: item.delay_ms ?? 0,
-  }));
-
-  const createdItems = await db
-    .insert(openingSequenceItems)
-    .values(itemValues)
-    .returning();
-
-  const response: AdminOpeningSequenceDetailResponse = {
-    sequence: {
-      id: updated.id,
-      name: updated.name,
-      is_active: updated.is_active,
-      items: createdItems.map((i) => ({
-        id: i.id,
-        sort_order: i.sort_order,
-        content: i.content,
-        image_url: i.image_url,
-        delay_ms: i.delay_ms,
-      })),
-      created_at: updated.created_at.toISOString(),
-      updated_at: updated.updated_at.toISOString(),
-    },
-  };
-
-  return c.json(response, 200);
-});
-
-// DELETE /admin/opening-sequences/:id — delete sequence (cascade deletes items)
-adminRoutes.delete("/admin/opening-sequences/:id", adminAuth, async (c) => {
-  const id = c.req.param("id");
-
-  const existing = await db.query.openingSequences.findFirst({
-    where: eq(openingSequences.id, id),
-  });
-
-  if (!existing) {
-    throw new AppError(404, "Opening sequence not found", "NOT_FOUND");
-  }
-
-  await db.delete(openingSequences).where(eq(openingSequences.id, id));
 
   return c.json({ success: true }, 200);
 });

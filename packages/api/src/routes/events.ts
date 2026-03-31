@@ -20,8 +20,7 @@ import {
   messages,
   stops,
   routes,
-  openingSequences,
-  openingSequenceItems,
+  messageBanks,
 } from "../db/schema/index.js";
 import {
   setSession,
@@ -33,7 +32,7 @@ import {
   checkNameChangeRateLimit,
   publishControl,
 } from "../redis/index.js";
-import { sendSequence } from "../services/send-sequence.js";
+import { writeGuideMessage } from "../services/pipeline/handlers/answer-attempt.js";
 import {
   sessionAuth,
   resolveSession,
@@ -272,12 +271,17 @@ eventRoutes.post("/event/:code/start", sessionAuth, async (c) => {
     throw new AppError(400, "Event cannot be started", "INVALID_INPUT");
   }
 
-  // Load opening sequence, first stop, and route in parallel
-  const [activeSequences, firstStop, route] = await Promise.all([
+  // Load opening template, first stop, and route in parallel
+  const [openingTemplates, firstStop, route] = await Promise.all([
     db
-      .select()
-      .from(openingSequences)
-      .where(eq(openingSequences.is_active, true)),
+      .select({ content: messageBanks.content })
+      .from(messageBanks)
+      .where(
+        and(
+          eq(messageBanks.type, "opening"),
+          eq(messageBanks.is_active, true),
+        ),
+      ),
     db.query.stops.findFirst({
       where: and(
         eq(stops.route_id, event.route_id),
@@ -289,8 +293,8 @@ eventRoutes.post("/event/:code/start", sessionAuth, async (c) => {
     }),
   ]);
 
-  if (activeSequences.length === 0) {
-    throw new AppError(500, "No opening sequences available", "INTERNAL_ERROR");
+  if (openingTemplates.length === 0) {
+    throw new AppError(500, "No opening message templates available", "INTERNAL_ERROR");
   }
   if (!firstStop) {
     throw new AppError(500, "Route stop not found", "INTERNAL_ERROR");
@@ -299,17 +303,8 @@ eventRoutes.post("/event/:code/start", sessionAuth, async (c) => {
     throw new AppError(500, "Route not found", "INTERNAL_ERROR");
   }
 
-  // Pick a random sequence and load its items
-  const chosen = activeSequences[Math.floor(Math.random() * activeSequences.length)];
-  const items = await db
-    .select()
-    .from(openingSequenceItems)
-    .where(eq(openingSequenceItems.sequence_id, chosen.id))
-    .orderBy(asc(openingSequenceItems.sort_order));
-
-  if (items.length === 0) {
-    throw new AppError(500, "Opening sequence has no items", "INTERNAL_ERROR");
-  }
+  // Pick a random opening template
+  const chosen = openingTemplates[Math.floor(Math.random() * openingTemplates.length)];
 
   // Update event to IN_PROGRESS
   const now = new Date();
@@ -328,7 +323,7 @@ eventRoutes.post("/event/:code/start", sessionAuth, async (c) => {
     data: { started_by: session.display_name },
   });
 
-  // Template variables for opening messages
+  // Template variables for opening message
   const templateVars: Record<string, string> = {
     FIRST_STOP_DIRECTIONS: firstStop.directions_from_previous,
     FIRST_CLUE: firstStop.clue,
@@ -336,14 +331,15 @@ eventRoutes.post("/event/:code/start", sessionAuth, async (c) => {
     TOTAL_STOPS: String(route.total_stops),
   };
 
-  // Fire sequence delivery asynchronously (don't block the HTTP response)
-  const sequenceItems = items.map((item) => ({
-    content: item.content,
-    image_url: item.image_url,
-    delay_ms: item.delay_ms,
-  }));
-  sendSequence(event.id, code, 1, sequenceItems, templateVars).catch(() => {
-    // Errors are logged inside sendSequence
+  // Apply template variables
+  let content = chosen.content;
+  for (const [key, value] of Object.entries(templateVars)) {
+    content = content.replaceAll(`{{${key}}}`, value);
+  }
+
+  // Send opening message asynchronously (don't block the HTTP response)
+  writeGuideMessage(event.id, code, 1, content).catch(() => {
+    // Errors are logged inside writeGuideMessage
   });
 
   return c.json({ success: true }, 200);
