@@ -614,7 +614,7 @@ describe("silent handlers", () => {
     consoleSpy.mockRestore();
   });
 
-  it("prompt-injection: message deleted from DB and Redis, no guide response, event logged", async () => {
+  it("prompt-injection: message marked as dropped in DB, removed from Redis, no guide response", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
     const ctx = makeSilentCtx();
@@ -622,17 +622,18 @@ describe("silent handlers", () => {
 
     expect(result).toEqual({ handled: true, deleted: true });
 
-    // Deleted from DB
-    expect((db as any).delete).toHaveBeenCalled();
+    // Marked as dropped in DB (update, not delete)
+    expect((db as any).update).toHaveBeenCalled();
+    expect((db as any).set).toHaveBeenCalledWith({ sender_type: "dropped" });
 
-    // Removed from Redis cache
+    // Removed from Redis cache (hidden from players)
     expect(removeMessage).toHaveBeenCalledWith("ABC123", "user-msg-1");
 
     // No guide message sent
     expect((db as any).insert).not.toHaveBeenCalled();
     expect(appendMessage).not.toHaveBeenCalled();
 
-    // Event logged for monitoring (spec §4.7: "Log for monitoring")
+    // Event logged for monitoring
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining("prompt-injection"),
     );
@@ -640,7 +641,7 @@ describe("silent handlers", () => {
     warnSpy.mockRestore();
   });
 
-  it("inappropriate: message deleted, no guide response, event logged", async () => {
+  it("inappropriate: message marked as dropped in DB, removed from Redis, no guide response", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
     const ctx = makeSilentCtx();
@@ -648,17 +649,18 @@ describe("silent handlers", () => {
 
     expect(result).toEqual({ handled: true, deleted: true });
 
-    // Deleted from DB
-    expect((db as any).delete).toHaveBeenCalled();
+    // Marked as dropped in DB (update, not delete)
+    expect((db as any).update).toHaveBeenCalled();
+    expect((db as any).set).toHaveBeenCalledWith({ sender_type: "dropped" });
 
-    // Removed from Redis cache
+    // Removed from Redis cache (hidden from players)
     expect(removeMessage).toHaveBeenCalledWith("ABC123", "user-msg-1");
 
     // No guide message sent
     expect((db as any).insert).not.toHaveBeenCalled();
     expect(appendMessage).not.toHaveBeenCalled();
 
-    // Event logged for monitoring (spec §4.7: "Log for monitoring")
+    // Event logged for monitoring
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining("inappropriate"),
     );

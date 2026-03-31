@@ -1,6 +1,6 @@
 // Game limits
 export const MAX_PARTICIPANTS = 10;
-export const MAX_MESSAGE_LENGTH = 500;
+export const MAX_MESSAGE_LENGTH = 200;
 export const MIN_MESSAGE_LENGTH = 2;
 export const MAX_DISPLAY_NAME_LENGTH = 30;
 export const MAX_GUIDE_RESPONSES_PER_EVENT = 100;

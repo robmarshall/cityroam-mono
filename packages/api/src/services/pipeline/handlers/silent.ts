@@ -68,12 +68,13 @@ export async function handlePromptInjection(
 
   log.warn("prompt-injection detected", { eventCode: ctx.eventCode, messageId: ctx.messageId, contentHash: contentHash });
 
-  // Delete from DB
+  // Mark as dropped in DB (visible to admin only)
   await db
-    .delete(schema.messages)
+    .update(schema.messages)
+    .set({ sender_type: "dropped" })
     .where(eq(schema.messages.id, ctx.messageId));
 
-  // Remove from Redis cache
+  // Remove from Redis cache (hidden from players)
   await removeMessage(ctx.eventCode, ctx.messageId);
 
   return { handled: true, deleted: true };
@@ -89,12 +90,13 @@ export async function handleInappropriate(
 ): Promise<SilentHandlerResult> {
   log.warn("inappropriate content detected", { eventCode: ctx.eventCode, messageId: ctx.messageId });
 
-  // Delete from DB
+  // Mark as dropped in DB (visible to admin only)
   await db
-    .delete(schema.messages)
+    .update(schema.messages)
+    .set({ sender_type: "dropped" })
     .where(eq(schema.messages.id, ctx.messageId));
 
-  // Remove from Redis cache
+  // Remove from Redis cache (hidden from players)
   await removeMessage(ctx.eventCode, ctx.messageId);
 
   return { handled: true, deleted: true };

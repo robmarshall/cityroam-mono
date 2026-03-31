@@ -25,8 +25,8 @@ describe("constants", () => {
       expect(MAX_PARTICIPANTS).toBe(10);
     });
 
-    it("MAX_MESSAGE_LENGTH is 500", () => {
-      expect(MAX_MESSAGE_LENGTH).toBe(500);
+    it("MAX_MESSAGE_LENGTH is 200", () => {
+      expect(MAX_MESSAGE_LENGTH).toBe(200);
     });
 
     it("MIN_MESSAGE_LENGTH is 2", () => {

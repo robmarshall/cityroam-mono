@@ -1,0 +1,2 @@
+ALTER TABLE "messages" DROP CONSTRAINT "messages_sender_type_check";--> statement-breakpoint
+ALTER TABLE "messages" ADD CONSTRAINT "messages_sender_type_check" CHECK ("messages"."sender_type" IN ('user', 'guide', 'system', 'dropped'));

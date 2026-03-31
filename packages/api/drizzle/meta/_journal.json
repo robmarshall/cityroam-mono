@@ -15,6 +15,13 @@
       "when": 1774783424714,
       "tag": "0001_mature_iron_monger",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1774950445500,
+      "tag": "0002_third_kylun",
+      "breakpoints": true
     }
   ]
 }

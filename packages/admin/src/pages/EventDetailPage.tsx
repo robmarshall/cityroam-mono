@@ -14,12 +14,14 @@ const SENDER_COLORS: Record<SenderType, string> = {
   user: "bg-blue-50 border-blue-200",
   guide: "bg-gray-50 border-gray-200",
   system: "bg-amber-50 border-amber-200",
+  dropped: "bg-red-50 border-red-200",
 };
 
 const SENDER_BADGE_COLORS: Record<SenderType, string> = {
   user: "bg-blue-100 text-blue-700",
   guide: "bg-gray-200 text-gray-700",
   system: "bg-amber-100 text-amber-700",
+  dropped: "bg-red-100 text-red-700",
 };
 
 export default function EventDetailPage() {
@@ -499,6 +501,7 @@ const SENDER_TYPE_OPTIONS: { value: SenderType | "all"; label: string }[] = [
   { value: "all", label: "All" },
   { value: "user", label: "User" },
   { value: "guide", label: "Guide" },
+  { value: "dropped", label: "Dropped" },
   { value: "system", label: "System" },
 ];
 
