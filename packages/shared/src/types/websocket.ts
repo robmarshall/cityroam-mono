@@ -65,6 +65,10 @@ export interface NameChangedPayload {
 
 export type PongPayload = Record<string, never>;
 
+export interface MessageDroppedPayload {
+  message_id: string;
+}
+
 export interface ErrorPayload {
   message: string;
   code?: string;
