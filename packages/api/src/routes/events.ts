@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { getCookie } from "hono/cookie";
-import { eq, and, asc, gt, sql } from "drizzle-orm";
+import { eq, and, asc, gt, ne, sql } from "drizzle-orm";
 import type {
   EventDetailResponse,
   JoinEventResponse,
@@ -576,7 +576,8 @@ eventRoutes.get("/event/:code/messages", async (c) => {
         .where(
           and(
             eq(messages.event_id, event.id),
-            gt(messages.created_at, new Date(since))
+            gt(messages.created_at, new Date(since)),
+            ne(messages.sender_type, "dropped"),
           )
         )
         .orderBy(asc(messages.created_at));
@@ -592,7 +593,12 @@ eventRoutes.get("/event/:code/messages", async (c) => {
       const dbMessages = await db
         .select()
         .from(messages)
-        .where(eq(messages.event_id, event.id))
+        .where(
+          and(
+            eq(messages.event_id, event.id),
+            ne(messages.sender_type, "dropped"),
+          )
+        )
         .orderBy(asc(messages.created_at));
 
       messageList = dbMessages.map(mapDbMessageToPayload);

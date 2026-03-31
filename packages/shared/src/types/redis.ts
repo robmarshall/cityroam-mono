@@ -38,4 +38,5 @@ export type ControlEventPayload =
   | {
       type: "name_changed";
       data: { participant_id: string; old_name: string; new_name: string };
-    };
+    }
+  | { type: "message_dropped"; data: { message_id: string } };

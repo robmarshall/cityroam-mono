@@ -12,6 +12,7 @@ import type {
   GameStartedPayload,
   GameCompletePayload,
   NameChangedPayload,
+  MessageDroppedPayload,
 } from "@cityroam/shared/types";
 import { WebSocket as WS } from "ws";
 
@@ -127,6 +128,14 @@ export async function subscribeEvent(
               old_name: payload.data.old_name,
               new_name: payload.data.new_name,
             },
+          };
+          broadcast(connections, message);
+          break;
+        }
+        case "message_dropped": {
+          const message: WebSocketMessage<MessageDroppedPayload> = {
+            type: "message_dropped",
+            payload: { message_id: payload.data.message_id },
           };
           broadcast(connections, message);
           break;

@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { createHash } from "node:crypto";
 import { db, schema } from "../../../db/index.js";
 import { createLogger } from "../../../lib/logger.js";
-import { removeMessage } from "../../../redis/index.js";
+import { removeMessage, publishControl } from "../../../redis/index.js";
 import { writeGuideMessage, getRandomMessageBank } from "./answer-attempt.js";
 
 const log = createLogger("pipeline");
@@ -77,6 +77,12 @@ export async function handlePromptInjection(
   // Remove from Redis cache (hidden from players)
   await removeMessage(ctx.eventCode, ctx.messageId);
 
+  // Notify connected clients to remove the message
+  await publishControl(ctx.eventCode, {
+    type: "message_dropped",
+    data: { message_id: ctx.messageId },
+  });
+
   return { handled: true, deleted: true };
 }
 
@@ -98,6 +104,12 @@ export async function handleInappropriate(
 
   // Remove from Redis cache (hidden from players)
   await removeMessage(ctx.eventCode, ctx.messageId);
+
+  // Notify connected clients to remove the message
+  await publishControl(ctx.eventCode, {
+    type: "message_dropped",
+    data: { message_id: ctx.messageId },
+  });
 
   return { handled: true, deleted: true };
 }

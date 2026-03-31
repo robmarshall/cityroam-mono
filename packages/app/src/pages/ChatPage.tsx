@@ -31,6 +31,7 @@ import type {
   ParticipantTypingPayload,
   NameChangedPayload,
   MessageHistoryResponse,
+  MessageDroppedPayload,
 } from "@cityroam/shared/types";
 import { api, ApiError } from "../lib/api";
 import { trackEvent } from "../lib/analytics";
@@ -196,6 +197,11 @@ export default function ChatPage() {
           if (isUserScrolledUpRef.current) {
             setHasNewMessages(true);
           }
+          break;
+        }
+        case "message_dropped": {
+          const payload = msg.payload as MessageDroppedPayload;
+          setMessages((prev) => prev.filter((m) => m.id !== payload.message_id));
           break;
         }
         case "participant_joined": {
