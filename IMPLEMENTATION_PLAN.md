@@ -15,10 +15,10 @@ Refactor the route model from a flat list of stops into a composable **group + b
 
 ## Phase 1: Revert Previous Iteration
 
-- [ ] **1.1 Revert opening sequences** — Delete `packages/api/src/db/schema/opening-sequences.ts`, `packages/admin/src/pages/OpeningSequencesPage.tsx`. Remove opening sequence admin API routes from `admin.ts`. Remove opening sequence nav link from `AdminLayout.tsx` and route from `router.tsx`. Remove generated migration `0004_workable_bloodscream.sql`.
-- [ ] **1.2 Revert stop/hint changes** — Restore `stopSchema.hints` to `z.array(z.string())`, restore `Stop.hints` to `string[]`, restore `stopToForm`/hint editor in `RouteEditorPage.tsx`, restore hint handler to use `string[]`, restore test fixtures to use `string[]` hints.
-- [ ] **1.3 Revert event start handler** — Restore original opening message bank logic in `events.ts` (messageBanks import, template selection, image message).
-- [ ] **1.4 Keep useful additions** — Keep `sendSequence()` utility (`packages/api/src/services/send-sequence.ts`), keep `Linkify` component in `ChatPage.tsx`, keep `SequenceItem` type in shared.
+- [x] **1.1 Revert opening sequences** — Delete `packages/api/src/db/schema/opening-sequences.ts`, `packages/admin/src/pages/OpeningSequencesPage.tsx`. Remove opening sequence admin API routes from `admin.ts`. Remove opening sequence nav link from `AdminLayout.tsx` and route from `router.tsx`. Remove generated migration `0004_workable_bloodscream.sql`.
+- [x] **1.2 Revert stop/hint changes** — Restore `stopSchema.hints` to `z.array(z.string())`, restore `Stop.hints` to `string[]`, restore `stopToForm`/hint editor in `RouteEditorPage.tsx`, restore hint handler to use `string[]`, restore test fixtures to use `string[]` hints.
+- [x] **1.3 Revert event start handler** — Restore original opening message bank logic in `events.ts` (messageBanks import, template selection, image message).
+- [x] **1.4 Keep useful additions** — Keep `sendSequence()` utility (`packages/api/src/services/send-sequence.ts`), keep `Linkify` component in `ChatPage.tsx`, keep `SequenceItem` type in shared.
 
 ## Phase 2: Shared Types & Validation
 
