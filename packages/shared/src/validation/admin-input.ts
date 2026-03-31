@@ -53,8 +53,13 @@ export const imageUploadRequestSchema = z.object({
 });
 
 export const adminUpdateEventStatusSchema = z.object({
-  status: z.enum(["NOT_STARTED", "WAITING", "IN_PROGRESS", "COMPLETED", "EXPIRED", "REFUNDED"]),
-});
+  status: z.enum(["NOT_STARTED", "WAITING", "IN_PROGRESS", "COMPLETED", "EXPIRED", "REFUNDED"]).optional(),
+  refund_requested: z.boolean().optional(),
+  refund_note: z.string().max(2000, "Refund note must be at most 2000 characters").optional(),
+}).refine(
+  (data) => data.status !== undefined || data.refund_requested !== undefined || data.refund_note !== undefined,
+  { message: "At least one field must be provided" },
+);
 
 export const adminCreateEventSchema = z.object({
   route_id: z.string().uuid("Valid route ID is required"),

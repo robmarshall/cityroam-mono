@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, integer, timestamp, index, check } from "drizzle-orm/pg-core";
+import { pgTable, uuid, varchar, integer, timestamp, index, check, boolean, text } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { routes } from "./routes.js";
 
@@ -19,6 +19,8 @@ export const events = pgTable("events", {
   started_at: timestamp("started_at", { withTimezone: true }),
   completed_at: timestamp("completed_at", { withTimezone: true }),
   expires_at: timestamp("expires_at", { withTimezone: true }).notNull(),
+  refund_requested: boolean("refund_requested").notNull().default(false),
+  refund_note: text("refund_note"),
 }, (table) => [
   index("events_code_idx").on(table.code),
   index("events_status_idx").on(table.status),

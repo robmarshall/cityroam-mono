@@ -83,6 +83,7 @@ export interface AdminEventListResponse {
     status: EventStatus;
     created_at: string;
     participant_count: number;
+    refund_requested: boolean;
   }>;
   total: number;
   page: number;

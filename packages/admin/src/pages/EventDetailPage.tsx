@@ -34,6 +34,11 @@ export default function EventDetailPage() {
   const [refunding, setRefunding] = useState(false);
   const [refundError, setRefundError] = useState<string | null>(null);
   const [refundSuccess, setRefundSuccess] = useState(false);
+  const [refundNote, setRefundNote] = useState("");
+  const [refundRequested, setRefundRequested] = useState(false);
+  const [savingNote, setSavingNote] = useState(false);
+  const [noteSaved, setNoteSaved] = useState(false);
+  const [noteError, setNoteError] = useState<string | null>(null);
   const authFetch = useAuthFetch();
 
   const fetchEvent = useCallback(async () => {
@@ -57,6 +62,14 @@ export default function EventDetailPage() {
     fetchEvent();
   }, [fetchEvent]);
 
+  // Sync refund fields when data loads
+  useEffect(() => {
+    if (data) {
+      setRefundNote(data.event.refund_note ?? "");
+      setRefundRequested(data.event.refund_requested);
+    }
+  }, [data]);
+
   // Silent auto-refresh every 5 seconds so new messages appear without manual reload
   useEffect(() => {
     const interval = setInterval(async () => {
@@ -77,6 +90,28 @@ export default function EventDetailPage() {
     await navigator.clipboard.writeText(paymentId);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleSaveRefundNote = async () => {
+    setSavingNote(true);
+    setNoteError(null);
+    setNoteSaved(false);
+    try {
+      await authFetch(() =>
+        api.patch(`/admin/events/${id}`, {
+          refund_requested: refundRequested,
+          refund_note: refundNote,
+        }),
+      );
+      setNoteSaved(true);
+      setTimeout(() => setNoteSaved(false), 3000);
+    } catch (err) {
+      if (err instanceof ApiError && err.status !== 401) {
+        setNoteError(err.message);
+      }
+    } finally {
+      setSavingNote(false);
+    }
   };
 
   const handleRefund = async () => {
@@ -238,6 +273,48 @@ export default function EventDetailPage() {
           </div>
         </div>
       )}
+
+      {/* Refund Note */}
+      <div className="mb-6 rounded-lg border border-gray-200 bg-white p-4">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-500">
+          Refund
+        </h2>
+        <label className="mb-3 flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={refundRequested}
+            onChange={(e) => setRefundRequested(e.target.checked)}
+            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          />
+          <span className="text-sm font-medium text-gray-700">Refund Requested</span>
+        </label>
+        <label className="mb-1 block text-sm font-medium text-gray-700">
+          Refund Note
+        </label>
+        <textarea
+          value={refundNote}
+          onChange={(e) => setRefundNote(e.target.value)}
+          placeholder="Add notes about the refund..."
+          rows={3}
+          maxLength={2000}
+          className="mb-3 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        />
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleSaveRefundNote}
+            disabled={savingNote}
+            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          >
+            {savingNote ? "Saving..." : "Save"}
+          </button>
+          {noteSaved && (
+            <span className="text-sm text-green-600">Saved successfully</span>
+          )}
+          {noteError && (
+            <span className="text-sm text-red-600">{noteError}</span>
+          )}
+        </div>
+      </div>
 
       {/* Game Progress */}
       {data.total_stops != null && data.total_stops > 0 && (
