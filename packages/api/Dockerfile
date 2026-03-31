@@ -52,9 +52,11 @@ COPY --from=builder /app/packages/shared/src packages/shared/src
 # Copy API built output
 COPY --from=builder /app/packages/api/dist packages/api/dist
 
-# Copy drizzle migrations (needed for db:migrate at runtime)
+# Copy drizzle migrations and migrate script (needed for db:migrate at runtime)
 COPY packages/api/drizzle packages/api/drizzle
 COPY packages/api/drizzle.config.ts packages/api/
+COPY packages/api/src/db/migrate.ts packages/api/src/db/migrate.ts
+COPY packages/api/src/db/schema packages/api/src/db/schema
 
 # Run from packages/api so relative paths (./drizzle) resolve correctly
 WORKDIR /app/packages/api
