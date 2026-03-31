@@ -9,6 +9,7 @@ import { incrementGuideResponseCount } from "../guide-response-cap.js";
 import { handleGameCompletion } from "./game-completion.js";
 import { env } from "../../../env.js";
 import { createLogger } from "../../../lib/logger.js";
+import { deterministicAnswerMatch } from "../deterministic-match.js";
 
 const log = createLogger("answer-attempt");
 
@@ -178,14 +179,11 @@ export async function handleAnswerAttempt(
     }
   }
 
-  // JSON parse failure or LLM failure → clarification bank (never silently drop answer attempts)
+  // LLM failure → use deterministic fallback instead of clarification
   if (matchResult === null) {
-    log.error("LLM returned null or invalid result, falling back to clarification");
-    const clarification = await getRandomMessageBank("clarification");
-    if (clarification) {
-      await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, clarification);
-    }
-    return { handled: true, correct: false };
+    log.warn("LLM answer match failed, using deterministic fallback");
+    const isMatch = deterministicAnswerMatch(userMessage, acceptedAnswers);
+    matchResult = { type: isMatch ? "answer-correct" : "answer-incorrect" };
   }
 
   if (matchResult.type === "answer-correct") {
