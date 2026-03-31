@@ -22,6 +22,8 @@ export interface Event {
   lead_participant_id: string | null;
   stripe_session_id: string | null;
   stripe_payment_id: string | null;
+  refund_requested: boolean;
+  refund_note: string | null;
 }
 
 export interface Participant {

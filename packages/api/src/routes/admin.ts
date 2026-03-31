@@ -119,6 +119,7 @@ adminRoutes.get("/admin/events", adminAuth, async (c) => {
       buyer_email: events.buyer_email,
       status: events.status,
       created_at: events.created_at,
+      refund_requested: events.refund_requested,
     })
     .from(events)
     .where(whereClause)
@@ -152,6 +153,7 @@ adminRoutes.get("/admin/events", adminAuth, async (c) => {
       status: e.status as AdminEventListResponse["events"][0]["status"],
       created_at: e.created_at.toISOString(),
       participant_count: participantCounts[e.id] ?? 0,
+      refund_requested: e.refund_requested,
     })),
     total,
     page,
@@ -267,6 +269,8 @@ adminRoutes.get("/admin/events/:id", adminAuth, async (c) => {
       lead_participant_id: event.lead_participant_id,
       stripe_session_id: event.stripe_session_id,
       stripe_payment_id: event.stripe_payment_id,
+      refund_requested: event.refund_requested,
+      refund_note: event.refund_note,
     },
     route_name: route?.name ?? null,
     total_stops: route?.total_stops ?? null,
@@ -303,7 +307,7 @@ adminRoutes.get("/admin/events/:id", adminAuth, async (c) => {
 adminRoutes.patch("/admin/events/:id", adminAuth, async (c) => {
   const id = c.req.param("id");
   const body = await c.req.json();
-  const { status } = adminUpdateEventStatusSchema.parse(body);
+  const data = adminUpdateEventStatusSchema.parse(body);
 
   const existing = await db.query.events.findFirst({
     where: eq(events.id, id),
@@ -313,12 +317,17 @@ adminRoutes.patch("/admin/events/:id", adminAuth, async (c) => {
     throw new AppError(404, "Event not found", "EVENT_NOT_FOUND");
   }
 
+  const updates: Record<string, unknown> = {};
+  if (data.status !== undefined) updates.status = data.status;
+  if (data.refund_requested !== undefined) updates.refund_requested = data.refund_requested;
+  if (data.refund_note !== undefined) updates.refund_note = data.refund_note;
+
   await db
     .update(events)
-    .set({ status })
+    .set(updates)
     .where(eq(events.id, id));
 
-  return c.json({ success: true, status }, 200);
+  return c.json({ success: true, ...updates }, 200);
 });
 
 // POST /admin/events/:id/refund — issue a Stripe refund and update status

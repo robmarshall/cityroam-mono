@@ -343,6 +343,9 @@ export default function EventsListPage() {
                     Created
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Refund
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                     Participants
                   </th>
                 </tr>
@@ -371,6 +374,19 @@ export default function EventsListPage() {
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-500">
                         {formatDate(event.created_at)}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3">
+                        {event.status === "REFUNDED" ? (
+                          <span className="inline-flex rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-700">
+                            Refunded
+                          </span>
+                        ) : event.refund_requested ? (
+                          <span className="inline-flex rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-700">
+                            Requested
+                          </span>
+                        ) : (
+                          <span className="text-sm text-gray-400">&mdash;</span>
+                        )}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
                         {event.participant_count}
