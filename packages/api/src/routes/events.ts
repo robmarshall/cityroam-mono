@@ -19,21 +19,21 @@ import {
   participants,
   messages,
   stops,
-  messageBanks,
   routes,
+  openingSequences,
+  openingSequenceItems,
 } from "../db/schema/index.js";
 import {
   setSession,
   getSession,
   deleteSession,
-  appendMessage,
   getMessages,
   getMessagesSince,
   checkJoinRateLimit,
   checkNameChangeRateLimit,
-  publishMessage,
   publishControl,
 } from "../redis/index.js";
+import { sendSequence } from "../services/send-sequence.js";
 import {
   sessionAuth,
   resolveSession,
@@ -272,6 +272,45 @@ eventRoutes.post("/event/:code/start", sessionAuth, async (c) => {
     throw new AppError(400, "Event cannot be started", "INVALID_INPUT");
   }
 
+  // Load opening sequence, first stop, and route in parallel
+  const [activeSequences, firstStop, route] = await Promise.all([
+    db
+      .select()
+      .from(openingSequences)
+      .where(eq(openingSequences.is_active, true)),
+    db.query.stops.findFirst({
+      where: and(
+        eq(stops.route_id, event.route_id),
+        eq(stops.stop_number, 1),
+      ),
+    }),
+    db.query.routes.findFirst({
+      where: eq(routes.id, event.route_id),
+    }),
+  ]);
+
+  if (activeSequences.length === 0) {
+    throw new AppError(500, "No opening sequences available", "INTERNAL_ERROR");
+  }
+  if (!firstStop) {
+    throw new AppError(500, "Route stop not found", "INTERNAL_ERROR");
+  }
+  if (!route) {
+    throw new AppError(500, "Route not found", "INTERNAL_ERROR");
+  }
+
+  // Pick a random sequence and load its items
+  const chosen = activeSequences[Math.floor(Math.random() * activeSequences.length)];
+  const items = await db
+    .select()
+    .from(openingSequenceItems)
+    .where(eq(openingSequenceItems.sequence_id, chosen.id))
+    .orderBy(asc(openingSequenceItems.sort_order));
+
+  if (items.length === 0) {
+    throw new AppError(500, "Opening sequence has no items", "INTERNAL_ERROR");
+  }
+
   // Update event to IN_PROGRESS
   const now = new Date();
   await db
@@ -283,117 +322,29 @@ eventRoutes.post("/event/:code/start", sessionAuth, async (c) => {
     })
     .where(eq(events.id, event.id));
 
-  // Select random opening template
-  const openingTemplates = await db
-    .select()
-    .from(messageBanks)
-    .where(
-      and(
-        eq(messageBanks.type, "opening"),
-        eq(messageBanks.is_active, true)
-      )
-    );
-
-  if (openingTemplates.length === 0) {
-    throw new AppError(500, "No opening templates available", "INTERNAL_ERROR");
-  }
-
-  const template =
-    openingTemplates[Math.floor(Math.random() * openingTemplates.length)];
-
-  // Look up first stop
-  const firstStop = await db.query.stops.findFirst({
-    where: and(
-      eq(stops.route_id, event.route_id),
-      eq(stops.stop_number, 1)
-    ),
-  });
-
-  if (!firstStop) {
-    throw new AppError(500, "Route stop not found", "INTERNAL_ERROR");
-  }
-
-  // Look up route for template vars
-  const route = await db.query.routes.findFirst({
-    where: eq(routes.id, event.route_id),
-  });
-
-  if (!route) {
-    throw new AppError(500, "Route not found", "INTERNAL_ERROR");
-  }
-
-  // Populate template
-  let content = template.content
-    .replace(/\{\{FIRST_STOP_DIRECTIONS\}\}/g, firstStop.directions_from_previous)
-    .replace(/\{\{FIRST_CLUE\}\}/g, firstStop.clue)
-    .replace(/\{\{CITY_NAME\}\}/g, route.city)
-    .replace(/\{\{TOTAL_STOPS\}\}/g, String(route.total_stops));
-
-  // Insert opening message
-  const [openingMessage] = await db
-    .insert(messages)
-    .values({
-      event_id: event.id,
-      step_number: 1,
-      sender_type: "guide",
-      sender_name: "Guide",
-      content,
-      participant_id: null,
-      image_url: null,
-    })
-    .returning();
-
-  const messagePayload: ChatMessagePayload = {
-    id: openingMessage.id,
-    sender_type: openingMessage.sender_type as ChatMessagePayload["sender_type"],
-    sender_name: openingMessage.sender_name,
-    participant_id: openingMessage.participant_id,
-    content: openingMessage.content,
-    image_url: openingMessage.image_url ?? null,
-    step_number: openingMessage.step_number,
-    created_at: new Date(openingMessage.created_at).toISOString(),
-  };
-
-  // Cache and publish
-  await appendMessage(code, messagePayload);
-  await publishMessage(code, messagePayload);
-
   // Publish game started control event
   await publishControl(code, {
     type: "game_started",
     data: { started_by: session.display_name },
   });
 
-  // If stop has images, create a second message with the first image
-  const stopImages = (firstStop.images as string[]) ?? [];
-  if (stopImages.length > 0) {
-    const [imageMessage] = await db
-      .insert(messages)
-      .values({
-        event_id: event.id,
-        step_number: 1,
-        sender_type: "guide",
-        sender_name: "Guide",
-        content: "",
-        participant_id: null,
-        image_url: stopImages[0],
-      })
-      .returning();
+  // Template variables for opening messages
+  const templateVars: Record<string, string> = {
+    FIRST_STOP_DIRECTIONS: firstStop.directions_from_previous,
+    FIRST_CLUE: firstStop.clue,
+    CITY_NAME: route.city,
+    TOTAL_STOPS: String(route.total_stops),
+  };
 
-    const imagePayload: ChatMessagePayload = {
-      id: imageMessage.id,
-      sender_type: imageMessage.sender_type as ChatMessagePayload["sender_type"],
-      sender_name: imageMessage.sender_name,
-      participant_id: imageMessage.participant_id,
-      content: imageMessage.content,
-      image_url: imageMessage.image_url ?? null,
-      step_number: imageMessage.step_number,
-      created_at: new Date(imageMessage.created_at).toISOString(),
-    };
-
-    await appendMessage(code, imagePayload);
-    await publishMessage(code, imagePayload);
-  }
+  // Fire sequence delivery asynchronously (don't block the HTTP response)
+  const sequenceItems = items.map((item) => ({
+    content: item.content,
+    image_url: item.image_url,
+    delay_ms: item.delay_ms,
+  }));
+  sendSequence(event.id, code, 1, sequenceItems, templateVars).catch(() => {
+    // Errors are logged inside sendSequence
+  });
 
   return c.json({ success: true }, 200);
 });

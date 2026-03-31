@@ -47,6 +47,10 @@ export type {
   AdminStopReorderResponse,
   AdminCreateEventResponse,
   AdminMessageBankListResponse,
+  AdminOpeningSequenceItem,
+  AdminOpeningSequence,
+  AdminOpeningSequenceListResponse,
+  AdminOpeningSequenceDetailResponse,
 } from "./api.js";
 
 export type { ApiErrorResponse, ApiErrorCode } from "./api-errors.js";
@@ -64,3 +68,5 @@ export type {
   TypingPayload,
   ControlEventPayload,
 } from "./redis.js";
+
+export type { SequenceItem } from "./sequence.js";

@@ -1,6 +1,7 @@
 import type { EventStatus } from "./enums.js";
 import type { Event, Message, Participant, Route, Stop } from "./entities.js";
 import type { ChatMessagePayload } from "./websocket.js";
+import type { SequenceItem } from "./sequence.js";
 
 // Public API responses
 
@@ -133,4 +134,29 @@ export interface AdminMessageBankListResponse {
     created_at: string;
     updated_at: string;
   }>;
+}
+
+export interface AdminOpeningSequenceItem {
+  id: string;
+  sort_order: number;
+  content: string;
+  image_url: string | null;
+  delay_ms: number;
+}
+
+export interface AdminOpeningSequence {
+  id: string;
+  name: string;
+  is_active: boolean;
+  items: AdminOpeningSequenceItem[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AdminOpeningSequenceListResponse {
+  sequences: AdminOpeningSequence[];
+}
+
+export interface AdminOpeningSequenceDetailResponse {
+  sequence: AdminOpeningSequence;
 }
