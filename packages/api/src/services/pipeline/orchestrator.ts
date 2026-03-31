@@ -37,6 +37,7 @@ import {
   handleClarification,
 } from "./handlers/silent.js";
 import type { SilentHandlerContext } from "./handlers/silent.js";
+import { deterministicAnswerMatch } from "./deterministic-match.js";
 
 const log = createLogger("pipeline");
 const llm = new DeepSeekService();
@@ -165,7 +166,7 @@ export async function processIncomingMessage(
         eq(schema.stops.route_id, event.route_id),
         eq(schema.stops.stop_number, event.current_stop),
       ),
-      columns: { clue: true },
+      columns: { clue: true, accepted_answers: true },
     });
 
     const currentClue = currentStop?.clue ?? "";
@@ -173,8 +174,19 @@ export async function processIncomingMessage(
     // Step 9: Run Layer 2 intent classification
     const classification = await classifyIntent(llm, currentClue, text);
 
-    // LLM failure → clarification fallback
-    const intent = classification?.type ?? "clarification";
+    // LLM failure → try deterministic answer match before falling back to clarification
+    let intent: string;
+    if (classification !== null) {
+      intent = classification.type;
+    } else {
+      const answers = (currentStop?.accepted_answers as string[]) ?? [];
+      if (answers.length > 0 && deterministicAnswerMatch(text, answers)) {
+        log.info("LLM down, deterministic match hit", { eventCode });
+        intent = "answer-attempt";
+      } else {
+        intent = "clarification";
+      }
+    }
 
     // Step 10: Re-check cap before sending handler response
     if (intent !== "off-topic-chat" && intent !== "contextual-comment") {

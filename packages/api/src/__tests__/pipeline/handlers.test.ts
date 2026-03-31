@@ -359,7 +359,7 @@ describe("handleAnswerAttempt", () => {
     expect(imageInserts[0]).not.toBe(imageInserts[1]);
   });
 
-  it("LLM JSON parse failure: falls back to clarification", async () => {
+  it("LLM failure: uses deterministic fallback for non-matching answer", async () => {
     const currentStop = makeMockStop();
 
     (db.query.stops.findFirst as ReturnType<typeof vi.fn>)
@@ -368,20 +368,46 @@ describe("handleAnswerAttempt", () => {
     // LLM returns null (failure)
     const llm = makeLlm(null);
 
-    // getRandomMessageBank: clarification bank
+    // First where: update chain (wrong_attempts), second where: getRandomMessageBank (failure bank)
     (db as any).where
-      .mockResolvedValueOnce([{ content: "Could you rephrase that?" }]);
+      .mockResolvedValueOnce(db)
+      .mockResolvedValueOnce([{ content: "That's not quite right." }]);
 
     const ctx = makeAnswerCtx();
     const result = await handleAnswerAttempt(llm, ctx, "gibberish");
 
     expect(result).toEqual({ handled: true, correct: false });
 
-    // Clarification message sent
+    // Failure message sent (not clarification)
     expect(appendMessage).toHaveBeenCalled();
-    const insertCalls = (db as any).values.mock.calls;
-    const lastInsertValues = insertCalls[insertCalls.length - 1][0];
-    expect(lastInsertValues.content).toBe("Could you rephrase that?");
+  });
+
+  it("LLM failure: deterministic fallback matches correct answer", async () => {
+    const currentStop = makeMockStop();
+
+    (db.query.stops.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(currentStop);
+
+    // LLM returns null (failure)
+    const llm = makeLlm(null);
+
+    // getRandomMessageBank calls for: success bank, then next stop lookup
+    (db as any).where
+      .mockResolvedValueOnce([{ content: "Correct!" }]);
+
+    // Next stop query
+    (db.query.stops.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(null); // no next stop (last stop)
+
+    // Mock returning for writeGuideMessage and game completion writes
+    (db as any).returning
+      .mockResolvedValueOnce([mockMsg])  // success message
+      .mockResolvedValueOnce([mockMsg]); // fun fact message
+
+    const ctx = makeAnswerCtx();
+    const result = await handleAnswerAttempt(llm, ctx, "Town Hall");
+
+    expect(result).toEqual({ handled: true, correct: true });
   });
 });
 
