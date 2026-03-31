@@ -15,5 +15,5 @@ export const messages = pgTable("messages", {
   created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [
   index("messages_event_id_created_at_idx").on(table.event_id, table.created_at),
-  check("messages_sender_type_check", sql`${table.sender_type} IN ('user', 'guide', 'system')`),
+  check("messages_sender_type_check", sql`${table.sender_type} IN ('user', 'guide', 'system', 'dropped')`),
 ]);

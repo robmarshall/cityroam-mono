@@ -6,7 +6,7 @@ export type EventStatus =
   | "EXPIRED"
   | "REFUNDED";
 
-export type SenderType = "user" | "guide" | "system";
+export type SenderType = "user" | "guide" | "system" | "dropped";
 
 export type ParticipantLeftReason = "voluntary" | "timeout";
 
