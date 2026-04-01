@@ -99,6 +99,9 @@ async function sendBlocks(
       }
 
       case "question": {
+        await showTypingDelay(eventCode, block.delay_ms);
+        await writeGuideMessage(eventId, eventCode, stepNumber, config.clue, null, "question");
+
         // Update event to track current block — pauses for user interaction
         await db
           .update(schema.events)
