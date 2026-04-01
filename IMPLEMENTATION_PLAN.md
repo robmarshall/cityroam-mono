@@ -79,26 +79,11 @@ Refactor the route model from a flat list of stops into a composable **group + b
 
 ## Phase 8: Admin UI — Route Editor Rewrite
 
-- [ ] **8.1 Route editor structure** — Rewrite `RouteEditorPage.tsx` with group-based layout:
-  - Route metadata form (name, city, etc.) at top
-  - Ordered list of groups, each collapsible
-  - Within each group: ordered list of blocks
-  - Drag-to-reorder for both groups and blocks (using existing @dnd-kit)
-  - Explicit Save button per group (no autosave)
-
-- [ ] **8.2 Block type picker** — "Add Block" button within each group opens a picker with block types: Message, Image, Question, Action, Map. Each type has a distinct icon.
-
-- [ ] **8.3 Block editors** — Type-specific editor forms:
-  - Message: textarea for content, template var reference banner
-  - Image: image URL input (or upload via existing S3 presigned URL flow)
-  - Question: clue textarea, accepted answers list, hints (sequence editor per hint — reuse sequence item pattern)
-  - Action: label input
-  - Map: Google Maps URL input
-  - All blocks: delay_ms input with preset buttons
-
-- [ ] **8.4 Group management** — Add group, remove group, reorder groups. Each group has a name field.
-
-- [ ] **8.5 Remove old stop editor** — Remove all stop-specific form code, `StopForm` type, stop helper functions.
+- [x] **8.1 Route editor structure** — Rewrite `RouteEditorPage.tsx` with group-based layout: route metadata form at top, ordered collapsible groups, blocks within groups, drag-to-reorder via @dnd-kit, explicit Save buttons (no autosave).
+- [x] **8.2 Block type picker** — "Add Block" button within each group opens a picker with all 5 block types (Message, Image, Question, Action, Map) with distinct colored icon badges.
+- [x] **8.3 Block editors** — Type-specific editor forms for all block types with delay_ms input and preset buttons.
+- [x] **8.4 Group management** — Add group (inline name input), rename group (inline form), delete group (with confirmation), reorder groups (drag-and-drop with save/cancel).
+- [x] **8.5 Remove old stop editor** — Removed all stop-specific form code, StopForm type, stop helper functions, stop CRUD handlers, and stop drag-and-drop.
 
 ## Phase 9: Player App — New Block Renderers
 
