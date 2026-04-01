@@ -9,11 +9,18 @@ import type {
   IncomingMessagePayload,
   TypingPayload,
   ErrorPayload,
+  ActionConfirmPayload,
 } from "@cityroam/shared/types";
 
+import { eq } from "drizzle-orm";
 import { publishIncoming, publishTyping } from "../redis/pubsub.js";
 import { redis } from "../redis/client.js";
+import { db, schema } from "../db/index.js";
+import { advanceAfterBlock } from "../services/group-runner.js";
+import { createLogger } from "../lib/logger.js";
 import { updatePresence } from "./presence.js";
+
+const log = createLogger("ws-handlers");
 
 export interface SessionInfo {
   participant_id: string;
@@ -99,6 +106,36 @@ export async function handleClientMessage(
         is_typing: false,
       };
       await publishTyping(event_code, typingPayload);
+      break;
+    }
+
+    case "action_confirm": {
+      const confirmPayload = message.payload as ActionConfirmPayload;
+      if (!confirmPayload?.block_id) {
+        sendError(ws, "Missing block_id", "VALIDATION_ERROR");
+        return;
+      }
+
+      if (!session.is_lead) {
+        sendError(ws, "Only the lead can confirm actions", "FORBIDDEN");
+        return;
+      }
+
+      // Verify block_id matches the event's current_block_id
+      const event = await db.query.events.findFirst({
+        where: eq(schema.events.id, event_id),
+        columns: { current_block_id: true },
+      });
+
+      if (!event || event.current_block_id !== confirmPayload.block_id) {
+        sendError(ws, "Block does not match current action", "INVALID_STATE");
+        return;
+      }
+
+      log.info("action confirmed by lead", { eventCode: event_code, blockId: confirmPayload.block_id });
+      advanceAfterBlock(event_id, event_code, confirmPayload.block_id).catch((err) => {
+        log.error("advanceAfterBlock failed", { error: err });
+      });
       break;
     }
 

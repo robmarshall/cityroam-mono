@@ -64,9 +64,9 @@ Refactor the route model from a flat list of stops into a composable **group + b
 
 ## Phase 6: WebSocket — Action Block Support
 
-- [ ] **6.1 Action confirm handler** — In `ws/handlers.ts`, handle `action_confirm` message type: verify sender is lead, verify block_id matches `current_block_id`, call `advanceAfterBlock()`.
-- [ ] **6.2 Control event types** — Add `action_waiting` to `ControlEventPayload` union in redis types. Add to WebSocket subscription handler in `ws/subscriptions.ts`.
-- [ ] **6.3 ChatMessagePayload update** — Add optional `block_type` field to `ChatMessagePayload` so the client can render action/map blocks differently.
+- [x] **6.1 Action confirm handler** — In `ws/handlers.ts`, handle `action_confirm` message type: verify sender is lead, verify block_id matches `current_block_id`, call `advanceAfterBlock()`.
+- [x] **6.2 Control event types** — Add `action_waiting` to `ControlEventPayload` union in redis types. Add to WebSocket subscription handler in `ws/subscriptions.ts`.
+- [x] **6.3 ChatMessagePayload update** — Add optional `block_type` field to `ChatMessagePayload` so the client can render action/map blocks differently.
 
 ## Phase 7: Admin API
 
