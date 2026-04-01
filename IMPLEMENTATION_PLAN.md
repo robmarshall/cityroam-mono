@@ -22,17 +22,11 @@ Refactor the route model from a flat list of stops into a composable **group + b
 
 ## Phase 2: Shared Types & Validation
 
-- [ ] **2.1 Block config types** — Create `packages/shared/src/types/blocks.ts` with discriminated union types for each block config:
-  - `MessageBlockConfig { content: string }`
-  - `ImageBlockConfig { image_url: string }`
-  - `QuestionBlockConfig { clue: string, accepted_answers: string[], hints: SequenceItem[][] }`
-  - `ActionBlockConfig { label: string }`
-  - `MapBlockConfig { google_maps_link: string }`
-  - `BlockType = 'message' | 'image' | 'question' | 'action' | 'map'`
-- [ ] **2.2 Entity types** — Add `RouteGroup` and `RouteBlock` interfaces to `entities.ts`. Export from `types/index.ts`.
-- [ ] **2.3 API response types** — Add `AdminRouteDetailResponse` update to include groups/blocks instead of stops. Add block-level response types to `api.ts`.
-- [ ] **2.4 Validation schemas** — Add `routeGroupSchema`, `routeBlockSchema` (with per-type config validation), `bulkRouteCreateSchema` update to accept groups/blocks. Keep `sequenceItemSchema` for hint validation within question blocks.
-- [ ] **2.5 WebSocket types** — Add `ActionConfirmPayload`, `ActionWaitingPayload` to websocket types. Add `action_confirm` to client message types. Add `action_waiting` to control event types.
+- [x] **2.1 Block config types** — Create `packages/shared/src/types/blocks.ts` with discriminated union types for each block config.
+- [x] **2.2 Entity types** — Add `RouteGroup` and `RouteBlock` interfaces to `entities.ts`. Export from `types/index.ts`.
+- [x] **2.3 API response types** — Add `AdminRouteDetailResponse` update to include groups/blocks. Add block-level response types to `api.ts`.
+- [x] **2.4 Validation schemas** — Add `routeGroupSchema`, `routeBlockSchema` (with per-type config validation), reorder schemas.
+- [x] **2.5 WebSocket types** — Add `ActionConfirmPayload`, `ActionWaitingPayload` to websocket types. Add `action_confirm` and `action_waiting` types.
 
 ## Phase 3: Database Schema & Migration
 
