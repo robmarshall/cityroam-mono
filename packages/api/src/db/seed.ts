@@ -2,7 +2,6 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { messageBanks } from "./schema/message-banks.js";
 import { routes } from "./schema/routes.js";
-import { stops } from "./schema/stops.js";
 
 const DATABASE_URL = process.env.DATABASE_URL ?? "postgres://cityroam:cityroam@postgres:5432/cityroam";
 
@@ -66,41 +65,6 @@ const devRouteData = {
   is_active: true,
 };
 
-const devStopsData = [
-  {
-    stop_number: 1,
-    name: "Leeds Town Hall",
-    directions_from_previous: "Head to The Headrow in the city centre. You'll see a grand building with tall columns — you can't miss it.",
-    clue: "I stand with columns tall and proud, where justice once was served aloud. Victoria laid my cornerstone — now concerts fill my halls of stone.",
-    accepted_answers: ["Leeds Town Hall", "Town Hall", "the Town Hall"],
-    hints: ["Think civic buildings — this one has Corinthian columns.", "It's on The Headrow, opened in 1858 by Queen Victoria."],
-    fun_fact: "Leeds Town Hall was designed by Cuthbert Brodrick and opened in 1858. The organ inside has over 6,500 pipes.",
-    images: [],
-    google_maps_link: "https://maps.google.com/?q=Leeds+Town+Hall",
-  },
-  {
-    stop_number: 2,
-    name: "Corn Exchange",
-    directions_from_previous: "Walk south down Vicar Lane, past the markets. After about 5 minutes you'll see a distinctive domed roof on your right.",
-    clue: "My roof is round, my trades have changed — from grain to vintage, rearranged. Step inside my oval hall, where independent traders fill each stall.",
-    accepted_answers: ["Corn Exchange", "Leeds Corn Exchange", "the Corn Exchange"],
-    hints: ["This building was originally for trading grain.", "It has a distinctive oval shape and domed glass roof, built in 1863."],
-    fun_fact: "The Corn Exchange is another Cuthbert Brodrick design. Its elliptical shape was revolutionary for 1863 and it's now Grade I listed.",
-    images: [],
-    google_maps_link: "https://maps.google.com/?q=Leeds+Corn+Exchange",
-  },
-  {
-    stop_number: 3,
-    name: "Leeds Minster",
-    directions_from_previous: "Head east along Kirkgate for about 3 minutes. Look for the church on your left.",
-    clue: "The oldest site of worship here, I've watched this city grow each year. My name was raised from parish church — now 'Minster' puts me a notch above the rest.",
-    accepted_answers: ["Leeds Minster", "the Minster", "Leeds Parish Church"],
-    hints: ["It's the oldest religious site in Leeds, on Kirkgate.", "It became a Minster in 2012 — before that it was Leeds Parish Church."],
-    fun_fact: "Leeds Minster stands on a site of Christian worship dating back to the 7th century. The current building is mostly Victorian but the site is over 1,300 years old.",
-    images: [],
-    google_maps_link: "https://maps.google.com/?q=Leeds+Minster",
-  },
-];
 
 async function main() {
   const client = postgres(DATABASE_URL, { max: 1 });
@@ -120,13 +84,6 @@ async function main() {
 
   console.log(`Inserted route: ${route.id}`);
 
-  await db.insert(stops).values(
-    devStopsData.map((stop) => ({
-      ...stop,
-      route_id: route.id,
-    }))
-  );
-  console.log(`Inserted ${devStopsData.length} stops.`);
 
   console.log("Seeding complete.");
   await client.end();

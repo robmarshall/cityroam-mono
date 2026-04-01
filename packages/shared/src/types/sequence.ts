@@ -1,6 +1,6 @@
 /**
  * A single item in a message sequence.
- * Sequences are used for opening messages and per-stop hints.
+ * Sequences are used for opening messages and question block hints.
  */
 export interface SequenceItem {
   content: string;

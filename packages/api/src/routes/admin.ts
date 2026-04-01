@@ -1,14 +1,14 @@
 import { Hono } from "hono";
 import { eq, sql, count, desc, and, asc, inArray, type SQL } from "drizzle-orm";
 import Stripe from "stripe";
-import { adminLoginSchema, adminUpdateEventStatusSchema, adminCreateEventSchema, routeSchema, stopSchema, stopReorderSchema, imageUploadRequestSchema, messageBankSchema, bulkRouteCreateSchema, routeBlockSchema, groupUpdateSchema, bulkRouteGroupCreateSchema, groupReorderSchema, blockReorderSchema } from "@cityroam/shared/validation";
+import { adminLoginSchema, adminUpdateEventStatusSchema, adminCreateEventSchema, routeSchema, imageUploadRequestSchema, messageBankSchema, routeBlockSchema, groupUpdateSchema, bulkRouteGroupCreateSchema, groupReorderSchema, blockReorderSchema } from "@cityroam/shared/validation";
 import { generateEventCode } from "@cityroam/shared/utils";
 import { EVENT_EXPIRY_DAYS } from "@cityroam/shared/constants";
 import { generatePresignedUploadUrl } from "../services/s3.js";
 import type { AdminDashboardResponse, AdminEventListResponse, AdminEventDetailResponse, AdminRouteDetailResponse, AdminRouteListResponse, AdminMessageBankListResponse, AdminRouteGroupResponse } from "@cityroam/shared/types";
 import { env } from "../env.js";
 import { db } from "../db/index.js";
-import { events, participants, messages, routes, stops, messageBanks, routeGroups, routeBlocks } from "../db/schema/index.js";
+import { events, participants, messages, routes, messageBanks, routeGroups, routeBlocks } from "../db/schema/index.js";
 import { AppError } from "../middleware/error-handler.js";
 import { adminAuth, signAdminToken } from "../middleware/admin.js";
 import { createLogger } from "../lib/logger.js";
@@ -403,7 +403,7 @@ adminRoutes.post("/admin/upload", adminAuth, async (c) => {
   // Prefix with timestamp to avoid collisions
   const uniqueFilename = `${Date.now()}_${sanitized}`;
 
-  // Use a generic upload path (route/stop association happens when the stop is updated)
+  // Use a generic upload path (association happens when the block is updated)
   const key = `uploads/${uniqueFilename}`;
 
   const result = await generatePresignedUploadUrl(key, content_type);
@@ -412,28 +412,28 @@ adminRoutes.post("/admin/upload", adminAuth, async (c) => {
 
 // ── Route CRUD ──────────────────────────────────────────────────────
 
-// GET /admin/routes — list all routes with stop counts
+// GET /admin/routes — list all routes with group counts
 adminRoutes.get("/admin/routes", adminAuth, async (c) => {
   const routeRows = await db
     .select()
     .from(routes)
     .orderBy(desc(routes.created_at));
 
-  // Get stop counts per route
+  // Get group counts per route
   const routeIds = routeRows.map((r) => r.id);
-  let stopCounts: Record<string, number> = {};
+  let groupCounts: Record<string, number> = {};
   if (routeIds.length > 0) {
     const countRows = await db
       .select({
-        route_id: stops.route_id,
+        route_id: routeGroups.route_id,
         count: count(),
       })
-      .from(stops)
-      .where(inArray(stops.route_id, routeIds))
-      .groupBy(stops.route_id);
+      .from(routeGroups)
+      .where(inArray(routeGroups.route_id, routeIds))
+      .groupBy(routeGroups.route_id);
 
     for (const row of countRows) {
-      stopCounts[row.route_id] = Number(row.count);
+      groupCounts[row.route_id] = Number(row.count);
     }
   }
 
@@ -449,7 +449,7 @@ adminRoutes.get("/admin/routes", adminAuth, async (c) => {
       is_active: r.is_active,
       created_at: r.created_at.toISOString(),
       updated_at: r.updated_at.toISOString(),
-      stop_count: stopCounts[r.id] ?? 0,
+      group_count: groupCounts[r.id] ?? 0,
     })),
   };
 
@@ -544,13 +544,6 @@ adminRoutes.get("/admin/routes/:id", adminAuth, async (c) => {
     })),
   }));
 
-  // Also load legacy stops for backwards compatibility during migration
-  const routeStops = await db
-    .select()
-    .from(stops)
-    .where(eq(stops.route_id, id))
-    .orderBy(asc(stops.stop_number));
-
   const response: AdminRouteDetailResponse = {
     route: {
       id: route.id,
@@ -564,22 +557,6 @@ adminRoutes.get("/admin/routes/:id", adminAuth, async (c) => {
       created_at: route.created_at.toISOString(),
       updated_at: route.updated_at.toISOString(),
     },
-    stops: routeStops.map((s) => ({
-      id: s.id,
-      route_id: s.route_id,
-      stop_number: s.stop_number,
-      name: s.name,
-      directions_from_previous: s.directions_from_previous,
-      clue: s.clue,
-      accepted_answers: s.accepted_answers as string[],
-      hints: s.hints as string[],
-      correct_response: s.correct_response ?? "",
-      fun_fact: s.fun_fact,
-      images: (s.images as string[]) ?? [],
-      google_maps_link: s.google_maps_link ?? "",
-      created_at: s.created_at.toISOString(),
-      updated_at: s.updated_at.toISOString(),
-    })),
     groups,
   };
 
@@ -653,319 +630,8 @@ adminRoutes.delete("/admin/routes/:id", adminAuth, async (c) => {
       throw new AppError(409, "Cannot delete route: events are linked to this route", "ROUTE_HAS_EVENTS");
     }
 
-    // Groups and blocks cascade-delete via FK; stops still need explicit delete
-    await tx.delete(stops).where(eq(stops.route_id, id));
+    // Groups and blocks cascade-delete via FK
     await tx.delete(routes).where(eq(routes.id, id));
-  });
-
-  return c.json({ success: true }, 200);
-});
-
-// POST /admin/routes/bulk — create a route with all stops in one call
-adminRoutes.post("/admin/routes/bulk", adminAuth, async (c) => {
-  const body = await c.req.json();
-  const data = bulkRouteCreateSchema.parse(body);
-
-  const result = await db.transaction(async (tx) => {
-    const [route] = await tx
-      .insert(routes)
-      .values({
-        city: data.route.city,
-        name: data.route.name,
-        description: data.route.description ?? null,
-        total_stops: data.stops.length,
-        estimated_duration_mins: data.route.estimated_duration_mins,
-        estimated_distance_km: String(data.route.estimated_distance_km),
-        is_active: data.route.is_active,
-      })
-      .returning();
-
-    const insertedStops = [];
-    for (let i = 0; i < data.stops.length; i++) {
-      const s = data.stops[i];
-      const [inserted] = await tx
-        .insert(stops)
-        .values({
-          route_id: route.id,
-          stop_number: i + 1,
-          name: s.name,
-          directions_from_previous: s.directions_from_previous ?? "",
-          clue: s.clue,
-          accepted_answers: s.accepted_answers,
-          hints: s.hints,
-          correct_response: s.correct_response ?? null,
-          fun_fact: s.fun_fact ?? "",
-          images: s.images,
-          google_maps_link: s.google_maps_link || null,
-        })
-        .returning();
-      insertedStops.push(inserted);
-    }
-
-    return { route, stops: insertedStops };
-  });
-
-  return c.json({
-    route: {
-      id: result.route.id,
-      city: result.route.city,
-      name: result.route.name,
-      description: result.route.description ?? "",
-      total_stops: result.route.total_stops,
-      estimated_duration_mins: result.route.estimated_duration_mins,
-      estimated_distance_km: Number(result.route.estimated_distance_km),
-      is_active: result.route.is_active,
-      created_at: result.route.created_at.toISOString(),
-      updated_at: result.route.updated_at.toISOString(),
-    },
-    stops: result.stops.map((s) => ({
-      id: s.id,
-      route_id: s.route_id,
-      stop_number: s.stop_number,
-      name: s.name,
-      directions_from_previous: s.directions_from_previous,
-      clue: s.clue,
-      accepted_answers: s.accepted_answers as string[],
-      hints: s.hints as string[],
-      correct_response: s.correct_response ?? "",
-      fun_fact: s.fun_fact,
-      images: (s.images as string[]) ?? [],
-      google_maps_link: s.google_maps_link ?? "",
-      created_at: s.created_at.toISOString(),
-      updated_at: s.updated_at.toISOString(),
-    })),
-  }, 201);
-});
-
-// ── Stop CRUD ───────────────────────────────────────────────────────
-
-// POST /admin/routes/:id/stops — create a stop for a route
-adminRoutes.post("/admin/routes/:id/stops", adminAuth, async (c) => {
-  const routeId = c.req.param("id");
-  const body = await c.req.json();
-  const data = stopSchema.parse(body);
-
-  const route = await db.query.routes.findFirst({
-    where: eq(routes.id, routeId),
-  });
-
-  if (!route) {
-    throw new AppError(404, "Route not found", "ROUTE_NOT_FOUND");
-  }
-
-  const [stop] = await db.transaction(async (tx) => {
-    // Determine next stop_number inside transaction to prevent race conditions
-    const maxStopResult = await tx
-      .select({ max: sql<number>`COALESCE(MAX(${stops.stop_number}), 0)` })
-      .from(stops)
-      .where(eq(stops.route_id, routeId));
-    const nextStopNumber = Number(maxStopResult[0]?.max ?? 0) + 1;
-
-    const [inserted] = await tx
-      .insert(stops)
-      .values({
-        route_id: routeId,
-        stop_number: nextStopNumber,
-        name: data.name,
-        directions_from_previous: data.directions_from_previous ?? "",
-        clue: data.clue,
-        accepted_answers: data.accepted_answers,
-        hints: data.hints,
-        correct_response: data.correct_response ?? null,
-        fun_fact: data.fun_fact ?? "",
-        images: data.images,
-        google_maps_link: data.google_maps_link || null,
-      })
-      .returning();
-
-    await tx
-      .update(routes)
-      .set({
-        total_stops: nextStopNumber,
-        updated_at: new Date(),
-      })
-      .where(eq(routes.id, routeId));
-
-    return [inserted];
-  });
-
-  return c.json({
-    stop: {
-      id: stop.id,
-      route_id: stop.route_id,
-      stop_number: stop.stop_number,
-      name: stop.name,
-      directions_from_previous: stop.directions_from_previous,
-      clue: stop.clue,
-      accepted_answers: stop.accepted_answers as string[],
-      hints: stop.hints as string[],
-      correct_response: stop.correct_response ?? "",
-      fun_fact: stop.fun_fact,
-      images: (stop.images as string[]) ?? [],
-      google_maps_link: stop.google_maps_link ?? "",
-      created_at: stop.created_at.toISOString(),
-      updated_at: stop.updated_at.toISOString(),
-    },
-  }, 201);
-});
-
-// PUT /admin/routes/:id/stops/reorder — reorder stops (must be before :stopId routes)
-adminRoutes.put("/admin/routes/:id/stops/reorder", adminAuth, async (c) => {
-  const routeId = c.req.param("id");
-  const body = await c.req.json();
-  const { stop_ids } = stopReorderSchema.parse(body);
-
-  const route = await db.query.routes.findFirst({
-    where: eq(routes.id, routeId),
-  });
-
-  if (!route) {
-    throw new AppError(404, "Route not found", "ROUTE_NOT_FOUND");
-  }
-
-  // Check for duplicate stop IDs
-  if (new Set(stop_ids).size !== stop_ids.length) {
-    throw new AppError(400, "Duplicate stop IDs", "DUPLICATE_STOP_IDS");
-  }
-
-  // Validate and update atomically inside a single transaction to avoid TOCTOU race
-  await db.transaction(async (tx) => {
-    const routeStops = await tx
-      .select({ id: stops.id })
-      .from(stops)
-      .where(eq(stops.route_id, routeId));
-
-    const routeStopIds = new Set(routeStops.map((s) => s.id));
-
-    for (const stopId of stop_ids) {
-      if (!routeStopIds.has(stopId)) {
-        throw new AppError(400, `Stop ${stopId} does not belong to this route`, "INVALID_STOP_ID");
-      }
-    }
-
-    if (stop_ids.length !== routeStops.length) {
-      throw new AppError(400, "All stops must be included in the reorder", "INCOMPLETE_STOP_LIST");
-    }
-
-    // Update stop_numbers atomically using a CASE expression to avoid
-    // unique constraint violations when stops swap positions
-    const now = new Date();
-    const cases = stop_ids
-      .map((id: string, i: number) => sql`WHEN ${stops.id} = ${id} THEN ${i + 1}`)
-      .reduce((acc: SQL, c: SQL) => sql`${acc} ${c}`);
-
-    await tx
-      .update(stops)
-      .set({
-        stop_number: sql`CASE ${cases} END`,
-        updated_at: now,
-      })
-      .where(inArray(stops.id, stop_ids));
-  });
-
-  return c.json({ success: true }, 200);
-});
-
-// PUT /admin/routes/:id/stops/:stopId — update a stop
-adminRoutes.put("/admin/routes/:id/stops/:stopId", adminAuth, async (c) => {
-  const routeId = c.req.param("id");
-  const stopId = c.req.param("stopId");
-  const body = await c.req.json();
-  const data = stopSchema.parse(body);
-
-  const existing = await db.query.stops.findFirst({
-    where: and(eq(stops.id, stopId), eq(stops.route_id, routeId)),
-  });
-
-  if (!existing) {
-    throw new AppError(404, "Stop not found", "STOP_NOT_FOUND");
-  }
-
-  const [updated] = await db
-    .update(stops)
-    .set({
-      name: data.name,
-      directions_from_previous: data.directions_from_previous ?? "",
-      clue: data.clue,
-      accepted_answers: data.accepted_answers,
-      hints: data.hints,
-      correct_response: data.correct_response ?? null,
-      fun_fact: data.fun_fact ?? "",
-      images: data.images,
-      google_maps_link: data.google_maps_link || null,
-      updated_at: new Date(),
-    })
-    .where(eq(stops.id, stopId))
-    .returning();
-
-  return c.json({
-    stop: {
-      id: updated.id,
-      route_id: updated.route_id,
-      stop_number: updated.stop_number,
-      name: updated.name,
-      directions_from_previous: updated.directions_from_previous,
-      clue: updated.clue,
-      accepted_answers: updated.accepted_answers as string[],
-      hints: updated.hints as string[],
-      correct_response: updated.correct_response ?? "",
-      fun_fact: updated.fun_fact,
-      images: (updated.images as string[]) ?? [],
-      google_maps_link: updated.google_maps_link ?? "",
-      created_at: updated.created_at.toISOString(),
-      updated_at: updated.updated_at.toISOString(),
-    },
-  }, 200);
-});
-
-// DELETE /admin/routes/:id/stops/:stopId — delete a stop and renumber
-adminRoutes.delete("/admin/routes/:id/stops/:stopId", adminAuth, async (c) => {
-  const routeId = c.req.param("id");
-  const stopId = c.req.param("stopId");
-
-  const existing = await db.query.stops.findFirst({
-    where: and(eq(stops.id, stopId), eq(stops.route_id, routeId)),
-  });
-
-  if (!existing) {
-    throw new AppError(404, "Stop not found", "STOP_NOT_FOUND");
-  }
-
-  await db.transaction(async (tx) => {
-    const now = new Date();
-
-    // Delete the stop
-    await tx.delete(stops).where(eq(stops.id, stopId));
-
-    // Renumber remaining stops
-    const remainingStops = await tx
-      .select({ id: stops.id })
-      .from(stops)
-      .where(eq(stops.route_id, routeId))
-      .orderBy(asc(stops.stop_number));
-
-    if (remainingStops.length > 0) {
-      const cases = remainingStops
-        .map((s, i) => sql`WHEN ${stops.id} = ${s.id} THEN ${i + 1}`)
-        .reduce((acc, c) => sql`${acc} ${c}`);
-
-      await tx
-        .update(stops)
-        .set({
-          stop_number: sql`CASE ${cases} END`,
-          updated_at: now,
-        })
-        .where(inArray(stops.id, remainingStops.map((s) => s.id)));
-    }
-
-    // Update route total_stops
-    await tx
-      .update(routes)
-      .set({
-        total_stops: remainingStops.length,
-        updated_at: now,
-      })
-      .where(eq(routes.id, routeId));
   });
 
   return c.json({ success: true }, 200);

@@ -65,23 +65,6 @@ export interface Route {
   updated_at: string;
 }
 
-export interface Stop {
-  id: string;
-  route_id: string;
-  stop_number: number;
-  name: string;
-  directions_from_previous: string;
-  clue: string;
-  accepted_answers: string[];
-  hints: string[];
-  correct_response: string;
-  fun_fact: string;
-  images: string[];
-  google_maps_link: string;
-  created_at: string;
-  updated_at: string;
-}
-
 export interface RouteGroup {
   id: string;
   route_id: string;

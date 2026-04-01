@@ -4,7 +4,6 @@ import {
   chatMessageSchema,
   eventCodeSchema,
   routeSchema,
-  stopSchema,
   imageUploadSchema,
   joinEventRequestSchema,
   startEventRequestSchema,
@@ -138,77 +137,6 @@ describe("routeSchema", () => {
   it("rejects non-positive distance", () => {
     expect(() =>
       routeSchema.parse({ ...validRoute, estimated_distance_km: 0 }),
-    ).toThrow();
-  });
-});
-
-describe("stopSchema", () => {
-  const validStop = {
-    name: "Town Hall",
-    clue: "Find the big clock",
-    accepted_answers: ["town hall"],
-    hints: ["Look up", "Near the square"],
-  };
-
-  it("accepts valid stop data", () => {
-    const result = stopSchema.parse(validStop);
-    expect(result.name).toBe("Town Hall");
-    expect(result.images).toEqual([]); // default
-  });
-
-  it("accepts 3 hints", () => {
-    const result = stopSchema.parse({
-      ...validStop,
-      hints: ["one", "two", "three"],
-    });
-    expect(result.hints).toHaveLength(3);
-  });
-
-  it("rejects fewer than 2 hints", () => {
-    expect(() =>
-      stopSchema.parse({ ...validStop, hints: ["only one"] }),
-    ).toThrow();
-  });
-
-  it("rejects more than 3 hints", () => {
-    expect(() =>
-      stopSchema.parse({ ...validStop, hints: ["a", "b", "c", "d"] }),
-    ).toThrow();
-  });
-
-  it("rejects empty accepted_answers", () => {
-    expect(() =>
-      stopSchema.parse({ ...validStop, accepted_answers: [] }),
-    ).toThrow();
-  });
-
-  it("rejects empty stop name", () => {
-    expect(() => stopSchema.parse({ ...validStop, name: "" })).toThrow();
-  });
-
-  it("rejects empty clue", () => {
-    expect(() => stopSchema.parse({ ...validStop, clue: "" })).toThrow();
-  });
-
-  it("accepts valid google_maps_link", () => {
-    const result = stopSchema.parse({
-      ...validStop,
-      google_maps_link: "https://maps.google.com/place",
-    });
-    expect(result.google_maps_link).toBe("https://maps.google.com/place");
-  });
-
-  it("accepts empty string for google_maps_link", () => {
-    const result = stopSchema.parse({
-      ...validStop,
-      google_maps_link: "",
-    });
-    expect(result.google_maps_link).toBe("");
-  });
-
-  it("rejects invalid google_maps_link", () => {
-    expect(() =>
-      stopSchema.parse({ ...validStop, google_maps_link: "not-a-url" }),
     ).toThrow();
   });
 });

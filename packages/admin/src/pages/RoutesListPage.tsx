@@ -81,7 +81,7 @@ export default function RoutesListPage() {
                   City
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                  Stops
+                  Groups
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Duration
@@ -98,7 +98,7 @@ export default function RoutesListPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
-              {data.routes.map((route: Route & { stop_count: number }) => (
+              {data.routes.map((route: Route & { group_count: number }) => (
                 <tr
                   key={route.id}
                   onClick={() => navigate(`/routes/${route.id}`)}
@@ -111,7 +111,7 @@ export default function RoutesListPage() {
                     {route.city}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
-                    {route.stop_count}
+                    {route.group_count}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
                     {route.estimated_duration_mins != null ? `${route.estimated_duration_mins} mins` : "—"}

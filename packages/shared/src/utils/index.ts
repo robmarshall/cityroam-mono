@@ -23,17 +23,6 @@ export function buildEventUrl(baseDomain: string, code: string): string {
 }
 
 /**
- * Build the S3 object key for a stop image.
- */
-export function buildS3Key(
-  routeId: string,
-  stopNumber: number,
-  filename: string,
-): string {
-  return `routes/${routeId}/stops/${stopNumber}/${filename}`;
-}
-
-/**
  * Build the full CDN URL for an S3 object.
  * Takes cdnBaseUrl as parameter to keep the shared package pure (no env access).
  */

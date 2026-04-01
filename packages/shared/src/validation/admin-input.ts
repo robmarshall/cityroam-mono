@@ -20,23 +20,6 @@ export const sequenceItemSchema = z.object({
   delay_ms: z.number().int().min(0).max(10000).default(0),
 });
 
-export const stopSchema = z.object({
-  name: z.string().trim().min(1, "Stop name is required"),
-  directions_from_previous: z.string().trim().optional(),
-  clue: z.string().trim().min(1, "Clue is required"),
-  accepted_answers: z
-    .array(z.string().trim().min(1))
-    .min(1, "At least one accepted answer is required"),
-  hints: z
-    .array(z.string().trim().min(1, "Hint cannot be empty"))
-    .min(2, "At least 2 hints are required")
-    .max(3, "At most 3 hints are allowed"),
-  correct_response: z.string().trim().optional(),
-  fun_fact: z.string().trim().optional(),
-  images: z.array(z.string()).optional().default([]),
-  google_maps_link: z.string().url("Invalid Google Maps URL").optional().or(z.literal("")),
-});
-
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png"];
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 
@@ -71,15 +54,6 @@ export const adminCreateEventSchema = z.object({
   route_id: z.string().uuid("Valid route ID is required"),
   buyer_email: z.string().email("Invalid email").optional(),
   expires_in_days: z.number().int().min(1).max(365).optional(),
-});
-
-export const stopReorderSchema = z.object({
-  stop_ids: z.array(z.string().uuid()).min(1, "At least one stop ID is required"),
-});
-
-export const bulkRouteCreateSchema = z.object({
-  route: routeSchema,
-  stops: z.array(stopSchema).min(1, "At least one stop is required").max(30, "Maximum 30 stops per route"),
 });
 
 // --- Block & Group schemas ---

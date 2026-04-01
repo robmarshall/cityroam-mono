@@ -1,5 +1,5 @@
 import type { EventStatus } from "./enums.js";
-import type { Event, Message, Participant, Route, RouteBlock, RouteGroup, Stop } from "./entities.js";
+import type { Event, Message, Participant, Route, RouteBlock, RouteGroup } from "./entities.js";
 import type { ChatMessagePayload } from "./websocket.js";
 
 // Public API responses
@@ -105,16 +105,11 @@ export type AdminRouteGroupResponse = RouteGroup & {
 
 export interface AdminRouteDetailResponse {
   route: Route;
-  stops: Stop[];
   groups: AdminRouteGroupResponse[];
 }
 
 export interface AdminRouteListResponse {
-  routes: Array<Route & { stop_count: number }>;
-}
-
-export interface AdminStopReorderResponse {
-  success: boolean;
+  routes: Array<Route & { group_count: number }>;
 }
 
 export interface AdminCreateEventResponse {

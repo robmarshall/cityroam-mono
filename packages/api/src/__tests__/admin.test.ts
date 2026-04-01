@@ -8,7 +8,7 @@ vi.mock("../db/index.js", () => {
     query: {
       events: { findFirst: vi.fn() },
       participants: { findFirst: vi.fn() },
-      stops: { findFirst: vi.fn() },
+
       routes: { findFirst: vi.fn() },
       messageBanks: { findFirst: vi.fn() },
       routeBlocks: { findFirst: vi.fn() },
@@ -113,7 +113,7 @@ import {
   mockEvent,
   mockParticipant,
   mockRoute,
-  mockStop,
+
   mockRouteGroup,
   mockRouteBlock,
   mockMessageBank,
@@ -150,7 +150,7 @@ beforeEach(() => {
   // Reset query mocks
   (db as any).query.events.findFirst.mockReset();
   (db as any).query.participants.findFirst.mockReset();
-  (db as any).query.stops.findFirst.mockReset();
+
   (db as any).query.routes.findFirst.mockReset();
   (db as any).query.messageBanks.findFirst.mockReset();
   (db as any).query.routeBlocks.findFirst.mockReset();
@@ -442,13 +442,13 @@ describe("Admin Route CRUD", () => {
   };
 
   describe("GET /admin/routes", () => {
-    it("returns routes with stop counts", async () => {
+    it("returns routes with group counts", async () => {
       const routeId = fakeUUID();
       const route = mockRoute({ id: routeId });
 
       // Query 1: route rows (terminal: orderBy)
       (db as any).orderBy.mockResolvedValueOnce([route]);
-      // Query 2: stop counts (terminal: groupBy)
+      // Query 2: group counts (terminal: groupBy)
       (db as any).groupBy.mockResolvedValueOnce([
         { route_id: routeId, count: 5 },
       ]);
@@ -459,7 +459,7 @@ describe("Admin Route CRUD", () => {
       const body = await res.json();
       expect(body.routes).toHaveLength(1);
       expect(body.routes[0].name).toBe("Test Route");
-      expect(body.routes[0].stop_count).toBe(5);
+      expect(body.routes[0].group_count).toBe(5);
     });
   });
 
@@ -478,16 +478,13 @@ describe("Admin Route CRUD", () => {
   });
 
   describe("GET /admin/routes/:id", () => {
-    it("returns route detail with stops", async () => {
+    it("returns route detail with groups", async () => {
       const routeId = fakeUUID();
       const route = mockRoute({ id: routeId });
-      const stop = mockStop({ route_id: routeId });
 
       (db as any).query.routes.findFirst.mockResolvedValueOnce(route);
-      // Groups query (terminal: orderBy) — no groups yet
+      // Groups query (terminal: orderBy)
       (db as any).orderBy.mockResolvedValueOnce([]);
-      // Legacy stops query (terminal: orderBy)
-      (db as any).orderBy.mockResolvedValueOnce([stop]);
 
       const res = await adminRequest(app, "GET", `/admin/routes/${routeId}`);
       expect(res.status).toBe(200);
@@ -495,8 +492,6 @@ describe("Admin Route CRUD", () => {
       const body = await res.json();
       expect(body.route.id).toBe(routeId);
       expect(body.groups).toHaveLength(0);
-      expect(body.stops).toHaveLength(1);
-      expect(body.stops[0].name).toBe("Test Stop");
     });
 
     it("returns 404 when route does not exist", async () => {
@@ -541,8 +536,6 @@ describe("Admin Route CRUD", () => {
       (db as any).query.routes.findFirst.mockResolvedValueOnce(mockRoute({ id: routeId }));
       // Transaction: event count check (terminal: where in transaction)
       (db as any).where.mockResolvedValueOnce([{ count: 0 }]);
-      // Transaction: delete stops (terminal: where)
-      (db as any).where.mockResolvedValueOnce(undefined);
       // Transaction: delete route (terminal: where)
       (db as any).where.mockResolvedValueOnce(undefined);
 
@@ -571,158 +564,6 @@ describe("Admin Route CRUD", () => {
       expect(res.status).toBe(404);
       const body = await res.json();
       expect(body.code).toBe("ROUTE_NOT_FOUND");
-    });
-  });
-});
-
-// ────────────────────────────────────────────────────────────────────
-// Stop CRUD
-// ────────────────────────────────────────────────────────────────────
-describe("Admin Stop CRUD", () => {
-  const stopData = {
-    name: "Town Hall",
-    directions_from_previous: "Walk north",
-    clue: "Find the big clock",
-    accepted_answers: ["town hall"],
-    hints: ["Look up", "It has columns"],
-    correct_response: "Well done!",
-    fun_fact: "Built in 1858",
-    images: [],
-    google_maps_link: "https://maps.google.com/test",
-  };
-
-  describe("POST /admin/routes/:id/stops", () => {
-    it("creates a stop for a route", async () => {
-      const routeId = fakeUUID();
-      (db as any).query.routes.findFirst.mockResolvedValueOnce(mockRoute({ id: routeId }));
-
-      // Max stop number query (terminal: where)
-      (db as any).where.mockResolvedValueOnce([{ max: 2 }]);
-
-      // Transaction: insert returning
-      const stop = mockStop({ route_id: routeId, stop_number: 3, name: "Town Hall" });
-      (db as any).returning.mockReturnValueOnce([stop]);
-      // Transaction: update route (terminal: where)
-      (db as any).where.mockResolvedValueOnce(undefined);
-
-      const res = await adminRequest(app, "POST", `/admin/routes/${routeId}/stops`, stopData);
-      expect(res.status).toBe(201);
-
-      const body = await res.json();
-      expect(body.stop.name).toBe("Town Hall");
-      expect(body.stop.stop_number).toBe(3);
-    });
-
-    it("returns 404 when route does not exist", async () => {
-      (db as any).query.routes.findFirst.mockResolvedValueOnce(null);
-
-      const res = await adminRequest(app, "POST", `/admin/routes/${fakeUUID()}/stops`, stopData);
-      expect(res.status).toBe(404);
-      const body = await res.json();
-      expect(body.code).toBe("ROUTE_NOT_FOUND");
-    });
-  });
-
-  describe("PUT /admin/routes/:id/stops/reorder", () => {
-    it("reorders stops successfully", async () => {
-      const routeId = fakeUUID();
-      // Use real UUIDs that pass zod uuid validation
-      const stopId1 = crypto.randomUUID();
-      const stopId2 = crypto.randomUUID();
-
-      (db as any).query.routes.findFirst.mockResolvedValueOnce(mockRoute({ id: routeId }));
-
-      // Query: route stops (terminal: where)
-      (db as any).where.mockResolvedValueOnce([{ id: stopId1 }, { id: stopId2 }]);
-
-      // Transaction: update stops (terminal: where)
-      (db as any).where.mockResolvedValueOnce(undefined);
-
-      const res = await adminRequest(app, "PUT", `/admin/routes/${routeId}/stops/reorder`, {
-        stop_ids: [stopId2, stopId1],
-      });
-
-      expect(res.status).toBe(200);
-      const body = await res.json();
-      expect(body.success).toBe(true);
-    });
-
-    it("returns 400 for duplicate stop IDs", async () => {
-      const routeId = fakeUUID();
-      const stopId1 = crypto.randomUUID();
-
-      (db as any).query.routes.findFirst.mockResolvedValueOnce(mockRoute({ id: routeId }));
-
-      const res = await adminRequest(app, "PUT", `/admin/routes/${routeId}/stops/reorder`, {
-        stop_ids: [stopId1, stopId1],
-      });
-
-      expect(res.status).toBe(400);
-      const body = await res.json();
-      expect(body.code).toBe("DUPLICATE_STOP_IDS");
-    });
-  });
-
-  describe("PUT /admin/routes/:id/stops/:stopId", () => {
-    it("updates a stop", async () => {
-      const routeId = fakeUUID();
-      const stopId = fakeUUID();
-      const existing = mockStop({ id: stopId, route_id: routeId });
-      const updated = mockStop({ id: stopId, route_id: routeId, name: "Updated Stop" });
-
-      (db as any).query.stops.findFirst.mockResolvedValueOnce(existing);
-      (db as any).returning.mockReturnValueOnce([updated]);
-
-      const res = await adminRequest(app, "PUT", `/admin/routes/${routeId}/stops/${stopId}`, stopData);
-      expect(res.status).toBe(200);
-
-      const body = await res.json();
-      expect(body.stop.name).toBe("Updated Stop");
-    });
-
-    it("returns 404 when stop does not exist", async () => {
-      (db as any).query.stops.findFirst.mockResolvedValueOnce(null);
-
-      const res = await adminRequest(app, "PUT", `/admin/routes/${fakeUUID()}/stops/${fakeUUID()}`, stopData);
-      expect(res.status).toBe(404);
-      const body = await res.json();
-      expect(body.code).toBe("STOP_NOT_FOUND");
-    });
-  });
-
-  describe("DELETE /admin/routes/:id/stops/:stopId", () => {
-    it("deletes a stop and renumbers remaining", async () => {
-      const routeId = fakeUUID();
-      const stopId = fakeUUID();
-      const remainingStopId = fakeUUID();
-
-      (db as any).query.stops.findFirst.mockResolvedValueOnce(
-        mockStop({ id: stopId, route_id: routeId }),
-      );
-
-      // Transaction calls: delete().where(), select().from().where().orderBy(),
-      // update().set().where(), update().set().where()
-      // orderBy is the terminal for the remaining stops query
-      (db as any).orderBy.mockResolvedValueOnce([{ id: remainingStopId }]);
-      // All where() calls return db by default (synchronous), which is awaitable
-
-      const res = await adminRequest(app, "DELETE", `/admin/routes/${routeId}/stops/${stopId}`);
-      expect(res.status).toBe(200);
-      const body = await res.json();
-      expect(body.success).toBe(true);
-    });
-
-    it("returns 404 when stop does not exist", async () => {
-      (db as any).query.stops.findFirst.mockResolvedValueOnce(null);
-
-      const res = await adminRequest(
-        app,
-        "DELETE",
-        `/admin/routes/${fakeUUID()}/stops/${fakeUUID()}`,
-      );
-      expect(res.status).toBe(404);
-      const body = await res.json();
-      expect(body.code).toBe("STOP_NOT_FOUND");
     });
   });
 });

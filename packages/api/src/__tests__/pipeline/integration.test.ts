@@ -33,7 +33,6 @@ vi.mock("../../db/index.js", () => {
     query: {
       events: { findFirst: vi.fn() },
       participants: { findFirst: vi.fn() },
-      stops: { findFirst: vi.fn() },
       routes: { findFirst: vi.fn() },
       routeBlocks: { findFirst: vi.fn() },
       messageBanks: { findFirst: vi.fn() },
@@ -60,10 +59,6 @@ vi.mock("../../db/index.js", () => {
     },
     messages: { id: "messages.id" },
     routes: { id: "routes.id" },
-    stops: {
-      route_id: "stops.route_id",
-      stop_number: "stops.stop_number",
-    },
     routeBlocks: {
       id: "route_blocks.id",
       group_id: "route_blocks.group_id",

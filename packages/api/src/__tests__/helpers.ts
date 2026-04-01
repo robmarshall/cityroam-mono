@@ -182,26 +182,6 @@ export function mockRoute(overrides: Record<string, unknown> = {}) {
   };
 }
 
-export function mockStop(overrides: Record<string, unknown> = {}) {
-  return {
-    id: fakeUUID(),
-    route_id: fakeUUID(),
-    stop_number: 1,
-    name: "Test Stop",
-    directions_from_previous: "Walk straight ahead",
-    clue: "Find the big building",
-    accepted_answers: ["town hall", "the town hall"],
-    hints: ["It has columns", "Look for the clock"],
-    correct_response: "Well done!",
-    fun_fact: "Built in 1858",
-    images: [],
-    google_maps_link: "https://maps.google.com/test",
-    created_at: new Date(),
-    updated_at: new Date(),
-    ...overrides,
-  };
-}
-
 export function mockRouteGroup(overrides: Record<string, unknown> = {}) {
   return {
     id: fakeUUID(),

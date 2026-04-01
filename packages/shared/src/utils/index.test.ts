@@ -2,7 +2,6 @@ import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import {
   generateEventCode,
   buildEventUrl,
-  buildS3Key,
   buildS3Url,
   formatTimestamp,
   isValidEventCode,
@@ -46,18 +45,10 @@ describe("buildEventUrl", () => {
   });
 });
 
-describe("buildS3Key", () => {
-  it("constructs the correct S3 key", () => {
-    expect(buildS3Key("route-1", 3, "photo.jpg")).toBe(
-      "routes/route-1/stops/3/photo.jpg",
-    );
-  });
-});
-
 describe("buildS3Url", () => {
   it("constructs the full CDN URL", () => {
-    expect(buildS3Url("https://cdn.example.com", "routes/1/stops/2/img.png")).toBe(
-      "https://cdn.example.com/routes/1/stops/2/img.png",
+    expect(buildS3Url("https://cdn.example.com", "routes/1/groups/2/blocks/3/img.png")).toBe(
+      "https://cdn.example.com/routes/1/groups/2/blocks/3/img.png",
     );
   });
 
