@@ -65,6 +65,44 @@ vi.mock("../redis/client.js", () => ({
   disconnectRedis: vi.fn(),
 }));
 
+vi.mock("../env.js", () => ({
+  env: {
+    DATABASE_URL: "postgresql://test:test@localhost:5432/test",
+    REDIS_URL: "redis://localhost:6379",
+    STRIPE_SECRET_KEY: "sk_test_fake",
+    STRIPE_WEBHOOK_SECRET: "whsec_test_fake",
+    STRIPE_PRICE_ID: "price_test_fake",
+    RESEND_API_KEY: "re_test_fake",
+    RESEND_FROM_EMAIL: "test@cityroam.com",
+    DEEPSEEK_API_KEY: "dk_test_fake",
+    AWS_ACCESS_KEY_ID: "AKIATEST",
+    AWS_SECRET_ACCESS_KEY: "secret_test",
+    AWS_S3_BUCKET: "test-bucket",
+    AWS_REGION: "eu-west-2",
+    AWS_CDN_BASE_URL: "https://cdn.test.com",
+    ADMIN_USERNAME: "admin",
+    ADMIN_PASSWORD: "admin123",
+    SESSION_SECRET: "test-session-secret-that-is-long-enough",
+    COOKIE_DOMAIN: ".test.com",
+    REVIEW_LINK: "https://review.test.com",
+    MARKETING_URL: "https://marketing.test.com",
+    APP_URL: "https://app.test.com",
+    ADMIN_URL: "https://admin.test.com",
+    BASE_DOMAIN: "test.com",
+    NODE_ENV: "development",
+    PORT: "3001",
+    WS_PORT: "3002",
+  },
+  validateEnv: vi.fn(),
+}));
+
+vi.mock("../services/s3.js", () => ({
+  generatePresignedUploadUrl: vi.fn().mockResolvedValue({
+    upload_url: "https://s3.test.com/presigned-url",
+    key: "uploads/test-file.jpg",
+  }),
+}));
+
 import { db } from "../db/index.js";
 import {
   createTestApp,
@@ -76,6 +114,8 @@ import {
   mockParticipant,
   mockRoute,
   mockStop,
+  mockRouteGroup,
+  mockRouteBlock,
   mockMessageBank,
   futureDate,
 } from "./helpers.js";
@@ -684,6 +724,394 @@ describe("Admin Stop CRUD", () => {
       const body = await res.json();
       expect(body.code).toBe("STOP_NOT_FOUND");
     });
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────
+// Group CRUD
+// ────────────────────────────────────────────────────────────────────
+describe("Admin Group CRUD", () => {
+  describe("POST /admin/routes/:id/groups", () => {
+    it("creates a group for a route", async () => {
+      const routeId = fakeUUID();
+      (db as any).query.routes.findFirst.mockResolvedValueOnce(mockRoute({ id: routeId }));
+
+      // Transaction: max position query (terminal: where)
+      (db as any).where.mockResolvedValueOnce([{ max: 1 }]);
+      // Transaction: insert returning
+      const group = mockRouteGroup({ route_id: routeId, position: 2, name: "New Group" });
+      (db as any).returning.mockReturnValueOnce([group]);
+      // Transaction: update route total_stops (terminal: where)
+      (db as any).where.mockResolvedValueOnce(undefined);
+
+      const res = await adminRequest(app, "POST", `/admin/routes/${routeId}/groups`, {
+        name: "New Group",
+      });
+      expect(res.status).toBe(201);
+
+      const body = await res.json();
+      expect(body.group.name).toBe("New Group");
+      expect(body.group.route_id).toBe(routeId);
+      expect(body.group.position).toBe(2);
+      expect(body.group.blocks).toEqual([]);
+    });
+
+    it("returns 404 when route does not exist", async () => {
+      (db as any).query.routes.findFirst.mockResolvedValueOnce(null);
+
+      const res = await adminRequest(app, "POST", `/admin/routes/${fakeUUID()}/groups`, {
+        name: "New Group",
+      });
+      expect(res.status).toBe(404);
+      const body = await res.json();
+      expect(body.code).toBe("ROUTE_NOT_FOUND");
+    });
+  });
+
+  describe("PUT /admin/routes/:id/groups/reorder", () => {
+    it("reorders groups successfully", async () => {
+      const routeId = fakeUUID();
+      const groupId1 = crypto.randomUUID();
+      const groupId2 = crypto.randomUUID();
+
+      (db as any).query.routes.findFirst.mockResolvedValueOnce(mockRoute({ id: routeId }));
+
+      // Transaction: existing groups query (terminal: where)
+      (db as any).where.mockResolvedValueOnce([{ id: groupId1 }, { id: groupId2 }]);
+      // Transaction: update positions (terminal: where)
+      (db as any).where.mockResolvedValueOnce(undefined);
+
+      const res = await adminRequest(app, "PUT", `/admin/routes/${routeId}/groups/reorder`, {
+        group_ids: [groupId2, groupId1],
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.success).toBe(true);
+    });
+
+    it("returns 400 for duplicate group IDs", async () => {
+      const routeId = fakeUUID();
+      const groupId1 = crypto.randomUUID();
+
+      (db as any).query.routes.findFirst.mockResolvedValueOnce(mockRoute({ id: routeId }));
+
+      const res = await adminRequest(app, "PUT", `/admin/routes/${routeId}/groups/reorder`, {
+        group_ids: [groupId1, groupId1],
+      });
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.code).toBe("DUPLICATE_GROUP_IDS");
+    });
+
+    it("returns 404 when route does not exist", async () => {
+      (db as any).query.routes.findFirst.mockResolvedValueOnce(null);
+
+      const res = await adminRequest(app, "PUT", `/admin/routes/${fakeUUID()}/groups/reorder`, {
+        group_ids: [crypto.randomUUID()],
+      });
+      expect(res.status).toBe(404);
+      const body = await res.json();
+      expect(body.code).toBe("ROUTE_NOT_FOUND");
+    });
+  });
+
+  describe("PUT /admin/routes/:id/groups/:groupId", () => {
+    it("updates a group name", async () => {
+      const routeId = fakeUUID();
+      const groupId = fakeUUID();
+      const existing = mockRouteGroup({ id: groupId, route_id: routeId });
+      const updated = mockRouteGroup({ id: groupId, route_id: routeId, name: "Updated Group" });
+
+      (db as any).query.routeGroups.findFirst.mockResolvedValueOnce(existing);
+      (db as any).returning.mockReturnValueOnce([updated]);
+
+      const res = await adminRequest(app, "PUT", `/admin/routes/${routeId}/groups/${groupId}`, {
+        name: "Updated Group",
+      });
+      expect(res.status).toBe(200);
+
+      const body = await res.json();
+      expect(body.group.name).toBe("Updated Group");
+      expect(body.group.id).toBe(groupId);
+    });
+
+    it("returns 404 when group does not exist", async () => {
+      (db as any).query.routeGroups.findFirst.mockResolvedValueOnce(null);
+
+      const res = await adminRequest(app, "PUT", `/admin/routes/${fakeUUID()}/groups/${fakeUUID()}`, {
+        name: "Updated Group",
+      });
+      expect(res.status).toBe(404);
+      const body = await res.json();
+      expect(body.code).toBe("GROUP_NOT_FOUND");
+    });
+  });
+
+  describe("DELETE /admin/routes/:id/groups/:groupId", () => {
+    it("deletes a group and renumbers remaining", async () => {
+      const routeId = fakeUUID();
+      const groupId = fakeUUID();
+      const remainingGroupId = fakeUUID();
+
+      (db as any).query.routeGroups.findFirst.mockResolvedValueOnce(
+        mockRouteGroup({ id: groupId, route_id: routeId }),
+      );
+
+      // Transaction calls in order:
+      // 1. tx.delete().where() — delete is awaited, where returns db (default chain)
+      // 2. tx.select().from().where().orderBy() — orderBy is terminal
+      (db as any).orderBy.mockResolvedValueOnce([{ id: remainingGroupId }]);
+      // 3. tx.update().set().where(inArray) — renumber positions
+      // 4. tx.update().set().where(eq) — update total_stops
+      // where calls 1,3,4 use the default chain mock (returns db), which is fine
+
+      const res = await adminRequest(app, "DELETE", `/admin/routes/${routeId}/groups/${groupId}`);
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.success).toBe(true);
+    });
+
+    it("returns 404 when group does not exist", async () => {
+      (db as any).query.routeGroups.findFirst.mockResolvedValueOnce(null);
+
+      const res = await adminRequest(
+        app,
+        "DELETE",
+        `/admin/routes/${fakeUUID()}/groups/${fakeUUID()}`,
+      );
+      expect(res.status).toBe(404);
+      const body = await res.json();
+      expect(body.code).toBe("GROUP_NOT_FOUND");
+    });
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────
+// Block CRUD
+// ────────────────────────────────────────────────────────────────────
+describe("Admin Block CRUD", () => {
+  const blockData = {
+    position: 0,
+    type: "message",
+    config: { type: "message", content: "Hello world" },
+    delay_ms: 0,
+  };
+
+  describe("POST /admin/groups/:groupId/blocks", () => {
+    it("creates a block for a group", async () => {
+      const groupId = fakeUUID();
+      (db as any).query.routeGroups.findFirst.mockResolvedValueOnce(mockRouteGroup({ id: groupId }));
+
+      // Transaction: max position query (terminal: where)
+      (db as any).where.mockResolvedValueOnce([{ max: 1 }]);
+      // Transaction: insert returning
+      const block = mockRouteBlock({
+        group_id: groupId,
+        position: 0,
+        type: "message",
+        config: { type: "message", content: "Hello world" },
+      });
+      (db as any).returning.mockReturnValueOnce([block]);
+
+      const res = await adminRequest(app, "POST", `/admin/groups/${groupId}/blocks`, blockData);
+      expect(res.status).toBe(201);
+
+      const body = await res.json();
+      expect(body.block.group_id).toBe(groupId);
+      expect(body.block.type).toBe("message");
+      expect(body.block.config.content).toBe("Hello world");
+    });
+
+    it("returns 404 when group does not exist", async () => {
+      (db as any).query.routeGroups.findFirst.mockResolvedValueOnce(null);
+
+      const res = await adminRequest(app, "POST", `/admin/groups/${fakeUUID()}/blocks`, blockData);
+      expect(res.status).toBe(404);
+      const body = await res.json();
+      expect(body.code).toBe("GROUP_NOT_FOUND");
+    });
+  });
+
+  describe("PUT /admin/groups/:groupId/blocks/reorder", () => {
+    it("reorders blocks successfully", async () => {
+      const groupId = fakeUUID();
+      const blockId1 = crypto.randomUUID();
+      const blockId2 = crypto.randomUUID();
+
+      (db as any).query.routeGroups.findFirst.mockResolvedValueOnce(mockRouteGroup({ id: groupId }));
+
+      // Transaction: existing blocks query (terminal: where)
+      (db as any).where.mockResolvedValueOnce([{ id: blockId1 }, { id: blockId2 }]);
+      // Transaction: update positions (terminal: where)
+      (db as any).where.mockResolvedValueOnce(undefined);
+
+      const res = await adminRequest(app, "PUT", `/admin/groups/${groupId}/blocks/reorder`, {
+        block_ids: [blockId2, blockId1],
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.success).toBe(true);
+    });
+
+    it("returns 400 for duplicate block IDs", async () => {
+      const groupId = fakeUUID();
+      const blockId1 = crypto.randomUUID();
+
+      (db as any).query.routeGroups.findFirst.mockResolvedValueOnce(mockRouteGroup({ id: groupId }));
+
+      const res = await adminRequest(app, "PUT", `/admin/groups/${groupId}/blocks/reorder`, {
+        block_ids: [blockId1, blockId1],
+      });
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.code).toBe("DUPLICATE_BLOCK_IDS");
+    });
+
+    it("returns 404 when group does not exist", async () => {
+      (db as any).query.routeGroups.findFirst.mockResolvedValueOnce(null);
+
+      const res = await adminRequest(app, "PUT", `/admin/groups/${fakeUUID()}/blocks/reorder`, {
+        block_ids: [crypto.randomUUID()],
+      });
+      expect(res.status).toBe(404);
+      const body = await res.json();
+      expect(body.code).toBe("GROUP_NOT_FOUND");
+    });
+  });
+
+  describe("PUT /admin/blocks/:blockId", () => {
+    it("updates a block", async () => {
+      const blockId = fakeUUID();
+      const existing = mockRouteBlock({ id: blockId });
+      const updated = mockRouteBlock({
+        id: blockId,
+        type: "message",
+        config: { type: "message", content: "Updated content" },
+        delay_ms: 500,
+      });
+
+      (db as any).query.routeBlocks.findFirst.mockResolvedValueOnce(existing);
+      (db as any).returning.mockReturnValueOnce([updated]);
+
+      const res = await adminRequest(app, "PUT", `/admin/blocks/${blockId}`, {
+        position: 0,
+        type: "message",
+        config: { type: "message", content: "Updated content" },
+        delay_ms: 500,
+      });
+      expect(res.status).toBe(200);
+
+      const body = await res.json();
+      expect(body.block.config.content).toBe("Updated content");
+      expect(body.block.delay_ms).toBe(500);
+    });
+
+    it("returns 404 when block does not exist", async () => {
+      (db as any).query.routeBlocks.findFirst.mockResolvedValueOnce(null);
+
+      const res = await adminRequest(app, "PUT", `/admin/blocks/${fakeUUID()}`, blockData);
+      expect(res.status).toBe(404);
+      const body = await res.json();
+      expect(body.code).toBe("BLOCK_NOT_FOUND");
+    });
+  });
+
+  describe("DELETE /admin/blocks/:blockId", () => {
+    it("deletes a block and renumbers remaining", async () => {
+      const blockId = fakeUUID();
+      const groupId = fakeUUID();
+      const remainingBlockId = fakeUUID();
+
+      (db as any).query.routeBlocks.findFirst.mockResolvedValueOnce(
+        mockRouteBlock({ id: blockId, group_id: groupId }),
+      );
+
+      // Transaction: delete (chain default)
+      // Transaction: remaining blocks query (terminal: orderBy)
+      (db as any).orderBy.mockResolvedValueOnce([{ id: remainingBlockId }]);
+      // Transaction: update positions (terminal: where)
+      (db as any).where.mockResolvedValueOnce(undefined);
+
+      const res = await adminRequest(app, "DELETE", `/admin/blocks/${blockId}`);
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.success).toBe(true);
+    });
+
+    it("returns 404 when block does not exist", async () => {
+      (db as any).query.routeBlocks.findFirst.mockResolvedValueOnce(null);
+
+      const res = await adminRequest(app, "DELETE", `/admin/blocks/${fakeUUID()}`);
+      expect(res.status).toBe(404);
+      const body = await res.json();
+      expect(body.code).toBe("BLOCK_NOT_FOUND");
+    });
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────
+// Bulk Group Create
+// ────────────────────────────────────────────────────────────────────
+describe("POST /admin/routes/bulk-groups", () => {
+  it("creates a route with groups and blocks atomically", async () => {
+    const routeId = fakeUUID();
+    const groupId = fakeUUID();
+    const blockId = fakeUUID();
+
+    const route = mockRoute({ id: routeId, name: "Bulk Route", city: "London" });
+    const group = mockRouteGroup({ id: groupId, route_id: routeId, position: 0, name: "Intro" });
+    const block = mockRouteBlock({
+      id: blockId,
+      group_id: groupId,
+      position: 0,
+      type: "message",
+      config: { type: "message", content: "Welcome!" },
+    });
+
+    // Transaction: insert route returning
+    (db as any).returning
+      .mockReturnValueOnce([route])    // route insert
+      .mockReturnValueOnce([group])    // group insert
+      .mockReturnValueOnce([block]);   // block insert
+
+    const res = await adminRequest(app, "POST", "/admin/routes/bulk-groups", {
+      route: {
+        city: "London",
+        name: "Bulk Route",
+        description: "A test route",
+        estimated_duration_mins: 60,
+        estimated_distance_km: 2.5,
+        is_active: true,
+      },
+      groups: [
+        {
+          name: "Intro",
+          blocks: [
+            {
+              position: 0,
+              type: "message",
+              config: { type: "message", content: "Welcome!" },
+              delay_ms: 0,
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(res.status).toBe(201);
+
+    const body = await res.json();
+    expect(body.route.name).toBe("Bulk Route");
+    expect(body.route.city).toBe("London");
+    expect(body.groups).toHaveLength(1);
+    expect(body.groups[0].name).toBe("Intro");
+    expect(body.groups[0].blocks).toHaveLength(1);
+    expect(body.groups[0].blocks[0].type).toBe("message");
+    expect(body.groups[0].blocks[0].config.content).toBe("Welcome!");
   });
 });
 
