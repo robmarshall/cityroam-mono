@@ -15,12 +15,17 @@ import {
 } from "@cityroam/shared/validation";
 import {
   DndContext,
+  closestCorners,
   closestCenter,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
+  DragOverlay,
+  useDroppable,
+  type DragStartEvent,
   type DragEndEvent,
+  type DragOverEvent,
 } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -66,6 +71,15 @@ type BlockFormState =
     }
   | { type: "action"; label: string; delay_ms: string }
   | { type: "map"; google_maps_link: string; delay_ms: string };
+
+interface BlockEditorState {
+  groupId: string;
+  form: BlockFormState;
+  errors: FieldErrors;
+  saving: boolean;
+  answerInput: string;
+  uploadingImage: boolean;
+}
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -382,21 +396,57 @@ function SortableGroup({
 }
 
 // ---------------------------------------------------------------------------
-// SortableBlock
+// DroppableGroupZone — allows dropping blocks into empty groups
+// ---------------------------------------------------------------------------
+
+function DroppableGroupZone({ groupId }: { groupId: string }) {
+  const { setNodeRef, isOver } = useDroppable({ id: `droppable-${groupId}` });
+  return (
+    <div
+      ref={setNodeRef}
+      className={`mb-3 rounded-md border-2 border-dashed p-4 text-center text-sm transition-colors ${
+        isOver
+          ? "border-blue-400 bg-blue-50 text-blue-600"
+          : "border-gray-200 text-gray-400"
+      }`}
+    >
+      {isOver ? "Drop block here" : "No blocks in this group."}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SortableBlock — accordion-style block with inline editing
 // ---------------------------------------------------------------------------
 
 function SortableBlock({
   block,
   index,
-  onEdit,
+  isExpanded,
+  onToggleExpand,
   onDelete,
   isDeleting,
+  editorState,
+  onUpdateForm,
+  onUpdateErrors,
+  onSave,
+  onCancel,
+  onUploadImage,
+  onSetAnswerInput,
 }: {
   block: RouteBlock;
   index: number;
-  onEdit: () => void;
+  isExpanded: boolean;
+  onToggleExpand: () => void;
   onDelete: () => void;
   isDeleting: boolean;
+  editorState: BlockEditorState | undefined;
+  onUpdateForm: (form: BlockFormState) => void;
+  onUpdateErrors: (errors: FieldErrors) => void;
+  onSave: () => void;
+  onCancel: () => void;
+  onUploadImage: (file: File) => void;
+  onSetAnswerInput: (v: string) => void;
 }) {
   const {
     attributes,
@@ -419,40 +469,109 @@ function SortableBlock({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-4 py-3"
+      className={`rounded-md border bg-gray-50 ${
+        isExpanded ? "border-blue-300" : "border-gray-200"
+      }`}
     >
-      <div className="flex flex-1 items-center min-w-0">
-        <DragHandle {...attributes} {...listeners} />
-        <span className="mr-2 text-xs text-gray-400">{index + 1}.</span>
-        <span
-          className={`mr-2 inline-flex h-6 w-6 items-center justify-center rounded text-xs font-bold ${meta.color}`}
-        >
-          {meta.icon}
-        </span>
-        <span className="mr-2 text-xs font-medium text-gray-600">
-          {meta.label}
-        </span>
-        <span className="truncate text-xs text-gray-500">
-          {blockSummary(block)}
-        </span>
-        {block.delay_ms > 0 && (
-          <span className="ml-2 whitespace-nowrap text-xs text-gray-400">
-            +{block.delay_ms}ms
+      {/* Collapsed header row */}
+      <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex flex-1 items-center min-w-0">
+          <DragHandle {...attributes} {...listeners} />
+          <span className="mr-2 text-xs text-gray-400">{index + 1}.</span>
+          <span
+            className={`mr-2 inline-flex h-6 w-6 items-center justify-center rounded text-xs font-bold ${meta.color}`}
+          >
+            {meta.icon}
           </span>
-        )}
+          <span className="mr-2 text-xs font-medium text-gray-600">
+            {meta.label}
+          </span>
+          <span className="truncate text-xs text-gray-500">
+            {blockSummary(block)}
+          </span>
+          {block.delay_ms > 0 && (
+            <span className="ml-2 whitespace-nowrap text-xs text-gray-400">
+              +{block.delay_ms}ms
+            </span>
+          )}
+        </div>
+        <div className="ml-4 flex items-center gap-2">
+          <button
+            onClick={onToggleExpand}
+            className={isExpanded ? BTN_PRIMARY : BTN_SECONDARY}
+          >
+            {isExpanded ? "Close" : "Edit"}
+          </button>
+          <button
+            onClick={onDelete}
+            disabled={isDeleting}
+            className={BTN_DANGER}
+          >
+            {isDeleting ? "..." : "Delete"}
+          </button>
+        </div>
       </div>
-      <div className="ml-4 flex items-center gap-2">
-        <button onClick={onEdit} className={BTN_SECONDARY}>
-          Edit
-        </button>
-        <button
-          onClick={onDelete}
-          disabled={isDeleting}
-          className={BTN_DANGER}
-        >
-          {isDeleting ? "..." : "Delete"}
-        </button>
-      </div>
+
+      {/* Expanded accordion content */}
+      {isExpanded && editorState && (
+        <div className="border-t border-blue-200 bg-blue-50 px-4 py-4">
+          <h4 className="mb-3 text-sm font-semibold text-gray-900">
+            Edit {BLOCK_TYPE_META[editorState.form.type].label} Block
+          </h4>
+
+          {editorState.errors._form && (
+            <div className="mb-3 rounded-md bg-red-50 p-3 text-sm text-red-700">
+              {editorState.errors._form}
+            </div>
+          )}
+
+          <BlockEditorForm
+            form={editorState.form}
+            setForm={onUpdateForm}
+            errors={editorState.errors}
+            answerInput={editorState.answerInput}
+            setAnswerInput={onSetAnswerInput}
+            onUploadImage={onUploadImage}
+            uploadingImage={editorState.uploadingImage}
+          />
+
+          <div className="mt-4 flex items-center gap-3">
+            <button
+              onClick={onSave}
+              disabled={editorState.saving}
+              className={BTN_PRIMARY}
+            >
+              {editorState.saving ? "Saving..." : "Save Block"}
+            </button>
+            <button onClick={onCancel} className={BTN_SECONDARY}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// BlockOverlay — drag overlay for blocks being dragged
+// ---------------------------------------------------------------------------
+
+function BlockOverlay({ block }: { block: RouteBlock }) {
+  const meta = BLOCK_TYPE_META[block.type];
+  return (
+    <div className="flex items-center rounded-md border border-blue-300 bg-white px-4 py-3 shadow-lg">
+      <span
+        className={`mr-2 inline-flex h-6 w-6 items-center justify-center rounded text-xs font-bold ${meta.color}`}
+      >
+        {meta.icon}
+      </span>
+      <span className="mr-2 text-xs font-medium text-gray-600">
+        {meta.label}
+      </span>
+      <span className="truncate text-xs text-gray-500">
+        {blockSummary(block)}
+      </span>
     </div>
   );
 }
@@ -1006,18 +1125,12 @@ export default function RouteEditorPage() {
   );
   const [savingGroupOrder, setSavingGroupOrder] = useState(false);
 
-  // Block UI state
-  const [editingBlock, setEditingBlock] = useState<{
-    groupId: string;
-    blockId: string | "new";
-  } | null>(null);
-  const [blockForm, setBlockForm] = useState<BlockFormState | null>(null);
-  const [blockErrors, setBlockErrors] = useState<FieldErrors>({});
-  const [savingBlock, setSavingBlock] = useState(false);
+  // Block editors (multi-block accordion)
+  const [openEditors, setOpenEditors] = useState<Map<string, BlockEditorState>>(
+    () => new Map(),
+  );
   const [deletingBlockId, setDeletingBlockId] = useState<string | null>(null);
-  const [answerInput, setAnswerInput] = useState("");
   const [pickingBlockType, setPickingBlockType] = useState<string | null>(null); // groupId or null
-  const [uploadingImage, setUploadingImage] = useState(false);
 
   // Block reorder (per group)
   const savedBlockIdsMap = useRef<Record<string, string[]>>({});
@@ -1027,6 +1140,28 @@ export default function RouteEditorPage() {
   const [savingBlockOrderGroupId, setSavingBlockOrderGroupId] = useState<
     string | null
   >(null);
+
+  // Block DnD cross-group state
+  const [activeBlockId, setActiveBlockId] = useState<string | null>(null);
+  const [movingBlockId, setMovingBlockId] = useState<string | null>(null);
+
+  // ------- Editor helpers -------
+  function updateEditor(key: string, patch: Partial<BlockEditorState>) {
+    setOpenEditors((prev) => {
+      const next = new Map(prev);
+      const existing = next.get(key);
+      if (existing) next.set(key, { ...existing, ...patch });
+      return next;
+    });
+  }
+
+  function removeEditor(key: string) {
+    setOpenEditors((prev) => {
+      const next = new Map(prev);
+      next.delete(key);
+      return next;
+    });
+  }
 
   // ------- Fetch route -------
   const fetchRoute = useCallback(async () => {
@@ -1068,6 +1203,24 @@ export default function RouteEditorPage() {
   useEffect(() => {
     if (isEdit) fetchRoute();
   }, [isEdit, fetchRoute]);
+
+  // Prune stale editors when groups change
+  useEffect(() => {
+    const allBlockIds = new Set(
+      groups.flatMap((g) => g.blocks.map((b) => b.id)),
+    );
+    setOpenEditors((prev) => {
+      let changed = false;
+      const next = new Map(prev);
+      for (const key of next.keys()) {
+        if (!key.startsWith("new-") && !allBlockIds.has(key)) {
+          next.delete(key);
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [groups]);
 
   // ------- Route form handlers -------
   function updateRouteField<K extends keyof RouteForm>(
@@ -1217,11 +1370,18 @@ export default function RouteEditorPage() {
       await authFetch(() =>
         api.delete(`/admin/routes/${id}/groups/${groupId}`),
       );
-      // Close block editor if it was inside the deleted group
-      if (editingBlock?.groupId === groupId) {
-        setEditingBlock(null);
-        setBlockForm(null);
-      }
+      // Close editors for blocks in the deleted group
+      setOpenEditors((prev) => {
+        const next = new Map(prev);
+        let changed = false;
+        for (const [key, state] of next) {
+          if (state.groupId === groupId) {
+            next.delete(key);
+            changed = true;
+          }
+        }
+        return changed ? next : prev;
+      });
       await fetchRoute();
     } catch (err) {
       if (err instanceof ApiError && err.status !== 401) {
@@ -1285,45 +1445,149 @@ export default function RouteEditorPage() {
     }
   }
 
-  // ------- Block drag & drop (per-group) -------
-  function makeBlockSensors() {
-    return groupSensors; // reuse same sensor config
+  // ------- Block drag & drop (unified cross-group) -------
+  const blockSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  function findGroupForBlock(blockId: string): string | undefined {
+    return groups.find((g) => g.blocks.some((b) => b.id === blockId))?.id;
   }
 
-  function handleBlockDragEnd(groupId: string) {
-    return (event: DragEndEvent) => {
-      const { active, over } = event;
-      if (!over || active.id === over.id) return;
+  function findGroupForDroppable(droppableId: string): string | undefined {
+    // Check if this is a droppable zone (empty group target)
+    if (typeof droppableId === "string" && droppableId.startsWith("droppable-")) {
+      return droppableId.replace("droppable-", "");
+    }
+    // Otherwise it's a block ID — find which group it belongs to
+    return findGroupForBlock(droppableId);
+  }
 
-      const group = groups.find((g) => g.id === groupId);
+  function handleBlockDragStart(event: DragStartEvent) {
+    const blockId = String(event.active.id);
+    setActiveBlockId(blockId);
+    // Close accordion for dragged block (discard unsaved edits)
+    if (openEditors.has(blockId)) {
+      removeEditor(blockId);
+    }
+  }
+
+  function handleBlockDragOver(event: DragOverEvent) {
+    const { active, over } = event;
+    if (!over) return;
+
+    const activeId = String(active.id);
+    const overId = String(over.id);
+
+    const sourceGroupId = findGroupForBlock(activeId);
+    const targetGroupId = findGroupForDroppable(overId);
+
+    if (!sourceGroupId || !targetGroupId || sourceGroupId === targetGroupId) return;
+
+    // Move block between groups in local state for visual feedback
+    setGroups((prev) => {
+      const sourceGroup = prev.find((g) => g.id === sourceGroupId);
+      const targetGroup = prev.find((g) => g.id === targetGroupId);
+      if (!sourceGroup || !targetGroup) return prev;
+
+      const block = sourceGroup.blocks.find((b) => b.id === activeId);
+      if (!block) return prev;
+
+      const newSourceBlocks = sourceGroup.blocks.filter((b) => b.id !== activeId);
+
+      // Find insertion index in target
+      const overBlockIndex = targetGroup.blocks.findIndex((b) => b.id === overId);
+      const newTargetBlocks = [...targetGroup.blocks];
+      if (overBlockIndex >= 0) {
+        newTargetBlocks.splice(overBlockIndex, 0, { ...block, group_id: targetGroupId });
+      } else {
+        newTargetBlocks.push({ ...block, group_id: targetGroupId });
+      }
+
+      return prev.map((g) => {
+        if (g.id === sourceGroupId) return { ...g, blocks: newSourceBlocks };
+        if (g.id === targetGroupId) return { ...g, blocks: newTargetBlocks };
+        return g;
+      });
+    });
+  }
+
+  async function handleBlockDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    setActiveBlockId(null);
+
+    if (!over) return;
+
+    const activeId = String(active.id);
+    const overId = String(over.id);
+
+    const sourceGroupId = findGroupForBlock(activeId);
+    const targetGroupId = findGroupForDroppable(overId);
+
+    if (!sourceGroupId) return;
+
+    if (!targetGroupId || sourceGroupId === targetGroupId) {
+      // Same-group reorder
+      const group = groups.find((g) => g.id === sourceGroupId);
       if (!group) return;
 
-      const oldIndex = group.blocks.findIndex((b) => b.id === active.id);
-      const newIndex = group.blocks.findIndex((b) => b.id === over.id);
-      if (oldIndex === -1 || newIndex === -1) return;
+      const oldIndex = group.blocks.findIndex((b) => b.id === activeId);
+      const newIndex = group.blocks.findIndex((b) => b.id === overId);
+      if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) return;
 
       const reordered = arrayMove(group.blocks, oldIndex, newIndex).map(
         (b, i) => ({ ...b, position: i }),
       );
 
       setGroups((prev) =>
-        prev.map((g) => (g.id === groupId ? { ...g, blocks: reordered } : g)),
+        prev.map((g) => (g.id === sourceGroupId ? { ...g, blocks: reordered } : g)),
       );
 
       const newIds = reordered.map((b) => b.id);
-      const savedIds = savedBlockIdsMap.current[groupId] ?? [];
+      const savedIds = savedBlockIdsMap.current[sourceGroupId] ?? [];
       const changed = savedIds.some((bid, i) => bid !== newIds[i]);
 
       setPendingBlockReorders((prev) => {
         if (changed) {
-          return { ...prev, [groupId]: newIds };
+          return { ...prev, [sourceGroupId]: newIds };
         } else {
           const next = { ...prev };
-          delete next[groupId];
+          delete next[sourceGroupId];
           return next;
         }
       });
-    };
+    } else {
+      // Cross-group move — find the position in the target group
+      const targetGroup = groups.find((g) => g.id === targetGroupId);
+      if (!targetGroup) return;
+
+      const position = targetGroup.blocks.findIndex((b) => b.id === activeId);
+      const finalPosition = position >= 0 ? position : targetGroup.blocks.length - 1;
+
+      // Call the move API immediately
+      setMovingBlockId(activeId);
+      try {
+        await authFetch(() =>
+          api.put(`/admin/blocks/${activeId}/move`, {
+            target_group_id: targetGroupId,
+            position: Math.max(0, finalPosition),
+          }),
+        );
+        await fetchRoute();
+      } catch (err) {
+        if (err instanceof ApiError && err.status !== 401) {
+          alert("Failed to move block.");
+        } else if (!(err instanceof ApiError)) {
+          alert("An unexpected error occurred.");
+        }
+        await fetchRoute();
+      } finally {
+        setMovingBlockId(null);
+      }
+    }
   }
 
   async function handleSaveBlockOrder(groupId: string) {
@@ -1355,55 +1619,69 @@ export default function RouteEditorPage() {
     }
   }
 
-  // ------- Block handlers -------
+  // ------- Block handlers (accordion editors) -------
   function openAddBlock(groupId: string) {
     setPickingBlockType(groupId);
-    setEditingBlock(null);
-    setBlockForm(null);
-    setBlockErrors({});
-    setAnswerInput("");
   }
 
   function handlePickBlockType(type: BlockType) {
     if (!pickingBlockType) return;
-    setEditingBlock({ groupId: pickingBlockType, blockId: "new" });
-    setBlockForm(emptyBlockForm(type));
-    setBlockErrors({});
-    setAnswerInput("");
+    const key = `new-${pickingBlockType}`;
+    setOpenEditors((prev) => {
+      const next = new Map(prev);
+      next.set(key, {
+        groupId: pickingBlockType,
+        form: emptyBlockForm(type),
+        errors: {},
+        saving: false,
+        answerInput: "",
+        uploadingImage: false,
+      });
+      return next;
+    });
     setPickingBlockType(null);
   }
 
-  function openEditBlock(groupId: string, block: RouteBlock) {
-    setEditingBlock({ groupId, blockId: block.id });
-    setBlockForm(blockToForm(block));
-    setBlockErrors({});
-    setAnswerInput("");
-    setPickingBlockType(null);
+  function toggleBlockEditor(groupId: string, block: RouteBlock) {
+    const key = block.id;
+    if (openEditors.has(key)) {
+      removeEditor(key);
+    } else {
+      setOpenEditors((prev) => {
+        const next = new Map(prev);
+        next.set(key, {
+          groupId,
+          form: blockToForm(block),
+          errors: {},
+          saving: false,
+          answerInput: "",
+          uploadingImage: false,
+        });
+        return next;
+      });
+    }
   }
 
-  function cancelBlockForm() {
-    setEditingBlock(null);
-    setBlockForm(null);
-    setBlockErrors({});
-    setAnswerInput("");
-    setPickingBlockType(null);
-  }
+  async function handleUploadBlockImage(editorKey: string, file: File) {
+    const editor = openEditors.get(editorKey);
+    if (!editor) return;
 
-  async function handleUploadBlockImage(file: File) {
     const validation = imageUploadSchema.safeParse({
       type: file.type,
       size: file.size,
       filename: file.name,
     });
     if (!validation.success) {
-      setBlockErrors((prev) => ({
-        ...prev,
-        "config.image_url": validation.error.issues[0]?.message ?? "Invalid image",
-      }));
+      updateEditor(editorKey, {
+        errors: {
+          ...editor.errors,
+          "config.image_url": validation.error.issues[0]?.message ?? "Invalid image",
+        },
+      });
       return;
     }
 
-    setUploadingImage(true);
+    updateEditor(editorKey, { uploadingImage: true });
     try {
       const uploadRes = await authFetch(() =>
         api.post<{ upload_url: string; key: string }>("/admin/upload", {
@@ -1419,66 +1697,75 @@ export default function RouteEditorPage() {
       });
 
       if (!uploadResponse.ok) {
-        setBlockErrors((prev) => ({
-          ...prev,
-          "config.image_url": "Failed to upload image to storage",
-        }));
+        updateEditor(editorKey, {
+          errors: {
+            ...editor.errors,
+            "config.image_url": "Failed to upload image to storage",
+          },
+          uploadingImage: false,
+        });
         return;
       }
 
-      if (blockForm?.type === "image") {
-        setBlockForm({ ...blockForm, image_url: uploadRes.key });
+      const currentEditor = openEditors.get(editorKey);
+      if (currentEditor?.form.type === "image") {
+        updateEditor(editorKey, {
+          form: { ...currentEditor.form, image_url: uploadRes.key },
+          uploadingImage: false,
+        });
+      } else {
+        updateEditor(editorKey, { uploadingImage: false });
       }
     } catch (err) {
-      if (err instanceof ApiError && err.status !== 401) {
-        setBlockErrors((prev) => ({
-          ...prev,
+      updateEditor(editorKey, {
+        errors: {
+          ...editor.errors,
           "config.image_url": "Failed to upload image",
-        }));
-      } else if (!(err instanceof ApiError)) {
-        setBlockErrors((prev) => ({
-          ...prev,
-          "config.image_url": "Failed to upload image",
-        }));
-      }
-    } finally {
-      setUploadingImage(false);
+        },
+        uploadingImage: false,
+      });
     }
   }
 
-  async function handleSaveBlock() {
-    if (!editingBlock || !blockForm) return;
+  async function handleSaveBlock(editorKey: string) {
+    const editor = openEditors.get(editorKey);
+    if (!editor) return;
 
-    const payload = formToBlockPayload(blockForm);
+    const payload = formToBlockPayload(editor.form);
 
-    // Validate config
     const configResult = blockConfigSchema.safeParse(payload.config);
     if (!configResult.success) {
-      setBlockErrors(zodFieldErrors(configResult.error));
+      updateEditor(editorKey, { errors: zodFieldErrors(configResult.error) });
       return;
     }
 
-    setSavingBlock(true);
+    updateEditor(editorKey, { saving: true });
     try {
-      if (editingBlock.blockId === "new") {
+      if (editorKey.startsWith("new-")) {
         await authFetch(() =>
-          api.post(`/admin/groups/${editingBlock.groupId}/blocks`, payload),
+          api.post(`/admin/groups/${editor.groupId}/blocks`, payload),
         );
       } else {
         await authFetch(() =>
-          api.put(`/admin/blocks/${editingBlock.blockId}`, payload),
+          api.put(`/admin/blocks/${editorKey}`, payload),
         );
       }
-      cancelBlockForm();
+      removeEditor(editorKey);
       await fetchRoute();
     } catch (err) {
       if (err instanceof ApiError && err.status !== 401) {
-        setBlockErrors({ _form: err.message });
+        updateEditor(editorKey, {
+          errors: { _form: err.message },
+          saving: false,
+        });
       } else if (!(err instanceof ApiError)) {
-        setBlockErrors({ _form: "An unexpected error occurred." });
+        updateEditor(editorKey, {
+          errors: { _form: "An unexpected error occurred." },
+          saving: false,
+        });
+      } else {
+        updateEditor(editorKey, { saving: false });
       }
-    } finally {
-      setSavingBlock(false);
     }
   }
 
@@ -1488,7 +1775,7 @@ export default function RouteEditorPage() {
     setDeletingBlockId(blockId);
     try {
       await authFetch(() => api.delete(`/admin/blocks/${blockId}`));
-      if (editingBlock?.blockId === blockId) cancelBlockForm();
+      removeEditor(blockId);
       await fetchRoute();
     } catch (err) {
       if (err instanceof ApiError && err.status !== 401) {
@@ -1500,6 +1787,11 @@ export default function RouteEditorPage() {
       setDeletingBlockId(null);
     }
   }
+
+  // Find active block for drag overlay
+  const activeBlock = activeBlockId
+    ? groups.flatMap((g) => g.blocks).find((b) => b.id === activeBlockId)
+    : null;
 
   // ------- Render -------
 
@@ -1695,6 +1987,7 @@ export default function RouteEditorPage() {
             </p>
           ) : (
             <div className="mb-4 space-y-3">
+              {/* Group-level DnD */}
               <DndContext
                 sensors={groupSensors}
                 collisionDetection={closestCenter}
@@ -1704,68 +1997,69 @@ export default function RouteEditorPage() {
                   items={groups.map((g) => g.id)}
                   strategy={verticalListSortingStrategy}
                 >
-                  {groups.map((group, groupIndex) => (
-                    <SortableGroup
-                      key={group.id}
-                      group={group}
-                      index={groupIndex}
-                      isCollapsed={collapsedGroups.has(group.id)}
-                      onToggleCollapse={() =>
-                        setCollapsedGroups((prev) => {
-                          const next = new Set(prev);
-                          if (next.has(group.id)) next.delete(group.id);
-                          else next.add(group.id);
-                          return next;
-                        })
-                      }
-                      onEditName={() => openRenameGroup(group)}
-                      onDelete={() => handleDeleteGroup(group.id)}
-                      isDeleting={deletingGroupId === group.id}
-                    >
-                      {/* Group name rename inline form */}
-                      {editingGroupNameId === group.id && (
-                        <div className="mb-4 flex items-center gap-2 rounded-md border border-blue-200 bg-blue-50 p-3">
-                          <input
-                            type="text"
-                            value={groupNameForm}
-                            onChange={(e) => setGroupNameForm(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                e.preventDefault();
-                                handleSaveGroupName();
-                              }
-                            }}
-                            className={INPUT_CLS + " !w-64"}
-                            autoFocus
-                          />
-                          <button
-                            onClick={handleSaveGroupName}
-                            disabled={savingGroupName}
-                            className={BTN_PRIMARY}
-                          >
-                            {savingGroupName ? "Saving..." : "Save"}
-                          </button>
-                          <button
-                            onClick={() => setEditingGroupNameId(null)}
-                            className={BTN_SECONDARY}
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      )}
+                  {/* Block-level DnD (single context for all groups) */}
+                  <DndContext
+                    sensors={blockSensors}
+                    collisionDetection={closestCorners}
+                    onDragStart={handleBlockDragStart}
+                    onDragOver={handleBlockDragOver}
+                    onDragEnd={handleBlockDragEnd}
+                  >
+                    {groups.map((group, groupIndex) => (
+                      <SortableGroup
+                        key={group.id}
+                        group={group}
+                        index={groupIndex}
+                        isCollapsed={collapsedGroups.has(group.id)}
+                        onToggleCollapse={() =>
+                          setCollapsedGroups((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(group.id)) next.delete(group.id);
+                            else next.add(group.id);
+                            return next;
+                          })
+                        }
+                        onEditName={() => openRenameGroup(group)}
+                        onDelete={() => handleDeleteGroup(group.id)}
+                        isDeleting={deletingGroupId === group.id}
+                      >
+                        {/* Group name rename inline form */}
+                        {editingGroupNameId === group.id && (
+                          <div className="mb-4 flex items-center gap-2 rounded-md border border-blue-200 bg-blue-50 p-3">
+                            <input
+                              type="text"
+                              value={groupNameForm}
+                              onChange={(e) => setGroupNameForm(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  handleSaveGroupName();
+                                }
+                              }}
+                              className={INPUT_CLS + " !w-64"}
+                              autoFocus
+                            />
+                            <button
+                              onClick={handleSaveGroupName}
+                              disabled={savingGroupName}
+                              className={BTN_PRIMARY}
+                            >
+                              {savingGroupName ? "Saving..." : "Save"}
+                            </button>
+                            <button
+                              onClick={() => setEditingGroupNameId(null)}
+                              className={BTN_SECONDARY}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        )}
 
-                      {/* Blocks list with DnD */}
-                      {group.blocks.length === 0 ? (
-                        <p className="mb-3 text-sm text-gray-400">
-                          No blocks in this group.
-                        </p>
-                      ) : (
-                        <div className="mb-3 space-y-2">
-                          <DndContext
-                            sensors={makeBlockSensors()}
-                            collisionDetection={closestCenter}
-                            onDragEnd={handleBlockDragEnd(group.id)}
-                          >
+                        {/* Blocks list */}
+                        {group.blocks.length === 0 ? (
+                          <DroppableGroupZone groupId={group.id} />
+                        ) : (
+                          <div className="mb-3 space-y-2">
                             <SortableContext
                               items={group.blocks.map((b) => b.id)}
                               strategy={verticalListSortingStrategy}
@@ -1775,123 +2069,158 @@ export default function RouteEditorPage() {
                                   key={block.id}
                                   block={block}
                                   index={blockIndex}
-                                  onEdit={() =>
-                                    openEditBlock(group.id, block)
+                                  isExpanded={openEditors.has(block.id)}
+                                  onToggleExpand={() =>
+                                    toggleBlockEditor(group.id, block)
                                   }
                                   onDelete={() => handleDeleteBlock(block.id)}
                                   isDeleting={deletingBlockId === block.id}
+                                  editorState={openEditors.get(block.id)}
+                                  onUpdateForm={(form) =>
+                                    updateEditor(block.id, { form })
+                                  }
+                                  onUpdateErrors={(errors) =>
+                                    updateEditor(block.id, { errors })
+                                  }
+                                  onSave={() => handleSaveBlock(block.id)}
+                                  onCancel={() => removeEditor(block.id)}
+                                  onUploadImage={(file) =>
+                                    handleUploadBlockImage(block.id, file)
+                                  }
+                                  onSetAnswerInput={(v) =>
+                                    updateEditor(block.id, { answerInput: v })
+                                  }
                                 />
                               ))}
                             </SortableContext>
-                          </DndContext>
 
-                          {/* Save block order */}
-                          {pendingBlockReorders[group.id] && (
-                            <div className="flex items-center gap-2 pt-1">
-                              <button
-                                onClick={() =>
-                                  handleSaveBlockOrder(group.id)
-                                }
-                                disabled={
-                                  savingBlockOrderGroupId === group.id
-                                }
-                                className={BTN_PRIMARY}
-                              >
-                                {savingBlockOrderGroupId === group.id
-                                  ? "Saving..."
-                                  : "Save Block Order"}
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setPendingBlockReorders((prev) => {
-                                    const next = { ...prev };
-                                    delete next[group.id];
-                                    return next;
-                                  });
-                                  fetchRoute();
-                                }}
-                                disabled={
-                                  savingBlockOrderGroupId === group.id
-                                }
-                                className={BTN_SECONDARY}
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      )}
+                            {/* Moving indicator */}
+                            {movingBlockId && findGroupForBlock(movingBlockId) === group.id && (
+                              <div className="text-center text-xs text-blue-500">
+                                Moving block...
+                              </div>
+                            )}
 
-                      {/* Block type picker */}
-                      {pickingBlockType === group.id && (
-                        <div className="mb-3 rounded-md border border-blue-200 bg-blue-50 p-4">
-                          <p className="mb-2 text-sm font-medium text-gray-700">
-                            Choose block type:
-                          </p>
-                          <BlockTypePicker onPick={handlePickBlockType} />
-                          <button
-                            onClick={() => setPickingBlockType(null)}
-                            className="mt-2 text-xs text-gray-500 hover:text-gray-700"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      )}
+                            {/* Save block order */}
+                            {pendingBlockReorders[group.id] && (
+                              <div className="flex items-center gap-2 pt-1">
+                                <button
+                                  onClick={() =>
+                                    handleSaveBlockOrder(group.id)
+                                  }
+                                  disabled={
+                                    savingBlockOrderGroupId === group.id
+                                  }
+                                  className={BTN_PRIMARY}
+                                >
+                                  {savingBlockOrderGroupId === group.id
+                                    ? "Saving..."
+                                    : "Save Block Order"}
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setPendingBlockReorders((prev) => {
+                                      const next = { ...prev };
+                                      delete next[group.id];
+                                      return next;
+                                    });
+                                    fetchRoute();
+                                  }}
+                                  disabled={
+                                    savingBlockOrderGroupId === group.id
+                                  }
+                                  className={BTN_SECONDARY}
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
 
-                      {/* Block editor form */}
-                      {editingBlock?.groupId === group.id && blockForm && (
-                        <div className="mb-3 rounded-lg border border-blue-200 bg-blue-50 p-4">
-                          <h4 className="mb-3 text-sm font-semibold text-gray-900">
-                            {editingBlock.blockId === "new" ? "Add" : "Edit"}{" "}
-                            {BLOCK_TYPE_META[blockForm.type].label} Block
-                          </h4>
-
-                          {blockErrors._form && (
-                            <div className="mb-3 rounded-md bg-red-50 p-3 text-sm text-red-700">
-                              {blockErrors._form}
-                            </div>
-                          )}
-
-                          <BlockEditorForm
-                            form={blockForm}
-                            setForm={setBlockForm}
-                            errors={blockErrors}
-                            answerInput={answerInput}
-                            setAnswerInput={setAnswerInput}
-                            onUploadImage={handleUploadBlockImage}
-                            uploadingImage={uploadingImage}
-                          />
-
-                          <div className="mt-4 flex items-center gap-3">
+                        {/* Block type picker */}
+                        {pickingBlockType === group.id && (
+                          <div className="mb-3 rounded-md border border-blue-200 bg-blue-50 p-4">
+                            <p className="mb-2 text-sm font-medium text-gray-700">
+                              Choose block type:
+                            </p>
+                            <BlockTypePicker onPick={handlePickBlockType} />
                             <button
-                              onClick={handleSaveBlock}
-                              disabled={savingBlock}
-                              className={BTN_PRIMARY}
-                            >
-                              {savingBlock ? "Saving..." : "Save Block"}
-                            </button>
-                            <button
-                              onClick={cancelBlockForm}
-                              className={BTN_SECONDARY}
+                              onClick={() => setPickingBlockType(null)}
+                              className="mt-2 text-xs text-gray-500 hover:text-gray-700"
                             >
                               Cancel
                             </button>
                           </div>
-                        </div>
-                      )}
-
-                      {/* Add block button */}
-                      {pickingBlockType !== group.id &&
-                        editingBlock?.groupId !== group.id && (
-                          <button
-                            onClick={() => openAddBlock(group.id)}
-                            className="text-sm text-blue-600 hover:text-blue-800"
-                          >
-                            + Add Block
-                          </button>
                         )}
-                    </SortableGroup>
-                  ))}
+
+                        {/* New block editor (accordion for adding) */}
+                        {openEditors.has(`new-${group.id}`) && (() => {
+                          const newKey = `new-${group.id}`;
+                          const editor = openEditors.get(newKey)!;
+                          return (
+                            <div className="mb-3 rounded-lg border border-blue-300 bg-blue-50 p-4">
+                              <h4 className="mb-3 text-sm font-semibold text-gray-900">
+                                Add {BLOCK_TYPE_META[editor.form.type].label} Block
+                              </h4>
+
+                              {editor.errors._form && (
+                                <div className="mb-3 rounded-md bg-red-50 p-3 text-sm text-red-700">
+                                  {editor.errors._form}
+                                </div>
+                              )}
+
+                              <BlockEditorForm
+                                form={editor.form}
+                                setForm={(form) => updateEditor(newKey, { form })}
+                                errors={editor.errors}
+                                answerInput={editor.answerInput}
+                                setAnswerInput={(v) =>
+                                  updateEditor(newKey, { answerInput: v })
+                                }
+                                onUploadImage={(file) =>
+                                  handleUploadBlockImage(newKey, file)
+                                }
+                                uploadingImage={editor.uploadingImage}
+                              />
+
+                              <div className="mt-4 flex items-center gap-3">
+                                <button
+                                  onClick={() => handleSaveBlock(newKey)}
+                                  disabled={editor.saving}
+                                  className={BTN_PRIMARY}
+                                >
+                                  {editor.saving ? "Saving..." : "Save Block"}
+                                </button>
+                                <button
+                                  onClick={() => removeEditor(newKey)}
+                                  className={BTN_SECONDARY}
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })()}
+
+                        {/* Add block button */}
+                        {pickingBlockType !== group.id &&
+                          !openEditors.has(`new-${group.id}`) && (
+                            <button
+                              onClick={() => openAddBlock(group.id)}
+                              className="text-sm text-blue-600 hover:text-blue-800"
+                            >
+                              + Add Block
+                            </button>
+                          )}
+                      </SortableGroup>
+                    ))}
+
+                    {/* Drag overlay */}
+                    <DragOverlay>
+                      {activeBlock ? <BlockOverlay block={activeBlock} /> : null}
+                    </DragOverlay>
+                  </DndContext>
                 </SortableContext>
               </DndContext>
 

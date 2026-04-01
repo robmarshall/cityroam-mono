@@ -125,6 +125,11 @@ export const blockReorderSchema = z.object({
   block_ids: z.array(z.string().uuid()).min(1),
 });
 
+export const blockMoveSchema = z.object({
+  target_group_id: z.string().uuid("Valid group ID is required"),
+  position: z.number().int().min(0),
+});
+
 export const messageBankSchema = z.object({
   type: z.enum([
     "success",
