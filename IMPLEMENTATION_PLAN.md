@@ -30,11 +30,11 @@ Refactor the route model from a flat list of stops into a composable **group + b
 
 ## Phase 3: Database Schema & Migration
 
-- [ ] **3.1 route_groups schema** — Create `packages/api/src/db/schema/route-groups.ts`: id, route_id (FK cascade), position, name, created_at, updated_at. Index on route_id.
-- [ ] **3.2 route_blocks schema** — Create `packages/api/src/db/schema/route-blocks.ts`: id, group_id (FK cascade), position, type (varchar), config (jsonb), delay_ms (integer), created_at. Index on group_id.
-- [ ] **3.3 Events table changes** — Add `current_group_id` (uuid FK nullable) and `current_block_id` (uuid FK nullable) to events table. Keep `current_stop` temporarily for migration.
-- [ ] **3.4 Export new tables** — Update `packages/api/src/db/schema/index.ts`.
-- [ ] **3.5 Generate migration** — Run `drizzle-kit generate`. Then add data migration SQL:
+- [x] **3.1 route_groups schema** — Create `packages/api/src/db/schema/route-groups.ts`: id, route_id (FK cascade), position, name, created_at, updated_at. Index on route_id.
+- [x] **3.2 route_blocks schema** — Create `packages/api/src/db/schema/route-blocks.ts`: id, group_id (FK cascade), position, type (varchar), config (jsonb), delay_ms (integer), created_at. Index on group_id.
+- [x] **3.3 Events table changes** — Add `current_group_id` (uuid FK nullable) and `current_block_id` (uuid FK nullable) to events table. Keep `current_stop` temporarily for migration.
+- [x] **3.4 Export new tables** — Update `packages/api/src/db/schema/index.ts`.
+- [x] **3.5 Generate migration** — Run `drizzle-kit generate`. Then add data migration SQL:
   - For each existing stop: create a route_group, then create blocks (message for directions, image blocks, question block with clue/answers/hints, message for fun_fact)
   - Migrate `current_stop` on active events to corresponding `current_group_id` + `current_block_id`
   - Drop `stops` table and `current_stop` column (or defer to a later migration)
@@ -125,6 +125,8 @@ Refactor the route model from a flat list of stops into a composable **group + b
 - **Redundant discriminants**: When an entity has both a top-level `type` field and a `config` with its own `type` discriminant, the Zod schema must enforce they match (via `.refine()`) or derive one from the other.
 - **URL field validation**: Existing URL fields (e.g. `stopSchema.google_maps_link`) don't use `.trim()` before `.url()`. New URL fields should follow the same pattern for consistency, but this is a codebase-wide improvement candidate.
 - **Max length limits**: Most string fields in existing schemas (city, name, clue) lack max length constraints. Only `refund_note` and `routeGroupSchema.name` have them. Future phases should consider adding max lengths consistently across all user-input string fields.
+- **Position gaps in migration**: The data migration from stops to blocks may leave position gaps (e.g. position 0 skipped if no directions). This is fine — the group runner should ORDER BY position rather than assume contiguous values.
+- **No unique constraint on position**: Unlike stops' `(route_id, stop_number)` unique constraint, route_groups and route_blocks intentionally omit position uniqueness to simplify reorder operations at the application level.
 
 ---
 
