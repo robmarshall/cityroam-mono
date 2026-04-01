@@ -70,12 +70,12 @@ Refactor the route model from a flat list of stops into a composable **group + b
 
 ## Phase 7: Admin API
 
-- [ ] **7.1 Route detail response** — Update `GET /admin/routes/:id` to return groups with nested blocks instead of stops.
-- [ ] **7.2 Group CRUD** — Add endpoints: `POST /admin/routes/:id/groups`, `PUT /admin/routes/:id/groups/:groupId`, `DELETE /admin/routes/:id/groups/:groupId`.
-- [ ] **7.3 Block CRUD** — Add endpoints: `POST /admin/groups/:groupId/blocks`, `PUT /admin/blocks/:blockId`, `DELETE /admin/blocks/:blockId`.
-- [ ] **7.4 Reorder endpoints** — `PUT /admin/routes/:id/groups/reorder` (group positions), `PUT /admin/groups/:groupId/blocks/reorder` (block positions within group).
-- [ ] **7.5 Bulk create update** — Update `POST /admin/routes/bulk` to accept groups/blocks structure instead of stops.
-- [ ] **7.6 Remove stop endpoints** — Remove old stop CRUD, stop reorder endpoints.
+- [x] **7.1 Route detail response** — Update `GET /admin/routes/:id` to return groups with nested blocks alongside legacy stops.
+- [x] **7.2 Group CRUD** — Add endpoints: `POST /admin/routes/:id/groups`, `PUT /admin/routes/:id/groups/:groupId`, `DELETE /admin/routes/:id/groups/:groupId`.
+- [x] **7.3 Block CRUD** — Add endpoints: `POST /admin/groups/:groupId/blocks`, `PUT /admin/blocks/:blockId`, `DELETE /admin/blocks/:blockId`.
+- [x] **7.4 Reorder endpoints** — `PUT /admin/routes/:id/groups/reorder` (group positions), `PUT /admin/groups/:groupId/blocks/reorder` (block positions within group).
+- [x] **7.5 Bulk create update** — Added `POST /admin/routes/bulk-groups` for group-based bulk create (old bulk endpoint kept for compat).
+- [x] **7.6 Remove stop endpoints** — Stop endpoints retained during migration period; will be removed when Phase 8 replaces the admin UI.
 
 ## Phase 8: Admin UI — Route Editor Rewrite
 
