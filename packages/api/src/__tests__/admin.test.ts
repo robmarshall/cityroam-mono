@@ -11,6 +11,8 @@ vi.mock("../db/index.js", () => {
       stops: { findFirst: vi.fn() },
       routes: { findFirst: vi.fn() },
       messageBanks: { findFirst: vi.fn() },
+      routeBlocks: { findFirst: vi.fn() },
+      routeGroups: { findFirst: vi.fn() },
     },
     select: vi.fn(() => mockDb),
     from: vi.fn(() => mockDb),
@@ -111,6 +113,8 @@ beforeEach(() => {
   (db as any).query.stops.findFirst.mockReset();
   (db as any).query.routes.findFirst.mockReset();
   (db as any).query.messageBanks.findFirst.mockReset();
+  (db as any).query.routeBlocks.findFirst.mockReset();
+  (db as any).query.routeGroups.findFirst.mockReset();
 
   app = createTestApp();
 });

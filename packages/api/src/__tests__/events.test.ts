@@ -10,6 +10,8 @@ vi.mock("../db/index.js", () => {
       participants: { findFirst: vi.fn() },
       stops: { findFirst: vi.fn() },
       routes: { findFirst: vi.fn() },
+      routeGroups: { findFirst: vi.fn() },
+      routeBlocks: { findFirst: vi.fn() },
       messageBanks: { findFirst: vi.fn() },
     },
     select: vi.fn(() => mockDb),
@@ -78,7 +80,7 @@ vi.mock("../redis/client.js", () => ({
 }));
 
 // ── Imports (after mocks) ────────────────────────────────────────────
-import { createTestApp, mockEvent, mockParticipant, mockRoute, mockStop, mockMessageBank, mockMessage, fakeUUID, resetUUIDs, futureDate, pastDate } from "./helpers.js";
+import { createTestApp, mockEvent, mockParticipant, mockRoute, mockMessageBank, mockMessage, fakeUUID, resetUUIDs, futureDate, pastDate } from "./helpers.js";
 import { db } from "../db/index.js";
 import {
   checkJoinRateLimit,

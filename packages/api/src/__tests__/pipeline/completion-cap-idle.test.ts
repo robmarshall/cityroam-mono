@@ -16,6 +16,8 @@ vi.mock("../../db/index.js", () => {
       stops: { findFirst: vi.fn() },
       routes: { findFirst: vi.fn() },
       messageBanks: { findFirst: vi.fn() },
+      routeBlocks: { findFirst: vi.fn() },
+      routeGroups: { findFirst: vi.fn() },
     },
     select: vi.fn(() => mockDb),
     from: vi.fn(() => mockDb),
@@ -34,6 +36,8 @@ vi.mock("../../db/index.js", () => {
     messages: { id: "messages.id" },
     routes: { id: "routes.id" },
     stops: { route_id: "stops.route_id", stop_number: "stops.stop_number" },
+    routeBlocks: { id: "route_blocks.id", group_id: "route_blocks.group_id" },
+    routeGroups: { id: "route_groups.id", route_id: "route_groups.route_id" },
     messageBanks: { content: "mb.content", type: "mb.type", is_active: "mb.is_active" },
   };
   return { db: mockDb, disconnectDb: vi.fn(), schema: mockSchema };
@@ -240,6 +244,8 @@ describe("idle-timer", () => {
     (db.query.events.findFirst as any).mockResolvedValue({
       status: "IN_PROGRESS",
       current_stop: 1,
+      current_group_id: "group-1",
+      current_block_id: "block-1",
       route_id: "route-1",
     });
 
@@ -336,6 +342,8 @@ describe("idle-timer", () => {
   it("handleIdleResume sends welcome back with current clue", async () => {
     (db.query.events.findFirst as any).mockResolvedValue({
       current_stop: 2,
+      current_group_id: "group-1",
+      current_block_id: "block-1",
       route_id: "route-1",
     });
     (db.query.stops.findFirst as any).mockResolvedValue({

@@ -16,6 +16,7 @@ vi.mock("../../db/index.js", () => {
       stops: { findFirst: vi.fn() },
       routes: { findFirst: vi.fn() },
       routeBlocks: { findFirst: vi.fn() },
+      routeGroups: { findFirst: vi.fn() },
       messageBanks: { findFirst: vi.fn() },
     },
     select: vi.fn(() => mockDb),
@@ -36,6 +37,7 @@ vi.mock("../../db/index.js", () => {
     routes: { id: "routes.id" },
     stops: { route_id: "stops.route_id", stop_number: "stops.stop_number" },
     routeBlocks: { id: "route_blocks.id", group_id: "route_blocks.group_id" },
+    routeGroups: { id: "route_groups.id", route_id: "route_groups.route_id" },
     messageBanks: { content: "mb.content", type: "mb.type", is_active: "mb.is_active" },
   };
   return { db: mockDb, disconnectDb: vi.fn(), schema: mockSchema };

@@ -140,6 +140,8 @@ export function mockEvent(overrides: Record<string, unknown> = {}) {
     wrong_attempts: 0,
     guide_response_count: 0,
     lead_participant_id: null,
+    current_group_id: null,
+    current_block_id: null,
     created_at: new Date(),
     started_at: null,
     completed_at: null,
@@ -196,6 +198,52 @@ export function mockStop(overrides: Record<string, unknown> = {}) {
     google_maps_link: "https://maps.google.com/test",
     created_at: new Date(),
     updated_at: new Date(),
+    ...overrides,
+  };
+}
+
+export function mockRouteGroup(overrides: Record<string, unknown> = {}) {
+  return {
+    id: fakeUUID(),
+    route_id: fakeUUID(),
+    position: 0,
+    name: "Test Group",
+    created_at: new Date(),
+    updated_at: new Date(),
+    ...overrides,
+  };
+}
+
+export function mockRouteBlock(overrides: Record<string, unknown> = {}) {
+  return {
+    id: fakeUUID(),
+    group_id: fakeUUID(),
+    position: 0,
+    type: "message",
+    config: { type: "message", content: "Test message" },
+    delay_ms: 0,
+    created_at: new Date(),
+    ...overrides,
+  };
+}
+
+export function mockQuestionBlock(overrides: Record<string, unknown> = {}) {
+  return {
+    id: fakeUUID(),
+    group_id: fakeUUID(),
+    position: 0,
+    type: "question",
+    config: {
+      type: "question",
+      clue: "Find the big building",
+      accepted_answers: ["town hall", "the town hall"],
+      hints: [
+        [{ content: "It has columns", image_url: null, delay_ms: 0 }],
+        [{ content: "Look for the clock", image_url: null, delay_ms: 0 }],
+      ],
+    },
+    delay_ms: 0,
+    created_at: new Date(),
     ...overrides,
   };
 }
