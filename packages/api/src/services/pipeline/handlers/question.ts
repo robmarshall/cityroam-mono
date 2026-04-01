@@ -1,4 +1,5 @@
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
+import type { QuestionBlockConfig } from "@cityroam/shared/types";
 import type { LLMService } from "../../llm/interface.js";
 import { db, schema } from "../../../db/index.js";
 import { writeGuideMessage, getRandomMessageBank } from "./answer-attempt.js";
@@ -13,6 +14,7 @@ export interface QuestionContext {
   eventId: string;
   eventCode: string;
   routeId: string;
+  currentBlockId: string | null;
   currentStop: number;
 }
 
@@ -30,12 +32,8 @@ function buildQuestionPrompt(
   cityName: string,
   currentStopNumber: number,
   totalStops: number,
-  stopName: string,
   clue: string,
-  directionsFromPrevious: string,
-  directionsToNext: string | null,
   estimatedDistanceRemaining: string,
-  hasMapsLink: boolean,
   userMessage: string,
 ): string {
   return `You are the guide for a city exploration game in ${cityName}. A player has asked you a direct question. Answer using ONLY the information provided below. If you cannot answer from the information given, respond with exactly: {"type": "unknown"}
@@ -44,12 +42,9 @@ Otherwise respond with: {"type": "answer", "text": "<your response>"}
 
 Your response text should match the guide's tone: dry, brief, knowledgeable. 2 sentences maximum. No exclamation marks. No excessive enthusiasm.
 
-Current stop: Stop ${currentStopNumber} of ${totalStops} — "${stopName}"
+Current stop: Stop ${currentStopNumber} of ${totalStops}
 Clue: "${clue}"
-Directions to this stop from previous: "${directionsFromPrevious}"
-Directions to next stop: "${directionsToNext ?? "N/A"}" (DO NOT reveal this unless the player has already solved the current clue)
 Estimated distance remaining: ${estimatedDistanceRemaining}
-Google Maps link available: ${hasMapsLink}
 
 Player's question: "${userMessage}"`;
 }
@@ -57,7 +52,7 @@ Player's question: "${userMessage}"`;
 /**
  * Handle a question message.
  *
- * Sends the question to DeepSeek with the current stop's full structured data.
+ * Sends the question to DeepSeek with the current question block's context.
  * - On {"type": "answer", "text": "..."} → send text as guide message
  * - On {"type": "unknown"} → select from "unknown-answer" message bank
  * - On JSON parse failure → select from "clarification" bank
@@ -68,22 +63,34 @@ export async function handleQuestion(
   ctx: QuestionContext,
   userMessage: string,
 ): Promise<QuestionResult> {
-  // Load current stop data
-  const currentStopData = await db.query.stops.findFirst({
-    where: and(
-      eq(schema.stops.route_id, ctx.routeId),
-      eq(schema.stops.stop_number, ctx.currentStop),
-    ),
-  });
-
-  if (!currentStopData) {
-    log.error("stop not found", { routeId: ctx.routeId, currentStop: ctx.currentStop });
+  if (!ctx.currentBlockId) {
+    log.error("no current block id", { eventId: ctx.eventId });
     const fallback = await getRandomMessageBank("clarification");
     if (fallback) {
       await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback);
     }
     return { handled: true };
   }
+
+  // Load current question block
+  const currentBlock = await db.query.routeBlocks.findFirst({
+    where: eq(schema.routeBlocks.id, ctx.currentBlockId),
+    columns: { type: true, config: true },
+  });
+
+  if (!currentBlock || currentBlock.type !== "question") {
+    log.error("current block not found or not a question", {
+      blockId: ctx.currentBlockId,
+      type: currentBlock?.type,
+    });
+    const fallback = await getRandomMessageBank("clarification");
+    if (fallback) {
+      await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback);
+    }
+    return { handled: true };
+  }
+
+  const config = currentBlock.config as QuestionBlockConfig;
 
   // Load route data for city name and total stops
   const routeData = await db.query.routes.findFirst({
@@ -99,16 +106,6 @@ export async function handleQuestion(
     return { handled: true };
   }
 
-  // Load next stop for directions (if exists)
-  const nextStop = await db.query.stops.findFirst({
-    where: and(
-      eq(schema.stops.route_id, ctx.routeId),
-      eq(schema.stops.stop_number, ctx.currentStop + 1),
-    ),
-  });
-
-  const directionsToNext = nextStop?.directions_from_previous ?? null;
-
   // Calculate estimated distance remaining (rough: proportional to stops remaining)
   const stopsRemaining = routeData.total_stops - ctx.currentStop + 1;
   const distancePerStop =
@@ -119,12 +116,8 @@ export async function handleQuestion(
     routeData.city,
     ctx.currentStop,
     routeData.total_stops,
-    currentStopData.name,
-    currentStopData.clue,
-    currentStopData.directions_from_previous,
-    directionsToNext,
+    config.clue,
     estimatedDistanceRemaining,
-    !!currentStopData.google_maps_link,
     userMessage,
   );
 

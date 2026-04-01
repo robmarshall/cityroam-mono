@@ -1,13 +1,11 @@
 import { eq, and } from "drizzle-orm";
 import type { ChatMessagePayload } from "@cityroam/shared/types";
-import type { AnswerMatchResult } from "@cityroam/shared/types";
-import { buildS3Key, buildS3Url } from "@cityroam/shared/utils";
+import type { QuestionBlockConfig, AnswerMatchResult } from "@cityroam/shared/types";
 import type { LLMService } from "../../llm/interface.js";
 import { db, schema } from "../../../db/index.js";
 import { appendMessage, publishMessage } from "../../../redis/index.js";
 import { incrementGuideResponseCount } from "../guide-response-cap.js";
-import { handleGameCompletion } from "./game-completion.js";
-import { env } from "../../../env.js";
+import { advanceAfterBlock } from "../../group-runner.js";
 import { createLogger } from "../../../lib/logger.js";
 import { deterministicAnswerMatch } from "../deterministic-match.js";
 
@@ -19,7 +17,7 @@ const log = createLogger("answer-attempt");
 export interface AnswerAttemptContext {
   eventId: string;
   eventCode: string;
-  routeId: string;
+  currentBlockId: string | null;
   currentStop: number;
   wrongAttempts: number;
   hintsGiven: number;
@@ -129,26 +127,19 @@ export async function getRandomMessageBank(type: string): Promise<string | null>
 /**
  * Handle an answer-attempt message.
  *
- * Calls the LLM to check if the player's answer matches, then:
- * - On correct: success bank + fun fact + directions/clue for next stop + images, advance stop
+ * Loads the current question block via current_block_id, calls the LLM to
+ * check if the player's answer matches, then:
+ * - On correct: success bank message, reset counters, call advanceAfterBlock()
  * - On incorrect: failure bank + hint nudge after 3 wrongs with 0 hints
- * - On LLM parse failure: clarification bank (answer attempts are never silently dropped)
+ * - On LLM parse failure: deterministic fallback
  */
 export async function handleAnswerAttempt(
   llm: LLMService,
   ctx: AnswerAttemptContext,
   userMessage: string,
 ): Promise<AnswerAttemptResult> {
-  // Load current stop data
-  const currentStopData = await db.query.stops.findFirst({
-    where: and(
-      eq(schema.stops.route_id, ctx.routeId),
-      eq(schema.stops.stop_number, ctx.currentStop),
-    ),
-  });
-
-  if (!currentStopData) {
-    log.error("stop not found", { routeId: ctx.routeId, currentStop: ctx.currentStop });
+  if (!ctx.currentBlockId) {
+    log.error("no current block id", { eventId: ctx.eventId });
     const fallback = await getRandomMessageBank("clarification");
     if (fallback) {
       await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback);
@@ -156,14 +147,29 @@ export async function handleAnswerAttempt(
     return { handled: true, correct: false };
   }
 
-  const acceptedAnswers = currentStopData.accepted_answers as string[];
+  // Load current question block
+  const currentBlock = await db.query.routeBlocks.findFirst({
+    where: eq(schema.routeBlocks.id, ctx.currentBlockId),
+    columns: { id: true, type: true, config: true },
+  });
+
+  if (!currentBlock || currentBlock.type !== "question") {
+    log.error("current block not found or not a question", {
+      blockId: ctx.currentBlockId,
+      type: currentBlock?.type,
+    });
+    const fallback = await getRandomMessageBank("clarification");
+    if (fallback) {
+      await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback);
+    }
+    return { handled: true, correct: false };
+  }
+
+  const config = currentBlock.config as QuestionBlockConfig;
+  const acceptedAnswers = config.accepted_answers;
 
   // Call LLM for answer matching
-  const prompt = buildAnswerMatchPrompt(
-    currentStopData.clue,
-    acceptedAnswers,
-    userMessage,
-  );
+  const prompt = buildAnswerMatchPrompt(config.clue, acceptedAnswers, userMessage);
   const result = await llm.classify(prompt);
 
   // Parse the result
@@ -187,7 +193,7 @@ export async function handleAnswerAttempt(
   }
 
   if (matchResult.type === "answer-correct") {
-    await handleCorrectAnswer(ctx, currentStopData);
+    await handleCorrectAnswer(ctx);
     return { handled: true, correct: true };
   } else {
     await handleIncorrectAnswer(ctx);
@@ -197,68 +203,27 @@ export async function handleAnswerAttempt(
 
 /**
  * Handle a correct answer:
- * 1. Success bank message + fun fact
- * 2. Next stop directions + clue (if not last stop)
- * 3. Image messages for next stop
- * 4. Update event: increment current_stop, reset hints_given and wrong_attempts
+ * 1. Success bank message
+ * 2. Reset hints_given and wrong_attempts
+ * 3. Call advanceAfterBlock() to continue the group/route
  */
-async function handleCorrectAnswer(
-  ctx: AnswerAttemptContext,
-  currentStopData: typeof schema.stops.$inferSelect,
-): Promise<void> {
+async function handleCorrectAnswer(ctx: AnswerAttemptContext): Promise<void> {
   // 1. Success message
   const successMsg = await getRandomMessageBank("success");
   const successContent = successMsg ?? "Correct!";
   await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, successContent);
 
-  // 2. Fun fact
-  await writeGuideMessage(
-    ctx.eventId,
-    ctx.eventCode,
-    ctx.currentStop,
-    currentStopData.fun_fact,
-  );
-
-  // 3. Check if there's a next stop
-  const nextStopNumber = ctx.currentStop + 1;
-  const nextStop = await db.query.stops.findFirst({
-    where: and(
-      eq(schema.stops.route_id, ctx.routeId),
-      eq(schema.stops.stop_number, nextStopNumber),
-    ),
-  });
-
-  if (nextStop) {
-    // Send directions + next clue
-    const directionsAndClue = `${nextStop.directions_from_previous}\n\n${nextStop.clue}`;
-    await writeGuideMessage(ctx.eventId, ctx.eventCode, nextStopNumber, directionsAndClue);
-
-    // Send images for the next stop
-    const stopImages = (nextStop.images as string[]) ?? [];
-    for (const image of stopImages) {
-      const s3Key = buildS3Key(ctx.routeId, nextStopNumber, image);
-      const imageUrl = buildS3Url(env.AWS_CDN_BASE_URL, s3Key);
-      await writeGuideMessage(ctx.eventId, ctx.eventCode, nextStopNumber, "", imageUrl);
-    }
-  } else {
-    // Last stop completed — trigger game completion
-    await handleGameCompletion({
-      eventId: ctx.eventId,
-      eventCode: ctx.eventCode,
-      routeId: ctx.routeId,
-      currentStop: ctx.currentStop,
-    });
-  }
-
-  // 4. Update event: advance stop, reset counters
+  // 2. Reset counters
   await db
     .update(schema.events)
     .set({
-      current_stop: nextStopNumber,
       hints_given: 0,
       wrong_attempts: 0,
     })
     .where(eq(schema.events.id, ctx.eventId));
+
+  // 3. Advance past the question block — sends remaining blocks in group, then next group
+  await advanceAfterBlock(ctx.eventId, ctx.eventCode, ctx.currentBlockId!);
 }
 
 /**

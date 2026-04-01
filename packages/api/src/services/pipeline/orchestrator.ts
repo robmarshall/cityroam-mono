@@ -1,8 +1,9 @@
 import { createLogger } from "../../lib/logger.js";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import type {
   IncomingMessagePayload,
   ChatMessagePayload,
+  QuestionBlockConfig,
 } from "@cityroam/shared/types";
 import { db, schema } from "../../db/index.js";
 import {
@@ -71,6 +72,8 @@ export async function processIncomingMessage(
       status: true,
       route_id: true,
       current_stop: true,
+      current_block_id: true,
+      current_group_id: true,
       hints_given: true,
       wrong_attempts: true,
       guide_response_count: true,
@@ -160,16 +163,22 @@ export async function processIncomingMessage(
   });
 
   try {
-    // Step 8: Load current stop data for classification
-    const currentStop = await db.query.stops.findFirst({
-      where: and(
-        eq(schema.stops.route_id, event.route_id),
-        eq(schema.stops.stop_number, event.current_stop),
-      ),
-      columns: { clue: true, accepted_answers: true },
-    });
+    // Step 8: Load current question block for classification
+    let currentClue = "";
+    let acceptedAnswers: string[] = [];
 
-    const currentClue = currentStop?.clue ?? "";
+    if (event.current_block_id) {
+      const currentBlock = await db.query.routeBlocks.findFirst({
+        where: eq(schema.routeBlocks.id, event.current_block_id),
+        columns: { type: true, config: true },
+      });
+
+      if (currentBlock?.type === "question") {
+        const config = currentBlock.config as QuestionBlockConfig;
+        currentClue = config.clue;
+        acceptedAnswers = config.accepted_answers;
+      }
+    }
 
     // Step 9: Run Layer 2 intent classification
     const classification = await classifyIntent(llm, currentClue, text);
@@ -179,8 +188,7 @@ export async function processIncomingMessage(
     if (classification !== null) {
       intent = classification.type;
     } else {
-      const answers = (currentStop?.accepted_answers as string[]) ?? [];
-      if (answers.length > 0 && deterministicAnswerMatch(text, answers)) {
+      if (acceptedAnswers.length > 0 && deterministicAnswerMatch(text, acceptedAnswers)) {
         log.info("LLM down, deterministic match hit", { eventCode });
         intent = "answer-attempt";
       } else {
@@ -212,7 +220,7 @@ export async function processIncomingMessage(
           {
             eventId,
             eventCode,
-            routeId: event.route_id,
+            currentBlockId: event.current_block_id,
             currentStop: event.current_stop,
             wrongAttempts: event.wrong_attempts,
             hintsGiven: event.hints_given,
@@ -225,7 +233,7 @@ export async function processIncomingMessage(
         await handleHintRequest({
           eventId,
           eventCode,
-          routeId: event.route_id,
+          currentBlockId: event.current_block_id,
           currentStop: event.current_stop,
           hintsGiven: event.hints_given,
         });
@@ -238,6 +246,7 @@ export async function processIncomingMessage(
             eventId,
             eventCode,
             routeId: event.route_id,
+            currentBlockId: event.current_block_id,
             currentStop: event.current_stop,
           },
           text,

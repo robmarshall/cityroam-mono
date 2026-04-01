@@ -4,7 +4,7 @@ import type { ChatMessagePayload } from "@cityroam/shared/types";
 import { db, schema } from "../../../db/index.js";
 import { appendMessage, publishMessage, publishControl } from "../../../redis/index.js";
 import { getRandomMessageBank } from "./answer-attempt.js";
-import { env } from "../../../env.js";
+import { applyTemplateVars, buildRouteTemplateVars } from "../../template-vars.js";
 import { createLogger } from "../../../lib/logger.js";
 
 const log = createLogger("game-completion");
@@ -20,11 +20,11 @@ export interface GameCompletionContext {
 }
 
 /**
- * Handle game completion — triggered when last stop is solved or hints exhausted
- * with no next stop remaining.
+ * Handle game completion — triggered when last group's last block completes,
+ * or when hints are exhausted on the final question.
  *
  * 1. Select random active completion template from message_banks
- * 2. Populate template variables: {{TOTAL_STOPS}}, {{DISTANCE_KM}}, {{CITY_NAME}}, {{REVIEW_LINK}}
+ * 2. Populate template variables via buildRouteTemplateVars
  * 3. Update event: status = COMPLETED, completed_at = now
  * 4. Persist completion message to DB (as system message)
  * 5. Publish game_complete to Redis control channel
@@ -33,17 +33,10 @@ export interface GameCompletionContext {
 export async function handleGameCompletion(
   ctx: GameCompletionContext,
 ): Promise<void> {
-  // Load route data for template variables
-  const route = await db.query.routes.findFirst({
-    where: eq(schema.routes.id, ctx.routeId),
-    columns: {
-      total_stops: true,
-      estimated_distance_km: true,
-      city: true,
-    },
-  });
+  // Build template variables from route
+  const templateVars = await buildRouteTemplateVars(ctx.routeId);
 
-  if (!route) {
+  if (Object.keys(templateVars).length === 0) {
     log.error("route not found", { routeId: ctx.routeId });
     return;
   }
@@ -52,12 +45,8 @@ export async function handleGameCompletion(
   let completionMsg = await getRandomMessageBank("completion");
   completionMsg = completionMsg ?? "Congratulations! You've completed the game.";
 
-  // Populate template variables
-  completionMsg = completionMsg
-    .replace("{{TOTAL_STOPS}}", String(route.total_stops))
-    .replace("{{DISTANCE_KM}}", String(route.estimated_distance_km))
-    .replace("{{CITY_NAME}}", route.city)
-    .replace("{{REVIEW_LINK}}", env.REVIEW_LINK);
+  // Apply template variables
+  completionMsg = applyTemplateVars(completionMsg, templateVars);
 
   // Update event: status = COMPLETED, completed_at = now
   await db

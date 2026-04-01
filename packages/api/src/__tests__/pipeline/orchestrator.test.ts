@@ -15,6 +15,7 @@ vi.mock("../../db/index.js", () => {
       participants: { findFirst: vi.fn() },
       stops: { findFirst: vi.fn() },
       routes: { findFirst: vi.fn() },
+      routeBlocks: { findFirst: vi.fn() },
       messageBanks: { findFirst: vi.fn() },
     },
     select: vi.fn(() => mockDb),
@@ -34,6 +35,7 @@ vi.mock("../../db/index.js", () => {
     messages: { id: "messages.id" },
     routes: { id: "routes.id" },
     stops: { route_id: "stops.route_id", stop_number: "stops.stop_number" },
+    routeBlocks: { id: "route_blocks.id", group_id: "route_blocks.group_id" },
     messageBanks: { content: "mb.content", type: "mb.type", is_active: "mb.is_active" },
   };
   return { db: mockDb, disconnectDb: vi.fn(), schema: mockSchema };
@@ -153,6 +155,8 @@ const eventRow = {
   status: "IN_PROGRESS",
   route_id: "route-1",
   current_stop: 1,
+  current_block_id: "block-1",
+  current_group_id: "group-1",
   hints_given: 0,
   wrong_attempts: 0,
   guide_response_count: 5,
@@ -181,6 +185,12 @@ describe("processIncomingMessage", () => {
 
     // Stop data for classification
     (db.query.stops.findFirst as any).mockResolvedValue({ clue: "Find the fountain" });
+
+    // Block data for classification (orchestrator Step 8)
+    (db.query.routeBlocks.findFirst as any).mockResolvedValue({
+      type: "question",
+      config: { type: "question", clue: "Find the fountain", accepted_answers: ["fountain"], hints: [] },
+    });
 
     // Reset pipeline mocks to defaults (clearAllMocks does not reset implementations)
     (preFilter as any).mockResolvedValue({ action: "pass" });
@@ -244,7 +254,7 @@ describe("processIncomingMessage", () => {
       expect.objectContaining({
         eventId: "event-1",
         eventCode: "ABCD1234",
-        routeId: "route-1",
+        currentBlockId: "block-1",
         currentStop: 1,
       }),
       "hello",

@@ -18,9 +18,8 @@ import {
   events,
   participants,
   messages,
-  stops,
   routes,
-  messageBanks,
+  routeGroups,
 } from "../db/schema/index.js";
 import {
   setSession,
@@ -32,7 +31,7 @@ import {
   checkNameChangeRateLimit,
   publishControl,
 } from "../redis/index.js";
-import { writeGuideMessage } from "../services/pipeline/handlers/answer-attempt.js";
+import { runGroup } from "../services/group-runner.js";
 import {
   sessionAuth,
   resolveSession,
@@ -271,42 +270,20 @@ eventRoutes.post("/event/:code/start", sessionAuth, async (c) => {
     throw new AppError(400, "Event cannot be started", "INVALID_INPUT");
   }
 
-  // Load opening template, first stop, and route in parallel
-  const [openingTemplates, firstStop, route] = await Promise.all([
-    db
-      .select({ content: messageBanks.content })
-      .from(messageBanks)
-      .where(
-        and(
-          eq(messageBanks.type, "opening"),
-          eq(messageBanks.is_active, true),
-        ),
-      ),
-    db.query.stops.findFirst({
-      where: and(
-        eq(stops.route_id, event.route_id),
-        eq(stops.stop_number, 1),
-      ),
-    }),
-    db.query.routes.findFirst({
-      where: eq(routes.id, event.route_id),
-    }),
-  ]);
+  // Load the first group for the route
+  const firstGroup = await db
+    .select()
+    .from(routeGroups)
+    .where(eq(routeGroups.route_id, event.route_id))
+    .orderBy(asc(routeGroups.position))
+    .limit(1)
+    .then((rows) => rows[0]);
 
-  if (openingTemplates.length === 0) {
-    throw new AppError(500, "No opening message templates available", "INTERNAL_ERROR");
-  }
-  if (!firstStop) {
-    throw new AppError(500, "Route stop not found", "INTERNAL_ERROR");
-  }
-  if (!route) {
-    throw new AppError(500, "Route not found", "INTERNAL_ERROR");
+  if (!firstGroup) {
+    throw new AppError(500, "Route has no groups", "INTERNAL_ERROR");
   }
 
-  // Pick a random opening template
-  const chosen = openingTemplates[Math.floor(Math.random() * openingTemplates.length)];
-
-  // Update event to IN_PROGRESS
+  // Update event to IN_PROGRESS with first group
   const now = new Date();
   await db
     .update(events)
@@ -314,6 +291,8 @@ eventRoutes.post("/event/:code/start", sessionAuth, async (c) => {
       status: "IN_PROGRESS",
       started_at: now,
       current_stop: 1,
+      current_group_id: firstGroup.id,
+      current_block_id: null,
     })
     .where(eq(events.id, event.id));
 
@@ -323,23 +302,9 @@ eventRoutes.post("/event/:code/start", sessionAuth, async (c) => {
     data: { started_by: session.display_name },
   });
 
-  // Template variables for opening message
-  const templateVars: Record<string, string> = {
-    FIRST_STOP_DIRECTIONS: firstStop.directions_from_previous,
-    FIRST_CLUE: firstStop.clue,
-    CITY_NAME: route.city,
-    TOTAL_STOPS: String(route.total_stops),
-  };
-
-  // Apply template variables
-  let content = chosen.content;
-  for (const [key, value] of Object.entries(templateVars)) {
-    content = content.replaceAll(`{{${key}}}`, value);
-  }
-
-  // Send opening message asynchronously (don't block the HTTP response)
-  writeGuideMessage(event.id, code, 1, content).catch(() => {
-    // Errors are logged inside writeGuideMessage
+  // Run the first group asynchronously (don't block the HTTP response)
+  runGroup(event.id, code, firstGroup.id).catch(() => {
+    // Errors are logged inside runGroup
   });
 
   return c.json({ success: true }, 200);

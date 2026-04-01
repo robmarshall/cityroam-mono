@@ -65,6 +65,11 @@ vi.mock("../redis/session.js", () => ({
   deleteSession: vi.fn().mockResolvedValue(undefined),
 }));
 
+// ── Mock group-runner ────────────────────────────────────────────────
+vi.mock("../services/group-runner.js", () => ({
+  runGroup: vi.fn().mockResolvedValue(undefined),
+}));
+
 // ── Mock redis client (for health check) ─────────────────────────────
 vi.mock("../redis/client.js", () => ({
   redis: { ping: vi.fn().mockResolvedValue("PONG") },
@@ -86,6 +91,7 @@ import {
   publishMessage,
 } from "../redis/index.js";
 import { getSession as getSessionFromRedis } from "../redis/session.js";
+import { runGroup } from "../services/group-runner.js";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 const mockedDb = db as any;
@@ -463,7 +469,7 @@ describe("POST /event/:code/start", () => {
     expect(body.code).toBe("INVALID_INPUT");
   });
 
-  it("inserts opening message with template variables populated", async () => {
+  it("loads first group, updates event, and starts group runner", async () => {
     vi.mocked(getSessionFromRedis).mockResolvedValueOnce(
       makeSessionData() as any
     );
@@ -476,47 +482,14 @@ describe("POST /event/:code/start", () => {
     });
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
 
-    // 1) update event to IN_PROGRESS: db.update().set().where()
-    // 2) select opening templates: db.select().from().where()
-    const template = mockMessageBank({
-      type: "opening",
-      content: "Welcome to {{CITY_NAME}}! Head to: {{FIRST_STOP_DIRECTIONS}}. Your first clue: {{FIRST_CLUE}}. Total stops: {{TOTAL_STOPS}}.",
-      is_active: true,
-    });
+    const firstGroup = { id: "group-1", route_id: "r-id", position: 0, name: "Introduction" };
+
+    // 1) select first group: db.select().from(routeGroups).where().orderBy().limit(1).then(...)
+    // 2) update event to IN_PROGRESS: db.update().set().where()
     mockedDb.where
-      .mockResolvedValueOnce([template])     // opening templates select (in Promise.all)
-      .mockResolvedValueOnce(undefined);     // update event to IN_PROGRESS
-
-    // First stop
-    const stop = mockStop({
-      route_id: "r-id",
-      stop_number: 1,
-      directions_from_previous: "Go north on Main Street",
-      clue: "Look for the red door",
-      images: [],
-    });
-    mockedDb.query.stops.findFirst.mockResolvedValueOnce(stop);
-
-    // Route
-    const route = mockRoute({
-      id: "r-id",
-      city: "Leeds",
-      total_stops: 3,
-    });
-    mockedDb.query.routes.findFirst.mockResolvedValueOnce(route);
-
-    // Insert opening message returning
-    const openingMessage = mockMessage({
-      id: "msg-1",
-      event_id: "e-id",
-      step_number: 1,
-      sender_type: "guide",
-      sender_name: "Guide",
-      content: "Welcome to Leeds! Head to: Go north on Main Street. Your first clue: Look for the red door. Total stops: 3.",
-      image_url: null,
-      created_at: new Date(),
-    });
-    mockedDb.returning.mockResolvedValueOnce([openingMessage]);
+      .mockReturnValueOnce(mockedDb)          // routeGroups select (chainable for orderBy)
+      .mockResolvedValueOnce(undefined);       // update event
+    mockedDb.limit.mockResolvedValueOnce([firstGroup]); // limit(1).then(rows => rows[0])
 
     const res = await app.request("/event/abcd2345/start", {
       method: "POST",
@@ -531,18 +504,12 @@ describe("POST /event/:code/start", () => {
     const body = await res.json();
     expect(body.success).toBe(true);
 
-    // Verify message was cached and published
-    expect(appendMessage).toHaveBeenCalledWith(
-      "abcd2345",
+    // Verify event updated to IN_PROGRESS with first group
+    expect(mockedDb.set).toHaveBeenCalledWith(
       expect.objectContaining({
-        sender_type: "guide",
-        content: expect.stringContaining("Leeds"),
-      })
-    );
-    expect(publishMessage).toHaveBeenCalledWith(
-      "abcd2345",
-      expect.objectContaining({
-        sender_type: "guide",
+        status: "IN_PROGRESS",
+        current_group_id: "group-1",
+        current_block_id: null,
       })
     );
 
@@ -551,6 +518,9 @@ describe("POST /event/:code/start", () => {
       type: "game_started",
       data: { started_by: "Lead" },
     });
+
+    // Verify runGroup was called asynchronously
+    expect(runGroup).toHaveBeenCalledWith("e-id", "abcd2345", "group-1");
   });
 });
 

@@ -20,6 +20,7 @@ vi.mock("../../db/index.js", async () => {
       participants: { findFirst: vi.fn() },
       stops: { findFirst: vi.fn() },
       routes: { findFirst: vi.fn() },
+      routeBlocks: { findFirst: vi.fn() },
       messageBanks: { findFirst: vi.fn() },
     },
     select: vi.fn(() => mockDb),
@@ -56,11 +57,29 @@ vi.mock("../../services/pipeline/handlers/game-completion.js", () => ({
   handleGameCompletion: vi.fn().mockResolvedValue(undefined),
 }));
 
+// ── Mock group-runner ──────────────────────────────────────────────
+vi.mock("../../services/group-runner.js", () => ({
+  advanceAfterBlock: vi.fn().mockResolvedValue(undefined),
+  runGroup: vi.fn().mockResolvedValue(undefined),
+}));
+
+// ── Mock send-sequence ─────────────────────────────────────────────
+vi.mock("../../services/send-sequence.js", () => ({
+  sendSequence: vi.fn().mockResolvedValue(undefined),
+}));
+
+// ── Mock template-vars ─────────────────────────────────────────────
+vi.mock("../../services/template-vars.js", () => ({
+  buildRouteTemplateVars: vi.fn().mockResolvedValue({}),
+  applyTemplateVars: vi.fn((content: string) => content),
+}));
+
 // ── Imports (after mocks) ───────────────────────────────────────────
 import { db } from "../../db/index.js";
 import { appendMessage, publishMessage, removeMessage } from "../../redis/index.js";
 import { incrementGuideResponseCount } from "../../services/pipeline/guide-response-cap.js";
-import { handleGameCompletion } from "../../services/pipeline/handlers/game-completion.js";
+import { advanceAfterBlock } from "../../services/group-runner.js";
+import { sendSequence } from "../../services/send-sequence.js";
 
 import {
   handleAnswerAttempt,
@@ -101,19 +120,19 @@ const mockMsg = {
   created_at: new Date(),
 };
 
-function makeMockStop(overrides: Record<string, unknown> = {}) {
+function makeMockQuestionBlock(overrides: Record<string, unknown> = {}) {
   return {
-    id: "stop-1",
-    route_id: "route-1",
-    stop_number: 1,
-    name: "Town Hall",
-    clue: "Find the tallest building in the square.",
-    accepted_answers: ["Town Hall", "The Town Hall"],
-    hints: ["It has a clock tower.", "It faces the main square."],
-    fun_fact: "Built in 1890, the Town Hall survived two fires.",
-    directions_from_previous: "Walk 200m north along Main Street.",
-    images: ["photo1.jpg"],
-    google_maps_link: "https://maps.google.com/test",
+    id: "block-1",
+    type: "question",
+    config: {
+      type: "question",
+      clue: "Find the tallest building in the square.",
+      accepted_answers: ["Town Hall", "The Town Hall"],
+      hints: [
+        [{ content: "It has a clock tower.", image_url: null, delay_ms: 0 }],
+        [{ content: "It faces the main square.", image_url: null, delay_ms: 0 }],
+      ],
+    },
     ...overrides,
   };
 }
@@ -132,7 +151,7 @@ function makeAnswerCtx(overrides: Partial<AnswerAttemptContext> = {}): AnswerAtt
   return {
     eventId: "evt-1",
     eventCode: "ABC123",
-    routeId: "route-1",
+    currentBlockId: "block-1",
     currentStop: 1,
     wrongAttempts: 0,
     hintsGiven: 0,
@@ -144,7 +163,7 @@ function makeHintCtx(overrides: Partial<HintRequestContext> = {}): HintRequestCo
   return {
     eventId: "evt-1",
     eventCode: "ABC123",
-    routeId: "route-1",
+    currentBlockId: "block-1",
     currentStop: 1,
     hintsGiven: 0,
     ...overrides,
@@ -156,6 +175,7 @@ function makeQuestionCtx(overrides: Partial<QuestionContext> = {}): QuestionCont
     eventId: "evt-1",
     eventCode: "ABC123",
     routeId: "route-1",
+    currentBlockId: "block-1",
     currentStop: 1,
     ...overrides,
   };
@@ -188,20 +208,11 @@ beforeEach(() => {
 // =====================================================================
 
 describe("handleAnswerAttempt", () => {
-  it("correct answer: advances stop, resets counters, sends success + fun fact + next clue", async () => {
-    const currentStop = makeMockStop({ stop_number: 1 });
-    const nextStop = makeMockStop({
-      stop_number: 2,
-      name: "Library",
-      clue: "Find the oldest book.",
-      directions_from_previous: "Head east on Park Ave.",
-      images: ["lib1.jpg"],
-    });
+  it("correct answer: sends success message, resets counters, calls advanceAfterBlock", async () => {
+    const questionBlock = makeMockQuestionBlock();
 
-    // stops.findFirst: first call = current stop, second call = next stop
-    (db.query.stops.findFirst as ReturnType<typeof vi.fn>)
-      .mockResolvedValueOnce(currentStop)
-      .mockResolvedValueOnce(nextStop);
+    (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(questionBlock);
 
     // getRandomMessageBank: success bank
     (db as any).where
@@ -216,29 +227,28 @@ describe("handleAnswerAttempt", () => {
     // LLM was called
     expect(llm.classify).toHaveBeenCalledOnce();
 
-    // writeGuideMessage called for: success msg, fun fact, directions+clue, image
+    // Success guide message written
     expect(appendMessage).toHaveBeenCalled();
     expect(publishMessage).toHaveBeenCalled();
     expect(incrementGuideResponseCount).toHaveBeenCalled();
 
-    // Event updated: advance stop, reset counters
-    expect((db as any).update).toHaveBeenCalled();
+    // Counters reset
     expect((db as any).set).toHaveBeenCalledWith(
       expect.objectContaining({
-        current_stop: 2,
         hints_given: 0,
         wrong_attempts: 0,
       }),
     );
+
+    // advanceAfterBlock called to continue the route
+    expect(advanceAfterBlock).toHaveBeenCalledWith("evt-1", "ABC123", "block-1");
   });
 
-  it("correct answer on last stop: triggers game completion flow", async () => {
-    const currentStop = makeMockStop({ stop_number: 3 });
+  it("correct answer on last stop: advanceAfterBlock handles game completion", async () => {
+    const questionBlock = makeMockQuestionBlock();
 
-    // stops.findFirst: current stop found, next stop NOT found
-    (db.query.stops.findFirst as ReturnType<typeof vi.fn>)
-      .mockResolvedValueOnce(currentStop)
-      .mockResolvedValueOnce(null);
+    (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(questionBlock);
 
     // getRandomMessageBank: success bank
     (db as any).where
@@ -249,19 +259,16 @@ describe("handleAnswerAttempt", () => {
     const result = await handleAnswerAttempt(llm, ctx, "Town Hall");
 
     expect(result).toEqual({ handled: true, correct: true });
-    expect(handleGameCompletion).toHaveBeenCalledWith({
-      eventId: "evt-1",
-      eventCode: "ABC123",
-      routeId: "route-1",
-      currentStop: 3,
-    });
+
+    // advanceAfterBlock is called (it internally handles game completion if last group)
+    expect(advanceAfterBlock).toHaveBeenCalledWith("evt-1", "ABC123", "block-1");
   });
 
   it("incorrect answer: increments wrong_attempts, sends failure message", async () => {
-    const currentStop = makeMockStop();
+    const questionBlock = makeMockQuestionBlock();
 
-    (db.query.stops.findFirst as ReturnType<typeof vi.fn>)
-      .mockResolvedValueOnce(currentStop);
+    (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(questionBlock);
 
     // First where call is from db.update().set().where() (update wrong_attempts) - returns mockDb (chain)
     // Second where call is from db.select().from().where() (getRandomMessageBank) - returns array
@@ -285,10 +292,10 @@ describe("handleAnswerAttempt", () => {
   });
 
   it("incorrect with >=3 wrong + 0 hints: includes hint nudge text", async () => {
-    const currentStop = makeMockStop();
+    const questionBlock = makeMockQuestionBlock();
 
-    (db.query.stops.findFirst as ReturnType<typeof vi.fn>)
-      .mockResolvedValueOnce(currentStop);
+    (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(questionBlock);
 
     // First where: update chain, second where: getRandomMessageBank
     (db as any).where
@@ -303,67 +310,16 @@ describe("handleAnswerAttempt", () => {
     expect(result).toEqual({ handled: true, correct: false });
 
     // The guide message content should include the hint nudge
-    // writeGuideMessage is called with content that includes the nudge
     const insertCalls = (db as any).values.mock.calls;
     const lastInsertValues = insertCalls[insertCalls.length - 1][0];
     expect(lastInsertValues.content).toContain("You might want to ask for a hint.");
   });
 
-  it("correct answer: resolves [IMAGE:file.jpg] tokens to full S3 URLs in separate message rows", async () => {
-    const currentStop = makeMockStop({ stop_number: 1 });
-    const nextStop = makeMockStop({
-      stop_number: 2,
-      name: "Library",
-      clue: "Find the oldest book.",
-      directions_from_previous: "Head east on Park Ave.",
-      images: ["photo1.jpg", "photo2.jpg"],
-    });
-
-    (db.query.stops.findFirst as ReturnType<typeof vi.fn>)
-      .mockResolvedValueOnce(currentStop)
-      .mockResolvedValueOnce(nextStop);
-
-    // getRandomMessageBank: success bank
-    (db as any).where
-      .mockResolvedValueOnce([{ content: "Well done!" }]);
-
-    const llm = makeLlm({ type: "answer-correct" });
-    const ctx = makeAnswerCtx();
-    const result = await handleAnswerAttempt(llm, ctx, "Town Hall");
-
-    expect(result).toEqual({ handled: true, correct: true });
-
-    // Collect all insert values calls
-    const insertCalls = (db as any).values.mock.calls;
-
-    // Find image message rows: content="" and image_url populated
-    const imageInserts = insertCalls
-      .map((call: any[]) => call[0])
-      .filter((v: any) => v.image_url !== null && v.image_url !== undefined);
-
-    expect(imageInserts).toHaveLength(2);
-
-    // Verify S3 URLs are fully resolved: buildS3Url(cdnBaseUrl, buildS3Key(routeId, stopNumber, filename))
-    expect(imageInserts[0].image_url).toBe(
-      "https://cdn.test.com/routes/route-1/stops/2/photo1.jpg",
-    );
-    expect(imageInserts[1].image_url).toBe(
-      "https://cdn.test.com/routes/route-1/stops/2/photo2.jpg",
-    );
-
-    // Image rows have empty content
-    expect(imageInserts[0].content).toBe("");
-    expect(imageInserts[1].content).toBe("");
-
-    // Each image is a separate message row
-    expect(imageInserts[0]).not.toBe(imageInserts[1]);
-  });
-
   it("LLM failure: uses deterministic fallback for non-matching answer", async () => {
-    const currentStop = makeMockStop();
+    const questionBlock = makeMockQuestionBlock();
 
-    (db.query.stops.findFirst as ReturnType<typeof vi.fn>)
-      .mockResolvedValueOnce(currentStop);
+    (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(questionBlock);
 
     // LLM returns null (failure)
     const llm = makeLlm(null);
@@ -383,31 +339,25 @@ describe("handleAnswerAttempt", () => {
   });
 
   it("LLM failure: deterministic fallback matches correct answer", async () => {
-    const currentStop = makeMockStop();
+    const questionBlock = makeMockQuestionBlock();
 
-    (db.query.stops.findFirst as ReturnType<typeof vi.fn>)
-      .mockResolvedValueOnce(currentStop);
+    (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(questionBlock);
 
     // LLM returns null (failure)
     const llm = makeLlm(null);
 
-    // getRandomMessageBank calls for: success bank, then next stop lookup
+    // getRandomMessageBank: success bank
     (db as any).where
       .mockResolvedValueOnce([{ content: "Correct!" }]);
-
-    // Next stop query
-    (db.query.stops.findFirst as ReturnType<typeof vi.fn>)
-      .mockResolvedValueOnce(null); // no next stop (last stop)
-
-    // Mock returning for writeGuideMessage and game completion writes
-    (db as any).returning
-      .mockResolvedValueOnce([mockMsg])  // success message
-      .mockResolvedValueOnce([mockMsg]); // fun fact message
 
     const ctx = makeAnswerCtx();
     const result = await handleAnswerAttempt(llm, ctx, "Town Hall");
 
     expect(result).toEqual({ handled: true, correct: true });
+
+    // advanceAfterBlock called
+    expect(advanceAfterBlock).toHaveBeenCalledWith("evt-1", "ABC123", "block-1");
   });
 });
 
@@ -416,23 +366,40 @@ describe("handleAnswerAttempt", () => {
 // =====================================================================
 
 describe("handleHintRequest", () => {
-  it("serves hints in sequence and increments hints_given", async () => {
-    const stop = makeMockStop({
-      hints: ["Hint one.", "Hint two.", "Hint three."],
+  it("serves hints via sendSequence and increments hints_given", async () => {
+    const questionBlock = makeMockQuestionBlock({
+      config: {
+        type: "question",
+        clue: "Find the tallest building.",
+        accepted_answers: ["Town Hall"],
+        hints: [
+          [{ content: "Hint one.", image_url: null, delay_ms: 0 }],
+          [{ content: "Hint two.", image_url: null, delay_ms: 0 }],
+          [{ content: "Hint three.", image_url: null, delay_ms: 0 }],
+        ],
+      },
     });
 
-    (db.query.stops.findFirst as ReturnType<typeof vi.fn>)
-      .mockResolvedValueOnce(stop);
+    (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(questionBlock);
+
+    // events.findFirst for template vars
+    (db.query.events.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({ route_id: "route-1" });
 
     const ctx = makeHintCtx({ hintsGiven: 0 });
     const result = await handleHintRequest(ctx);
 
     expect(result).toEqual({ handled: true, exhausted: false });
 
-    // Hint content should be the first hint
-    const insertCalls = (db as any).values.mock.calls;
-    const hintInsert = insertCalls[insertCalls.length - 1][0];
-    expect(hintInsert.content).toBe("Hint one.");
+    // sendSequence called with first hint sequence
+    expect(sendSequence).toHaveBeenCalledWith(
+      "evt-1",
+      "ABC123",
+      1,
+      [{ content: "Hint one.", image_url: null, delay_ms: 0 }],
+      expect.any(Object),
+    );
 
     // hints_given incremented to 1
     expect((db as any).set).toHaveBeenCalledWith(
@@ -440,24 +407,20 @@ describe("handleHintRequest", () => {
     );
   });
 
-  it("hints exhausted: reveals answer with {{ANSWER}} replaced, advances stop", async () => {
-    const stop = makeMockStop({
-      hints: ["Only hint."],
-      accepted_answers: ["Town Hall"],
+  it("hints exhausted: reveals answer with {{ANSWER}} replaced, calls advanceAfterBlock", async () => {
+    const questionBlock = makeMockQuestionBlock({
+      config: {
+        type: "question",
+        clue: "Find the tallest building.",
+        accepted_answers: ["Town Hall"],
+        hints: [
+          [{ content: "Only hint.", image_url: null, delay_ms: 0 }],
+        ],
+      },
     });
 
-    const nextStop = makeMockStop({
-      stop_number: 2,
-      name: "Library",
-      clue: "Find the oldest book.",
-      directions_from_previous: "Head east on Park Ave.",
-      images: [],
-    });
-
-    // First call: current stop, second call: next stop (for advance)
-    (db.query.stops.findFirst as ReturnType<typeof vi.fn>)
-      .mockResolvedValueOnce(stop)
-      .mockResolvedValueOnce(nextStop);
+    (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(questionBlock);
 
     // getRandomMessageBank for hint-exhausted bank
     (db as any).where
@@ -475,14 +438,16 @@ describe("handleHintRequest", () => {
     expect(exhaustedInsert.content).toBe("The answer was Town Hall. Moving on!");
     expect(exhaustedInsert.content).not.toContain("{{ANSWER}}");
 
-    // Event updated: advance stop, reset counters
+    // Counters reset
     expect((db as any).set).toHaveBeenCalledWith(
       expect.objectContaining({
-        current_stop: 2,
         hints_given: 0,
         wrong_attempts: 0,
       }),
     );
+
+    // advanceAfterBlock called
+    expect(advanceAfterBlock).toHaveBeenCalledWith("evt-1", "ABC123", "block-1");
   });
 });
 
@@ -492,16 +457,11 @@ describe("handleHintRequest", () => {
 
 describe("handleQuestion", () => {
   it("known answer: sends guide response text", async () => {
-    const stop = makeMockStop();
+    const questionBlock = makeMockQuestionBlock();
     const route = makeMockRoute();
-    const nextStop = makeMockStop({
-      stop_number: 2,
-      directions_from_previous: "Go east.",
-    });
 
-    (db.query.stops.findFirst as ReturnType<typeof vi.fn>)
-      .mockResolvedValueOnce(stop)
-      .mockResolvedValueOnce(nextStop);
+    (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(questionBlock);
     (db.query.routes.findFirst as ReturnType<typeof vi.fn>)
       .mockResolvedValueOnce(route);
 
@@ -519,13 +479,11 @@ describe("handleQuestion", () => {
   });
 
   it("unknown: sends unknown-answer bank message", async () => {
-    const stop = makeMockStop();
+    const questionBlock = makeMockQuestionBlock();
     const route = makeMockRoute();
-    const nextStop = makeMockStop({ stop_number: 2 });
 
-    (db.query.stops.findFirst as ReturnType<typeof vi.fn>)
-      .mockResolvedValueOnce(stop)
-      .mockResolvedValueOnce(nextStop);
+    (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(questionBlock);
     (db.query.routes.findFirst as ReturnType<typeof vi.fn>)
       .mockResolvedValueOnce(route);
 
@@ -545,13 +503,11 @@ describe("handleQuestion", () => {
   });
 
   it("LLM failure: sends clarification bank message", async () => {
-    const stop = makeMockStop();
+    const questionBlock = makeMockQuestionBlock();
     const route = makeMockRoute();
-    const nextStop = makeMockStop({ stop_number: 2 });
 
-    (db.query.stops.findFirst as ReturnType<typeof vi.fn>)
-      .mockResolvedValueOnce(stop)
-      .mockResolvedValueOnce(nextStop);
+    (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(questionBlock);
     (db.query.routes.findFirst as ReturnType<typeof vi.fn>)
       .mockResolvedValueOnce(route);
 

@@ -128,6 +128,7 @@ Refactor the route model from a flat list of stops into a composable **group + b
 - **Position gaps in migration**: The data migration from stops to blocks may leave position gaps (e.g. position 0 skipped if no directions). This is fine — the group runner should ORDER BY position rather than assume contiguous values.
 - **No unique constraint on position**: Unlike stops' `(route_id, stop_number)` unique constraint, route_groups and route_blocks intentionally omit position uniqueness to simplify reorder operations at the application level.
 - **Template vars canonical pattern**: `template-vars.ts` centralizes template variable building. Future phases (5.1 orchestrator, 5.5 event start) should migrate inline `.replace()` chains to use `applyTemplateVars` + `buildRouteTemplateVars` instead of duplicating the logic.
+- **Phase 5 test rewrite pattern**: When refactoring handlers from stop-based to block-based, tests need: (1) replace `stops.findFirst` mocks with `routeBlocks.findFirst`, (2) add mocks for `group-runner` (advanceAfterBlock), `send-sequence` (sendSequence), `template-vars` (buildRouteTemplateVars), (3) update context helpers to include `currentBlockId`/`currentGroupId`, (4) replace `makeMockStop` with `makeMockQuestionBlock`. Counter-based mock sequencing (mockResolvedValueOnce chains) is fragile but works when call order is deterministic.
 
 ---
 
