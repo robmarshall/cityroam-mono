@@ -25,12 +25,16 @@ describe("displayNameSchema", () => {
     expect(() => displayNameSchema.parse("")).toThrow();
   });
 
+  it("rejects single character name", () => {
+    expect(() => displayNameSchema.parse("A")).toThrow();
+  });
+
   it("rejects whitespace-only string", () => {
     expect(() => displayNameSchema.parse("   ")).toThrow();
   });
 
-  it("rejects names over 30 characters", () => {
-    expect(() => displayNameSchema.parse("A".repeat(31))).toThrow();
+  it("rejects names over 20 characters", () => {
+    expect(() => displayNameSchema.parse("A".repeat(21))).toThrow();
   });
 
   it("rejects names with HTML tags", () => {

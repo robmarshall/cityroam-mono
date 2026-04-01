@@ -19,7 +19,7 @@ import {
 } from "@headlessui/react";
 import { chatMessageSchema, displayNameSchema } from "@cityroam/shared/validation";
 import { formatTimestamp } from "@cityroam/shared/utils";
-import { TYPING_INDICATOR_DEBOUNCE_MS, MAX_MESSAGE_LENGTH } from "@cityroam/shared/constants";
+import { TYPING_INDICATOR_DEBOUNCE_MS, MAX_MESSAGE_LENGTH, MIN_DISPLAY_NAME_LENGTH, MAX_DISPLAY_NAME_LENGTH } from "@cityroam/shared/constants";
 import { POSTHOG_EVENTS } from "@cityroam/shared/analytics";
 import type {
   ChatMessagePayload,
@@ -411,7 +411,9 @@ export default function ChatPage() {
     }
     const textarea = e.target;
     textarea.style.height = "auto";
-    textarea.style.height = `${Math.min(textarea.scrollHeight, MAX_INPUT_HEIGHT)}px`;
+    const newHeight = Math.min(textarea.scrollHeight, MAX_INPUT_HEIGHT);
+    textarea.style.height = `${newHeight}px`;
+    textarea.style.overflowY = textarea.scrollHeight > MAX_INPUT_HEIGHT ? "auto" : "hidden";
   };
 
   // Scroll to bottom on pill click
@@ -667,7 +669,7 @@ export default function ChatPage() {
             placeholder="Type a message..."
             rows={1}
             maxLength={MAX_MESSAGE_LENGTH}
-            className="flex-1 resize-none rounded-2xl border border-gray-300 px-4 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            className="flex-1 resize-none overflow-hidden rounded-2xl border border-gray-300 px-4 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             style={{ maxHeight: `${MAX_INPUT_HEIGHT}px` }}
           />
           <button
@@ -744,7 +746,8 @@ export default function ChatPage() {
                     handleChangeName();
                   }
                 }}
-                maxLength={30}
+                minLength={MIN_DISPLAY_NAME_LENGTH}
+                maxLength={MAX_DISPLAY_NAME_LENGTH}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
                 placeholder="Enter your name"
                 autoFocus
