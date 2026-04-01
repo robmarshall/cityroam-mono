@@ -96,7 +96,7 @@ Refactor the route model from a flat list of stops into a composable **group + b
 ## Phase 10: Testing & Cleanup
 
 - [x] **10.1 Update test fixtures** — Update all test helpers and fixtures to use groups/blocks instead of stops. [COMPLETE]
-- [x] **10.2 Pipeline tests** — Update orchestrator, answer-attempt, hint-request, game-completion tests for block-based flow.
+- [x] **10.2 Pipeline tests** — Update orchestrator, answer-attempt, hint-request, game-completion tests for block-based flow. [COMPLETE]
 - [ ] **10.3 Admin API tests** — Update admin route tests for group/block CRUD.
 - [ ] **10.4 Remove dead code** — Remove stops table references, old stop CRUD code, opening sequence code. Clean up imports.
 - [ ] **10.5 Update LLM authoring docs** — Update `docs/llm-authoring/` to reflect new groups/blocks data model and API format.
