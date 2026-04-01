@@ -91,11 +91,11 @@ Refactor the route model from a flat list of stops into a composable **group + b
 
 - [x] **9.2 Map block rendering** — When a message with `block_type: 'map'` arrives, render as a styled map link card (icon + "View on Google Maps" link) instead of plain text.
 
-- [ ] **9.3 Linkify** — Already done in previous iteration. URLs in all message bubbles are clickable.
+- [x] **9.3 Linkify** — Already done in previous iteration. URLs in all message bubbles are clickable.
 
 ## Phase 10: Testing & Cleanup
 
-- [ ] **10.1 Update test fixtures** — Update all test helpers and fixtures to use groups/blocks instead of stops.
+- [x] **10.1 Update test fixtures** — Update all test helpers and fixtures to use groups/blocks instead of stops. [COMPLETE]
 - [ ] **10.2 Pipeline tests** — Update orchestrator, answer-attempt, hint-request, game-completion tests for block-based flow.
 - [ ] **10.3 Admin API tests** — Update admin route tests for group/block CRUD.
 - [ ] **10.4 Remove dead code** — Remove stops table references, old stop CRUD code, opening sequence code. Clean up imports.
@@ -114,6 +114,7 @@ Refactor the route model from a flat list of stops into a composable **group + b
 - **No unique constraint on position**: Unlike stops' `(route_id, stop_number)` unique constraint, route_groups and route_blocks intentionally omit position uniqueness to simplify reorder operations at the application level.
 - **Template vars canonical pattern**: `template-vars.ts` centralizes template variable building. Future phases (5.1 orchestrator, 5.5 event start) should migrate inline `.replace()` chains to use `applyTemplateVars` + `buildRouteTemplateVars` instead of duplicating the logic.
 - **Phase 5 test rewrite pattern**: When refactoring handlers from stop-based to block-based, tests need: (1) replace `stops.findFirst` mocks with `routeBlocks.findFirst`, (2) add mocks for `group-runner` (advanceAfterBlock), `send-sequence` (sendSequence), `template-vars` (buildRouteTemplateVars), (3) update context helpers to include `currentBlockId`/`currentGroupId`, (4) replace `makeMockStop` with `makeMockQuestionBlock`. Counter-based mock sequencing (mockResolvedValueOnce chains) is fragile but works when call order is deterministic.
+- **Mock reset discipline**: When adding new `query.*` mocks to the mock DB object, always add corresponding `.mockReset()` calls in `beforeEach`. Missing resets cause inter-test state leakage that can mask real failures.
 
 ---
 
