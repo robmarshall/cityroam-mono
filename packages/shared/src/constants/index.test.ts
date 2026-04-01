@@ -3,6 +3,7 @@ import {
   MAX_PARTICIPANTS,
   MAX_MESSAGE_LENGTH,
   MIN_MESSAGE_LENGTH,
+  MIN_DISPLAY_NAME_LENGTH,
   MAX_DISPLAY_NAME_LENGTH,
   MAX_GUIDE_RESPONSES_PER_EVENT,
   PARTICIPANT_OFFLINE_TIMEOUT_MS,
@@ -33,8 +34,12 @@ describe("constants", () => {
       expect(MIN_MESSAGE_LENGTH).toBe(2);
     });
 
-    it("MAX_DISPLAY_NAME_LENGTH is 30", () => {
-      expect(MAX_DISPLAY_NAME_LENGTH).toBe(30);
+    it("MIN_DISPLAY_NAME_LENGTH is 2", () => {
+      expect(MIN_DISPLAY_NAME_LENGTH).toBe(2);
+    });
+
+    it("MAX_DISPLAY_NAME_LENGTH is 20", () => {
+      expect(MAX_DISPLAY_NAME_LENGTH).toBe(20);
     });
 
     it("MAX_GUIDE_RESPONSES_PER_EVENT is 100", () => {

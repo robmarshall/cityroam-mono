@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  MIN_DISPLAY_NAME_LENGTH,
   MAX_DISPLAY_NAME_LENGTH,
   MAX_MESSAGE_LENGTH,
   MIN_MESSAGE_LENGTH,
@@ -13,7 +14,7 @@ const DISPLAY_NAME_CHARS_REGEX = /^[a-zA-Z0-9 '\-]+$/;
 export const displayNameSchema = z
   .string()
   .trim()
-  .min(1, "Display name is required")
+  .min(MIN_DISPLAY_NAME_LENGTH, `Display name must be at least ${MIN_DISPLAY_NAME_LENGTH} characters`)
   .max(MAX_DISPLAY_NAME_LENGTH, `Display name must be at most ${MAX_DISPLAY_NAME_LENGTH} characters`)
   .refine((val) => !HTML_TAG_REGEX.test(val), "Display name must not contain HTML tags")
   .refine(

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { displayNameSchema } from "@cityroam/shared/validation";
+import { MIN_DISPLAY_NAME_LENGTH, MAX_DISPLAY_NAME_LENGTH } from "@cityroam/shared/constants";
 import { POSTHOG_EVENTS } from "@cityroam/shared/analytics";
 import type {
   EventDetailResponse,
@@ -222,7 +223,8 @@ export default function JoinPage() {
               type="text"
               autoComplete="off"
               autoFocus
-              maxLength={30}
+              minLength={MIN_DISPLAY_NAME_LENGTH}
+              maxLength={MAX_DISPLAY_NAME_LENGTH}
               value={displayName}
               onChange={(e) => {
                 setDisplayName(e.target.value);
