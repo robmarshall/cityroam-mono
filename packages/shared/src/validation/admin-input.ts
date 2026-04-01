@@ -94,7 +94,7 @@ export const blockConfigSchema = z.discriminatedUnion("type", [
 ]);
 
 export const routeBlockSchema = z.object({
-  position: z.number().int().min(0),
+  position: z.number().int().min(0).optional(),
   type: z.enum(["message", "image", "question", "action", "map"]),
   config: blockConfigSchema,
   delay_ms: z.number().int().min(0).max(30000).default(0),

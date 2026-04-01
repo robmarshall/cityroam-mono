@@ -22,7 +22,7 @@ Message Banks (global, not per-route)
 
 As a content creator, you author **routes** made up of **groups** containing **blocks**. You can also create **message bank** entries to expand the guide's repertoire.
 
-You do NOT create events — those are generated automatically when a customer purchases a hunt via Stripe checkout.
+Events are usually generated automatically when a customer purchases a hunt via Stripe checkout. However, you can create free/test events via `POST /admin/events` (see the API reference).
 
 ---
 
