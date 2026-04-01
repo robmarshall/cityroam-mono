@@ -82,6 +82,66 @@ export const bulkRouteCreateSchema = z.object({
   stops: z.array(stopSchema).min(1, "At least one stop is required").max(30, "Maximum 30 stops per route"),
 });
 
+// --- Block & Group schemas ---
+
+export const messageBlockConfigSchema = z.object({
+  type: z.literal("message"),
+  content: z.string().trim().min(1),
+});
+
+export const imageBlockConfigSchema = z.object({
+  type: z.literal("image"),
+  image_url: z.string().url(),
+});
+
+export const questionBlockConfigSchema = z.object({
+  type: z.literal("question"),
+  clue: z.string().trim().min(1),
+  accepted_answers: z.array(z.string().trim().min(1)).min(1),
+  hints: z.array(z.array(sequenceItemSchema)).min(2).max(3),
+});
+
+export const actionBlockConfigSchema = z.object({
+  type: z.literal("action"),
+  label: z.string().trim().min(1),
+});
+
+export const mapBlockConfigSchema = z.object({
+  type: z.literal("map"),
+  google_maps_link: z.string().url(),
+});
+
+export const blockConfigSchema = z.discriminatedUnion("type", [
+  messageBlockConfigSchema,
+  imageBlockConfigSchema,
+  questionBlockConfigSchema,
+  actionBlockConfigSchema,
+  mapBlockConfigSchema,
+]);
+
+export const routeBlockSchema = z.object({
+  position: z.number().int().min(0),
+  type: z.enum(["message", "image", "question", "action", "map"]),
+  config: blockConfigSchema,
+  delay_ms: z.number().int().min(0).max(30000).default(0),
+}).refine((data) => data.type === data.config.type, {
+  message: "Block type must match config type",
+  path: ["type"],
+});
+
+export const routeGroupSchema = z.object({
+  name: z.string().trim().min(1).max(100),
+  blocks: z.array(routeBlockSchema).min(1).max(50),
+});
+
+export const groupReorderSchema = z.object({
+  group_ids: z.array(z.string().uuid()).min(1),
+});
+
+export const blockReorderSchema = z.object({
+  block_ids: z.array(z.string().uuid()).min(1),
+});
+
 export const messageBankSchema = z.object({
   type: z.enum([
     "success",

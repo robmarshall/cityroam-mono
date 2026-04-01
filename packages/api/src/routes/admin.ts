@@ -537,6 +537,7 @@ adminRoutes.get("/admin/routes/:id", adminAuth, async (c) => {
       created_at: s.created_at.toISOString(),
       updated_at: s.updated_at.toISOString(),
     })),
+    groups: [],
   };
 
   return c.json(response, 200);

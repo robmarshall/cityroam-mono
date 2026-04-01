@@ -1,5 +1,5 @@
 import type { EventStatus } from "./enums.js";
-import type { Event, Message, Participant, Route, Stop } from "./entities.js";
+import type { Event, Message, Participant, Route, RouteBlock, RouteGroup, Stop } from "./entities.js";
 import type { ChatMessagePayload } from "./websocket.js";
 
 // Public API responses
@@ -99,9 +99,14 @@ export interface AdminEventDetailResponse {
   stripe_payment_id: string | null;
 }
 
+export type AdminRouteGroupResponse = RouteGroup & {
+  blocks: RouteBlock[];
+};
+
 export interface AdminRouteDetailResponse {
   route: Route;
   stops: Stop[];
+  groups: AdminRouteGroupResponse[];
 }
 
 export interface AdminRouteListResponse {

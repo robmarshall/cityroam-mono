@@ -124,6 +124,16 @@ Refactor the route model from a flat list of stops into a composable **group + b
 
 ---
 
+## Learnings
+
+- **ESM imports**: All `.ts` files under `packages/shared/src/types/` must use `.js` extensions in import paths (e.g. `'./sequence.js'`). This is the established convention and required for Node ESM resolution.
+- **Validation consistency**: Existing Zod schemas use `.trim().min(1)` for required string fields. New schemas must follow the same pattern.
+- **Redundant discriminants**: When an entity has both a top-level `type` field and a `config` with its own `type` discriminant, the Zod schema must enforce they match (via `.refine()`) or derive one from the other.
+- **URL field validation**: Existing URL fields (e.g. `stopSchema.google_maps_link`) don't use `.trim()` before `.url()`. New URL fields should follow the same pattern for consistency, but this is a codebase-wide improvement candidate.
+- **Max length limits**: Most string fields in existing schemas (city, name, clue) lack max length constraints. Only `refund_note` and `routeGroupSchema.name` have them. Future phases should consider adding max lengths consistently across all user-input string fields.
+
+---
+
 # Implementation Plan — Block Interactions After Event Completion
 
 ## Status Key

@@ -16,6 +16,16 @@ export {
   bulkRouteCreateSchema,
   messageBankSchema,
   sequenceItemSchema,
+  messageBlockConfigSchema,
+  imageBlockConfigSchema,
+  questionBlockConfigSchema,
+  actionBlockConfigSchema,
+  mapBlockConfigSchema,
+  blockConfigSchema,
+  routeBlockSchema,
+  routeGroupSchema,
+  groupReorderSchema,
+  blockReorderSchema,
 } from "./admin-input.js";
 
 export {
