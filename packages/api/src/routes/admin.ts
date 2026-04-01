@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { eq, sql, count, desc, and, asc, inArray, type SQL } from "drizzle-orm";
 import Stripe from "stripe";
-import { adminLoginSchema, adminUpdateEventStatusSchema, adminCreateEventSchema, routeSchema, imageUploadRequestSchema, messageBankSchema, routeBlockSchema, groupUpdateSchema, bulkRouteGroupCreateSchema, groupReorderSchema, blockReorderSchema } from "@cityroam/shared/validation";
+import { adminLoginSchema, adminUpdateEventStatusSchema, adminCreateEventSchema, routeSchema, imageUploadRequestSchema, messageBankSchema, routeBlockSchema, groupUpdateSchema, bulkRouteGroupCreateSchema, groupReorderSchema, blockReorderSchema, blockMoveSchema } from "@cityroam/shared/validation";
 import { generateEventCode } from "@cityroam/shared/utils";
 import { EVENT_EXPIRY_DAYS } from "@cityroam/shared/constants";
 import { generatePresignedUploadUrl } from "../services/s3.js";
@@ -1104,6 +1104,108 @@ adminRoutes.delete("/admin/blocks/:blockId", adminAuth, async (c) => {
   });
 
   return c.json({ success: true }, 200);
+});
+
+// PUT /admin/blocks/:blockId/move — move a block to a different group
+adminRoutes.put("/admin/blocks/:blockId/move", adminAuth, async (c) => {
+  const blockId = c.req.param("blockId");
+  const body = await c.req.json();
+  const data = blockMoveSchema.parse(body);
+
+  const existing = await db.query.routeBlocks.findFirst({
+    where: eq(routeBlocks.id, blockId),
+  });
+
+  if (!existing) {
+    throw new AppError(404, "Block not found", "BLOCK_NOT_FOUND");
+  }
+
+  const targetGroup = await db.query.routeGroups.findFirst({
+    where: eq(routeGroups.id, data.target_group_id),
+  });
+
+  if (!targetGroup) {
+    throw new AppError(404, "Target group not found", "GROUP_NOT_FOUND");
+  }
+
+  const sourceGroupId = existing.group_id;
+  const targetGroupId = data.target_group_id;
+  const targetPosition = data.position;
+
+  await db.transaction(async (tx) => {
+    // 1. Remove from source group: delete the block's old position and renumber
+    // (We don't delete the block, just need to renumber the remaining blocks in source)
+    const remainingInSource = await tx
+      .select({ id: routeBlocks.id })
+      .from(routeBlocks)
+      .where(
+        and(
+          eq(routeBlocks.group_id, sourceGroupId),
+          sql`${routeBlocks.id} != ${blockId}`,
+        ),
+      )
+      .orderBy(asc(routeBlocks.position));
+
+    if (remainingInSource.length > 0) {
+      const cases = remainingInSource
+        .map((b, i) => sql`WHEN ${routeBlocks.id} = ${b.id} THEN ${i}`)
+        .reduce((acc, c) => sql`${acc} ${c}`);
+
+      await tx
+        .update(routeBlocks)
+        .set({ position: sql`CASE ${cases} END` })
+        .where(inArray(routeBlocks.id, remainingInSource.map((b) => b.id)));
+    }
+
+    // 2. Make room in target group: shift blocks at >= targetPosition up by 1
+    const blocksInTarget = await tx
+      .select({ id: routeBlocks.id, position: routeBlocks.position })
+      .from(routeBlocks)
+      .where(
+        and(
+          eq(routeBlocks.group_id, targetGroupId),
+          sql`${routeBlocks.id} != ${blockId}`,
+        ),
+      )
+      .orderBy(asc(routeBlocks.position));
+
+    const toShift = blocksInTarget.filter((b) => b.position >= targetPosition);
+    if (toShift.length > 0) {
+      const shiftCases = toShift
+        .map((b) => sql`WHEN ${routeBlocks.id} = ${b.id} THEN ${b.position + 1}`)
+        .reduce((acc, c) => sql`${acc} ${c}`);
+
+      await tx
+        .update(routeBlocks)
+        .set({ position: sql`CASE ${shiftCases} END` })
+        .where(inArray(routeBlocks.id, toShift.map((b) => b.id)));
+    }
+
+    // 3. Move the block to the target group at the desired position
+    await tx
+      .update(routeBlocks)
+      .set({
+        group_id: targetGroupId,
+        position: targetPosition,
+      })
+      .where(eq(routeBlocks.id, blockId));
+  });
+
+  const updated = await db.query.routeBlocks.findFirst({
+    where: eq(routeBlocks.id, blockId),
+  });
+
+  return c.json({
+    block: {
+      id: updated!.id,
+      group_id: updated!.group_id,
+      position: updated!.position,
+      type: updated!.type,
+      config: updated!.config,
+      delay_ms: updated!.delay_ms,
+      created_at: updated!.created_at.toISOString(),
+    },
+  }, 200);
 });
 
 // ── Message Bank CRUD ────────────────────────────────────────────────

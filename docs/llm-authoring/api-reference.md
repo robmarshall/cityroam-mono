@@ -30,6 +30,45 @@ Tokens expire after 8 hours. Re-authenticate if you get a 401.
 
 ---
 
+## Creating a Route (Metadata Only)
+
+Create a route without any groups. Useful when building routes incrementally — add groups and blocks afterwards.
+
+```
+POST /admin/routes
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "city": "Leeds",
+  "name": "Leeds City Centre Discovery",
+  "description": "A walking tour through the historic heart of Leeds.",
+  "estimated_duration_mins": 60,
+  "estimated_distance_km": 2.5,
+  "is_active": true
+}
+```
+
+Response (201 Created):
+```json
+{
+  "route": {
+    "id": "uuid",
+    "city": "Leeds",
+    "name": "Leeds City Centre Discovery",
+    "description": "A walking tour through the historic heart of Leeds.",
+    "total_stops": 0,
+    "estimated_duration_mins": 60,
+    "estimated_distance_km": 2.5,
+    "is_active": true,
+    "created_at": "2025-01-15T10:30:00.000Z",
+    "updated_at": "2025-01-15T10:30:00.000Z"
+  }
+}
+```
+
+---
+
 ## Creating a New Route (Bulk)
 
 Create a complete route with all its groups and blocks in a single atomic call.
@@ -415,6 +454,80 @@ DELETE /admin/message-banks/:id
 
 ---
 
+## Image Uploads
+
+To use images in `image` blocks, you need a publicly accessible URL. You can upload images via the admin API to get a hosted URL.
+
+### Get a Pre-signed Upload URL
+
+```
+POST /admin/upload
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "filename": "leeds-town-hall.jpg",
+  "content_type": "image/jpeg"
+}
+```
+
+Response:
+```json
+{
+  "upload_url": "https://s3.amazonaws.com/...",
+  "key": "uploads/1705312200000_leeds-town-hall.jpg"
+}
+```
+
+Then `PUT` the raw image bytes to `upload_url`. The `key` is the S3 object path — use it to construct the public URL for your image block config.
+
+**Constraints:**
+- Allowed types: `image/jpeg`, `image/png`
+- Max size: 5MB
+
+---
+
+## Creating a Free Event
+
+Events are usually created automatically via Stripe checkout. Use this endpoint to create free or test events without payment.
+
+```
+POST /admin/events
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "route_id": "uuid-of-existing-route",
+  "buyer_email": "test@example.com",
+  "expires_in_days": 30
+}
+```
+
+| Field | Type | Required | Constraints |
+|-------|------|----------|-------------|
+| route_id | string (UUID) | Yes | Must reference an existing route |
+| buyer_email | string | No | Must be valid email if provided |
+| expires_in_days | number | No | 1-365, defaults to 90 |
+
+Response (201 Created):
+```json
+{
+  "event": {
+    "id": "uuid",
+    "code": "abc12def",
+    "status": "NOT_STARTED",
+    "route_id": "uuid",
+    "buyer_email": "test@example.com",
+    "expires_at": "2025-04-15T10:30:00.000Z",
+    "created_at": "2025-01-15T10:30:00.000Z"
+  }
+}
+```
+
+The 8-character `code` is what players use to join the event.
+
+---
+
 ## Field Constraints
 
 ### Route Fields
@@ -428,6 +541,8 @@ DELETE /admin/message-banks/:id
 | estimated_distance_km | number | Yes | Must be > 0 |
 | is_active | boolean | No | Default: true |
 
+`total_stops` is read-only — automatically set to the number of groups. Do not include it in request bodies.
+
 ### Group Fields
 
 | Field | Type | Required | Constraints |
@@ -438,6 +553,7 @@ DELETE /admin/message-banks/:id
 
 | Field | Type | Required | Constraints |
 |-------|------|----------|-------------|
+| position | number | No | 0-indexed integer. Defaults to array index if omitted. |
 | type | string | Yes | One of: `message`, `image`, `question`, `action`, `map` |
 | config | object | Yes | Must match type (see below) |
 | delay_ms | number | No | 0-30000ms, default: 0 |

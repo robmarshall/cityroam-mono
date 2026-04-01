@@ -25,6 +25,7 @@ export {
   bulkRouteGroupCreateSchema,
   groupReorderSchema,
   blockReorderSchema,
+  blockMoveSchema,
 } from "./admin-input.js";
 
 export {

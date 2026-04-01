@@ -90,7 +90,7 @@ Examples:
 
 ### over-length
 
-Sent when the player's message exceeds the character limit (500 chars).
+Sent when the player's message exceeds the character limit (200 chars).
 
 **Tone:** blunt, instructional.
 

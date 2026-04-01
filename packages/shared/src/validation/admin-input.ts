@@ -94,7 +94,7 @@ export const blockConfigSchema = z.discriminatedUnion("type", [
 ]);
 
 export const routeBlockSchema = z.object({
-  position: z.number().int().min(0),
+  position: z.number().int().min(0).optional(),
   type: z.enum(["message", "image", "question", "action", "map"]),
   config: blockConfigSchema,
   delay_ms: z.number().int().min(0).max(30000).default(0),
@@ -123,6 +123,11 @@ export const groupReorderSchema = z.object({
 
 export const blockReorderSchema = z.object({
   block_ids: z.array(z.string().uuid()).min(1),
+});
+
+export const blockMoveSchema = z.object({
+  target_group_id: z.string().uuid("Valid group ID is required"),
+  position: z.number().int().min(0),
 });
 
 export const messageBankSchema = z.object({
