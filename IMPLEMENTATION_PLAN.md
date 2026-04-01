@@ -41,7 +41,7 @@ Refactor the route model from a flat list of stops into a composable **group + b
 
 ## Phase 4: Game Engine — Group Runner
 
-- [ ] **4.1 Group runner service** — Create `packages/api/src/services/group-runner.ts`:
+- [x] **4.1 Group runner service** — Create `packages/api/src/services/group-runner.ts`:
   - `runGroup(eventId, eventCode, groupId)` — loads blocks in order, iterates:
     - `message` block: apply template vars, call `writeGuideMessage()`
     - `image` block: call `writeGuideMessage("", imageUrl)`
@@ -52,7 +52,7 @@ Refactor the route model from a flat list of stops into a composable **group + b
   - `advanceAfterBlock(eventId, eventCode, blockId)` — called after question answered or action confirmed, continues sending remaining blocks in group, then advances to next group
   - Reuse `sendSequence()` for hint delivery within question blocks
 
-- [ ] **4.2 Template variable system** — Extract template var replacement into a shared helper. Variables available: `{{CITY_NAME}}`, `{{TOTAL_STOPS}}`, `{{REVIEW_LINK}}`, etc. Applied to message block content.
+- [x] **4.2 Template variable system** — Extract template var replacement into a shared helper. Variables available: `{{CITY_NAME}}`, `{{TOTAL_STOPS}}`, `{{REVIEW_LINK}}`, etc. Applied to message block content.
 
 ## Phase 5: Game Engine — Pipeline Updates
 
@@ -127,6 +127,7 @@ Refactor the route model from a flat list of stops into a composable **group + b
 - **Max length limits**: Most string fields in existing schemas (city, name, clue) lack max length constraints. Only `refund_note` and `routeGroupSchema.name` have them. Future phases should consider adding max lengths consistently across all user-input string fields.
 - **Position gaps in migration**: The data migration from stops to blocks may leave position gaps (e.g. position 0 skipped if no directions). This is fine — the group runner should ORDER BY position rather than assume contiguous values.
 - **No unique constraint on position**: Unlike stops' `(route_id, stop_number)` unique constraint, route_groups and route_blocks intentionally omit position uniqueness to simplify reorder operations at the application level.
+- **Template vars canonical pattern**: `template-vars.ts` centralizes template variable building. Future phases (5.1 orchestrator, 5.5 event start) should migrate inline `.replace()` chains to use `applyTemplateVars` + `buildRouteTemplateVars` instead of duplicating the logic.
 
 ---
 
