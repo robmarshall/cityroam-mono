@@ -141,46 +141,46 @@ When an event reaches a terminal state (COMPLETED, EXPIRED, REFUNDED), old game 
 
 ---
 
-## Phase 1: Session Invalidation Infrastructure
+## Phase 1: Session Invalidation Infrastructure [COMPLETE]
 
-- [ ] **1.1 Add `deleteSessionsByEventId`** — In `packages/api/src/redis/session.ts`, add a function that queries all participant tokens for an event from the DB, then bulk-deletes their Redis `session:{token}` keys. Import `db` and `participants` schema.
-- [ ] **1.2 Export new function** — Export `deleteSessionsByEventId` from `packages/api/src/redis/index.ts`.
+- [x] **1.1 Add `deleteSessionsByEventId`**
+- [x] **1.2 Export new function**
 
-## Phase 2: Block Session Re-population
+## Phase 2: Block Session Re-population [COMPLETE]
 
-- [ ] **2.1 Guard DB fallback in session middleware** — In `packages/api/src/middleware/session.ts`, update the DB fallback path of `resolveSession` to also fetch `event.status`. If the event is in a terminal state (COMPLETED, EXPIRED, REFUNDED), return `null` instead of re-populating Redis. This closes the loophole where deleted sessions get silently recreated.
+- [x] **2.1 Guard DB fallback in session middleware**
 
-## Phase 3: Guard Unprotected HTTP Endpoints
+## Phase 3: Guard Unprotected HTTP Endpoints [COMPLETE]
 
-- [ ] **3.1 Add `TERMINAL_STATUSES` set** — At the top of `packages/api/src/routes/events.ts`, define `const TERMINAL_STATUSES = new Set(["COMPLETED", "EXPIRED", "REFUNDED"])`.
-- [ ] **3.2 Guard `GET /event/:code/messages`** — After the event lookup, return 410 with `EVENT_COMPLETED` if the event is in a terminal state.
-- [ ] **3.3 Guard `POST /event/:code/name`** — After session validation, look up event status and return 410 if terminal.
-- [ ] **3.4 Guard `POST /event/:code/leave`** — After event lookup, return 410 if terminal.
+- [x] **3.1 Add `TERMINAL_STATUSES` set** — Extracted to `packages/shared/src/constants/index.ts`
+- [x] **3.2 Guard `GET /event/:code/messages`**
+- [x] **3.3 Guard `POST /event/:code/name`**
+- [x] **3.4 Guard `POST /event/:code/leave`**
 
-## Phase 4: Reduce Data Exposure on GET /event/:code
+## Phase 4: Reduce Data Exposure on GET /event/:code [COMPLETE]
 
-- [ ] **4.1 Strip participant data for terminal events** — In `GET /event/:code`, when the event is in a terminal state, return `participants: []`, `current_participant: null`, `lead_name: null`. Keep returning status and timestamps so the app can detect the state.
+- [x] **4.1 Strip participant data for terminal events**
 
-## Phase 5: Invalidate Sessions on State Transitions
+## Phase 5: Invalidate Sessions on State Transitions [COMPLETE]
 
-- [ ] **5.1 On game completion** — In `packages/api/src/services/pipeline/handlers/game-completion.ts`, call `deleteSessionsByEventId(ctx.eventId)` after the DB update that sets status to COMPLETED.
-- [ ] **5.2 On admin refund** — In `packages/api/src/routes/admin.ts`, call `deleteSessionsByEventId(id)` after both paths that set status to REFUNDED.
-- [ ] **5.3 On lazy expiry** — In `packages/api/src/routes/events.ts`, call `deleteSessionsByEventId(event.id)` after the lazy expiry update.
+- [x] **5.1 On game completion**
+- [x] **5.2 On admin refund**
+- [x] **5.3 On lazy expiry**
 
-## Phase 6: Strip Participant Tokens from Admin API
+## Phase 6: Strip Participant Tokens from Admin API [COMPLETE]
 
-- [ ] **6.1 Remove tokens from admin event detail** — In `packages/api/src/routes/admin.ts` (line 281), remove `token: p.token` from the participant mapping in `GET /admin/events/:id`. Admin should never need raw session tokens — they can see participant names, status, and timestamps without them.
+- [x] **6.1 Remove tokens from admin event detail**
 
-## Phase 7: App Handling of Terminal Event States
+## Phase 7: App Handling of Terminal Event States [COMPLETE]
 
-- [ ] **7.1 LobbyPage: handle EXPIRED/REFUNDED** — In `packages/app/src/pages/LobbyPage.tsx` (line 49-56), add redirects for `EXPIRED` and `REFUNDED` statuses. Currently only handles `IN_PROGRESS` and `COMPLETED`. Redirect to `/event/${code}` (JoinPage) which already shows appropriate error messages for these states.
-- [ ] **7.2 ChatPage: handle 410 responses** — In `packages/app/src/pages/ChatPage.tsx`, add handling for 410 status from API calls (e.g. message fetch). When received, redirect to a terminal state screen or show "This game has ended" rather than a generic error.
-- [ ] **7.3 App API client: detect 410 status** — In `packages/app/src/lib/api.ts`, add specific detection for 410 (Gone) responses so pages can distinguish "event ended" from other errors.
+- [x] **7.1 LobbyPage: handle EXPIRED/REFUNDED**
+- [x] **7.2 ChatPage: handle 410 responses**
+- [x] **7.3 App API client: detect 410 status**
 
-## Phase 8: Race Condition Guards
+## Phase 8: Race Condition Guards [COMPLETE]
 
-- [ ] **8.1 Atomic lead election on join** — In `packages/api/src/routes/events.ts` (line 167-196), wrap the participant count check + insert + event update in a DB transaction. Use `SELECT ... FOR UPDATE` on the event row to serialize concurrent joins, preventing two participants from both becoming lead.
-- [ ] **8.2 Atomic event start** — In `packages/api/src/routes/events.ts` (line 267-323), use a transaction with `SELECT ... FOR UPDATE` on the event row when checking `status === "WAITING"` and updating to `IN_PROGRESS`. This prevents double-start from concurrent requests.
+- [x] **8.1 Atomic lead election on join**
+- [x] **8.2 Atomic event start**
 
 ## Learnings
 
