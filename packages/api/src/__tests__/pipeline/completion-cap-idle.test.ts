@@ -13,7 +13,6 @@ vi.mock("../../db/index.js", () => {
     query: {
       events: { findFirst: vi.fn() },
       participants: { findFirst: vi.fn() },
-      stops: { findFirst: vi.fn() },
       routes: { findFirst: vi.fn() },
       messageBanks: { findFirst: vi.fn() },
       routeBlocks: { findFirst: vi.fn() },
@@ -35,7 +34,6 @@ vi.mock("../../db/index.js", () => {
     events: { id: "events.id", status: "events.status", guide_response_count: "events.guide_response_count" },
     messages: { id: "messages.id" },
     routes: { id: "routes.id" },
-    stops: { route_id: "stops.route_id", stop_number: "stops.stop_number" },
     routeBlocks: { id: "route_blocks.id", group_id: "route_blocks.group_id" },
     routeGroups: { id: "route_groups.id", route_id: "route_groups.route_id" },
     messageBanks: { content: "mb.content", type: "mb.type", is_active: "mb.is_active" },
@@ -346,8 +344,9 @@ describe("idle-timer", () => {
       current_block_id: "block-1",
       route_id: "route-1",
     });
-    (db.query.stops.findFirst as any).mockResolvedValue({
-      clue: "Look for the red door",
+    (db.query.routeBlocks.findFirst as any).mockResolvedValue({
+      type: "question",
+      config: { clue: "Look for the red door" },
     });
 
     const sysMsg = {
