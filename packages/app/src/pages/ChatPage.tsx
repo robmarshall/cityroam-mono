@@ -141,7 +141,11 @@ export default function ChatPage() {
           if (prev.length > 0) return prev; // Don't overwrite if messages already loaded
           return response.messages;
         });
-      } catch {
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 410) {
+          navigate(`/event/${code}`, { replace: true });
+          return;
+        }
         // Non-fatal — messages will arrive via WebSocket
       }
     }

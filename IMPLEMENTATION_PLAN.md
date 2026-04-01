@@ -181,3 +181,11 @@ When an event reaches a terminal state (COMPLETED, EXPIRED, REFUNDED), old game 
 
 - [ ] **8.1 Atomic lead election on join** — In `packages/api/src/routes/events.ts` (line 167-196), wrap the participant count check + insert + event update in a DB transaction. Use `SELECT ... FOR UPDATE` on the event row to serialize concurrent joins, preventing two participants from both becoming lead.
 - [ ] **8.2 Atomic event start** — In `packages/api/src/routes/events.ts` (line 267-323), use a transaction with `SELECT ... FOR UPDATE` on the event row when checking `status === "WAITING"` and updating to `IN_PROGRESS`. This prevents double-start from concurrent requests.
+
+## Learnings
+
+- **DRY for status sets**: When multiple files need the same set of terminal statuses, define it once in a shared location (e.g. shared constants or a single API-level constants file) and import it. Duplicating `new Set(["COMPLETED", "EXPIRED", "REFUNDED"])` across `events.ts` and `session.ts` creates a maintenance trap.
+- **Use defined constants consistently**: If a constant like `TERMINAL_STATUSES` is defined in a file, use it everywhere in that file. The lazy expiry check in `events.ts` used an inline if-chain instead of the Set defined 20 lines above — always prefer the named constant.
+- **Non-fatal session invalidation**: `deleteSessionsByEventId` calls should be wrapped in try/catch at all call sites. Redis failure should not block the primary operation (DB status update) since sessions TTL naturally. Log the error and continue.
+- **Session invalidation ordering**: Always invalidate sessions AFTER all DB writes complete (status update + any follow-up inserts like completion messages). If invalidation happens before a subsequent DB write fails, sessions are gone but the state transition didn't complete.
+- **Admin endpoints vs player endpoints**: Terminal status guards on admin endpoints are a separate concern from blocking player interactions. Admins may legitimately need to modify event states (e.g., refund a completed event). Don't conflate the two.

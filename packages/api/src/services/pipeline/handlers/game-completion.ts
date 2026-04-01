@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import type { ChatMessagePayload } from "@cityroam/shared/types";
 import { db, schema } from "../../../db/index.js";
-import { appendMessage, publishMessage, publishControl } from "../../../redis/index.js";
+import { appendMessage, publishMessage, publishControl, deleteSessionsByEventId } from "../../../redis/index.js";
 import { getRandomMessageBank } from "./answer-attempt.js";
 import { applyTemplateVars, buildRouteTemplateVars } from "../../template-vars.js";
 import { createLogger } from "../../../lib/logger.js";
@@ -70,6 +70,13 @@ export async function handleGameCompletion(
       image_url: null,
     })
     .returning();
+
+  // Invalidate sessions AFTER all DB writes complete so a failed insert doesn't leave orphaned state
+  try {
+    await deleteSessionsByEventId(ctx.eventId);
+  } catch (err) {
+    log.warn("Failed to invalidate sessions after completion", { eventId: ctx.eventId, err });
+  }
 
   const payload: ChatMessagePayload = {
     id: msg.id,

@@ -52,6 +52,8 @@ export default function LobbyPage() {
       navigate(`/event/${code}/play`, { replace: true });
     } else if (event?.status === "COMPLETED") {
       navigate(`/event/${code}/complete`, { replace: true });
+    } else if (event?.status === "EXPIRED" || event?.status === "REFUNDED") {
+      navigate(`/event/${code}`, { replace: true });
     }
   }, [event?.status, code, navigate]);
 

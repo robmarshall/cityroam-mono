@@ -11,6 +11,7 @@ import { db } from "../db/index.js";
 import { events, participants, messages, routes, messageBanks, routeGroups, routeBlocks } from "../db/schema/index.js";
 import { AppError } from "../middleware/error-handler.js";
 import { adminAuth, signAdminToken } from "../middleware/admin.js";
+import { deleteSessionsByEventId } from "../redis/index.js";
 import { createLogger } from "../lib/logger.js";
 
 const log = createLogger("admin");
@@ -278,7 +279,6 @@ adminRoutes.get("/admin/events/:id", adminAuth, async (c) => {
       id: p.id,
       event_id: p.event_id,
       display_name: p.display_name,
-      token: p.token,
       is_lead: p.is_lead,
       is_active: p.is_active,
       joined_at: p.joined_at.toISOString(),
@@ -368,6 +368,11 @@ adminRoutes.post("/admin/events/:id/refund", adminAuth, async (c) => {
       if (err.code === "charge_already_refunded") {
         // Stripe says already refunded — sync our status and return success
         await db.update(events).set({ status: "REFUNDED" }).where(eq(events.id, id));
+        try {
+          await deleteSessionsByEventId(id);
+        } catch (err) {
+          log.warn("Failed to invalidate sessions after refund", { event_id: id, err });
+        }
         return c.json({ success: true, status: "REFUNDED" }, 200);
       }
 
@@ -382,6 +387,11 @@ adminRoutes.post("/admin/events/:id/refund", adminAuth, async (c) => {
     .update(events)
     .set({ status: "REFUNDED" })
     .where(eq(events.id, id));
+  try {
+    await deleteSessionsByEventId(id);
+  } catch (err) {
+    log.warn("Failed to invalidate sessions after refund", { event_id: id, err });
+  }
 
   log.info("Event refunded", { event_id: id, stripe_payment_id: event.stripe_payment_id });
 

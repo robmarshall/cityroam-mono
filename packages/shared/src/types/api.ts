@@ -94,7 +94,7 @@ export interface AdminEventDetailResponse {
   event: Event;
   route_name: string | null;
   total_stops: number | null;
-  participants: Participant[];
+  participants: Omit<Participant, "token">[];
   messages: Message[];
   stripe_payment_id: string | null;
 }

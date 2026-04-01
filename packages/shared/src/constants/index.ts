@@ -16,6 +16,7 @@ export const PARTICIPANT_RATE_LIMIT_COUNT = 3; // max messages
 export const PARTICIPANT_RATE_LIMIT_WINDOW_MS = 10 * 1000; // in 10 seconds
 
 // Event lifecycle
+export const TERMINAL_STATUSES = new Set<string>(["COMPLETED", "EXPIRED", "REFUNDED"]);
 export const EVENT_EXPIRY_DAYS = 90;
 export const SESSION_TOKEN_EXPIRY_HOURS = 24;
 

@@ -39,6 +39,7 @@ vi.mock("../redis/index.js", () => ({
   setSession: vi.fn().mockResolvedValue(undefined),
   getSession: vi.fn().mockResolvedValue(null),
   deleteSession: vi.fn().mockResolvedValue(undefined),
+  deleteSessionsByEventId: vi.fn().mockResolvedValue(undefined),
   appendMessage: vi.fn().mockResolvedValue(undefined),
   getMessages: vi.fn().mockResolvedValue([]),
   getMessagesSince: vi.fn().mockResolvedValue([]),
@@ -64,6 +65,7 @@ vi.mock("../redis/session.js", () => ({
   setSession: vi.fn().mockResolvedValue(undefined),
   getSession: vi.fn().mockResolvedValue(null),
   deleteSession: vi.fn().mockResolvedValue(undefined),
+  deleteSessionsByEventId: vi.fn().mockResolvedValue(undefined),
 }));
 
 // ── Mock group-runner ────────────────────────────────────────────────
@@ -87,6 +89,7 @@ import {
   getMessagesSince,
   setSession,
   deleteSession,
+  deleteSessionsByEventId,
   publishControl,
   appendMessage,
   publishMessage,
@@ -117,15 +120,21 @@ function makeSessionData(overrides: Record<string, unknown> = {}) {
  * Reset all db chain mocks to their default chainable behavior.
  */
 function resetDbChainMocks(): void {
-  mockedDb.select.mockImplementation(() => mockedDb);
-  mockedDb.from.mockImplementation(() => mockedDb);
-  mockedDb.where.mockResolvedValue([]); // default: resolve to empty array (safe for destructuring)
-  mockedDb.orderBy.mockImplementation(() => mockedDb);
-  mockedDb.returning.mockResolvedValue([]);
-  mockedDb.set.mockImplementation(() => mockedDb);
-  mockedDb.update.mockImplementation(() => mockedDb);
-  mockedDb.values.mockImplementation(() => mockedDb);
-  mockedDb.insert.mockImplementation(() => mockedDb);
+  mockedDb.select.mockReset().mockImplementation(() => mockedDb);
+  mockedDb.from.mockReset().mockImplementation(() => mockedDb);
+  mockedDb.where.mockReset().mockResolvedValue([]);
+  mockedDb.groupBy.mockReset().mockImplementation(() => mockedDb);
+  mockedDb.orderBy.mockReset().mockImplementation(() => mockedDb);
+  mockedDb.limit.mockReset().mockImplementation(() => mockedDb);
+  mockedDb.offset.mockReset().mockImplementation(() => mockedDb);
+  mockedDb.returning.mockReset().mockResolvedValue([]);
+  mockedDb.set.mockReset().mockImplementation(() => mockedDb);
+  mockedDb.update.mockReset().mockImplementation(() => mockedDb);
+  mockedDb.values.mockReset().mockImplementation(() => mockedDb);
+  mockedDb.insert.mockReset().mockImplementation(() => mockedDb);
+  mockedDb.delete.mockReset().mockImplementation(() => mockedDb);
+  mockedDb.execute.mockReset().mockResolvedValue([{ "?column?": 1 }]);
+  mockedDb.transaction.mockReset().mockImplementation((fn: any) => fn(mockedDb));
 }
 
 // =====================================================================
@@ -237,6 +246,9 @@ describe("GET /event/:code", () => {
     expect(body.event.status).toBe("EXPIRED");
     expect(mockedDb.update).toHaveBeenCalled();
     expect(mockedDb.set).toHaveBeenCalledWith({ status: "EXPIRED" });
+
+    // Sessions invalidated after lazy expiry
+    expect(deleteSessionsByEventId).toHaveBeenCalledWith(event.id);
   });
 });
 

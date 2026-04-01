@@ -6,6 +6,7 @@ export {
   setSession,
   getSession,
   deleteSession,
+  deleteSessionsByEventId,
   type SessionData,
 } from "./session.js";
 

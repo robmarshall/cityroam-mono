@@ -49,6 +49,7 @@ vi.mock("../../redis/index.js", () => ({
   removeMessage: vi.fn().mockResolvedValue(undefined),
   checkGuideRateLimit: vi.fn().mockResolvedValue({ allowed: true, current: 1, limit: 1 }),
   checkParticipantRateLimit: vi.fn().mockResolvedValue({ allowed: true, current: 1, limit: 10 }),
+  deleteSessionsByEventId: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("../../services/pipeline/guide-response-cap.js", () => ({
@@ -62,6 +63,7 @@ import {
   appendMessage,
   publishMessage,
   publishControl,
+  deleteSessionsByEventId,
 } from "../../redis/index.js";
 import { handleGameCompletion } from "../../services/pipeline/handlers/game-completion.js";
 import {
@@ -146,6 +148,9 @@ describe("handleGameCompletion", () => {
       type: "game_complete",
       data: { summary: expect.stringContaining("Portland") },
     });
+
+    // Sessions invalidated for completed event
+    expect(deleteSessionsByEventId).toHaveBeenCalledWith("event-1");
   });
 
   it("uses sender_type system, not guide", async () => {

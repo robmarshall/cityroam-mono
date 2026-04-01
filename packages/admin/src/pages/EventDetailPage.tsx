@@ -4,8 +4,9 @@ import type {
   AdminEventDetailResponse,
   Message,
   SenderType,
-  Participant,
 } from "@cityroam/shared/types";
+
+type EventParticipant = AdminEventDetailResponse["participants"][number];
 import { api, ApiError } from "../lib/api";
 import { useAuthFetch } from "../contexts/AuthContext";
 import { STATUS_LABELS, STATUS_COLORS, formatDate, formatTime } from "../lib/event-utils";
@@ -417,20 +418,20 @@ export default function EventDetailPage() {
         <InfoCard label="Expires" value={formatDate(event.expires_at)} />
       </div>
 
-      {/* Participants */}
+      {/* EventParticipants */}
       <div className="mb-8">
         <h2 className="mb-4 text-lg font-semibold text-gray-900">
-          Participants ({participants.length})
+          EventParticipants ({participants.length})
         </h2>
 
         {participants.length === 0 ? (
           <p className="text-sm text-gray-500">No participants yet.</p>
         ) : (
           <>
-            {/* Participant Summary */}
-            <ParticipantSummary participants={participants} />
+            {/* EventParticipant Summary */}
+            <EventParticipantSummary participants={participants} />
 
-            {/* Participants Table */}
+            {/* EventParticipants Table */}
             <div className="overflow-hidden rounded-lg border border-gray-200">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -453,7 +454,7 @@ export default function EventDetailPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
-                  {participants.map((p: Participant) => (
+                  {participants.map((p: EventParticipant) => (
                     <tr key={p.id}>
                       <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900">
                         {p.display_name}
@@ -466,7 +467,7 @@ export default function EventDetailPage() {
                         )}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3">
-                        <ParticipantStatusBadge participant={p} />
+                        <EventParticipantStatusBadge participant={p} />
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-500">
                         {formatDate(p.joined_at)}
@@ -491,7 +492,7 @@ export default function EventDetailPage() {
   );
 }
 
-function ParticipantSummary({ participants }: { participants: Participant[] }) {
+function EventParticipantSummary({ participants }: { participants: EventParticipant[] }) {
   const total = participants.length;
   const active = participants.filter((p) => p.is_active).length;
   const left = participants.filter((p) => p.left_at != null).length;
@@ -530,7 +531,7 @@ function ParticipantSummary({ participants }: { participants: Participant[] }) {
   );
 }
 
-function ParticipantStatusBadge({ participant: p }: { participant: Participant }) {
+function EventParticipantStatusBadge({ participant: p }: { participant: EventParticipant }) {
   if (p.left_at != null) {
     const reason =
       p.left_reason === "voluntary"
@@ -587,10 +588,10 @@ function MessageLog({
   participants,
 }: {
   messages: Message[];
-  participants: Participant[];
+  participants: EventParticipant[];
 }) {
   const [senderTypeFilter, setSenderTypeFilter] = useState<SenderType | "all">("all");
-  const [participantFilter, setParticipantFilter] = useState<string>("all");
+  const [participantFilter, setEventParticipantFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
@@ -682,11 +683,11 @@ function MessageLog({
               ))}
             </div>
 
-            {/* Participant name filter */}
+            {/* EventParticipant name filter */}
             {participantNames.length > 0 && (
               <select
                 value={participantFilter}
-                onChange={(e) => setParticipantFilter(e.target.value)}
+                onChange={(e) => setEventParticipantFilter(e.target.value)}
                 className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-700"
               >
                 <option value="all">All participants</option>
@@ -712,7 +713,7 @@ function MessageLog({
               <button
                 onClick={() => {
                   setSenderTypeFilter("all");
-                  setParticipantFilter("all");
+                  setEventParticipantFilter("all");
                   setSearchQuery("");
                 }}
                 className="text-xs text-blue-600 hover:text-blue-800"
