@@ -56,11 +56,11 @@ Refactor the route model from a flat list of stops into a composable **group + b
 
 ## Phase 5: Game Engine — Pipeline Updates
 
-- [ ] **5.1 Orchestrator** — Update `orchestrator.ts` to load current question block (via `current_block_id`) instead of current stop. Extract clue, accepted_answers, hints from `block.config`.
-- [ ] **5.2 Answer attempt handler** — Update `answer-attempt.ts`: load question block config instead of stop data. On correct answer, call `advanceAfterBlock()` instead of manually sending fun fact + directions + next clue.
-- [ ] **5.3 Hint request handler** — Update `hint-request.ts`: load hints from question block config. Use `sendSequence()` for multi-message hints. On exhaustion, call `advanceAfterBlock()`.
-- [ ] **5.4 Game completion** — Update `game-completion.ts`: triggered by group-runner when last group's last block completes.
-- [ ] **5.5 Event start handler** — Rewrite `POST /event/:code/start` in `events.ts`: set event to IN_PROGRESS, set `current_group_id` to first group, fire `runGroup()` async, return 200.
+- [x] **5.1 Orchestrator** — Update `orchestrator.ts` to load current question block (via `current_block_id`) instead of current stop. Extract clue, accepted_answers, hints from `block.config`.
+- [x] **5.2 Answer attempt handler** — Update `answer-attempt.ts`: load question block config instead of stop data. On correct answer, call `advanceAfterBlock()` instead of manually sending fun fact + directions + next clue.
+- [x] **5.3 Hint request handler** — Update `hint-request.ts`: load hints from question block config. Use `sendSequence()` for multi-message hints. On exhaustion, call `advanceAfterBlock()`.
+- [x] **5.4 Game completion** — Update `game-completion.ts`: triggered by group-runner when last group's last block completes.
+- [x] **5.5 Event start handler** — Rewrite `POST /event/:code/start` in `events.ts`: set event to IN_PROGRESS, set `current_group_id` to first group, fire `runGroup()` async, return 200.
 
 ## Phase 6: WebSocket — Action Block Support
 
