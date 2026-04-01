@@ -1,7 +1,7 @@
 import type { MiddlewareHandler } from "hono";
 import { getCookie, setCookie, deleteCookie } from "hono/cookie";
 import { eq } from "drizzle-orm";
-import { SESSION_TOKEN_EXPIRY_HOURS } from "@cityroam/shared/constants";
+import { SESSION_TOKEN_EXPIRY_HOURS, TERMINAL_STATUSES } from "@cityroam/shared/constants";
 import { env } from "../env.js";
 import { db } from "../db/index.js";
 import { events, participants } from "../db/schema/index.js";
@@ -83,13 +83,17 @@ export async function resolveSession(c: any): Promise<SessionContext | null> {
 
   if (!participant || !participant.is_active) return null;
 
-  // Get event code for the session
+  // Get event code and status for the session
   const event = await db.query.events.findFirst({
     where: eq(events.id, participant.event_id),
-    columns: { code: true },
+    columns: { code: true, status: true },
   });
 
-  const eventCode = event?.code ?? "";
+  if (!event) return null;
+
+  if (TERMINAL_STATUSES.has(event.status)) return null;
+
+  const eventCode = event.code;
 
   // Re-populate Redis session store
   await setSession(token, {

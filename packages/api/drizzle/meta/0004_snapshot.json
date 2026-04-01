@@ -1,5 +1,5 @@
 {
-  "id": "e40a0d1e-a715-49a7-af9e-c163e1de02e7",
+  "id": "4af4733a-dba2-4327-93e0-dff1f494ce6d",
   "prevId": "63ed8347-45fc-4594-b9d7-4f5c29de3d4f",
   "version": "7",
   "dialect": "postgresql",
@@ -64,6 +64,18 @@
           "primaryKey": false,
           "notNull": true,
           "default": 0
+        },
+        "current_group_id": {
+          "name": "current_group_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "current_block_id": {
+          "name": "current_block_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
         },
         "hints_given": {
           "name": "hints_given",
@@ -164,6 +176,32 @@
           "tableTo": "routes",
           "columnsFrom": [
             "route_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "events_current_group_id_route_groups_id_fk": {
+          "name": "events_current_group_id_route_groups_id_fk",
+          "tableFrom": "events",
+          "tableTo": "route_groups",
+          "columnsFrom": [
+            "current_group_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "events_current_block_id_route_blocks_id_fk": {
+          "name": "events_current_block_id_route_blocks_id_fk",
+          "tableFrom": "events",
+          "tableTo": "route_blocks",
+          "columnsFrom": [
+            "current_block_id"
           ],
           "columnsTo": [
             "id"
@@ -388,142 +426,6 @@
       },
       "isRLSEnabled": false
     },
-    "public.opening_sequence_items": {
-      "name": "opening_sequence_items",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "sequence_id": {
-          "name": "sequence_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "sort_order": {
-          "name": "sort_order",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "content": {
-          "name": "content",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "image_url": {
-          "name": "image_url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "delay_ms": {
-          "name": "delay_ms",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "opening_sequence_items_sequence_id_idx": {
-          "name": "opening_sequence_items_sequence_id_idx",
-          "columns": [
-            {
-              "expression": "sequence_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "opening_sequence_items_sequence_id_opening_sequences_id_fk": {
-          "name": "opening_sequence_items_sequence_id_opening_sequences_id_fk",
-          "tableFrom": "opening_sequence_items",
-          "tableTo": "opening_sequences",
-          "columnsFrom": [
-            "sequence_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.opening_sequences": {
-      "name": "opening_sequences",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "name": {
-          "name": "name",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "is_active": {
-          "name": "is_active",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.participants": {
       "name": "participants",
       "schema": "",
@@ -658,6 +560,181 @@
           "value": "\"participants\".\"left_reason\" IS NULL OR \"participants\".\"left_reason\" IN ('voluntary', 'timeout')"
         }
       },
+      "isRLSEnabled": false
+    },
+    "public.route_blocks": {
+      "name": "route_blocks",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "group_id": {
+          "name": "group_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "config": {
+          "name": "config",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "delay_ms": {
+          "name": "delay_ms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "route_blocks_group_id_idx": {
+          "name": "route_blocks_group_id_idx",
+          "columns": [
+            {
+              "expression": "group_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "route_blocks_group_id_route_groups_id_fk": {
+          "name": "route_blocks_group_id_route_groups_id_fk",
+          "tableFrom": "route_blocks",
+          "tableTo": "route_groups",
+          "columnsFrom": [
+            "group_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "route_blocks_type_check": {
+          "name": "route_blocks_type_check",
+          "value": "\"route_blocks\".\"type\" IN ('message', 'image', 'question', 'action', 'map')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.route_groups": {
+      "name": "route_groups",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "route_id": {
+          "name": "route_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "route_groups_route_id_idx": {
+          "name": "route_groups_route_id_idx",
+          "columns": [
+            {
+              "expression": "route_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "route_groups_route_id_routes_id_fk": {
+          "name": "route_groups_route_id_routes_id_fk",
+          "tableFrom": "route_groups",
+          "tableTo": "routes",
+          "columnsFrom": [
+            "route_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "public.routes": {

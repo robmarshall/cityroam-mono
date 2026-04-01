@@ -4,7 +4,7 @@ import type {
   ParticipantLeftReason,
   SenderType,
 } from "./enums.js";
-import type { SequenceItem } from "./sequence.js";
+import type { BlockType, BlockConfig } from "./blocks.js";
 
 export interface Event {
   id: string;
@@ -65,21 +65,23 @@ export interface Route {
   updated_at: string;
 }
 
-export interface Stop {
+export interface RouteGroup {
   id: string;
   route_id: string;
-  stop_number: number;
+  position: number;
   name: string;
-  directions_from_previous: string;
-  clue: string;
-  accepted_answers: string[];
-  hints: SequenceItem[][];
-  correct_response: string;
-  fun_fact: string;
-  images: string[];
-  google_maps_link: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface RouteBlock {
+  id: string;
+  group_id: string;
+  position: number;
+  type: BlockType;
+  config: BlockConfig;
+  delay_ms: number;
+  created_at: string;
 }
 
 export interface MessageBank {

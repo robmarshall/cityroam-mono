@@ -10,9 +10,20 @@ export type {
   Participant,
   Message,
   Route,
-  Stop,
   MessageBank,
+  RouteGroup,
+  RouteBlock,
 } from "./entities.js";
+
+export type {
+  BlockType,
+  BlockConfig,
+  MessageBlockConfig,
+  ImageBlockConfig,
+  QuestionBlockConfig,
+  ActionBlockConfig,
+  MapBlockConfig,
+} from "./blocks.js";
 
 export type {
   WebSocketMessage,
@@ -31,6 +42,8 @@ export type {
   MessageDroppedPayload,
   PongPayload,
   ErrorPayload,
+  ActionConfirmPayload,
+  ActionWaitingPayload,
 } from "./websocket.js";
 
 export type {
@@ -44,13 +57,9 @@ export type {
   AdminEventDetailResponse,
   AdminRouteDetailResponse,
   AdminRouteListResponse,
-  AdminStopReorderResponse,
   AdminCreateEventResponse,
   AdminMessageBankListResponse,
-  AdminOpeningSequenceItem,
-  AdminOpeningSequence,
-  AdminOpeningSequenceListResponse,
-  AdminOpeningSequenceDetailResponse,
+  AdminRouteGroupResponse,
 } from "./api.js";
 
 export type { ApiErrorResponse, ApiErrorCode } from "./api-errors.js";

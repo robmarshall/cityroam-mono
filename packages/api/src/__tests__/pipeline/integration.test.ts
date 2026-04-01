@@ -33,8 +33,8 @@ vi.mock("../../db/index.js", () => {
     query: {
       events: { findFirst: vi.fn() },
       participants: { findFirst: vi.fn() },
-      stops: { findFirst: vi.fn() },
       routes: { findFirst: vi.fn() },
+      routeBlocks: { findFirst: vi.fn() },
       messageBanks: { findFirst: vi.fn() },
     },
     select: vi.fn(() => mockDb),
@@ -59,9 +59,9 @@ vi.mock("../../db/index.js", () => {
     },
     messages: { id: "messages.id" },
     routes: { id: "routes.id" },
-    stops: {
-      route_id: "stops.route_id",
-      stop_number: "stops.stop_number",
+    routeBlocks: {
+      id: "route_blocks.id",
+      group_id: "route_blocks.group_id",
     },
     messageBanks: {
       content: "mb.content",
@@ -106,10 +106,29 @@ vi.mock("../../services/llm/deepseek.js", () => {
   return { DeepSeekService: MockDeepSeekService };
 });
 
+// ── Mock group-runner ──────────────────────────────────────────────
+vi.mock("../../services/group-runner.js", () => ({
+  advanceAfterBlock: vi.fn().mockResolvedValue(undefined),
+  runGroup: vi.fn().mockResolvedValue(undefined),
+}));
+
+// ── Mock send-sequence ─────────────────────────────────────────────
+vi.mock("../../services/send-sequence.js", () => ({
+  sendSequence: vi.fn().mockResolvedValue(undefined),
+}));
+
+// ── Mock template-vars ─────────────────────────────────────────────
+vi.mock("../../services/template-vars.js", () => ({
+  buildRouteTemplateVars: vi.fn().mockResolvedValue({}),
+  applyTemplateVars: vi.fn((content: string) => content),
+}));
+
 // ── Imports (AFTER mocks) ────────────────────────────────────────────
 import { processIncomingMessage } from "../../services/pipeline/orchestrator.js";
 import { db } from "../../db/index.js";
 import { redis } from "../../redis/client.js";
+import { advanceAfterBlock } from "../../services/group-runner.js";
+import { sendSequence } from "../../services/send-sequence.js";
 import type { IncomingMessagePayload } from "@cityroam/shared/types";
 
 // Cast db to any for mock access
@@ -134,53 +153,33 @@ function makePayload(text: string): IncomingMessagePayload {
   };
 }
 
+const BLOCK_ID = "block-integration-1";
+const GROUP_ID = "group-integration-1";
+
 const eventRow = {
   id: EVENT_ID,
   status: "IN_PROGRESS",
   route_id: ROUTE_ID,
   current_stop: 1,
+  current_block_id: BLOCK_ID,
+  current_group_id: GROUP_ID,
   hints_given: 0,
   wrong_attempts: 0,
   guide_response_count: 5,
 };
 
-const stopData = {
-  id: "stop-1",
-  route_id: ROUTE_ID,
-  stop_number: 1,
-  name: "Town Hall",
-  directions_from_previous: "Walk along the main street",
-  clue: "Find the building with large columns and a clock tower",
-  accepted_answers: ["town hall", "the town hall", "leeds town hall"],
-  hints: [
-    [{ content: "It has columns", image_url: null, delay_ms: 0 }],
-    [{ content: "Look for the clock tower", image_url: null, delay_ms: 0 }],
-  ],
-  correct_response: "Well done!",
-  fun_fact: "Built in 1858 and designed by Cuthbert Brodrick",
-  images: [],
-  google_maps_link: "https://maps.google.com/test",
-  created_at: new Date(),
-  updated_at: new Date(),
-};
-
-const nextStopData = {
-  id: "stop-2",
-  route_id: ROUTE_ID,
-  stop_number: 2,
-  name: "Corn Exchange",
-  directions_from_previous: "Head east down the street",
-  clue: "Look for the distinctive oval-shaped building",
-  accepted_answers: ["corn exchange", "the corn exchange"],
-  hints: [
-    [{ content: "It was designed for trading grain", image_url: null, delay_ms: 0 }],
-  ],
-  correct_response: "Excellent!",
-  fun_fact: "Built in 1863, also designed by Cuthbert Brodrick",
-  images: ["corn-exchange.jpg"],
-  google_maps_link: "https://maps.google.com/test2",
-  created_at: new Date(),
-  updated_at: new Date(),
+const questionBlockData = {
+  id: BLOCK_ID,
+  type: "question",
+  config: {
+    type: "question",
+    clue: "Find the building with large columns and a clock tower",
+    accepted_answers: ["town hall", "the town hall", "leeds town hall"],
+    hints: [
+      [{ content: "It has columns", image_url: null, delay_ms: 0 }],
+      [{ content: "Look for the clock tower", image_url: null, delay_ms: 0 }],
+    ],
+  },
 };
 
 // ── Test suite ───────────────────────────────────────────────────────
@@ -223,8 +222,8 @@ describe("End-to-end message lifecycle integration", () => {
     // Default: event exists and is IN_PROGRESS
     mockDb.query.events.findFirst.mockResolvedValue(eventRow);
 
-    // Default: stop data available
-    mockDb.query.stops.findFirst.mockResolvedValue(stopData);
+    // Default: question block data available
+    mockDb.query.routeBlocks.findFirst.mockResolvedValue(questionBlockData);
 
     // Default: message bank returns a message
     // The select→from→where chain returns an array for getRandomMessageBank
@@ -275,7 +274,7 @@ describe("End-to-end message lifecycle integration", () => {
             participant_id: null,
             content: `guide content ${callCount}`,
             image_url: null,
-            step_number: callCount <= 3 ? 1 : 2,
+            step_number: 1,
             created_at: new Date(),
           },
         ]);
@@ -286,12 +285,9 @@ describe("End-to-end message lifecycle integration", () => {
         .mockResolvedValueOnce({ type: "answer-attempt" })
         .mockResolvedValueOnce({ type: "answer-correct" });
 
-      // Stop query: first call = classifier needs clue, second = answer handler loads stop,
-      // third = next stop lookup
-      mockDb.query.stops.findFirst
-        .mockResolvedValueOnce({ clue: stopData.clue }) // for classifier
-        .mockResolvedValueOnce(stopData) // for answer handler (current stop)
-        .mockResolvedValueOnce(nextStopData); // next stop lookup
+      // routeBlocks.findFirst: orchestrator Step 8 (classification context) + answer handler
+      mockDb.query.routeBlocks.findFirst
+        .mockResolvedValue(questionBlockData);
 
       // Message bank for success message
       mockDb.where.mockImplementation(() => {
@@ -299,7 +295,6 @@ describe("End-to-end message lifecycle integration", () => {
       });
 
       // events.findFirst is called multiple times (orchestrator, cap check, post-handler)
-      // Use persistent default instead of Once values
       mockDb.query.events.findFirst.mockResolvedValue(eventRow);
     });
 
@@ -374,7 +369,7 @@ describe("End-to-end message lifecycle integration", () => {
       expect(mockClassify.mock.calls[1][0]).toContain("town hall");
     });
 
-    it("writes multiple guide messages for correct answer flow", async () => {
+    it("writes success guide message for correct answer", async () => {
       await processIncomingMessage(makePayload("town hall"));
 
       // Count guide message inserts (DB inserts with sender_type guide)
@@ -383,9 +378,8 @@ describe("End-to-end message lifecycle integration", () => {
         (c: any[]) => c[0]?.sender_type === "guide",
       );
 
-      // Correct answer produces: success message + fun fact + directions/clue for next stop
-      // + image for next stop (corn-exchange.jpg)
-      expect(guideInserts.length).toBeGreaterThanOrEqual(3);
+      // Correct answer produces: success message (advanceAfterBlock handles the rest)
+      expect(guideInserts.length).toBeGreaterThanOrEqual(1);
     });
 
     it("broadcasts guide messages to Redis for WS delivery", async () => {
@@ -396,18 +390,19 @@ describe("End-to-end message lifecycle integration", () => {
         (c: any[]) => c[0] === `event:${EVENT_CODE}:messages`,
       );
 
-      // User message + multiple guide messages all broadcast
-      expect(messageCalls.length).toBeGreaterThanOrEqual(4); // 1 user + 3+ guide
+      // User message + success guide message broadcast
+      expect(messageCalls.length).toBeGreaterThanOrEqual(2); // 1 user + 1+ guide
     });
 
-    it("advances to next stop after correct answer", async () => {
+    it("calls advanceAfterBlock after correct answer", async () => {
       await processIncomingMessage(makePayload("town hall"));
 
-      // Event updated: current_stop incremented, counters reset
-      expect(mockDb.update).toHaveBeenCalled();
+      // advanceAfterBlock called to continue the route
+      expect(advanceAfterBlock).toHaveBeenCalledWith(EVENT_ID, EVENT_CODE, BLOCK_ID);
+
+      // Counters reset
       expect(mockDb.set).toHaveBeenCalledWith(
         expect.objectContaining({
-          current_stop: 2,
           hints_given: 0,
           wrong_attempts: 0,
         }),
@@ -455,9 +450,9 @@ describe("End-to-end message lifecycle integration", () => {
         .mockResolvedValueOnce({ type: "answer-attempt" })
         .mockResolvedValueOnce({ type: "answer-incorrect" });
 
-      mockDb.query.stops.findFirst
-        .mockResolvedValueOnce({ clue: stopData.clue })
-        .mockResolvedValueOnce(stopData);
+      // routeBlocks for orchestrator classification + answer handler
+      mockDb.query.routeBlocks.findFirst
+        .mockResolvedValue(questionBlockData);
 
       mockDb.query.events.findFirst.mockResolvedValue(eventRow);
     });
@@ -573,7 +568,7 @@ describe("End-to-end message lifecycle integration", () => {
 
       mockDb.query.events.findFirst.mockResolvedValue(eventRow);
 
-      mockDb.query.stops.findFirst.mockResolvedValue({ clue: stopData.clue });
+      mockDb.query.routeBlocks.findFirst.mockResolvedValue(questionBlockData);
     });
 
     it("falls back to clarification handler when LLM returns null", async () => {
@@ -616,7 +611,7 @@ describe("End-to-end message lifecycle integration", () => {
 
       mockDb.query.events.findFirst.mockResolvedValue(eventRow);
 
-      mockDb.query.stops.findFirst.mockResolvedValue({ clue: stopData.clue });
+      mockDb.query.routeBlocks.findFirst.mockResolvedValue(questionBlockData);
     });
 
     it("stores user message but does NOT send guide response", async () => {
@@ -668,7 +663,7 @@ describe("End-to-end message lifecycle integration", () => {
 
       mockDb.query.events.findFirst.mockResolvedValue(eventRow);
 
-      mockDb.query.stops.findFirst.mockResolvedValue({ clue: stopData.clue });
+      mockDb.query.routeBlocks.findFirst.mockResolvedValue(questionBlockData);
 
       // lrange returns the cached user message so removeMessage can find it
       (redis.lrange as any).mockResolvedValue([
@@ -808,7 +803,7 @@ describe("End-to-end message lifecycle integration", () => {
             sender_type: "guide",
             sender_name: "Guide",
             participant_id: null,
-            content: stopData.hints[0],
+            content: "hint content",
             image_url: null,
             step_number: 1,
             created_at: new Date(),
@@ -818,22 +813,24 @@ describe("End-to-end message lifecycle integration", () => {
 
       mockClassify.mockResolvedValue({ type: "hint-request" });
 
-      mockDb.query.stops.findFirst
-        .mockResolvedValueOnce({ clue: stopData.clue }) // for classifier
-        .mockResolvedValueOnce(stopData); // for hint handler
+      // routeBlocks for orchestrator classification + hint handler
+      mockDb.query.routeBlocks.findFirst
+        .mockResolvedValue(questionBlockData);
 
       mockDb.query.events.findFirst.mockResolvedValue(eventRow);
     });
 
-    it("serves hint from stop data and increments hints_given", async () => {
+    it("serves hint via sendSequence and increments hints_given", async () => {
       await processIncomingMessage(makePayload("can I get a hint?"));
 
-      // Hint handler writes a guide message
-      const valuesCalls = mockDb.values.mock.calls;
-      const guideInserts = valuesCalls.filter(
-        (c: any[]) => c[0]?.sender_type === "guide",
+      // sendSequence called with first hint sequence
+      expect(sendSequence).toHaveBeenCalledWith(
+        EVENT_ID,
+        EVENT_CODE,
+        1,
+        questionBlockData.config.hints[0],
+        expect.any(Object),
       );
-      expect(guideInserts.length).toBeGreaterThanOrEqual(1);
 
       // hints_given incremented on event
       expect(mockDb.set).toHaveBeenCalledWith(
@@ -886,9 +883,9 @@ describe("End-to-end message lifecycle integration", () => {
           response: "Head towards the columns!",
         });
 
-      mockDb.query.stops.findFirst
-        .mockResolvedValueOnce({ clue: stopData.clue })
-        .mockResolvedValueOnce(stopData);
+      // routeBlocks for orchestrator classification + question handler
+      mockDb.query.routeBlocks.findFirst
+        .mockResolvedValue(questionBlockData);
 
       // Question handler also needs route data
       mockDb.query.routes.findFirst.mockResolvedValue({
@@ -948,9 +945,8 @@ describe("End-to-end message lifecycle integration", () => {
         .mockResolvedValueOnce({ type: "answer-attempt" })
         .mockResolvedValueOnce({ type: "answer-incorrect" });
 
-      mockDb.query.stops.findFirst
-        .mockResolvedValueOnce({ clue: stopData.clue })
-        .mockResolvedValueOnce(stopData);
+      mockDb.query.routeBlocks.findFirst
+        .mockResolvedValue(questionBlockData);
 
       mockDb.query.events.findFirst.mockResolvedValue(eventRow);
     });
@@ -1067,16 +1063,16 @@ describe("End-to-end message lifecycle integration", () => {
         ]);
       });
 
-      mockDb.query.stops.findFirst.mockResolvedValue({ clue: stopData.clue });
+      mockDb.query.routeBlocks.findFirst.mockResolvedValue(questionBlockData);
 
       // Classification succeeds but handler throws
       mockClassify.mockResolvedValue({ type: "answer-attempt" });
     });
 
     it("turns off guide typing even when handler throws", async () => {
-      // Make stops query fail during handler (second call)
-      mockDb.query.stops.findFirst
-        .mockResolvedValueOnce({ clue: stopData.clue }) // classifier
+      // Make routeBlocks query fail during handler (second call)
+      mockDb.query.routeBlocks.findFirst
+        .mockResolvedValueOnce(questionBlockData) // orchestrator classification
         .mockRejectedValueOnce(new Error("DB connection lost")); // handler
 
       await expect(

@@ -7,16 +7,24 @@ export {
 export {
   adminLoginSchema,
   routeSchema,
-  stopSchema,
   imageUploadSchema,
   imageUploadRequestSchema,
   adminUpdateEventStatusSchema,
   adminCreateEventSchema,
-  stopReorderSchema,
-  bulkRouteCreateSchema,
   messageBankSchema,
   sequenceItemSchema,
-  openingSequenceSchema,
+  messageBlockConfigSchema,
+  imageBlockConfigSchema,
+  questionBlockConfigSchema,
+  actionBlockConfigSchema,
+  mapBlockConfigSchema,
+  blockConfigSchema,
+  routeBlockSchema,
+  routeGroupSchema,
+  groupUpdateSchema,
+  bulkRouteGroupCreateSchema,
+  groupReorderSchema,
+  blockReorderSchema,
 } from "./admin-input.js";
 
 export {

@@ -32,6 +32,7 @@ import type {
   NameChangedPayload,
   MessageHistoryResponse,
   MessageDroppedPayload,
+  ActionWaitingPayload,
 } from "@cityroam/shared/types";
 import { api, ApiError } from "../lib/api";
 import { trackEvent } from "../lib/analytics";
@@ -62,7 +63,7 @@ export default function ChatPage() {
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
   const { participant, token, setParticipant, clearParticipant } = useParticipant();
-  const { event, clearEvent } = useEvent();
+  const { event, participants, clearEvent } = useEvent();
   const {
     status: wsStatus,
     closeCode,
@@ -85,6 +86,7 @@ export default function ChatPage() {
   const [errorToast, setErrorToast] = useState<string | null>(null);
   const [guideTyping, setGuideTyping] = useState(false);
   const [participantsTyping, setParticipantsTyping] = useState<Map<string, number>>(new Map());
+  const [pendingAction, setPendingAction] = useState<{ block_id: string; label: string } | null>(null);
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [showNameDialog, setShowNameDialog] = useState(false);
@@ -139,7 +141,11 @@ export default function ChatPage() {
           if (prev.length > 0) return prev; // Don't overwrite if messages already loaded
           return response.messages;
         });
-      } catch {
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 410) {
+          navigate(`/event/${code}`, { replace: true });
+          return;
+        }
         // Non-fatal — messages will arrive via WebSocket
       }
     }
@@ -193,6 +199,10 @@ export default function ChatPage() {
             if (prev.some((m) => m.id === payload.id)) return prev;
             return [...prev, payload];
           });
+
+          if (payload.sender_type === "guide") {
+            setPendingAction(null);
+          }
 
           if (isUserScrolledUpRef.current) {
             setHasNewMessages(true);
@@ -281,6 +291,11 @@ export default function ChatPage() {
             }
             return next;
           });
+          break;
+        }
+        case "action_waiting": {
+          const payload = msg.payload as ActionWaitingPayload;
+          setPendingAction({ block_id: payload.block_id, label: payload.label });
           break;
         }
         case "error": {
@@ -404,6 +419,13 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     setHasNewMessages(false);
   };
+
+  // Confirm action block
+  const handleActionConfirm = useCallback(() => {
+    if (!pendingAction) return;
+    send({ type: "action_confirm", payload: { block_id: pendingAction.block_id } });
+    setPendingAction(null);
+  }, [pendingAction, send]);
 
   // Leave game
   const handleLeave = useCallback(async () => {
@@ -594,6 +616,28 @@ export default function ChatPage() {
             {participantsTyping.size === 1
               ? `${[...participantsTyping.keys()][0]} is typing...`
               : "Multiple people are typing..."}
+          </div>
+        )}
+
+        {pendingAction && (
+          <div className="mb-chat-gap flex justify-start">
+            <div className="max-w-[75%]">
+              {participant.is_lead ? (
+                <button
+                  onClick={handleActionConfirm}
+                  className="flex items-center gap-2 rounded-2xl bg-brand-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-700 active:bg-brand-800"
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  {pendingAction.label}
+                </button>
+              ) : (
+                <div className="rounded-2xl rounded-bl-sm bg-bubble-guide px-4 py-2.5 text-sm text-gray-500 italic">
+                  Waiting for {participants.find(p => p.is_lead)?.display_name ?? "the lead"}...
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -853,6 +897,8 @@ function GuideBubble({
   showLabel: boolean;
   onImageClick: (url: string) => void;
 }) {
+  const isMap = message.block_type === "map";
+
   return (
     <div className="mb-chat-gap flex justify-start">
       <div className="max-w-[75%]">
@@ -864,10 +910,34 @@ function GuideBubble({
             <span>Guide</span>
           </div>
         )}
-        <div className="rounded-2xl rounded-bl-sm bg-bubble-guide px-3 py-2 text-gray-900">
-          <p className="whitespace-pre-wrap break-words"><Linkify text={message.content} /></p>
-          <MessageImage url={message.image_url} onClick={onImageClick} />
-        </div>
+        {isMap ? (
+          <a
+            href={message.content}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 rounded-2xl rounded-bl-sm bg-bubble-guide px-4 py-3 text-gray-900 transition-colors hover:bg-gray-200"
+          >
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-600">
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+              </svg>
+            </div>
+            <div className="min-w-0">
+              <span className="text-sm font-medium">View on Google Maps</span>
+              <span className="block truncate text-xs text-gray-500">{message.content}</span>
+            </div>
+            <svg className="h-4 w-4 shrink-0 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              <polyline points="15 3 21 3 21 9" />
+              <line x1="10" y1="14" x2="21" y2="3" />
+            </svg>
+          </a>
+        ) : (
+          <div className="rounded-2xl rounded-bl-sm bg-bubble-guide px-3 py-2 text-gray-900">
+            <p className="whitespace-pre-wrap break-words"><Linkify text={message.content} /></p>
+            <MessageImage url={message.image_url} onClick={onImageClick} />
+          </div>
+        )}
       </div>
     </div>
   );

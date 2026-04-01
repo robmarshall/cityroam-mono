@@ -12,28 +12,27 @@ import {
   eventCodeSchema,
   changeNameRequestSchema,
 } from "@cityroam/shared/validation";
-import { MAX_PARTICIPANTS } from "@cityroam/shared/constants";
+import { MAX_PARTICIPANTS, TERMINAL_STATUSES } from "@cityroam/shared/constants";
 import { db } from "../db/index.js";
 import {
   events,
   participants,
   messages,
-  stops,
   routes,
-  openingSequences,
-  openingSequenceItems,
+  routeGroups,
 } from "../db/schema/index.js";
 import {
   setSession,
   getSession,
   deleteSession,
+  deleteSessionsByEventId,
   getMessages,
   getMessagesSince,
   checkJoinRateLimit,
   checkNameChangeRateLimit,
   publishControl,
 } from "../redis/index.js";
-import { sendSequence } from "../services/send-sequence.js";
+import { runGroup } from "../services/group-runner.js";
 import {
   sessionAuth,
   resolveSession,
@@ -64,15 +63,18 @@ eventRoutes.get("/event/:code", async (c) => {
   if (
     event.expires_at &&
     new Date(event.expires_at) < new Date() &&
-    event.status !== "COMPLETED" &&
-    event.status !== "EXPIRED" &&
-    event.status !== "REFUNDED"
+    !TERMINAL_STATUSES.has(event.status)
   ) {
     await db
       .update(events)
       .set({ status: "EXPIRED" })
       .where(eq(events.id, event.id));
     event.status = "EXPIRED";
+    try {
+      await deleteSessionsByEventId(event.id);
+    } catch (err) {
+      // Sessions TTL naturally — don't block the request on Redis failure
+    }
   }
 
   // Optional session resolution
@@ -101,6 +103,8 @@ eventRoutes.get("/event/:code", async (c) => {
 
   const leadParticipant = participantRows.find((p) => p.is_lead && p.is_active);
 
+  const isTerminal = TERMINAL_STATUSES.has(event.status);
+
   const response: EventDetailResponse = {
     event: {
       code: event.code,
@@ -109,9 +113,9 @@ eventRoutes.get("/event/:code", async (c) => {
       started_at: event.started_at ? new Date(event.started_at).toISOString() : null,
       created_at: new Date(event.created_at).toISOString(),
     },
-    participants: participantRows,
-    lead_name: leadParticipant?.display_name ?? null,
-    current_participant: currentParticipant,
+    participants: isTerminal ? [] : participantRows,
+    lead_name: isTerminal ? null : (leadParticipant?.display_name ?? null),
+    current_participant: isTerminal ? null : currentParticipant,
   };
 
   return c.json(response, 200);
@@ -131,74 +135,84 @@ eventRoutes.post("/event/:code/join", async (c) => {
     throw new AppError(429, "Too many join attempts", "RATE_LIMITED");
   }
 
-  // Look up event
-  const event = await db.query.events.findFirst({
-    where: eq(events.code, code),
+  // Transaction for atomic participant creation + lead election
+  const { newParticipant, eventData, isLead } = await db.transaction(async (tx) => {
+    // Lock the event row to serialize concurrent joins
+    await tx.execute(sql`SELECT 1 FROM events WHERE code = ${code} FOR UPDATE`);
+
+    const lockedEvent = await tx.query.events.findFirst({
+      where: eq(events.code, code),
+    });
+
+    if (!lockedEvent) {
+      throw new AppError(404, "Event not found", "EVENT_NOT_FOUND");
+    }
+
+    if (TERMINAL_STATUSES.has(lockedEvent.status)) {
+      const labels: Record<string, string> = {
+        EXPIRED: "Event has expired",
+        COMPLETED: "Event is completed",
+        REFUNDED: "Event has been refunded",
+      };
+      throw new AppError(
+        410,
+        labels[lockedEvent.status] ?? "Event is no longer active",
+        `EVENT_${lockedEvent.status}`,
+      );
+    }
+
+    // Count active participants
+    const [countResult] = await tx
+      .select({ count: sql<number>`count(*)::int` })
+      .from(participants)
+      .where(
+        and(eq(participants.event_id, lockedEvent.id), eq(participants.is_active, true))
+      );
+
+    if (countResult.count >= MAX_PARTICIPANTS) {
+      throw new AppError(403, "Event is full", "EVENT_FULL");
+    }
+
+    // Check if first joiner
+    const [totalResult] = await tx
+      .select({ count: sql<number>`count(*)::int` })
+      .from(participants)
+      .where(eq(participants.event_id, lockedEvent.id));
+
+    const firstJoiner = totalResult.count === 0;
+    const joinToken = crypto.randomUUID();
+
+    // Insert participant
+    const [created] = await tx
+      .insert(participants)
+      .values({
+        event_id: lockedEvent.id,
+        display_name,
+        token: joinToken,
+        is_lead: firstJoiner,
+      })
+      .returning();
+
+    // If lead (first joiner), update event
+    if (firstJoiner) {
+      await tx
+        .update(events)
+        .set({
+          lead_participant_id: created.id,
+          status: "WAITING",
+        })
+        .where(eq(events.id, lockedEvent.id));
+    }
+
+    return { newParticipant: created, eventData: lockedEvent, isLead: firstJoiner };
   });
 
-  if (!event) {
-    throw new AppError(404, "Event not found", "EVENT_NOT_FOUND");
-  }
-
-  if (event.status === "EXPIRED") {
-    throw new AppError(410, "Event has expired", "EVENT_EXPIRED");
-  }
-
-  if (event.status === "COMPLETED") {
-    throw new AppError(410, "Event is completed", "EVENT_COMPLETED");
-  }
-
-  if (event.status === "REFUNDED") {
-    throw new AppError(410, "Event has been refunded", "EVENT_REFUNDED");
-  }
-
-  // Count active participants
-  const [countResult] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(participants)
-    .where(
-      and(eq(participants.event_id, event.id), eq(participants.is_active, true))
-    );
-
-  if (countResult.count >= MAX_PARTICIPANTS) {
-    throw new AppError(403, "Event is full", "EVENT_FULL");
-  }
-
-  // Check if this is the first joiner (any participants at all)
-  const [totalResult] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(participants)
-    .where(eq(participants.event_id, event.id));
-
-  const isLead = totalResult.count === 0;
-  const token = crypto.randomUUID();
-
-  // Insert participant
-  const [newParticipant] = await db
-    .insert(participants)
-    .values({
-      event_id: event.id,
-      display_name,
-      token,
-      is_lead: isLead,
-    })
-    .returning();
-
-  // If lead (first joiner), update event
-  if (isLead) {
-    await db
-      .update(events)
-      .set({
-        lead_participant_id: newParticipant.id,
-        status: "WAITING",
-      })
-      .where(eq(events.id, event.id));
-  }
+  const token = newParticipant.token;
 
   // Store session in Redis
   await setSession(token, {
     participant_id: newParticipant.id,
-    event_id: event.id,
+    event_id: eventData.id,
     event_code: code,
     display_name: newParticipant.display_name,
     is_lead: newParticipant.is_lead,
@@ -219,7 +233,7 @@ eventRoutes.post("/event/:code/join", async (c) => {
       is_active: participants.is_active,
     })
     .from(participants)
-    .where(eq(participants.event_id, event.id));
+    .where(eq(participants.event_id, eventData.id));
 
   const participantCount = participantRows.filter((p) => p.is_active).length;
 
@@ -238,8 +252,8 @@ eventRoutes.post("/event/:code/join", async (c) => {
     token,
     event: {
       code,
-      status: (isLead ? "WAITING" : event.status) as JoinEventResponse["event"]["status"],
-      current_stop: event.current_stop,
+      status: (isLead ? "WAITING" : eventData.status) as JoinEventResponse["event"]["status"],
+      current_stop: eventData.current_stop,
     },
     messages: cachedMessages,
     participants: participantRows,
@@ -264,63 +278,47 @@ eventRoutes.post("/event/:code/start", sessionAuth, async (c) => {
     );
   }
 
-  const event = await db.query.events.findFirst({
-    where: eq(events.code, code),
-  });
+  // Transaction for atomic status check + start
+  const { event, firstGroup } = await db.transaction(async (tx) => {
+    // Lock the event row to prevent concurrent starts
+    await tx.execute(sql`SELECT 1 FROM events WHERE code = ${code} FOR UPDATE`);
 
-  if (!event || event.status !== "WAITING") {
-    throw new AppError(400, "Event cannot be started", "INVALID_INPUT");
-  }
+    const lockedEvent = await tx.query.events.findFirst({
+      where: eq(events.code, code),
+    });
 
-  // Load opening sequence, first stop, and route in parallel
-  const [activeSequences, firstStop, route] = await Promise.all([
-    db
+    if (!lockedEvent || lockedEvent.status !== "WAITING") {
+      throw new AppError(400, "Event cannot be started", "INVALID_INPUT");
+    }
+
+    // Load the first group for the route
+    const group = await tx
       .select()
-      .from(openingSequences)
-      .where(eq(openingSequences.is_active, true)),
-    db.query.stops.findFirst({
-      where: and(
-        eq(stops.route_id, event.route_id),
-        eq(stops.stop_number, 1),
-      ),
-    }),
-    db.query.routes.findFirst({
-      where: eq(routes.id, event.route_id),
-    }),
-  ]);
+      .from(routeGroups)
+      .where(eq(routeGroups.route_id, lockedEvent.route_id))
+      .orderBy(asc(routeGroups.position))
+      .limit(1)
+      .then((rows) => rows[0]);
 
-  if (activeSequences.length === 0) {
-    throw new AppError(500, "No opening sequences available", "INTERNAL_ERROR");
-  }
-  if (!firstStop) {
-    throw new AppError(500, "Route stop not found", "INTERNAL_ERROR");
-  }
-  if (!route) {
-    throw new AppError(500, "Route not found", "INTERNAL_ERROR");
-  }
+    if (!group) {
+      throw new AppError(500, "Route has no groups", "INTERNAL_ERROR");
+    }
 
-  // Pick a random sequence and load its items
-  const chosen = activeSequences[Math.floor(Math.random() * activeSequences.length)];
-  const items = await db
-    .select()
-    .from(openingSequenceItems)
-    .where(eq(openingSequenceItems.sequence_id, chosen.id))
-    .orderBy(asc(openingSequenceItems.sort_order));
+    // Update event to IN_PROGRESS with first group
+    const now = new Date();
+    await tx
+      .update(events)
+      .set({
+        status: "IN_PROGRESS",
+        started_at: now,
+        current_stop: 1,
+        current_group_id: group.id,
+        current_block_id: null,
+      })
+      .where(eq(events.id, lockedEvent.id));
 
-  if (items.length === 0) {
-    throw new AppError(500, "Opening sequence has no items", "INTERNAL_ERROR");
-  }
-
-  // Update event to IN_PROGRESS
-  const now = new Date();
-  await db
-    .update(events)
-    .set({
-      status: "IN_PROGRESS",
-      started_at: now,
-      current_stop: 1,
-    })
-    .where(eq(events.id, event.id));
+    return { event: lockedEvent, firstGroup: group };
+  });
 
   // Publish game started control event
   await publishControl(code, {
@@ -328,22 +326,9 @@ eventRoutes.post("/event/:code/start", sessionAuth, async (c) => {
     data: { started_by: session.display_name },
   });
 
-  // Template variables for opening messages
-  const templateVars: Record<string, string> = {
-    FIRST_STOP_DIRECTIONS: firstStop.directions_from_previous,
-    FIRST_CLUE: firstStop.clue,
-    CITY_NAME: route.city,
-    TOTAL_STOPS: String(route.total_stops),
-  };
-
-  // Fire sequence delivery asynchronously (don't block the HTTP response)
-  const sequenceItems = items.map((item) => ({
-    content: item.content,
-    image_url: item.image_url,
-    delay_ms: item.delay_ms,
-  }));
-  sendSequence(event.id, code, 1, sequenceItems, templateVars).catch(() => {
-    // Errors are logged inside sendSequence
+  // Run the first group asynchronously (don't block the HTTP response)
+  runGroup(event.id, code, firstGroup.id).catch(() => {
+    // Errors are logged inside runGroup
   });
 
   return c.json({ success: true }, 200);
@@ -368,6 +353,10 @@ eventRoutes.post("/event/:code/leave", sessionAuth, async (c) => {
 
   if (!event) {
     throw new AppError(404, "Event not found", "EVENT_NOT_FOUND");
+  }
+
+  if (TERMINAL_STATUSES.has(event.status)) {
+    throw new AppError(410, "Event has ended", "EVENT_COMPLETED");
   }
 
   // Update participant to inactive
@@ -449,6 +438,19 @@ eventRoutes.post("/event/:code/name", sessionAuth, async (c) => {
     throw new AppError(403, "Session does not match event", "UNAUTHORIZED");
   }
 
+  const event = await db.query.events.findFirst({
+    where: eq(events.code, code),
+    columns: { status: true },
+  });
+
+  if (!event) {
+    throw new AppError(404, "Event not found", "EVENT_NOT_FOUND");
+  }
+
+  if (TERMINAL_STATUSES.has(event.status)) {
+    throw new AppError(410, "Event has ended", "EVENT_COMPLETED");
+  }
+
   const body = await c.req.json();
   const { name } = changeNameRequestSchema.parse(body);
 
@@ -505,6 +507,10 @@ eventRoutes.get("/event/:code/messages", async (c) => {
 
   if (!event) {
     throw new AppError(404, "Event not found", "EVENT_NOT_FOUND");
+  }
+
+  if (TERMINAL_STATUSES.has(event.status)) {
+    throw new AppError(410, "Event has ended", "EVENT_COMPLETED");
   }
 
   const since = c.req.query("since");

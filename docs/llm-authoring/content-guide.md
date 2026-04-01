@@ -1,25 +1,50 @@
 # City Roam Content Authoring Guide
 
-This document explains how to write high-quality treasure hunt routes for City Roam. Follow these guidelines when creating routes, stops, clues, hints, and other content.
+This document explains how to write high-quality treasure hunt routes for City Roam. Follow these guidelines when creating routes, groups, blocks, and other content.
 
 ---
 
 ## Route Design Principles
 
-- **5-8 stops** is the sweet spot. Fewer feels too short; more causes fatigue.
+- **5-8 groups** (locations) is the sweet spot. Fewer feels too short; more causes fatigue.
 - **Total duration**: 60-90 minutes of walking and solving.
 - **Total distance**: 2-5km.
-- Stops should follow a **logical walking path** — no backtracking or zigzagging across the city.
-- **Walking time between stops**: 3-7 minutes. If two stops are next to each other, the route feels rushed. If they're 15 minutes apart, players lose momentum.
+- Groups should follow a **logical walking path** — no backtracking or zigzagging across the city.
+- **Walking time between locations**: 3-7 minutes. If two locations are next to each other, the route feels rushed. If they're 15 minutes apart, players lose momentum.
 - Start from a well-known, easy-to-find location (major train station, central square, etc.).
 - End near amenities (pubs, restaurants, transport) — players will want to celebrate.
-- Choose stops that are **publicly accessible** and visible from the street. Don't send players inside buildings unless the building is freely open.
+- Choose locations that are **publicly accessible** and visible from the street. Don't send players inside buildings unless the building is freely open.
+
+---
+
+## Route Structure
+
+A route is made up of **groups**, and each group contains **blocks**. Groups represent logical sections (typically one location each). Blocks are the individual content pieces within each group.
+
+### Typical Location Group
+
+Most groups follow this pattern:
+
+1. **Question block** — the riddle for this location
+2. **Message block** — fun fact (delivered after the player answers correctly)
+3. **Map block** — Google Maps link (optional, helps players find the spot)
+4. **Message block** — walking directions to the next location
+
+You can also include image blocks, action blocks (for group coordination), or additional message blocks as needed. The first group might be a pure introduction with no question.
+
+### Delays Between Blocks
+
+Use `delay_ms` on blocks to create natural pacing. When the game engine sends multiple blocks in sequence (e.g. after a correct answer), delays simulate typing pauses:
+
+- **0ms** — instant (good for questions, the first block in a sequence)
+- **1000-2000ms** — short pause (good for follow-up messages)
+- **2000-3000ms** — longer pause (good for directions after a fun fact)
 
 ---
 
 ## Writing Clues
 
-Each clue is a riddle that identifies a specific physical location. The player must be near the location to solve it.
+Each question block has a `clue` — a riddle that identifies a specific physical location. The player must be near the location to solve it.
 
 ### Rules
 
@@ -71,7 +96,22 @@ Typically 2-4 accepted answers is enough.
 
 ## Hints
 
-Each stop must have **2-3 hints**, served in order when players ask for help.
+Each question block must have **2-3 hints**, served in order when players ask for help.
+
+Each hint is an array of `SequenceItem` objects. For simple text hints, use a single item:
+
+```json
+[{ "content": "Think civic buildings — this one has Corinthian columns.", "image_url": null, "delay_ms": 0 }]
+```
+
+For richer hints, you can include multiple messages and images in a single hint:
+
+```json
+[
+  { "content": "Look for this distinctive feature:", "image_url": null, "delay_ms": 0 },
+  { "content": "", "image_url": "https://example.com/hint-image.jpg", "delay_ms": 1000 }
+]
+```
 
 ### Escalation Pattern
 
@@ -79,23 +119,23 @@ Each stop must have **2-3 hints**, served in order when players ask for help.
    - "Think civic buildings — this one has Corinthian columns."
 2. **Hint 2 — More specific**: Give an era, street name, or distinguishing feature.
    - "It's on The Headrow, opened in 1858 by Queen Victoria."
-3. **Hint 3 — Nearly gives it away** (optional): Only if 2 hints aren't enough for this particular stop.
+3. **Hint 3 — Nearly gives it away** (optional): Only if 2 hints aren't enough for this particular question.
    - "The building directly opposite the main library entrance, with the clock tower."
 
-After all hints are exhausted, the system **automatically reveals the answer** and moves the player to the next stop. So hints should genuinely help — don't waste them on vague encouragement.
+After all hints are exhausted, the system **automatically reveals the answer** and moves the player to the next group. So hints should genuinely help — don't waste them on vague encouragement.
 
 ---
 
-## Directions
+## Directions (Message Blocks)
 
-The `directions_from_previous` field tells players how to walk from the previous stop to this one.
+Use message blocks for walking directions between locations. Place them at the end of a group, after the fun fact, so they're delivered after the player solves the current riddle.
 
-### For the first stop
-Give directions from a well-known starting point:
+### For the first group
+Give directions from a well-known starting point in a message block:
 - "Head to The Headrow in the city centre. You'll see a grand building with tall columns — you can't miss it."
 
-### For subsequent stops
-Give walking directions from the previous stop:
+### For subsequent groups
+Give walking directions from the previous location in the last message block of the preceding group:
 - "Walk south down Vicar Lane, past the markets. After about 5 minutes you'll see a distinctive domed roof on your right."
 
 ### Rules
@@ -107,9 +147,9 @@ Give walking directions from the previous stop:
 
 ---
 
-## Fun Facts
+## Fun Facts (Message Blocks)
 
-Displayed immediately after a correct answer. They reward the player with interesting knowledge about the location.
+Use message blocks for fun facts, placed immediately after the question block in the same group. They're delivered after a correct answer and reward the player with interesting knowledge.
 
 ### Rules
 - **1-3 sentences**.
@@ -127,33 +167,57 @@ Displayed immediately after a correct answer. They reward the player with intere
 
 ---
 
-## Google Maps Links
+## Map Blocks
 
-Optional but recommended. Format:
+Use map blocks to help players find locations. Format the Google Maps link as:
 
 ```
 https://maps.google.com/?q=Leeds+Town+Hall
 ```
 
-Use the location name (URL-encoded with `+` for spaces). This helps players who are struggling to find the location.
+Use the location name (URL-encoded with `+` for spaces). These render as styled map link cards in the app.
 
 ---
 
-## Correct Response
+## Action Blocks
 
-The `correct_response` field is optional free text shown after a correct answer (in addition to the fun fact). Most stops leave this empty — the random success message bank ("That's the one.", "Got it.") handles it. Only use this if you want a stop-specific acknowledgement.
+Use action blocks for group coordination points. The lead player sees a button; other players see a waiting message. Good for:
+
+- "Everyone arrived?" — placed before a question, ensuring the group is together
+- "Ready to move on?" — placed between locations
+
+Keep labels short and actionable.
 
 ---
 
 ## Images
 
-Images are stored as S3 keys and must be uploaded separately via the `/admin/upload` endpoint. When creating routes programmatically, **leave images as an empty array** `[]`. Images can be added later through the admin panel.
+Images can be included via `image` blocks with a URL. When creating routes programmatically, you can either:
+- Use publicly accessible image URLs directly
+- Leave image blocks out and add them later through the admin panel
+
+---
+
+## Template Variables in Message Blocks
+
+Message block content supports template variables that are replaced at runtime:
+
+| Variable | Replaced With |
+|----------|---------------|
+| `{{CITY_NAME}}` | The route's city |
+| `{{TOTAL_STOPS}}` | Number of groups in the route |
+| `{{DISTANCE_KM}}` | Estimated distance in km |
+| `{{REVIEW_LINK}}` | Configured Google review URL |
+
+Useful for introduction and closing messages:
+- "Welcome to {{CITY_NAME}}. I'll be your guide today."
+- "That's all {{TOTAL_STOPS}} stops done. You've covered roughly {{DISTANCE_KM}}km."
 
 ---
 
 ## Complete Worked Example
 
-Here's a well-structured 3-stop route:
+Here's a well-structured 3-location route with an introduction group:
 
 ```json
 {
@@ -165,56 +229,131 @@ Here's a well-structured 3-stop route:
     "estimated_distance_km": 1.5,
     "is_active": true
   },
-  "stops": [
+  "groups": [
+    {
+      "name": "Introduction",
+      "blocks": [
+        {
+          "type": "message",
+          "config": { "type": "message", "content": "Welcome to {{CITY_NAME}}. I'll be your guide today — I know where we're going, you do the leg work." },
+          "delay_ms": 0
+        },
+        {
+          "type": "message",
+          "config": { "type": "message", "content": "Here's how it works: I'll give you a clue at each stop, you figure it out, and we move on. Ask for a hint if you're stuck." },
+          "delay_ms": 2000
+        },
+        {
+          "type": "message",
+          "config": { "type": "message", "content": "Head to The Headrow in the city centre. You'll see a grand building with tall columns — you can't miss it." },
+          "delay_ms": 2000
+        }
+      ]
+    },
     {
       "name": "Leeds Town Hall",
-      "directions_from_previous": "Head to The Headrow in the city centre. You'll see a grand building with tall columns — you can't miss it.",
-      "clue": "I stand with columns tall and proud, where justice once was served aloud. Victoria laid my cornerstone — now concerts fill my halls of stone.",
-      "accepted_answers": ["Leeds Town Hall", "Town Hall", "the Town Hall"],
-      "hints": [
-        "Think civic buildings — this one has Corinthian columns.",
-        "It's on The Headrow, opened in 1858 by Queen Victoria."
-      ],
-      "correct_response": "",
-      "fun_fact": "Leeds Town Hall was designed by Cuthbert Brodrick and opened in 1858. The organ inside has over 6,500 pipes.",
-      "images": [],
-      "google_maps_link": "https://maps.google.com/?q=Leeds+Town+Hall"
+      "blocks": [
+        {
+          "type": "question",
+          "config": {
+            "type": "question",
+            "clue": "I stand with columns tall and proud, where justice once was served aloud. Victoria laid my cornerstone — now concerts fill my halls of stone.",
+            "accepted_answers": ["Leeds Town Hall", "Town Hall", "the Town Hall"],
+            "hints": [
+              [{ "content": "Think civic buildings — this one has Corinthian columns.", "image_url": null, "delay_ms": 0 }],
+              [{ "content": "It's on The Headrow, opened in 1858 by Queen Victoria.", "image_url": null, "delay_ms": 0 }]
+            ]
+          },
+          "delay_ms": 0
+        },
+        {
+          "type": "message",
+          "config": { "type": "message", "content": "Leeds Town Hall was designed by Cuthbert Brodrick and opened in 1858. The organ inside has over 6,500 pipes." },
+          "delay_ms": 1500
+        },
+        {
+          "type": "map",
+          "config": { "type": "map", "google_maps_link": "https://maps.google.com/?q=Leeds+Town+Hall" },
+          "delay_ms": 500
+        },
+        {
+          "type": "message",
+          "config": { "type": "message", "content": "Walk south down Vicar Lane, past the markets. After about 5 minutes you'll see a distinctive domed roof on your right." },
+          "delay_ms": 2000
+        }
+      ]
     },
     {
       "name": "Corn Exchange",
-      "directions_from_previous": "Walk south down Vicar Lane, past the markets. After about 5 minutes you'll see a distinctive domed roof on your right.",
-      "clue": "My roof is round, my trades have changed — from grain to vintage, rearranged. Step inside my oval hall, where independent traders fill each stall.",
-      "accepted_answers": ["Corn Exchange", "Leeds Corn Exchange", "the Corn Exchange"],
-      "hints": [
-        "This building was originally for trading grain.",
-        "It has a distinctive oval shape and domed glass roof, built in 1863."
-      ],
-      "correct_response": "",
-      "fun_fact": "The Corn Exchange is another Cuthbert Brodrick design. Its elliptical shape was revolutionary for 1863 and it's now Grade I listed.",
-      "images": [],
-      "google_maps_link": "https://maps.google.com/?q=Leeds+Corn+Exchange"
+      "blocks": [
+        {
+          "type": "question",
+          "config": {
+            "type": "question",
+            "clue": "My roof is round, my trades have changed — from grain to vintage, rearranged. Step inside my oval hall, where independent traders fill each stall.",
+            "accepted_answers": ["Corn Exchange", "Leeds Corn Exchange", "the Corn Exchange"],
+            "hints": [
+              [{ "content": "This building was originally for trading grain.", "image_url": null, "delay_ms": 0 }],
+              [{ "content": "It has a distinctive oval shape and domed glass roof, built in 1863.", "image_url": null, "delay_ms": 0 }]
+            ]
+          },
+          "delay_ms": 0
+        },
+        {
+          "type": "message",
+          "config": { "type": "message", "content": "The Corn Exchange is another Cuthbert Brodrick design. Its elliptical shape was revolutionary for 1863 and it's now Grade I listed." },
+          "delay_ms": 1500
+        },
+        {
+          "type": "map",
+          "config": { "type": "map", "google_maps_link": "https://maps.google.com/?q=Leeds+Corn+Exchange" },
+          "delay_ms": 500
+        },
+        {
+          "type": "message",
+          "config": { "type": "message", "content": "Head east along Kirkgate for about 3 minutes. Look for the church on your left." },
+          "delay_ms": 2000
+        }
+      ]
     },
     {
       "name": "Leeds Minster",
-      "directions_from_previous": "Head east along Kirkgate for about 3 minutes. Look for the church on your left.",
-      "clue": "The oldest site of worship here, I've watched this city grow each year. My name was raised from parish church — now 'Minster' puts me a notch above the rest.",
-      "accepted_answers": ["Leeds Minster", "the Minster", "Leeds Parish Church"],
-      "hints": [
-        "It's the oldest religious site in Leeds, on Kirkgate.",
-        "It became a Minster in 2012 — before that it was Leeds Parish Church."
-      ],
-      "correct_response": "",
-      "fun_fact": "Leeds Minster stands on a site of Christian worship dating back to the 7th century. The current building is mostly Victorian but the site is over 1,300 years old.",
-      "images": [],
-      "google_maps_link": "https://maps.google.com/?q=Leeds+Minster"
+      "blocks": [
+        {
+          "type": "question",
+          "config": {
+            "type": "question",
+            "clue": "The oldest site of worship here, I've watched this city grow each year. My name was raised from parish church — now 'Minster' puts me a notch above the rest.",
+            "accepted_answers": ["Leeds Minster", "the Minster", "Leeds Parish Church"],
+            "hints": [
+              [{ "content": "It's the oldest religious site in Leeds, on Kirkgate.", "image_url": null, "delay_ms": 0 }],
+              [{ "content": "It became a Minster in 2012 — before that it was Leeds Parish Church.", "image_url": null, "delay_ms": 0 }]
+            ]
+          },
+          "delay_ms": 0
+        },
+        {
+          "type": "message",
+          "config": { "type": "message", "content": "Leeds Minster stands on a site of Christian worship dating back to the 7th century. The current building is mostly Victorian but the site is over 1,300 years old." },
+          "delay_ms": 1500
+        },
+        {
+          "type": "map",
+          "config": { "type": "map", "google_maps_link": "https://maps.google.com/?q=Leeds+Minster" },
+          "delay_ms": 500
+        }
+      ]
     }
   ]
 }
 ```
 
 Notice how:
-- Directions flow logically from stop to stop
+- The introduction group sets the scene with no question
+- Directions flow logically — each group's last message block gives directions to the next location
 - Clues reference things you can see at the location
 - Accepted answers cover the common ways someone might say the name
 - Hints escalate from vague to specific
 - Fun facts are concise and interesting
+- `delay_ms` creates natural pacing between messages
+- Map blocks help players navigate

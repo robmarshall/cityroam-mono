@@ -20,25 +20,6 @@ export const sequenceItemSchema = z.object({
   delay_ms: z.number().int().min(0).max(10000).default(0),
 });
 
-export const stopSchema = z.object({
-  name: z.string().trim().min(1, "Stop name is required"),
-  directions_from_previous: z.string().trim().optional(),
-  clue: z.string().trim().min(1, "Clue is required"),
-  accepted_answers: z
-    .array(z.string().trim().min(1))
-    .min(1, "At least one accepted answer is required"),
-  hints: z
-    .array(
-      z.array(sequenceItemSchema).min(1, "Each hint must have at least one message"),
-    )
-    .min(2, "At least 2 hints are required")
-    .max(3, "At most 3 hints are allowed"),
-  correct_response: z.string().trim().optional(),
-  fun_fact: z.string().trim().optional(),
-  images: z.array(z.string()).optional().default([]),
-  google_maps_link: z.string().url("Invalid Google Maps URL").optional().or(z.literal("")),
-});
-
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png"];
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 
@@ -75,21 +56,73 @@ export const adminCreateEventSchema = z.object({
   expires_in_days: z.number().int().min(1).max(365).optional(),
 });
 
-export const stopReorderSchema = z.object({
-  stop_ids: z.array(z.string().uuid()).min(1, "At least one stop ID is required"),
+// --- Block & Group schemas ---
+
+export const messageBlockConfigSchema = z.object({
+  type: z.literal("message"),
+  content: z.string().trim().min(1),
 });
 
-export const bulkRouteCreateSchema = z.object({
+export const imageBlockConfigSchema = z.object({
+  type: z.literal("image"),
+  image_url: z.string().url(),
+});
+
+export const questionBlockConfigSchema = z.object({
+  type: z.literal("question"),
+  clue: z.string().trim().min(1),
+  accepted_answers: z.array(z.string().trim().min(1)).min(1),
+  hints: z.array(z.array(sequenceItemSchema)).min(2).max(3),
+});
+
+export const actionBlockConfigSchema = z.object({
+  type: z.literal("action"),
+  label: z.string().trim().min(1),
+});
+
+export const mapBlockConfigSchema = z.object({
+  type: z.literal("map"),
+  google_maps_link: z.string().url(),
+});
+
+export const blockConfigSchema = z.discriminatedUnion("type", [
+  messageBlockConfigSchema,
+  imageBlockConfigSchema,
+  questionBlockConfigSchema,
+  actionBlockConfigSchema,
+  mapBlockConfigSchema,
+]);
+
+export const routeBlockSchema = z.object({
+  position: z.number().int().min(0),
+  type: z.enum(["message", "image", "question", "action", "map"]),
+  config: blockConfigSchema,
+  delay_ms: z.number().int().min(0).max(30000).default(0),
+}).refine((data) => data.type === data.config.type, {
+  message: "Block type must match config type",
+  path: ["type"],
+});
+
+export const routeGroupSchema = z.object({
+  name: z.string().trim().min(1).max(100),
+  blocks: z.array(routeBlockSchema).min(1).max(50),
+});
+
+export const groupUpdateSchema = z.object({
+  name: z.string().trim().min(1).max(100),
+});
+
+export const bulkRouteGroupCreateSchema = z.object({
   route: routeSchema,
-  stops: z.array(stopSchema).min(1, "At least one stop is required").max(30, "Maximum 30 stops per route"),
+  groups: z.array(routeGroupSchema).min(1, "At least one group is required").max(30, "Maximum 30 groups per route"),
 });
 
-export const openingSequenceSchema = z.object({
-  name: z.string().trim().min(1, "Name is required"),
-  is_active: z.boolean().optional().default(true),
-  items: z
-    .array(sequenceItemSchema)
-    .min(1, "At least one message item is required"),
+export const groupReorderSchema = z.object({
+  group_ids: z.array(z.string().uuid()).min(1),
+});
+
+export const blockReorderSchema = z.object({
+  block_ids: z.array(z.string().uuid()).min(1),
 });
 
 export const messageBankSchema = z.object({

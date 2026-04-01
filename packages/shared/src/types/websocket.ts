@@ -1,4 +1,5 @@
 import type { ParticipantLeftReason, SenderType } from "./enums.js";
+import type { BlockType } from "./blocks.js";
 
 // Generic wrapper
 export interface WebSocketMessage<T = unknown> {
@@ -17,7 +18,15 @@ export type TypingStopPayload = Record<string, never>;
 
 export type PingPayload = Record<string, never>;
 
+export interface ActionConfirmPayload {
+  block_id: string;
+}
+
 // Server → Client payloads
+export interface ActionWaitingPayload {
+  block_id: string;
+  label: string;
+}
 export interface ChatMessagePayload {
   id: string;
   sender_type: SenderType;
@@ -27,6 +36,7 @@ export interface ChatMessagePayload {
   image_url: string | null;
   step_number: number;
   created_at: string;
+  block_type?: BlockType;
 }
 
 export interface GuideTypingPayload {

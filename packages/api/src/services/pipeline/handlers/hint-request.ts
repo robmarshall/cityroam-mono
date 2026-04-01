@@ -1,11 +1,10 @@
-import { eq, and } from "drizzle-orm";
-import type { SequenceItem } from "@cityroam/shared/types";
-import { buildS3Key, buildS3Url } from "@cityroam/shared/utils";
+import { eq } from "drizzle-orm";
+import type { QuestionBlockConfig, SequenceItem } from "@cityroam/shared/types";
 import { db, schema } from "../../../db/index.js";
-import { env } from "../../../env.js";
 import { writeGuideMessage, getRandomMessageBank } from "./answer-attempt.js";
-import { handleGameCompletion } from "./game-completion.js";
+import { advanceAfterBlock } from "../../group-runner.js";
 import { sendSequence } from "../../send-sequence.js";
+import { buildRouteTemplateVars } from "../../template-vars.js";
 import { createLogger } from "../../../lib/logger.js";
 
 const log = createLogger("hint-request");
@@ -16,7 +15,7 @@ const log = createLogger("hint-request");
 export interface HintRequestContext {
   eventId: string;
   eventCode: string;
-  routeId: string;
+  currentBlockId: string | null;
   currentStop: number;
   hintsGiven: number;
 }
@@ -33,23 +32,15 @@ export interface HintRequestResult {
  * Handle a hint-request message.
  *
  * Programmatic — no LLM involved.
- * - If hints remain: serve hints[hints_given], increment hints_given
- * - If hints exhausted: reveal answer via hint-exhausted bank, then advance stop
- *   using the same flow as answer-correct (fun fact, directions, next clue, images)
+ * - If hints remain: serve hints[hints_given] as a sequence, increment hints_given
+ * - If hints exhausted: reveal answer via hint-exhausted bank, reset counters,
+ *   then call advanceAfterBlock() to continue the route
  */
 export async function handleHintRequest(
   ctx: HintRequestContext,
 ): Promise<HintRequestResult> {
-  // Load current stop data
-  const currentStopData = await db.query.stops.findFirst({
-    where: and(
-      eq(schema.stops.route_id, ctx.routeId),
-      eq(schema.stops.stop_number, ctx.currentStop),
-    ),
-  });
-
-  if (!currentStopData) {
-    log.error("stop not found", { routeId: ctx.routeId, currentStop: ctx.currentStop });
+  if (!ctx.currentBlockId) {
+    log.error("no current block id", { eventId: ctx.eventId });
     const fallback = await getRandomMessageBank("clarification");
     if (fallback) {
       await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback);
@@ -57,12 +48,45 @@ export async function handleHintRequest(
     return { handled: true, exhausted: false };
   }
 
-  const hints = (currentStopData.hints as SequenceItem[][]) ?? [];
+  // Load current question block
+  const currentBlock = await db.query.routeBlocks.findFirst({
+    where: eq(schema.routeBlocks.id, ctx.currentBlockId),
+    columns: { id: true, type: true, config: true },
+  });
 
-  // If hints remain, serve the next one
+  if (!currentBlock || currentBlock.type !== "question") {
+    log.error("current block not found or not a question", {
+      blockId: ctx.currentBlockId,
+      type: currentBlock?.type,
+    });
+    const fallback = await getRandomMessageBank("clarification");
+    if (fallback) {
+      await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback);
+    }
+    return { handled: true, exhausted: false };
+  }
+
+  const config = currentBlock.config as QuestionBlockConfig;
+  const hints: SequenceItem[][] = config.hints ?? [];
+
+  // If hints remain, serve the next one as a sequence
   if (ctx.hintsGiven < hints.length) {
     const hintSequence = hints[ctx.hintsGiven];
-    await sendSequence(ctx.eventId, ctx.eventCode, ctx.currentStop, hintSequence);
+
+    // Load template vars for hint content
+    const event = await db.query.events.findFirst({
+      where: eq(schema.events.id, ctx.eventId),
+      columns: { route_id: true },
+    });
+    const templateVars = event ? await buildRouteTemplateVars(event.route_id) : {};
+
+    await sendSequence(
+      ctx.eventId,
+      ctx.eventCode,
+      ctx.currentStop,
+      hintSequence,
+      templateVars,
+    );
 
     // Increment hints_given on the event
     await db
@@ -73,25 +97,22 @@ export async function handleHintRequest(
     return { handled: true, exhausted: false };
   }
 
-  // Hints exhausted — reveal the answer and advance to next stop
-  await handleHintExhaustion(ctx, currentStopData);
+  // Hints exhausted — reveal the answer and advance
+  await handleHintExhaustion(ctx, config);
   return { handled: true, exhausted: true };
 }
 
 /**
  * Handle hint exhaustion:
  * 1. Hint-exhausted bank message with {{ANSWER}} replaced
- * 2. Fun fact for current stop
- * 3. Next stop directions + clue (if not last stop)
- * 4. Image messages for next stop
- * 5. Update event: advance stop, reset counters
+ * 2. Reset hints_given and wrong_attempts
+ * 3. Call advanceAfterBlock() to continue the group/route
  */
 async function handleHintExhaustion(
   ctx: HintRequestContext,
-  currentStopData: typeof schema.stops.$inferSelect,
+  config: QuestionBlockConfig,
 ): Promise<void> {
-  const acceptedAnswers = currentStopData.accepted_answers as string[];
-  const answer = acceptedAnswers[0] ?? "unknown";
+  const answer = config.accepted_answers[0] ?? "unknown";
 
   // 1. Hint-exhausted message with answer reveal
   let exhaustedMsg = await getRandomMessageBank("hint-exhausted");
@@ -99,52 +120,15 @@ async function handleHintExhaustion(
   exhaustedMsg = exhaustedMsg.replace("{{ANSWER}}", answer);
   await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, exhaustedMsg);
 
-  // 2. Fun fact
-  await writeGuideMessage(
-    ctx.eventId,
-    ctx.eventCode,
-    ctx.currentStop,
-    currentStopData.fun_fact,
-  );
-
-  // 3. Check if there's a next stop
-  const nextStopNumber = ctx.currentStop + 1;
-  const nextStop = await db.query.stops.findFirst({
-    where: and(
-      eq(schema.stops.route_id, ctx.routeId),
-      eq(schema.stops.stop_number, nextStopNumber),
-    ),
-  });
-
-  if (nextStop) {
-    // Send directions + next clue
-    const directionsAndClue = `${nextStop.directions_from_previous}\n\n${nextStop.clue}`;
-    await writeGuideMessage(ctx.eventId, ctx.eventCode, nextStopNumber, directionsAndClue);
-
-    // Send images for the next stop
-    const stopImages = (nextStop.images as string[]) ?? [];
-    for (const image of stopImages) {
-      const s3Key = buildS3Key(ctx.routeId, nextStopNumber, image);
-      const imageUrl = buildS3Url(env.AWS_CDN_BASE_URL, s3Key);
-      await writeGuideMessage(ctx.eventId, ctx.eventCode, nextStopNumber, "", imageUrl);
-    }
-  } else {
-    // Last stop — hints exhausted, trigger game completion
-    await handleGameCompletion({
-      eventId: ctx.eventId,
-      eventCode: ctx.eventCode,
-      routeId: ctx.routeId,
-      currentStop: ctx.currentStop,
-    });
-  }
-
-  // 4. Update event: advance stop, reset counters
+  // 2. Reset counters
   await db
     .update(schema.events)
     .set({
-      current_stop: nextStopNumber,
       hints_given: 0,
       wrong_attempts: 0,
     })
     .where(eq(schema.events.id, ctx.eventId));
+
+  // 3. Advance past the question block — sends remaining blocks in group, then next group
+  await advanceAfterBlock(ctx.eventId, ctx.eventCode, ctx.currentBlockId!);
 }

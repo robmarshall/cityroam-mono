@@ -7,7 +7,6 @@ vi.mock("../../db/index.js", () => {
     query: {
       events: { findFirst: vi.fn() },
       participants: { findFirst: vi.fn() },
-      stops: { findFirst: vi.fn() },
       routes: { findFirst: vi.fn() },
       messageBanks: { findFirst: vi.fn() },
     },

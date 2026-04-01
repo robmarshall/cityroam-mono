@@ -140,6 +140,8 @@ export function mockEvent(overrides: Record<string, unknown> = {}) {
     wrong_attempts: 0,
     guide_response_count: 0,
     lead_participant_id: null,
+    current_group_id: null,
+    current_block_id: null,
     created_at: new Date(),
     started_at: null,
     completed_at: null,
@@ -180,25 +182,48 @@ export function mockRoute(overrides: Record<string, unknown> = {}) {
   };
 }
 
-export function mockStop(overrides: Record<string, unknown> = {}) {
+export function mockRouteGroup(overrides: Record<string, unknown> = {}) {
   return {
     id: fakeUUID(),
     route_id: fakeUUID(),
-    stop_number: 1,
-    name: "Test Stop",
-    directions_from_previous: "Walk straight ahead",
-    clue: "Find the big building",
-    accepted_answers: ["town hall", "the town hall"],
-    hints: [
-      [{ content: "It has columns", image_url: null, delay_ms: 0 }],
-      [{ content: "Look for the clock", image_url: null, delay_ms: 0 }],
-    ],
-    correct_response: "Well done!",
-    fun_fact: "Built in 1858",
-    images: [],
-    google_maps_link: "https://maps.google.com/test",
+    position: 0,
+    name: "Test Group",
     created_at: new Date(),
     updated_at: new Date(),
+    ...overrides,
+  };
+}
+
+export function mockRouteBlock(overrides: Record<string, unknown> = {}) {
+  return {
+    id: fakeUUID(),
+    group_id: fakeUUID(),
+    position: 0,
+    type: "message",
+    config: { type: "message", content: "Test message" },
+    delay_ms: 0,
+    created_at: new Date(),
+    ...overrides,
+  };
+}
+
+export function mockQuestionBlock(overrides: Record<string, unknown> = {}) {
+  return {
+    id: fakeUUID(),
+    group_id: fakeUUID(),
+    position: 0,
+    type: "question",
+    config: {
+      type: "question",
+      clue: "Find the big building",
+      accepted_answers: ["town hall", "the town hall"],
+      hints: [
+        [{ content: "It has columns", image_url: null, delay_ms: 0 }],
+        [{ content: "Look for the clock", image_url: null, delay_ms: 0 }],
+      ],
+    },
+    delay_ms: 0,
+    created_at: new Date(),
     ...overrides,
   };
 }

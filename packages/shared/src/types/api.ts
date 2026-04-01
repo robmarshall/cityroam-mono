@@ -1,7 +1,6 @@
 import type { EventStatus } from "./enums.js";
-import type { Event, Message, Participant, Route, Stop } from "./entities.js";
+import type { Event, Message, Participant, Route, RouteBlock, RouteGroup } from "./entities.js";
 import type { ChatMessagePayload } from "./websocket.js";
-import type { SequenceItem } from "./sequence.js";
 
 // Public API responses
 
@@ -95,22 +94,22 @@ export interface AdminEventDetailResponse {
   event: Event;
   route_name: string | null;
   total_stops: number | null;
-  participants: Participant[];
+  participants: Omit<Participant, "token">[];
   messages: Message[];
   stripe_payment_id: string | null;
 }
 
+export type AdminRouteGroupResponse = RouteGroup & {
+  blocks: RouteBlock[];
+};
+
 export interface AdminRouteDetailResponse {
   route: Route;
-  stops: Stop[];
+  groups: AdminRouteGroupResponse[];
 }
 
 export interface AdminRouteListResponse {
-  routes: Array<Route & { stop_count: number }>;
-}
-
-export interface AdminStopReorderResponse {
-  success: boolean;
+  routes: Array<Route & { group_count: number }>;
 }
 
 export interface AdminCreateEventResponse {
@@ -134,29 +133,4 @@ export interface AdminMessageBankListResponse {
     created_at: string;
     updated_at: string;
   }>;
-}
-
-export interface AdminOpeningSequenceItem {
-  id: string;
-  sort_order: number;
-  content: string;
-  image_url: string | null;
-  delay_ms: number;
-}
-
-export interface AdminOpeningSequence {
-  id: string;
-  name: string;
-  is_active: boolean;
-  items: AdminOpeningSequenceItem[];
-  created_at: string;
-  updated_at: string;
-}
-
-export interface AdminOpeningSequenceListResponse {
-  sequences: AdminOpeningSequence[];
-}
-
-export interface AdminOpeningSequenceDetailResponse {
-  sequence: AdminOpeningSequence;
 }

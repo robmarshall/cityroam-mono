@@ -1,9 +1,9 @@
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import {
   IDLE_PROMPT_TIMEOUT_MS,
   IDLE_PAUSE_TIMEOUT_MS,
 } from "@cityroam/shared/constants";
-import type { ChatMessagePayload } from "@cityroam/shared/types";
+import type { ChatMessagePayload, QuestionBlockConfig } from "@cityroam/shared/types";
 import { db, schema } from "../../db/index.js";
 import { appendMessage, publishMessage } from "../../redis/index.js";
 import { createLogger } from "../../lib/logger.js";
@@ -98,20 +98,23 @@ export async function handleIdleResume(
 ): Promise<void> {
   const event = await db.query.events.findFirst({
     where: eq(schema.events.id, eventId),
-    columns: { current_stop: true, route_id: true },
+    columns: { current_stop: true, current_block_id: true },
   });
 
   if (!event) return;
 
-  const stop = await db.query.stops.findFirst({
-    where: and(
-      eq(schema.stops.route_id, event.route_id),
-      eq(schema.stops.stop_number, event.current_stop),
-    ),
-    columns: { clue: true },
-  });
+  let clue = "your current clue";
+  if (event.current_block_id) {
+    const block = await db.query.routeBlocks.findFirst({
+      where: eq(schema.routeBlocks.id, event.current_block_id),
+      columns: { type: true, config: true },
+    });
+    if (block?.type === "question") {
+      const config = block.config as QuestionBlockConfig;
+      clue = config.clue ?? clue;
+    }
+  }
 
-  const clue = stop?.clue ?? "your current clue";
   await writeSystemMessage(
     eventId,
     eventCode,

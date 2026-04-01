@@ -13,9 +13,10 @@ vi.mock("../../db/index.js", () => {
     query: {
       events: { findFirst: vi.fn() },
       participants: { findFirst: vi.fn() },
-      stops: { findFirst: vi.fn() },
       routes: { findFirst: vi.fn() },
       messageBanks: { findFirst: vi.fn() },
+      routeBlocks: { findFirst: vi.fn() },
+      routeGroups: { findFirst: vi.fn() },
     },
     select: vi.fn(() => mockDb),
     from: vi.fn(() => mockDb),
@@ -33,7 +34,8 @@ vi.mock("../../db/index.js", () => {
     events: { id: "events.id", status: "events.status", guide_response_count: "events.guide_response_count" },
     messages: { id: "messages.id" },
     routes: { id: "routes.id" },
-    stops: { route_id: "stops.route_id", stop_number: "stops.stop_number" },
+    routeBlocks: { id: "route_blocks.id", group_id: "route_blocks.group_id" },
+    routeGroups: { id: "route_groups.id", route_id: "route_groups.route_id" },
     messageBanks: { content: "mb.content", type: "mb.type", is_active: "mb.is_active" },
   };
   return { db: mockDb, disconnectDb: vi.fn(), schema: mockSchema };
@@ -47,6 +49,7 @@ vi.mock("../../redis/index.js", () => ({
   removeMessage: vi.fn().mockResolvedValue(undefined),
   checkGuideRateLimit: vi.fn().mockResolvedValue({ allowed: true, current: 1, limit: 1 }),
   checkParticipantRateLimit: vi.fn().mockResolvedValue({ allowed: true, current: 1, limit: 10 }),
+  deleteSessionsByEventId: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("../../services/pipeline/guide-response-cap.js", () => ({
@@ -60,6 +63,7 @@ import {
   appendMessage,
   publishMessage,
   publishControl,
+  deleteSessionsByEventId,
 } from "../../redis/index.js";
 import { handleGameCompletion } from "../../services/pipeline/handlers/game-completion.js";
 import {
@@ -144,6 +148,9 @@ describe("handleGameCompletion", () => {
       type: "game_complete",
       data: { summary: expect.stringContaining("Portland") },
     });
+
+    // Sessions invalidated for completed event
+    expect(deleteSessionsByEventId).toHaveBeenCalledWith("event-1");
   });
 
   it("uses sender_type system, not guide", async () => {
@@ -240,6 +247,8 @@ describe("idle-timer", () => {
     (db.query.events.findFirst as any).mockResolvedValue({
       status: "IN_PROGRESS",
       current_stop: 1,
+      current_group_id: "group-1",
+      current_block_id: "block-1",
       route_id: "route-1",
     });
 
@@ -336,10 +345,13 @@ describe("idle-timer", () => {
   it("handleIdleResume sends welcome back with current clue", async () => {
     (db.query.events.findFirst as any).mockResolvedValue({
       current_stop: 2,
+      current_group_id: "group-1",
+      current_block_id: "block-1",
       route_id: "route-1",
     });
-    (db.query.stops.findFirst as any).mockResolvedValue({
-      clue: "Look for the red door",
+    (db.query.routeBlocks.findFirst as any).mockResolvedValue({
+      type: "question",
+      config: { clue: "Look for the red door" },
     });
 
     const sysMsg = {

@@ -1,6 +1,8 @@
 import { pgTable, uuid, varchar, integer, timestamp, index, check, boolean, text } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { routes } from "./routes.js";
+import { routeGroups } from "./route-groups.js";
+import { routeBlocks } from "./route-blocks.js";
 
 export const events = pgTable("events", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -12,6 +14,8 @@ export const events = pgTable("events", {
   buyer_email: varchar("buyer_email"),
   lead_participant_id: uuid("lead_participant_id"),
   current_stop: integer("current_stop").notNull().default(0),
+  current_group_id: uuid("current_group_id").references(() => routeGroups.id),
+  current_block_id: uuid("current_block_id").references(() => routeBlocks.id),
   hints_given: integer("hints_given").notNull().default(0),
   wrong_attempts: integer("wrong_attempts").notNull().default(0),
   guide_response_count: integer("guide_response_count").notNull().default(0),
