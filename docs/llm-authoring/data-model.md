@@ -1,6 +1,6 @@
 # City Roam Data Model
 
-This document explains how routes, stops, events, and the AI pipeline fit together. Understanding this helps you create content that works well with the game engine.
+This document explains how routes, groups, blocks, events, and the AI pipeline fit together. Understanding this helps you create content that works well with the game engine.
 
 ---
 
@@ -8,7 +8,8 @@ This document explains how routes, stops, events, and the AI pipeline fit togeth
 
 ```
 Route
-  ├── has many Stops (ordered by stop_number, 1-indexed)
+  ├── has many Groups (ordered by position, 0-indexed)
+  │     └── has many Blocks (ordered by position, 0-indexed)
   └── has many Events (runtime game instances)
         ├── has many Participants
         └── has many Messages (chat log)
@@ -19,7 +20,7 @@ Message Banks (global, not per-route)
 
 ### What You Author
 
-As a content creator, you author **routes** and **stops**. You can also create **message bank** entries to expand the guide's repertoire.
+As a content creator, you author **routes** made up of **groups** containing **blocks**. You can also create **message bank** entries to expand the guide's repertoire.
 
 You do NOT create events — those are generated automatically when a customer purchases a hunt via Stripe checkout.
 
@@ -36,33 +37,113 @@ A route is a treasure hunt in a specific city. It defines the overall journey.
 | description | Brief description for admin reference |
 | estimated_duration_mins | Expected total time in minutes |
 | estimated_distance_km | Expected total walking distance |
-| total_stops | Automatically maintained — count of stops |
+| total_stops | Automatically maintained — count of groups |
 | is_active | Whether the route is available for purchase |
 
 ---
 
-## Stops
+## Groups
 
-Stops are the individual locations within a route. They are the core content unit.
+Groups are the logical sections of a route. Each group typically represents one location/stop. They are ordered by `position` (0-indexed).
 
-| Field | Purpose | Used By |
-|-------|---------|---------|
-| stop_number | Position in route (1, 2, 3...) | Auto-assigned, determines play order |
-| name | Location name (internal reference) | Admin only — players never see this |
-| directions_from_previous | How to walk here from the previous stop | Shown to player after solving previous clue |
-| clue | Riddle/puzzle identifying this location | Shown to player, used by intent classifier |
-| accepted_answers | Array of valid answer strings | Used by LLM answer matcher |
-| hints | Array of 2-3 hint strings | Served in order when player asks for help |
-| correct_response | Optional stop-specific success text | Sent on correct answer (rarely used) |
-| fun_fact | Interesting info about the location | Shown immediately after correct answer |
-| images | S3 image keys | Shown to player for next stop after correct answer |
-| google_maps_link | Link to Google Maps | Available to guide when answering questions |
+A group contains:
 
-### Stop Ordering
+| Field | Purpose |
+|-------|---------|
+| name | Section name (e.g. "Leeds Town Hall", "Introduction") |
+| position | Order within the route (0, 1, 2...) — auto-managed |
 
-- Stops are **1-indexed** (`stop_number` starts at 1).
-- When using the bulk create endpoint, stop order matches array position — the first stop in the array becomes stop 1.
-- When adding/deleting individual stops, numbering is automatically maintained by the API.
+Groups contain one or more **blocks** that define the content delivered to players.
+
+---
+
+## Blocks
+
+Blocks are the individual content units within a group. They are ordered by `position` (0-indexed) and executed sequentially by the game engine.
+
+### Common Fields
+
+| Field | Purpose |
+|-------|---------|
+| position | Order within the group (0, 1, 2...) |
+| type | One of: `message`, `image`, `question`, `action`, `map` |
+| config | Type-specific configuration (see below) |
+| delay_ms | Milliseconds to wait before sending (0-30000). Creates a natural typing pause. |
+
+### Block Types
+
+#### `message` — Text message from the guide
+
+| Config Field | Type | Purpose |
+|-------------|------|---------|
+| content | string | The message text. Supports template variables. |
+
+Use for: directions, fun facts, narrative text, any guide dialogue.
+
+#### `image` — Image shown to the player
+
+| Config Field | Type | Purpose |
+|-------------|------|---------|
+| image_url | string (URL) | URL of the image to display |
+
+Use for: location photos, visual clues, maps as images.
+
+#### `question` — A riddle/puzzle the player must solve
+
+| Config Field | Type | Purpose |
+|-------------|------|---------|
+| clue | string | The riddle text shown to the player |
+| accepted_answers | string[] | Valid answer strings (min 1) |
+| hints | SequenceItem[][] | 2-3 hint sequences, served in order when player asks for help |
+
+This is the core gameplay block. When the game engine reaches a question block, it **pauses and waits** for the player to answer correctly (or exhaust all hints). The AI pipeline handles answer matching, hint delivery, and advancement.
+
+**Hint format:** Each hint is an array of `SequenceItem` objects, allowing multi-message hints with optional images and delays:
+
+```json
+{
+  "content": "Think civic buildings — this one has Corinthian columns.",
+  "image_url": null,
+  "delay_ms": 0
+}
+```
+
+For simple text-only hints, use a single SequenceItem per hint with `image_url: null` and `delay_ms: 0`.
+
+#### `action` — Wait for the lead player to confirm an action
+
+| Config Field | Type | Purpose |
+|-------------|------|---------|
+| label | string | Button label shown to the lead player |
+
+Use for: "Everyone ready to move on?", "Confirm you've arrived", group coordination points.
+
+When the engine reaches an action block, it **pauses** and shows a button to the lead player. Other players see "Waiting for [lead name]...". The game advances when the lead taps the button.
+
+#### `map` — Google Maps link card
+
+| Config Field | Type | Purpose |
+|-------------|------|---------|
+| google_maps_link | string (URL) | Link to Google Maps |
+
+Use for: helping players navigate to a location. Rendered as a styled map link card in the app.
+
+---
+
+## Typical Group Structure
+
+A standard location group follows this pattern:
+
+```
+Group: "Leeds Town Hall"
+  ├── Block 1: message  — directions to walk here from previous location
+  ├── Block 2: image    — photo of the location (optional)
+  ├── Block 3: question — riddle + accepted answers + hints
+  ├── Block 4: message  — fun fact (sent after correct answer)
+  └── Block 5: map      — Google Maps link (optional)
+```
+
+But the block system is flexible. You can have groups with no questions (pure narrative), multiple questions, action blocks for group coordination, or any combination.
 
 ---
 
@@ -77,11 +158,11 @@ Pre-filter (length checks, rate limits)
   ↓
 Intent Classifier (LLM)
   ├── "answer-attempt" → Answer Matcher (LLM checks against accepted_answers)
-  │     ├── Correct → success bank + fun_fact + next stop directions + next clue
+  │     ├── Correct → success bank + remaining blocks in group + next group
   │     └── Incorrect → failure bank (+ hint nudge after 3 wrong with 0 hints)
-  ├── "hint-request" → Serve next hint from hints array (no LLM)
+  ├── "hint-request" → Serve next hint from question block hints (no LLM)
   │     └── All hints used → hint-exhausted bank (reveals answer) + advance
-  ├── "question" → Question Handler (LLM answers using stop context)
+  ├── "question" → Question Handler (LLM answers using block context)
   ├── "off-topic-chat" → Silent (no response)
   ├── "contextual-comment" → Silent (no response)
   ├── "prompt-injection" → Message deleted
@@ -107,12 +188,11 @@ It does NOT accept answers that are only vaguely related or thematically similar
 
 When a player asks a question (not an answer attempt), the AI guide can draw on:
 - City name
-- Current stop name, clue, and directions
-- Next stop directions (only after current is solved)
+- Current question block's clue
+- Whether a Google Maps link exists in the group
 - Estimated distance remaining
-- Whether a Google Maps link exists
 
-The guide **cannot** access information beyond what's in the stop data. Write detailed, informative stop content so the guide has enough context to answer player questions.
+The guide **cannot** access information beyond what's in the block data. Write detailed, informative content so the guide has enough context to answer player questions.
 
 ---
 
@@ -135,12 +215,12 @@ Some message types support template variables that are replaced at runtime:
 | Variable | Available In | Replaced With |
 |----------|-------------|---------------|
 | `{{ANSWER}}` | hint-exhausted | First item from accepted_answers |
-| `{{FIRST_STOP_DIRECTIONS}}` | opening | directions_from_previous of stop 1 |
-| `{{FIRST_CLUE}}` | opening | clue of stop 1 |
-| `{{CITY_NAME}}` | opening, completion | route.city |
-| `{{TOTAL_STOPS}}` | opening, completion | route.total_stops |
-| `{{DISTANCE_KM}}` | completion | route.estimated_distance_km |
-| `{{REVIEW_LINK}}` | completion | Configured review URL |
+| `{{CITY_NAME}}` | opening, completion, message blocks | route.city |
+| `{{TOTAL_STOPS}}` | opening, completion, message blocks | route.total_stops |
+| `{{DISTANCE_KM}}` | completion, message blocks | route.estimated_distance_km |
+| `{{REVIEW_LINK}}` | completion, message blocks | Configured review URL |
+
+Template variables in message block `content` fields are replaced at runtime, so you can use `{{CITY_NAME}}` etc. in your block content.
 
 ### Recommended Counts Per Type
 
@@ -163,9 +243,9 @@ Events are runtime instances — you don't create them, but understanding the li
 
 1. **NOT_STARTED** — Created by Stripe checkout. An 8-character event code is generated.
 2. **WAITING** — First participant has joined and is waiting for others.
-3. **IN_PROGRESS** — Lead participant started the game. Guide sends opening message.
-4. **COMPLETED** — All stops solved. Completion message sent.
+3. **IN_PROGRESS** — Lead participant started the game. The game engine begins running the first group.
+4. **COMPLETED** — All groups completed. Completion message sent.
 5. **EXPIRED** — Event code expired (90 days after creation).
 6. **REFUNDED** — Payment refunded via admin panel.
 
-Events track `current_stop`, `hints_given`, `wrong_attempts`, and `guide_response_count` as players progress through the route's stops.
+Events track `current_group_id`, `current_block_id`, `hints_given`, `wrong_attempts`, and `guide_response_count` as players progress through the route's groups and blocks.

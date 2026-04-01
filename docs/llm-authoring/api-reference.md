@@ -32,10 +32,10 @@ Tokens expire after 8 hours. Re-authenticate if you get a 401.
 
 ## Creating a New Route (Bulk)
 
-Create a complete route with all its stops in a single atomic call.
+Create a complete route with all its groups and blocks in a single atomic call.
 
 ```
-POST /admin/routes/bulk
+POST /admin/routes/bulk-groups
 Content-Type: application/json
 Authorization: Bearer <token>
 ```
@@ -52,48 +52,115 @@ Authorization: Bearer <token>
     "estimated_distance_km": 2.5,
     "is_active": true
   },
-  "stops": [
+  "groups": [
+    {
+      "name": "Introduction",
+      "blocks": [
+        {
+          "type": "message",
+          "config": { "type": "message", "content": "Welcome to {{CITY_NAME}}. I'll be your guide today." },
+          "delay_ms": 0
+        },
+        {
+          "type": "message",
+          "config": { "type": "message", "content": "Head to The Headrow in the city centre. You'll see a grand building with tall columns." },
+          "delay_ms": 2000
+        }
+      ]
+    },
     {
       "name": "Leeds Town Hall",
-      "directions_from_previous": "Head to The Headrow in the city centre. You'll see a grand building with tall columns.",
-      "clue": "I stand with columns tall and proud, where justice once was served aloud. Victoria laid my cornerstone — now concerts fill my halls of stone.",
-      "accepted_answers": ["Leeds Town Hall", "Town Hall", "the Town Hall"],
-      "hints": [
-        "Think civic buildings — this one has Corinthian columns.",
-        "It's on The Headrow, opened in 1858 by Queen Victoria."
-      ],
-      "correct_response": "",
-      "fun_fact": "Leeds Town Hall was designed by Cuthbert Brodrick and opened in 1858. The organ inside has over 6,500 pipes.",
-      "images": [],
-      "google_maps_link": "https://maps.google.com/?q=Leeds+Town+Hall"
+      "blocks": [
+        {
+          "type": "question",
+          "config": {
+            "type": "question",
+            "clue": "I stand with columns tall and proud, where justice once was served aloud. Victoria laid my cornerstone — now concerts fill my halls of stone.",
+            "accepted_answers": ["Leeds Town Hall", "Town Hall", "the Town Hall"],
+            "hints": [
+              [{ "content": "Think civic buildings — this one has Corinthian columns.", "image_url": null, "delay_ms": 0 }],
+              [{ "content": "It's on The Headrow, opened in 1858 by Queen Victoria.", "image_url": null, "delay_ms": 0 }]
+            ]
+          },
+          "delay_ms": 0
+        },
+        {
+          "type": "message",
+          "config": { "type": "message", "content": "Leeds Town Hall was designed by Cuthbert Brodrick and opened in 1858. The organ inside has over 6,500 pipes." },
+          "delay_ms": 1500
+        },
+        {
+          "type": "map",
+          "config": { "type": "map", "google_maps_link": "https://maps.google.com/?q=Leeds+Town+Hall" },
+          "delay_ms": 500
+        },
+        {
+          "type": "message",
+          "config": { "type": "message", "content": "Walk south down Vicar Lane, past the markets. After about 5 minutes you'll see a distinctive domed roof on your right." },
+          "delay_ms": 2000
+        }
+      ]
     },
     {
       "name": "Corn Exchange",
-      "directions_from_previous": "Walk south down Vicar Lane, past the markets. After about 5 minutes you'll see a distinctive domed roof on your right.",
-      "clue": "My roof is round, my trades have changed — from grain to vintage, rearranged. Step inside my oval hall, where independent traders fill each stall.",
-      "accepted_answers": ["Corn Exchange", "Leeds Corn Exchange", "the Corn Exchange"],
-      "hints": [
-        "This building was originally for trading grain.",
-        "It has a distinctive oval shape and domed glass roof, built in 1863."
-      ],
-      "correct_response": "",
-      "fun_fact": "The Corn Exchange is another Cuthbert Brodrick design. Its elliptical shape was revolutionary for 1863 and it's now Grade I listed.",
-      "images": [],
-      "google_maps_link": "https://maps.google.com/?q=Leeds+Corn+Exchange"
+      "blocks": [
+        {
+          "type": "question",
+          "config": {
+            "type": "question",
+            "clue": "My roof is round, my trades have changed — from grain to vintage, rearranged. Step inside my oval hall, where independent traders fill each stall.",
+            "accepted_answers": ["Corn Exchange", "Leeds Corn Exchange", "the Corn Exchange"],
+            "hints": [
+              [{ "content": "This building was originally for trading grain.", "image_url": null, "delay_ms": 0 }],
+              [{ "content": "It has a distinctive oval shape and domed glass roof, built in 1863.", "image_url": null, "delay_ms": 0 }]
+            ]
+          },
+          "delay_ms": 0
+        },
+        {
+          "type": "message",
+          "config": { "type": "message", "content": "The Corn Exchange is another Cuthbert Brodrick design. Its elliptical shape was revolutionary for 1863 and it's now Grade I listed." },
+          "delay_ms": 1500
+        },
+        {
+          "type": "map",
+          "config": { "type": "map", "google_maps_link": "https://maps.google.com/?q=Leeds+Corn+Exchange" },
+          "delay_ms": 500
+        },
+        {
+          "type": "message",
+          "config": { "type": "message", "content": "Head east along Kirkgate for about 3 minutes. Look for the church on your left." },
+          "delay_ms": 2000
+        }
+      ]
     },
     {
       "name": "Leeds Minster",
-      "directions_from_previous": "Head east along Kirkgate for about 3 minutes. Look for the church on your left.",
-      "clue": "The oldest site of worship here, I've watched this city grow each year. My name was raised from parish church — now 'Minster' puts me a notch above the rest.",
-      "accepted_answers": ["Leeds Minster", "the Minster", "Leeds Parish Church"],
-      "hints": [
-        "It's the oldest religious site in Leeds, on Kirkgate.",
-        "It became a Minster in 2012 — before that it was Leeds Parish Church."
-      ],
-      "correct_response": "",
-      "fun_fact": "Leeds Minster stands on a site of Christian worship dating back to the 7th century. The current building is mostly Victorian but the site is over 1,300 years old.",
-      "images": [],
-      "google_maps_link": "https://maps.google.com/?q=Leeds+Minster"
+      "blocks": [
+        {
+          "type": "question",
+          "config": {
+            "type": "question",
+            "clue": "The oldest site of worship here, I've watched this city grow each year. My name was raised from parish church — now 'Minster' puts me a notch above the rest.",
+            "accepted_answers": ["Leeds Minster", "the Minster", "Leeds Parish Church"],
+            "hints": [
+              [{ "content": "It's the oldest religious site in Leeds, on Kirkgate.", "image_url": null, "delay_ms": 0 }],
+              [{ "content": "It became a Minster in 2012 — before that it was Leeds Parish Church.", "image_url": null, "delay_ms": 0 }]
+            ]
+          },
+          "delay_ms": 0
+        },
+        {
+          "type": "message",
+          "config": { "type": "message", "content": "Leeds Minster stands on a site of Christian worship dating back to the 7th century. The current building is mostly Victorian but the site is over 1,300 years old." },
+          "delay_ms": 1500
+        },
+        {
+          "type": "map",
+          "config": { "type": "map", "google_maps_link": "https://maps.google.com/?q=Leeds+Minster" },
+          "delay_ms": 500
+        }
+      ]
     }
   ]
 }
@@ -108,20 +175,32 @@ Authorization: Bearer <token>
     "city": "Leeds",
     "name": "Leeds City Centre Discovery",
     "description": "A walking tour through the historic heart of Leeds.",
-    "total_stops": 3,
+    "total_stops": 4,
     "estimated_duration_mins": 60,
     "estimated_distance_km": 2.5,
     "is_active": true,
     "created_at": "2025-01-15T10:30:00.000Z",
     "updated_at": "2025-01-15T10:30:00.000Z"
   },
-  "stops": [
+  "groups": [
     {
       "id": "uuid",
       "route_id": "uuid",
-      "stop_number": 1,
-      "name": "Leeds Town Hall",
-      "...": "..."
+      "position": 0,
+      "name": "Introduction",
+      "created_at": "2025-01-15T10:30:00.000Z",
+      "updated_at": "2025-01-15T10:30:00.000Z",
+      "blocks": [
+        {
+          "id": "uuid",
+          "group_id": "uuid",
+          "position": 0,
+          "type": "message",
+          "config": { "type": "message", "content": "Welcome to {{CITY_NAME}}. I'll be your guide today." },
+          "delay_ms": 0,
+          "created_at": "2025-01-15T10:30:00.000Z"
+        }
+      ]
     }
   ]
 }
@@ -138,20 +217,20 @@ GET /admin/routes
 Authorization: Bearer <token>
 ```
 
-Returns all routes with stop counts. Use this to find route IDs.
+Returns all routes with group counts. Use this to find route IDs.
 
-### Get Route with All Stops
+### Get Route with All Groups and Blocks
 
 ```
 GET /admin/routes/:id
 Authorization: Bearer <token>
 ```
 
-Returns the full route object and an ordered array of all stops. This is the primary read endpoint — use it to understand what currently exists before making edits.
+Returns the full route object with an ordered array of groups, each containing an ordered array of blocks. This is the primary read endpoint — use it to understand what currently exists before making edits.
 
 ---
 
-## Editing Routes (Individual Endpoints)
+## Editing Routes
 
 ### Update Route Metadata
 
@@ -170,59 +249,6 @@ Authorization: Bearer <token>
 }
 ```
 
-### Update a Stop
-
-```
-PUT /admin/routes/:routeId/stops/:stopId
-Content-Type: application/json
-Authorization: Bearer <token>
-
-{
-  "name": "Updated Stop Name",
-  "directions_from_previous": "Updated directions.",
-  "clue": "Updated clue text.",
-  "accepted_answers": ["Answer 1", "Answer 2"],
-  "hints": ["Hint 1", "Hint 2"],
-  "correct_response": "",
-  "fun_fact": "Updated fun fact.",
-  "images": [],
-  "google_maps_link": "https://maps.google.com/?q=..."
-}
-```
-
-### Add a New Stop
-
-```
-POST /admin/routes/:routeId/stops
-Content-Type: application/json
-Authorization: Bearer <token>
-```
-
-Same body as update. The stop is appended to the end (auto-assigned the next stop number).
-
-### Delete a Stop
-
-```
-DELETE /admin/routes/:routeId/stops/:stopId
-Authorization: Bearer <token>
-```
-
-Remaining stops are automatically renumbered.
-
-### Reorder Stops
-
-```
-PUT /admin/routes/:routeId/stops/reorder
-Content-Type: application/json
-Authorization: Bearer <token>
-
-{
-  "stop_ids": ["uuid-of-stop-3", "uuid-of-stop-1", "uuid-of-stop-2"]
-}
-```
-
-All stop IDs for the route must be included. The new order matches the array order.
-
 ### Delete a Route
 
 ```
@@ -230,7 +256,125 @@ DELETE /admin/routes/:id
 Authorization: Bearer <token>
 ```
 
-Fails with 409 if any events are linked to this route.
+Fails with 409 if any events are linked to this route. Cascade-deletes all groups and blocks.
+
+---
+
+## Group Management
+
+### Create a Group
+
+```
+POST /admin/routes/:id/groups
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{ "name": "New Location" }
+```
+
+The group is appended at the end (auto-assigned next position). Response includes `blocks: []`.
+
+### Update a Group
+
+```
+PUT /admin/routes/:id/groups/:groupId
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{ "name": "Renamed Location" }
+```
+
+Only the group name can be updated.
+
+### Delete a Group
+
+```
+DELETE /admin/routes/:id/groups/:groupId
+Authorization: Bearer <token>
+```
+
+Cascade-deletes all blocks within the group. Remaining groups are automatically renumbered.
+
+### Reorder Groups
+
+```
+PUT /admin/routes/:id/groups/reorder
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "group_ids": ["uuid-of-group-3", "uuid-of-group-1", "uuid-of-group-2"]
+}
+```
+
+All group IDs for the route must be included. The new order matches the array order (first item gets position 0, second gets position 1, etc.).
+
+---
+
+## Block Management
+
+### Create a Block
+
+```
+POST /admin/groups/:groupId/blocks
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "type": "message",
+  "config": { "type": "message", "content": "Head north along the high street." },
+  "delay_ms": 2000
+}
+```
+
+The block is appended at the end of the group (auto-assigned next position).
+
+### Update a Block
+
+```
+PUT /admin/blocks/:blockId
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "type": "question",
+  "config": {
+    "type": "question",
+    "clue": "Updated clue text.",
+    "accepted_answers": ["Answer 1", "Answer 2"],
+    "hints": [
+      [{ "content": "Hint 1", "image_url": null, "delay_ms": 0 }],
+      [{ "content": "Hint 2", "image_url": null, "delay_ms": 0 }]
+    ]
+  },
+  "delay_ms": 0
+}
+```
+
+Updates type, config, and delay_ms.
+
+### Delete a Block
+
+```
+DELETE /admin/blocks/:blockId
+Authorization: Bearer <token>
+```
+
+Remaining blocks in the group are automatically renumbered.
+
+### Reorder Blocks
+
+```
+PUT /admin/groups/:groupId/blocks/reorder
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "block_ids": ["uuid-of-block-3", "uuid-of-block-1", "uuid-of-block-2"]
+}
+```
+
+All block IDs for the group must be included. The new order matches the array order.
 
 ---
 
@@ -277,30 +421,78 @@ DELETE /admin/message-banks/:id
 
 | Field | Type | Required | Constraints |
 |-------|------|----------|-------------|
-| city | string | Yes | Min 1 char |
-| name | string | Yes | Min 1 char |
-| description | string | No | — |
+| city | string | Yes | Min 1 char, trimmed |
+| name | string | Yes | Min 1 char, trimmed |
+| description | string | No | Trimmed |
 | estimated_duration_mins | number | Yes | Must be > 0 |
 | estimated_distance_km | number | Yes | Must be > 0 |
 | is_active | boolean | No | Default: true |
 
-### Stop Fields
+### Group Fields
 
 | Field | Type | Required | Constraints |
 |-------|------|----------|-------------|
-| name | string | Yes | Min 1 char |
-| directions_from_previous | string | No | — |
-| clue | string | Yes | Min 1 char |
-| accepted_answers | string[] | Yes | Min 1 item, each non-empty |
-| hints | string[] | Yes | Min 2, max 3 items, each non-empty |
-| correct_response | string | No | — |
-| fun_fact | string | No | — |
-| images | string[] | No | Default: [] (requires separate upload) |
-| google_maps_link | string | No | Must be valid URL if provided |
+| name | string | Yes | Min 1 char, max 100 chars, trimmed |
+
+### Block Fields (Common)
+
+| Field | Type | Required | Constraints |
+|-------|------|----------|-------------|
+| type | string | Yes | One of: `message`, `image`, `question`, `action`, `map` |
+| config | object | Yes | Must match type (see below) |
+| delay_ms | number | No | 0-30000ms, default: 0 |
+
+### Block Config — By Type
+
+**message:**
+
+| Field | Type | Required | Constraints |
+|-------|------|----------|-------------|
+| type | `"message"` | Yes | Must be `"message"` |
+| content | string | Yes | Min 1 char, trimmed |
+
+**image:**
+
+| Field | Type | Required | Constraints |
+|-------|------|----------|-------------|
+| type | `"image"` | Yes | Must be `"image"` |
+| image_url | string | Yes | Must be valid URL |
+
+**question:**
+
+| Field | Type | Required | Constraints |
+|-------|------|----------|-------------|
+| type | `"question"` | Yes | Must be `"question"` |
+| clue | string | Yes | Min 1 char, trimmed |
+| accepted_answers | string[] | Yes | Min 1 item, each non-empty and trimmed |
+| hints | SequenceItem[][] | Yes | 2-3 hint arrays |
+
+Each `SequenceItem`:
+
+| Field | Type | Required | Constraints |
+|-------|------|----------|-------------|
+| content | string | Yes | The hint text |
+| image_url | string or null | No | Valid URL or null |
+| delay_ms | number | No | 0-10000ms, default: 0 |
+
+**action:**
+
+| Field | Type | Required | Constraints |
+|-------|------|----------|-------------|
+| type | `"action"` | Yes | Must be `"action"` |
+| label | string | Yes | Min 1 char, trimmed |
+
+**map:**
+
+| Field | Type | Required | Constraints |
+|-------|------|----------|-------------|
+| type | `"map"` | Yes | Must be `"map"` |
+| google_maps_link | string | Yes | Must be valid URL |
 
 ### Bulk Create Limits
 
-- Minimum 1 stop, maximum 30 stops per route
+- Minimum 1 group, maximum 30 groups per route
+- Minimum 1 block, maximum 50 blocks per group
 
 ---
 
@@ -317,6 +509,11 @@ All errors return:
 Common codes:
 - `INVALID_CREDENTIALS` (401) — Bad username/password
 - `ROUTE_NOT_FOUND` (404) — Route ID doesn't exist
-- `STOP_NOT_FOUND` (404) — Stop ID doesn't exist
+- `GROUP_NOT_FOUND` (404) — Group ID doesn't exist
+- `BLOCK_NOT_FOUND` (404) — Block ID doesn't exist
 - `ROUTE_HAS_EVENTS` (409) — Can't delete route with linked events
+- `DUPLICATE_GROUP_IDS` (400) — Reorder array has duplicate IDs
+- `INCOMPLETE_GROUP_LIST` (400) — Reorder array missing group IDs
+- `DUPLICATE_BLOCK_IDS` (400) — Reorder array has duplicate IDs
+- `INCOMPLETE_BLOCK_LIST` (400) — Reorder array missing block IDs
 - Validation errors (400) — Zod validation details in the error message

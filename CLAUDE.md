@@ -1,6 +1,6 @@
 # Project Overview
 
-City Roam is a self-guided treasure hunt web app. Customers purchase a hunt via Stripe on the marketing site, receive an event code, then use the app to play through a series of location-based clues guided by an AI chatbot (DeepSeek). An admin panel allows managing routes, stops, message banks, and monitoring events.
+City Roam is a self-guided treasure hunt web app. Customers purchase a hunt via Stripe on the marketing site, receive an event code, then use the app to play through a series of location-based clues guided by an AI chatbot (DeepSeek). An admin panel allows managing routes, groups, blocks, message banks, and monitoring events.
 
 ## Architecture
 
@@ -35,7 +35,7 @@ Documentation for programmatically creating and editing treasure hunt routes liv
 - `guide-personality.md` — Guide tone, message bank types and examples
 - `data-model.md` — Entity relationships, AI pipeline behaviour, answer matching rules
 
-Use `POST /admin/routes/bulk` to create a complete route with all stops in one call. Use the individual CRUD endpoints for edits.
+Use `POST /admin/routes/bulk-groups` to create a complete route with all groups and blocks in one call. Use the individual CRUD endpoints for edits.
 
 # Preferences
 

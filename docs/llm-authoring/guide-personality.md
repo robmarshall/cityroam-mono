@@ -101,37 +101,29 @@ Examples:
 
 ### opening
 
-Sent when the game starts. This is the guide's introduction and first set of directions/clue.
+Sent from the message bank when the game starts. Note: opening content is typically authored as message blocks in the route's first group, giving full control over the introduction sequence. The message bank opening is a fallback/supplement.
 
-**Tone:** businesslike, sets expectations, delivers the first clue.
+**Tone:** businesslike, sets expectations.
 
 **Template variables:**
 - `{{CITY_NAME}}` — the city of the route
-- `{{TOTAL_STOPS}}` — number of stops in the route
-- `{{FIRST_STOP_DIRECTIONS}}` — directions to the first stop
-- `{{FIRST_CLUE}}` — the clue text for stop 1
+- `{{TOTAL_STOPS}}` — number of groups in the route
 
 Example:
 ```
-Welcome. I'll be your guide today — I know where we're going, you do the leg work.
+Welcome to {{CITY_NAME}}. I'll be your guide today — I know where we're going, you do the leg work.
 
-Here's how it works: I'll give you a clue at each stop, you figure it out, and we move on. Ask for a hint if you're stuck. Shouldn't take more than 90 minutes if you keep moving.
-
-Right. Head to {{FIRST_STOP_DIRECTIONS}}.
-
-When you get there, your first clue:
-
-"{{FIRST_CLUE}}"
+Here's how it works: I'll give you a clue at each stop, you figure it out, and we move on. Ask for a hint if you're stuck.
 ```
 
 ### completion
 
-Sent when the player completes the final stop.
+Sent when the player completes the final group.
 
 **Tone:** satisfied, understated praise, call to action (review link).
 
 **Template variables:**
-- `{{TOTAL_STOPS}}` — number of stops completed
+- `{{TOTAL_STOPS}}` — number of groups completed
 - `{{DISTANCE_KM}}` — total distance walked
 - `{{CITY_NAME}}` — the city
 - `{{REVIEW_LINK}}` — Google review URL
