@@ -1,5 +1,5 @@
 import { eq, and } from "drizzle-orm";
-import type { ChatMessagePayload } from "@cityroam/shared/types";
+import type { ChatMessagePayload, BlockType } from "@cityroam/shared/types";
 import type { QuestionBlockConfig, AnswerMatchResult } from "@cityroam/shared/types";
 import type { LLMService } from "../../llm/interface.js";
 import { db, schema } from "../../../db/index.js";
@@ -71,6 +71,7 @@ export async function writeGuideMessage(
   stepNumber: number,
   content: string,
   imageUrl: string | null = null,
+  blockType?: BlockType,
 ): Promise<ChatMessagePayload> {
   const [msg] = await db
     .insert(schema.messages)
@@ -94,6 +95,7 @@ export async function writeGuideMessage(
     image_url: msg.image_url ?? null,
     step_number: msg.step_number,
     created_at: new Date(msg.created_at).toISOString(),
+    ...(blockType && { block_type: blockType }),
   };
 
   await appendMessage(eventCode, payload);

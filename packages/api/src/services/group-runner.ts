@@ -82,19 +82,19 @@ async function sendBlocks(
       case "message": {
         await showTypingDelay(eventCode, block.delay_ms);
         const content = applyTemplateVars(config.content, templateVars);
-        await writeGuideMessage(eventId, eventCode, stepNumber, content);
+        await writeGuideMessage(eventId, eventCode, stepNumber, content, null, "message");
         break;
       }
 
       case "image": {
         await showTypingDelay(eventCode, block.delay_ms);
-        await writeGuideMessage(eventId, eventCode, stepNumber, "", config.image_url);
+        await writeGuideMessage(eventId, eventCode, stepNumber, "", config.image_url, "image");
         break;
       }
 
       case "map": {
         await showTypingDelay(eventCode, block.delay_ms);
-        await writeGuideMessage(eventId, eventCode, stepNumber, config.google_maps_link);
+        await writeGuideMessage(eventId, eventCode, stepNumber, config.google_maps_link, null, "map");
         break;
       }
 
