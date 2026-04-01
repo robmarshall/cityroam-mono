@@ -87,9 +87,9 @@ Refactor the route model from a flat list of stops into a composable **group + b
 
 ## Phase 9: Player App — New Block Renderers
 
-- [ ] **9.1 Action block rendering** — When `action_waiting` control event arrives, show a button bubble in the chat. Only the lead sees an interactive button; others see "Waiting for [lead name]...". On press, send `action_confirm` WebSocket message.
+- [x] **9.1 Action block rendering** — When `action_waiting` control event arrives, show a button bubble in the chat. Only the lead sees an interactive button; others see "Waiting for [lead name]...". On press, send `action_confirm` WebSocket message.
 
-- [ ] **9.2 Map block rendering** — When a message with `block_type: 'map'` arrives, render as a styled map link card (icon + "View on Google Maps" link) instead of plain text.
+- [x] **9.2 Map block rendering** — When a message with `block_type: 'map'` arrives, render as a styled map link card (icon + "View on Google Maps" link) instead of plain text.
 
 - [ ] **9.3 Linkify** — Already done in previous iteration. URLs in all message bubbles are clickable.
 
