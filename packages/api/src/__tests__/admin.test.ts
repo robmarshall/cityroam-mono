@@ -440,7 +440,9 @@ describe("Admin Route CRUD", () => {
       const stop = mockStop({ route_id: routeId });
 
       (db as any).query.routes.findFirst.mockResolvedValueOnce(route);
-      // Stops query (terminal: orderBy)
+      // Groups query (terminal: orderBy) — no groups yet
+      (db as any).orderBy.mockResolvedValueOnce([]);
+      // Legacy stops query (terminal: orderBy)
       (db as any).orderBy.mockResolvedValueOnce([stop]);
 
       const res = await adminRequest(app, "GET", `/admin/routes/${routeId}`);
@@ -448,6 +450,7 @@ describe("Admin Route CRUD", () => {
 
       const body = await res.json();
       expect(body.route.id).toBe(routeId);
+      expect(body.groups).toHaveLength(0);
       expect(body.stops).toHaveLength(1);
       expect(body.stops[0].name).toBe("Test Stop");
     });

@@ -1,14 +1,14 @@
 import { Hono } from "hono";
 import { eq, sql, count, desc, and, asc, inArray, type SQL } from "drizzle-orm";
 import Stripe from "stripe";
-import { adminLoginSchema, adminUpdateEventStatusSchema, adminCreateEventSchema, routeSchema, stopSchema, stopReorderSchema, imageUploadRequestSchema, messageBankSchema, bulkRouteCreateSchema } from "@cityroam/shared/validation";
+import { adminLoginSchema, adminUpdateEventStatusSchema, adminCreateEventSchema, routeSchema, stopSchema, stopReorderSchema, imageUploadRequestSchema, messageBankSchema, bulkRouteCreateSchema, routeBlockSchema, groupUpdateSchema, bulkRouteGroupCreateSchema, groupReorderSchema, blockReorderSchema } from "@cityroam/shared/validation";
 import { generateEventCode } from "@cityroam/shared/utils";
 import { EVENT_EXPIRY_DAYS } from "@cityroam/shared/constants";
 import { generatePresignedUploadUrl } from "../services/s3.js";
-import type { AdminDashboardResponse, AdminEventListResponse, AdminEventDetailResponse, AdminRouteDetailResponse, AdminRouteListResponse, AdminMessageBankListResponse } from "@cityroam/shared/types";
+import type { AdminDashboardResponse, AdminEventListResponse, AdminEventDetailResponse, AdminRouteDetailResponse, AdminRouteListResponse, AdminMessageBankListResponse, AdminRouteGroupResponse } from "@cityroam/shared/types";
 import { env } from "../env.js";
 import { db } from "../db/index.js";
-import { events, participants, messages, routes, stops, messageBanks } from "../db/schema/index.js";
+import { events, participants, messages, routes, stops, messageBanks, routeGroups, routeBlocks } from "../db/schema/index.js";
 import { AppError } from "../middleware/error-handler.js";
 import { adminAuth, signAdminToken } from "../middleware/admin.js";
 import { createLogger } from "../lib/logger.js";
@@ -490,7 +490,7 @@ adminRoutes.post("/admin/routes", adminAuth, async (c) => {
   }, 201);
 });
 
-// GET /admin/routes/:id — route detail with stops
+// GET /admin/routes/:id — route detail with groups and blocks
 adminRoutes.get("/admin/routes/:id", adminAuth, async (c) => {
   const id = c.req.param("id");
 
@@ -502,6 +502,49 @@ adminRoutes.get("/admin/routes/:id", adminAuth, async (c) => {
     throw new AppError(404, "Route not found", "ROUTE_NOT_FOUND");
   }
 
+  // Load groups ordered by position
+  const groupRows = await db
+    .select()
+    .from(routeGroups)
+    .where(eq(routeGroups.route_id, id))
+    .orderBy(asc(routeGroups.position));
+
+  // Load all blocks for these groups in one query
+  const groupIds = groupRows.map((g) => g.id);
+  let blockRows: (typeof routeBlocks.$inferSelect)[] = [];
+  if (groupIds.length > 0) {
+    blockRows = await db
+      .select()
+      .from(routeBlocks)
+      .where(inArray(routeBlocks.group_id, groupIds))
+      .orderBy(asc(routeBlocks.position));
+  }
+
+  // Index blocks by group_id
+  const blocksByGroup: Record<string, typeof blockRows> = {};
+  for (const b of blockRows) {
+    (blocksByGroup[b.group_id] ??= []).push(b);
+  }
+
+  const groups: AdminRouteGroupResponse[] = groupRows.map((g) => ({
+    id: g.id,
+    route_id: g.route_id,
+    position: g.position,
+    name: g.name,
+    created_at: g.created_at.toISOString(),
+    updated_at: g.updated_at.toISOString(),
+    blocks: (blocksByGroup[g.id] ?? []).map((b) => ({
+      id: b.id,
+      group_id: b.group_id,
+      position: b.position,
+      type: b.type as import("@cityroam/shared/types").BlockType,
+      config: b.config as import("@cityroam/shared/types").BlockConfig,
+      delay_ms: b.delay_ms,
+      created_at: b.created_at.toISOString(),
+    })),
+  }));
+
+  // Also load legacy stops for backwards compatibility during migration
   const routeStops = await db
     .select()
     .from(stops)
@@ -537,7 +580,7 @@ adminRoutes.get("/admin/routes/:id", adminAuth, async (c) => {
       created_at: s.created_at.toISOString(),
       updated_at: s.updated_at.toISOString(),
     })),
-    groups: [],
+    groups,
   };
 
   return c.json(response, 200);
@@ -610,6 +653,7 @@ adminRoutes.delete("/admin/routes/:id", adminAuth, async (c) => {
       throw new AppError(409, "Cannot delete route: events are linked to this route", "ROUTE_HAS_EVENTS");
     }
 
+    // Groups and blocks cascade-delete via FK; stops still need explicit delete
     await tx.delete(stops).where(eq(stops.route_id, id));
     await tx.delete(routes).where(eq(routes.id, id));
   });
@@ -922,6 +966,465 @@ adminRoutes.delete("/admin/routes/:id/stops/:stopId", adminAuth, async (c) => {
         updated_at: now,
       })
       .where(eq(routes.id, routeId));
+  });
+
+  return c.json({ success: true }, 200);
+});
+
+// ── Group + Block CRUD ───────────────────────────────────────────────
+
+// POST /admin/routes/bulk-groups — create a route with groups and blocks in one call
+adminRoutes.post("/admin/routes/bulk-groups", adminAuth, async (c) => {
+  const body = await c.req.json();
+  const data = bulkRouteGroupCreateSchema.parse(body);
+
+  const result = await db.transaction(async (tx) => {
+    const [route] = await tx
+      .insert(routes)
+      .values({
+        city: data.route.city,
+        name: data.route.name,
+        description: data.route.description ?? null,
+        total_stops: data.groups.length,
+        estimated_duration_mins: data.route.estimated_duration_mins,
+        estimated_distance_km: String(data.route.estimated_distance_km),
+        is_active: data.route.is_active,
+      })
+      .returning();
+
+    const insertedGroups: Array<typeof routeGroups.$inferSelect & { blocks: (typeof routeBlocks.$inferSelect)[] }> = [];
+
+    for (let gi = 0; gi < data.groups.length; gi++) {
+      const g = data.groups[gi];
+      const [group] = await tx
+        .insert(routeGroups)
+        .values({
+          route_id: route.id,
+          position: gi,
+          name: g.name,
+        })
+        .returning();
+
+      const insertedBlocks: (typeof routeBlocks.$inferSelect)[] = [];
+      for (let bi = 0; bi < g.blocks.length; bi++) {
+        const b = g.blocks[bi];
+        const [block] = await tx
+          .insert(routeBlocks)
+          .values({
+            group_id: group.id,
+            position: b.position ?? bi,
+            type: b.type,
+            config: b.config,
+            delay_ms: b.delay_ms ?? 0,
+          })
+          .returning();
+        insertedBlocks.push(block);
+      }
+
+      insertedGroups.push({ ...group, blocks: insertedBlocks });
+    }
+
+    return { route, groups: insertedGroups };
+  });
+
+  return c.json({
+    route: {
+      id: result.route.id,
+      city: result.route.city,
+      name: result.route.name,
+      description: result.route.description ?? "",
+      total_stops: result.route.total_stops,
+      estimated_duration_mins: result.route.estimated_duration_mins,
+      estimated_distance_km: Number(result.route.estimated_distance_km),
+      is_active: result.route.is_active,
+      created_at: result.route.created_at.toISOString(),
+      updated_at: result.route.updated_at.toISOString(),
+    },
+    groups: result.groups.map((g) => ({
+      id: g.id,
+      route_id: g.route_id,
+      position: g.position,
+      name: g.name,
+      created_at: g.created_at.toISOString(),
+      updated_at: g.updated_at.toISOString(),
+      blocks: g.blocks.map((b) => ({
+        id: b.id,
+        group_id: b.group_id,
+        position: b.position,
+        type: b.type,
+        config: b.config,
+        delay_ms: b.delay_ms,
+        created_at: b.created_at.toISOString(),
+      })),
+    })),
+  }, 201);
+});
+
+// POST /admin/routes/:id/groups — create a group for a route
+adminRoutes.post("/admin/routes/:id/groups", adminAuth, async (c) => {
+  const routeId = c.req.param("id");
+  const body = await c.req.json();
+  const data = groupUpdateSchema.parse(body);
+
+  const route = await db.query.routes.findFirst({
+    where: eq(routes.id, routeId),
+  });
+
+  if (!route) {
+    throw new AppError(404, "Route not found", "ROUTE_NOT_FOUND");
+  }
+
+  const [group] = await db.transaction(async (tx) => {
+    // Determine next position
+    const maxPos = await tx
+      .select({ max: sql<number>`COALESCE(MAX(${routeGroups.position}), -1)` })
+      .from(routeGroups)
+      .where(eq(routeGroups.route_id, routeId));
+    const nextPosition = Number(maxPos[0]?.max ?? -1) + 1;
+
+    const [inserted] = await tx
+      .insert(routeGroups)
+      .values({
+        route_id: routeId,
+        position: nextPosition,
+        name: data.name,
+      })
+      .returning();
+
+    // Update total_stops to reflect group count
+    await tx
+      .update(routes)
+      .set({ total_stops: nextPosition + 1, updated_at: new Date() })
+      .where(eq(routes.id, routeId));
+
+    return [inserted];
+  });
+
+  return c.json({
+    group: {
+      id: group.id,
+      route_id: group.route_id,
+      position: group.position,
+      name: group.name,
+      created_at: group.created_at.toISOString(),
+      updated_at: group.updated_at.toISOString(),
+      blocks: [],
+    },
+  }, 201);
+});
+
+// PUT /admin/routes/:id/groups/reorder — reorder groups (must be before :groupId route)
+adminRoutes.put("/admin/routes/:id/groups/reorder", adminAuth, async (c) => {
+  const routeId = c.req.param("id");
+  const body = await c.req.json();
+  const { group_ids } = groupReorderSchema.parse(body);
+
+  const route = await db.query.routes.findFirst({
+    where: eq(routes.id, routeId),
+  });
+
+  if (!route) {
+    throw new AppError(404, "Route not found", "ROUTE_NOT_FOUND");
+  }
+
+  if (new Set(group_ids).size !== group_ids.length) {
+    throw new AppError(400, "Duplicate group IDs", "DUPLICATE_GROUP_IDS");
+  }
+
+  await db.transaction(async (tx) => {
+    const existingGroups = await tx
+      .select({ id: routeGroups.id })
+      .from(routeGroups)
+      .where(eq(routeGroups.route_id, routeId));
+
+    const existingIds = new Set(existingGroups.map((g) => g.id));
+
+    for (const gid of group_ids) {
+      if (!existingIds.has(gid)) {
+        throw new AppError(400, `Group ${gid} does not belong to this route`, "INVALID_GROUP_ID");
+      }
+    }
+
+    if (group_ids.length !== existingGroups.length) {
+      throw new AppError(400, "All groups must be included in the reorder", "INCOMPLETE_GROUP_LIST");
+    }
+
+    const now = new Date();
+    const cases = group_ids
+      .map((id: string, i: number) => sql`WHEN ${routeGroups.id} = ${id} THEN ${i}`)
+      .reduce((acc: SQL, c: SQL) => sql`${acc} ${c}`);
+
+    await tx
+      .update(routeGroups)
+      .set({
+        position: sql`CASE ${cases} END`,
+        updated_at: now,
+      })
+      .where(inArray(routeGroups.id, group_ids));
+  });
+
+  return c.json({ success: true }, 200);
+});
+
+// PUT /admin/routes/:id/groups/:groupId — update a group
+adminRoutes.put("/admin/routes/:id/groups/:groupId", adminAuth, async (c) => {
+  const routeId = c.req.param("id");
+  const groupId = c.req.param("groupId");
+  const body = await c.req.json();
+  const data = groupUpdateSchema.parse(body);
+
+  const existing = await db.query.routeGroups.findFirst({
+    where: and(eq(routeGroups.id, groupId), eq(routeGroups.route_id, routeId)),
+  });
+
+  if (!existing) {
+    throw new AppError(404, "Group not found", "GROUP_NOT_FOUND");
+  }
+
+  const [updated] = await db
+    .update(routeGroups)
+    .set({
+      name: data.name,
+      updated_at: new Date(),
+    })
+    .where(eq(routeGroups.id, groupId))
+    .returning();
+
+  return c.json({
+    group: {
+      id: updated.id,
+      route_id: updated.route_id,
+      position: updated.position,
+      name: updated.name,
+      created_at: updated.created_at.toISOString(),
+      updated_at: updated.updated_at.toISOString(),
+    },
+  }, 200);
+});
+
+// DELETE /admin/routes/:id/groups/:groupId — delete a group and renumber
+adminRoutes.delete("/admin/routes/:id/groups/:groupId", adminAuth, async (c) => {
+  const routeId = c.req.param("id");
+  const groupId = c.req.param("groupId");
+
+  const existing = await db.query.routeGroups.findFirst({
+    where: and(eq(routeGroups.id, groupId), eq(routeGroups.route_id, routeId)),
+  });
+
+  if (!existing) {
+    throw new AppError(404, "Group not found", "GROUP_NOT_FOUND");
+  }
+
+  await db.transaction(async (tx) => {
+    const now = new Date();
+
+    // Blocks cascade-delete via FK
+    await tx.delete(routeGroups).where(eq(routeGroups.id, groupId));
+
+    // Renumber remaining groups
+    const remainingGroups = await tx
+      .select({ id: routeGroups.id })
+      .from(routeGroups)
+      .where(eq(routeGroups.route_id, routeId))
+      .orderBy(asc(routeGroups.position));
+
+    if (remainingGroups.length > 0) {
+      const cases = remainingGroups
+        .map((g, i) => sql`WHEN ${routeGroups.id} = ${g.id} THEN ${i}`)
+        .reduce((acc, c) => sql`${acc} ${c}`);
+
+      await tx
+        .update(routeGroups)
+        .set({
+          position: sql`CASE ${cases} END`,
+          updated_at: now,
+        })
+        .where(inArray(routeGroups.id, remainingGroups.map((g) => g.id)));
+    }
+
+    // Update route total_stops
+    await tx
+      .update(routes)
+      .set({
+        total_stops: remainingGroups.length,
+        updated_at: now,
+      })
+      .where(eq(routes.id, routeId));
+  });
+
+  return c.json({ success: true }, 200);
+});
+
+// POST /admin/groups/:groupId/blocks — create a block for a group
+adminRoutes.post("/admin/groups/:groupId/blocks", adminAuth, async (c) => {
+  const groupId = c.req.param("groupId");
+  const body = await c.req.json();
+  const data = routeBlockSchema.parse(body);
+
+  const group = await db.query.routeGroups.findFirst({
+    where: eq(routeGroups.id, groupId),
+  });
+
+  if (!group) {
+    throw new AppError(404, "Group not found", "GROUP_NOT_FOUND");
+  }
+
+  const [block] = await db.transaction(async (tx) => {
+    const maxPos = await tx
+      .select({ max: sql<number>`COALESCE(MAX(${routeBlocks.position}), -1)` })
+      .from(routeBlocks)
+      .where(eq(routeBlocks.group_id, groupId));
+    const nextPosition = Number(maxPos[0]?.max ?? -1) + 1;
+
+    const [inserted] = await tx
+      .insert(routeBlocks)
+      .values({
+        group_id: groupId,
+        position: data.position ?? nextPosition,
+        type: data.type,
+        config: data.config,
+        delay_ms: data.delay_ms ?? 0,
+      })
+      .returning();
+
+    return [inserted];
+  });
+
+  return c.json({
+    block: {
+      id: block.id,
+      group_id: block.group_id,
+      position: block.position,
+      type: block.type,
+      config: block.config,
+      delay_ms: block.delay_ms,
+      created_at: block.created_at.toISOString(),
+    },
+  }, 201);
+});
+
+// PUT /admin/groups/:groupId/blocks/reorder — reorder blocks within a group
+adminRoutes.put("/admin/groups/:groupId/blocks/reorder", adminAuth, async (c) => {
+  const groupId = c.req.param("groupId");
+  const body = await c.req.json();
+  const { block_ids } = blockReorderSchema.parse(body);
+
+  const group = await db.query.routeGroups.findFirst({
+    where: eq(routeGroups.id, groupId),
+  });
+
+  if (!group) {
+    throw new AppError(404, "Group not found", "GROUP_NOT_FOUND");
+  }
+
+  if (new Set(block_ids).size !== block_ids.length) {
+    throw new AppError(400, "Duplicate block IDs", "DUPLICATE_BLOCK_IDS");
+  }
+
+  await db.transaction(async (tx) => {
+    const existingBlocks = await tx
+      .select({ id: routeBlocks.id })
+      .from(routeBlocks)
+      .where(eq(routeBlocks.group_id, groupId));
+
+    const existingIds = new Set(existingBlocks.map((b) => b.id));
+
+    for (const bid of block_ids) {
+      if (!existingIds.has(bid)) {
+        throw new AppError(400, `Block ${bid} does not belong to this group`, "INVALID_BLOCK_ID");
+      }
+    }
+
+    if (block_ids.length !== existingBlocks.length) {
+      throw new AppError(400, "All blocks must be included in the reorder", "INCOMPLETE_BLOCK_LIST");
+    }
+
+    const cases = block_ids
+      .map((id: string, i: number) => sql`WHEN ${routeBlocks.id} = ${id} THEN ${i}`)
+      .reduce((acc: SQL, c: SQL) => sql`${acc} ${c}`);
+
+    await tx
+      .update(routeBlocks)
+      .set({
+        position: sql`CASE ${cases} END`,
+      })
+      .where(inArray(routeBlocks.id, block_ids));
+  });
+
+  return c.json({ success: true }, 200);
+});
+
+// PUT /admin/blocks/:blockId — update a block
+adminRoutes.put("/admin/blocks/:blockId", adminAuth, async (c) => {
+  const blockId = c.req.param("blockId");
+  const body = await c.req.json();
+  const data = routeBlockSchema.parse(body);
+
+  const existing = await db.query.routeBlocks.findFirst({
+    where: eq(routeBlocks.id, blockId),
+  });
+
+  if (!existing) {
+    throw new AppError(404, "Block not found", "BLOCK_NOT_FOUND");
+  }
+
+  const [updated] = await db
+    .update(routeBlocks)
+    .set({
+      type: data.type,
+      config: data.config,
+      delay_ms: data.delay_ms ?? 0,
+    })
+    .where(eq(routeBlocks.id, blockId))
+    .returning();
+
+  return c.json({
+    block: {
+      id: updated.id,
+      group_id: updated.group_id,
+      position: updated.position,
+      type: updated.type,
+      config: updated.config,
+      delay_ms: updated.delay_ms,
+      created_at: updated.created_at.toISOString(),
+    },
+  }, 200);
+});
+
+// DELETE /admin/blocks/:blockId — delete a block and renumber
+adminRoutes.delete("/admin/blocks/:blockId", adminAuth, async (c) => {
+  const blockId = c.req.param("blockId");
+
+  const existing = await db.query.routeBlocks.findFirst({
+    where: eq(routeBlocks.id, blockId),
+  });
+
+  if (!existing) {
+    throw new AppError(404, "Block not found", "BLOCK_NOT_FOUND");
+  }
+
+  await db.transaction(async (tx) => {
+    await tx.delete(routeBlocks).where(eq(routeBlocks.id, blockId));
+
+    // Renumber remaining blocks in this group
+    const remainingBlocks = await tx
+      .select({ id: routeBlocks.id })
+      .from(routeBlocks)
+      .where(eq(routeBlocks.group_id, existing.group_id))
+      .orderBy(asc(routeBlocks.position));
+
+    if (remainingBlocks.length > 0) {
+      const cases = remainingBlocks
+        .map((b, i) => sql`WHEN ${routeBlocks.id} = ${b.id} THEN ${i}`)
+        .reduce((acc, c) => sql`${acc} ${c}`);
+
+      await tx
+        .update(routeBlocks)
+        .set({
+          position: sql`CASE ${cases} END`,
+        })
+        .where(inArray(routeBlocks.id, remainingBlocks.map((b) => b.id)));
+    }
   });
 
   return c.json({ success: true }, 200);

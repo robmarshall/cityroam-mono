@@ -134,6 +134,15 @@ export const routeGroupSchema = z.object({
   blocks: z.array(routeBlockSchema).min(1).max(50),
 });
 
+export const groupUpdateSchema = z.object({
+  name: z.string().trim().min(1).max(100),
+});
+
+export const bulkRouteGroupCreateSchema = z.object({
+  route: routeSchema,
+  groups: z.array(routeGroupSchema).min(1, "At least one group is required").max(30, "Maximum 30 groups per route"),
+});
+
 export const groupReorderSchema = z.object({
   group_ids: z.array(z.string().uuid()).min(1),
 });
