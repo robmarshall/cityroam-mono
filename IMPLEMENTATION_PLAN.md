@@ -129,7 +129,7 @@ This means the marketing site never needs to know or care about language — it 
 - [x] **3.4 Error message i18n** — The app's `friendlyError()` utility maps API error codes to English strings. Refactor to use i18next translation keys instead of hardcoded strings. Extend to cover Zod validation errors (per Phase 1.8) — the app should display its own translated error messages based on error codes rather than raw Zod messages.
   - **Learnings:** Data-driven ERROR_CODE_KEYS map is cleaner than a switch — easy to extend. `validationMessage()` cascades through validation keys, then error code keys, then generic fallback. Note: `ChatPage.tsx:513` and `LobbyPage.tsx:165,183` still use raw `err.message` for ApiError — these pre-date this task and should be converted to `friendlyError(err)` in a follow-up.
 
-- [ ] **3.5 Translation files** — Create `es.json`, `fr.json`, etc. as new languages are needed. Small surface area (~100 strings) makes this manageable.
+- [x] **3.5 Translation files** — Create `es.json`, `fr.json`, etc. as new languages are needed. Small surface area (~100 strings) makes this manageable.
 
 ---
 
