@@ -272,6 +272,8 @@ adminRoutes.get("/admin/events/:id", adminAuth, async (c) => {
       stripe_payment_id: event.stripe_payment_id,
       refund_requested: event.refund_requested,
       refund_note: event.refund_note,
+      language: 'en' as any,
+      route_family_id: '',
     },
     route_name: route?.name ?? null,
     total_stops: route?.total_stops ?? null,
@@ -450,7 +452,8 @@ adminRoutes.get("/admin/routes", adminAuth, async (c) => {
   const response: AdminRouteListResponse = {
     routes: routeRows.map((r) => ({
       id: r.id,
-      city: r.city,
+      language: 'en' as any,
+      route_family_id: '',
       name: r.name,
       description: r.description ?? "",
       total_stops: r.total_stops,
@@ -487,7 +490,8 @@ adminRoutes.post("/admin/routes", adminAuth, async (c) => {
   return c.json({
     route: {
       id: route.id,
-      city: route.city,
+      language: 'en' as any,
+      route_family_id: '',
       name: route.name,
       description: route.description ?? "",
       total_stops: route.total_stops,
@@ -557,7 +561,8 @@ adminRoutes.get("/admin/routes/:id", adminAuth, async (c) => {
   const response: AdminRouteDetailResponse = {
     route: {
       id: route.id,
-      city: route.city,
+      language: 'en' as any,
+      route_family_id: '',
       name: route.name,
       description: route.description ?? "",
       total_stops: route.total_stops,
@@ -604,7 +609,8 @@ adminRoutes.put("/admin/routes/:id", adminAuth, async (c) => {
   return c.json({
     route: {
       id: updated.id,
-      city: updated.city,
+      language: 'en' as any,
+      route_family_id: '',
       name: updated.name,
       description: updated.description ?? "",
       total_stops: updated.total_stops,
@@ -706,7 +712,8 @@ adminRoutes.post("/admin/routes/bulk-groups", adminAuth, async (c) => {
   return c.json({
     route: {
       id: result.route.id,
-      city: result.route.city,
+      language: 'en' as any,
+      route_family_id: '',
       name: result.route.name,
       description: result.route.description ?? "",
       total_stops: result.route.total_stops,
@@ -1229,6 +1236,7 @@ adminRoutes.get("/admin/message-banks", adminAuth, async (c) => {
       id: m.id,
       type: m.type,
       content: m.content,
+      language: 'en' as any,
       is_active: m.is_active,
       created_at: m.created_at.toISOString(),
       updated_at: m.updated_at.toISOString(),

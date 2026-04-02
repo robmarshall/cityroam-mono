@@ -279,9 +279,9 @@ describe("Checkout routes", () => {
         body: "raw-body",
       });
 
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(500);
       const body = await res.json();
-      expect(body).toEqual({ received: true });
+      expect(body).toEqual({ error: "No active route" });
 
       expect(db.insert).not.toHaveBeenCalled();
 

@@ -1,4 +1,4 @@
-# Implementation Plan — Route Builder Refactor: Block-Based Architecture
+# Implementation Plan — Multi-Language (i18n) Support
 
 ## Status Key
 - [ ] Not started
@@ -9,183 +9,230 @@
 
 ## Overview
 
-Refactor the route model from a flat list of stops into a composable **group + block** architecture. Routes are made of ordered **groups** (logical sections), each containing ordered **blocks** (message, image, question, action, map). This replaces the stops-only model and the separate opening message system, making routes fully authorable with flexible content flow.
+City Roam is currently English-only across all 5 packages. This is a missed market opportunity -- players who speak other languages can't use the product. This plan covers adding multi-language support to the marketing site, player app, API pipeline, and database, enabling routes to be authored and played in any supported language.
 
 ---
 
-## Phase 1: Revert Previous Iteration
+## Core Design Decision: Language Lives on the Route, Grouped by Family
 
-- [x] **1.1 Revert opening sequences** — Delete `packages/api/src/db/schema/opening-sequences.ts`, `packages/admin/src/pages/OpeningSequencesPage.tsx`. Remove opening sequence admin API routes from `admin.ts`. Remove opening sequence nav link from `AdminLayout.tsx` and route from `router.tsx`. Remove generated migration `0004_workable_bloodscream.sql`.
-- [x] **1.2 Revert stop/hint changes** — Restore `stopSchema.hints` to `z.array(z.string())`, restore `Stop.hints` to `string[]`, restore `stopToForm`/hint editor in `RouteEditorPage.tsx`, restore hint handler to use `string[]`, restore test fixtures to use `string[]` hints.
-- [x] **1.3 Revert event start handler** — Restore original opening message bank logic in `events.ts` (messageBanks import, template selection, image message).
-- [x] **1.4 Keep useful additions** — Keep `sendSequence()` utility (`packages/api/src/services/send-sequence.ts`), keep `Linkify` component in `ChatPage.tsx`, keep `SequenceItem` type in shared.
+A route already contains location-specific content (clues, hints, accepted answers). A Spanish route about Leeds is fundamentally **a different route** from the English one. So rather than adding complex multilingual JSONB to block configs, we create separate routes per language and **group them under a shared "route family"**.
 
-## Phase 2: Shared Types & Validation
+### Route Families
 
-- [x] **2.1 Block config types** — Create `packages/shared/src/types/blocks.ts` with discriminated union types for each block config.
-- [x] **2.2 Entity types** — Add `RouteGroup` and `RouteBlock` interfaces to `entities.ts`. Export from `types/index.ts`.
-- [x] **2.3 API response types** — Add `AdminRouteDetailResponse` update to include groups/blocks. Add block-level response types to `api.ts`.
-- [x] **2.4 Validation schemas** — Add `routeGroupSchema`, `routeBlockSchema` (with per-type config validation), reorder schemas.
-- [x] **2.5 WebSocket types** — Add `ActionConfirmPayload`, `ActionWaitingPayload` to websocket types. Add `action_confirm` and `action_waiting` types.
+A new `route_families` table acts as a lightweight parent that ties together all language variants of the same logical route:
 
-## Phase 3: Database Schema & Migration
+```
+route_families
+├── id (uuid PK)
+├── name (varchar) -- e.g. "Leeds City Centre"
+├── city (varchar) -- shared across all variants
+├── created_at
+└── updated_at
 
-- [x] **3.1 route_groups schema** — Create `packages/api/src/db/schema/route-groups.ts`: id, route_id (FK cascade), position, name, created_at, updated_at. Index on route_id.
-- [x] **3.2 route_blocks schema** — Create `packages/api/src/db/schema/route-blocks.ts`: id, group_id (FK cascade), position, type (varchar), config (jsonb), delay_ms (integer), created_at. Index on group_id.
-- [x] **3.3 Events table changes** — Add `current_group_id` (uuid FK nullable) and `current_block_id` (uuid FK nullable) to events table. Keep `current_stop` temporarily for migration.
-- [x] **3.4 Export new tables** — Update `packages/api/src/db/schema/index.ts`.
-- [x] **3.5 Generate migration** — Run `drizzle-kit generate`. Then add data migration SQL:
-  - For each existing stop: create a route_group, then create blocks (message for directions, image blocks, question block with clue/answers/hints, message for fun_fact)
-  - Migrate `current_stop` on active events to corresponding `current_group_id` + `current_block_id`
-  - Drop `stops` table and `current_stop` column (or defer to a later migration)
+routes
+├── ... (existing columns)
+├── language (varchar NOT NULL DEFAULT 'en')
+└── route_family_id (uuid FK → route_families.id, NOT NULL)
+```
 
-## Phase 4: Game Engine — Group Runner
+**Why a family table?**
+- Admin UI can list families, click in, and see all language variants side by side
+- Editors can easily cross-reference between languages when authoring
+- Shared metadata (city, canonical name) lives on the family; language-specific metadata (name, description, content) stays on the route
+- Clean queries: "give me all routes for this family" is a simple FK filter
 
-- [x] **4.1 Group runner service** — Create `packages/api/src/services/group-runner.ts`:
-  - `runGroup(eventId, eventCode, groupId)` — loads blocks in order, iterates:
-    - `message` block: apply template vars, call `writeGuideMessage()`
-    - `image` block: call `writeGuideMessage("", imageUrl)`
-    - `map` block: send as guide message with map link
-    - `question` block: update `current_block_id` on event, return (pauses for user interaction)
-    - `action` block: update `current_block_id` on event, publish `action_waiting` control event, return (pauses for lead confirmation)
-    - For auto-send blocks: show typing indicator during delay, then send
-  - `advanceAfterBlock(eventId, eventCode, blockId)` — called after question answered or action confirmed, continues sending remaining blocks in group, then advances to next group
-  - Reuse `sendSequence()` for hint delivery within question blocks
+**Additional schema changes:**
+1. Add `language` column to `routes` -- the authoring unit
+2. Add `route_family_id` FK to `routes` -- links to parent family
+3. Add `language` column to `events` -- set when lead picks language in lobby, used at runtime
+4. Add `route_family_id` FK to `events` -- set at purchase time, used to find available variants
+5. Add `language` column to `message_banks` -- filtered at query time
+6. Move `city` from `routes` to `route_families` (routes inherit it via the family); remove `city` from `routes`
 
-- [x] **4.2 Template variable system** — Extract template var replacement into a shared helper. Variables available: `{{CITY_NAME}}`, `{{TOTAL_STOPS}}`, `{{REVIEW_LINK}}`, etc. Applied to message block content.
+**Type definition:**
+```typescript
+export type SupportedLanguage = "en" | "es" | "fr" | "de" | "nl";
+```
 
-## Phase 5: Game Engine — Pipeline Updates
+### Stripe & Language Selection Flow
 
-- [x] **5.1 Orchestrator** — Update `orchestrator.ts` to load current question block (via `current_block_id`) instead of current stop. Extract clue, accepted_answers, hints from `block.config`.
-- [x] **5.2 Answer attempt handler** — Update `answer-attempt.ts`: load question block config instead of stop data. On correct answer, call `advanceAfterBlock()` instead of manually sending fun fact + directions + next clue.
-- [x] **5.3 Hint request handler** — Update `hint-request.ts`: load hints from question block config. Use `sendSequence()` for multi-message hints. On exhaustion, call `advanceAfterBlock()`.
-- [x] **5.4 Game completion** — Update `game-completion.ts`: triggered by group-runner when last group's last block completes.
-- [x] **5.5 Event start handler** — Rewrite `POST /event/:code/start` in `events.ts`: set event to IN_PROGRESS, set `current_group_id` to first group, fire `runGroup()` async, return 200.
+One Stripe product maps to one route family (not an individual route). Language is **not** determined at purchase time or by the marketing site locale. Instead:
 
-## Phase 6: WebSocket — Action Block Support
+1. **Purchase**: Marketing site passes the route family to checkout. Stripe webhook creates an event linked to `route_family_id` and a default `route_id` (English variant). `event.language` defaults to `'en'`.
+2. **Lobby**: Before the game starts, the lead sees a language selector showing all available variants for the route family. Selecting a language updates `event.route_id` and `event.language`.
+3. **Game start**: Language is locked once the game begins. All pipeline messages, AI prompts, and message bank queries use the event's language from this point.
 
-- [x] **6.1 Action confirm handler** — In `ws/handlers.ts`, handle `action_confirm` message type: verify sender is lead, verify block_id matches `current_block_id`, call `advanceAfterBlock()`.
-- [x] **6.2 Control event types** — Add `action_waiting` to `ControlEventPayload` union in redis types. Add to WebSocket subscription handler in `ws/subscriptions.ts`.
-- [x] **6.3 ChatMessagePayload update** — Add optional `block_type` field to `ChatMessagePayload` so the client can render action/map blocks differently.
+This means the marketing site never needs to know or care about language — it just sells a route family.
 
-## Phase 7: Admin API
+---
 
-- [x] **7.1 Route detail response** — Update `GET /admin/routes/:id` to return groups with nested blocks alongside legacy stops.
-- [x] **7.2 Group CRUD** — Add endpoints: `POST /admin/routes/:id/groups`, `PUT /admin/routes/:id/groups/:groupId`, `DELETE /admin/routes/:id/groups/:groupId`.
-- [x] **7.3 Block CRUD** — Add endpoints: `POST /admin/groups/:groupId/blocks`, `PUT /admin/blocks/:blockId`, `DELETE /admin/blocks/:blockId`.
-- [x] **7.4 Reorder endpoints** — `PUT /admin/routes/:id/groups/reorder` (group positions), `PUT /admin/groups/:groupId/blocks/reorder` (block positions within group).
-- [x] **7.5 Bulk create update** — Added `POST /admin/routes/bulk-groups` for group-based bulk create (old bulk endpoint kept for compat).
-- [x] **7.6 Remove stop endpoints** — Stop endpoints retained during migration period; will be removed when Phase 8 replaces the admin UI.
+## Phase 1: Foundation (Shared + Database Schema)
 
-## Phase 8: Admin UI — Route Editor Rewrite
+- [ ] **1.1 Shared package types & constants** — Add `SupportedLanguage` type to `packages/shared/src/types/enums.ts`. Add `SUPPORTED_LANGUAGES` and `DEFAULT_LANGUAGE` to `packages/shared/src/constants/index.ts`. Add `RouteFamily` type to `packages/shared/src/types/entities.ts`. Add `language` and `route_family_id` fields to `Route` entity type. Remove `city` from `Route` type. Add `language` and `route_family_id` fields to `Event` entity type. Add `language` field to `MessageBank` entity type. Add `language` and `available_languages` to `EventDetailResponse` and `JoinEventResponse` in `packages/shared/src/types/api.ts`.
 
-- [x] **8.1 Route editor structure** — Rewrite `RouteEditorPage.tsx` with group-based layout: route metadata form at top, ordered collapsible groups, blocks within groups, drag-to-reorder via @dnd-kit, explicit Save buttons (no autosave).
-- [x] **8.2 Block type picker** — "Add Block" button within each group opens a picker with all 5 block types (Message, Image, Question, Action, Map) with distinct colored icon badges.
-- [x] **8.3 Block editors** — Type-specific editor forms for all block types with delay_ms input and preset buttons.
-- [x] **8.4 Group management** — Add group (inline name input), rename group (inline form), delete group (with confirmation), reorder groups (drag-and-drop with save/cancel).
-- [x] **8.5 Remove old stop editor** — Removed all stop-specific form code, StopForm type, stop helper functions, stop CRUD handlers, and stop drag-and-drop.
+- [ ] **1.2 New table: `route_families`** — Create `packages/api/src/db/schema/route-families.ts` with columns: `id` (uuid PK), `name` (varchar NOT NULL), `city` (varchar NOT NULL), `created_at`, `updated_at`. Export from schema index.
 
-## Phase 9: Player App — New Block Renderers
+- [ ] **1.3 Alter `routes` table** — Add `language varchar NOT NULL DEFAULT 'en'`. Add `route_family_id uuid` FK → `route_families.id`. Remove `city` from `routes` (it now lives on `route_families`). Migration strategy: create a route_family for each existing route (using its city + name), set the FK, then make FK NOT NULL, then drop `city`.
 
-- [x] **9.1 Action block rendering** — When `action_waiting` control event arrives, show a button bubble in the chat. Only the lead sees an interactive button; others see "Waiting for [lead name]...". On press, send `action_confirm` WebSocket message.
+- [ ] **1.4 Alter `events` table** — Add `language varchar NOT NULL DEFAULT 'en'`. Add `route_family_id uuid` FK → `route_families.id`. Migration: set `route_family_id` from each event's `route.route_family_id`, then make NOT NULL.
 
-- [x] **9.2 Map block rendering** — When a message with `block_type: 'map'` arrives, render as a styled map link card (icon + "View on Google Maps" link) instead of plain text.
+- [ ] **1.5 Alter `message_banks` table** — Add `language varchar NOT NULL DEFAULT 'en'`. Update index to include `(type, language)` for efficient querying.
 
-- [x] **9.3 Linkify** — Already done in previous iteration. URLs in all message bubbles are clickable.
+- [ ] **1.6 Seed data & migration** — Create route_families for all existing routes and link them. Tag all existing message bank entries as `language: 'en'`. All existing routes/events default to 'en'.
 
-## Phase 10: Testing & Cleanup
+- [ ] **1.7 Fix message bank type validation** — Pre-existing bug: `messageBankTypeSchema` in `admin-input.ts` is missing `"hint-offer"` and `"hint-decline"` types. Admins cannot create these message bank entries through the UI. Fix the validation schema to include all 9 types. This must be fixed before we can create language-specific hint-offer/hint-decline messages.
 
-- [x] **10.1 Update test fixtures** — Update all test helpers and fixtures to use groups/blocks instead of stops. [COMPLETE]
-- [x] **10.2 Pipeline tests** — Update orchestrator, answer-attempt, hint-request, game-completion tests for block-based flow. [COMPLETE]
-- [x] **10.3 Admin API tests** — Update admin route tests for group/block CRUD. [COMPLETE]
-- [x] **10.4 Remove dead code** — Remove stops table references, old stop CRUD code, opening sequence code. Clean up imports. [COMPLETE]
-- [x] **10.5 Update LLM authoring docs** — Update `docs/llm-authoring/` to reflect new groups/blocks data model and API format.
+- [ ] **1.8 Player-facing validation messages** — Zod schemas in `user-input.ts` have ~8 hardcoded English error messages (display name too short/long, message too long, etc.). These surface in the player app. Two options: (a) make the app show its own i18n error messages based on error codes rather than the raw Zod messages, or (b) accept that validation errors stay English since they're rare edge cases. Recommend option (a) -- the app already has `friendlyError()` for API errors, extend this pattern to validation errors.
+
+---
+
+## Phase 2: API Pipeline Language Threading
+
+- [ ] **2.1 Message bank queries** — Update `getRandomMessageBank()` to accept `language` parameter and filter by `(type, language, is_active)`.
+
+- [ ] **2.2 Orchestrator language threading** — In `packages/api/src/services/pipeline/orchestrator.ts`: load `event.language` at Step 1, pass it through to all handler contexts. Add `language` field to all handler context interfaces.
+
+- [ ] **2.3 Update all handlers** — `answer-attempt.ts`: pass language to `getRandomMessageBank()` and `buildAnswerMatchPrompt()`. `hint-request.ts`: pass language to message bank calls. `hint-nudge.ts`: pass language to message bank calls. `question.ts`: pass language to `buildQuestionPrompt()`. `silent.ts`: pass language where needed. `pre-filter.ts`: pass language to over-length message bank.
+
+- [ ] **2.4 AI prompt adaptation** — `classifier.ts`: add `"The player is communicating in ${language}"` to classification prompt; add multilingual examples for hint-request, hint-nudge, etc. `answer-attempt.ts`: add `"The game language is ${language}"` to answer match prompt. `question.ts`: add `"Respond in ${languageName}"` to question prompt.
+
+- [ ] **2.5 Deterministic matching** — `deterministic-match.ts`: make article stripping language-aware (en: the/a/an, es: el/la/los/las, fr: le/la/les, etc.). Add Unicode normalization (NFD + strip combining marks) so accented characters match their base forms (e.g., `café` matches `cafe`). Handle language-specific characters like `ñ`, `ß`, `ü`.
+
+- [ ] **2.6 Per-language word lists config** — Currently `word-match.ts` has hardcoded English-only `AFFIRMATIVE_WORDS` and `NEGATIVE_WORDS` arrays used for hint offer confirmation in the orchestrator. Replace with a config file (e.g. `packages/api/src/config/word-lists.ts`) that exports a `Record<SupportedLanguage, { affirmative: string[], negative: string[] }>` object. The `isAffirmativeResponse()` and `isNegativeResponse()` functions take a `language` parameter and look up the correct word list from the config. No database or admin UI needed -- just a typed config file that developers edit when adding a new language.
+
+- [ ] **2.7 Idle timer messages** — `idle-timer.ts` has 3 hardcoded player-facing messages ("Welcome back...", "It's been a while...", "Still exploring?"). These need to either become new message bank types (`idle-resume`, `idle-pause`, `idle-nudge`) or use per-language fallback maps.
+
+- [ ] **2.8 Guide response cap message** — `guide-response-cap.ts` has a hardcoded system message ("The guide has reached its message limit..."). Add as a new message bank type (`guide-cap`) or per-language fallback map.
+
+- [ ] **2.9 Event creation & API responses** — `packages/api/src/routes/checkout.ts`: when creating event from Stripe webhook, set `event.route_family_id` from the route family, set `event.route_id` to the default English variant, set `event.language` to `'en'`. `packages/api/src/routes/events.ts`: include `language` and available language variants in `GET /event/:code` response. Add `PUT /event/:code/language` endpoint for lead to change language before game start (updates `route_id` and `language`). Admin event creation endpoint: accept optional `language` or default to `'en'`.
+
+- [ ] **2.10 Confirmation email i18n** — The Stripe webhook in `checkout.ts` sends a hardcoded English confirmation email (subject, body, instructions). Create per-language email templates. The email language comes from the event's language (which comes from the route).
+
+- [ ] **2.11 Template vars city lookup** — `template-vars.ts` queries `route.city` for the `{{CITY_NAME}}` variable. After moving `city` to `route_families`, update `buildRouteTemplateVars()` to join `route_families` to get the city name.
+
+- [ ] **2.12 WebSocket system messages** — Audit all WebSocket payloads for hardcoded English text. `GameStartedPayload`, `GameCompletePayload`, `ErrorPayload`, and system messages sent via `incoming-subscriber.ts` may carry player-facing strings. Move any hardcoded text to message banks or per-language fallback maps.
+
+- [ ] **2.13 Checkout flow: Stripe product → route family mapping** — Currently the Stripe webhook picks the first active route. With route families, one Stripe product maps to one route family. The marketing site passes the `route_family_id` to `POST /checkout/create-session`, which stores it in Stripe session metadata. The webhook reads the metadata, finds the English variant of that family as the default, and creates the event linked to both the family and the default route. Language selection happens later in the app lobby — the marketing site locale is irrelevant.
+
+---
+
+## Phase 3: Player App i18n
+
+- [ ] **3.1 Setup** — Install `react-i18next` + `i18next` in `packages/app`. Create `packages/app/src/i18n/index.ts` (i18next initialization). Create `packages/app/src/i18n/en.json` (extract all hardcoded strings, ~100 strings). Wrap app with i18n provider in `packages/app/src/main.tsx`.
+
+- [ ] **3.2 String extraction** — `JoinPage.tsx`: "Join the Team", "Your name", "Enter your display name", all `friendlyError()` messages. `LobbyPage.tsx`: "Waiting for players", "Start the Game", "Lead", "You", status messages. `ChatPage.tsx`: "Type a message...", "Connected", "Reconnecting...", dialog text, "Leave Game", "Change Name". `CompletePage.tsx`: "Game Complete!", share text, "Leave a Google Review", "Done". `ErrorBoundary.tsx`: error fallback text.
+
+- [ ] **3.3 Language selection flow** — `GET /event/:code` returns `language` field and `available_languages` list (all active variants in the family). `JoinPage` reads event language, calls `i18next.changeLanguage(event.language)`. In `LobbyPage`, the lead sees a language selector dropdown (populated from `available_languages`). Changing language calls `PUT /event/:code/language`, which updates the event's route and language. All UI renders in the event's language. Language is locked once the game starts — the `PUT` endpoint rejects changes for events not in `WAITING` status. When the lead selects a new language, show a bilingual confirmation dialog — in both the current language and the target language — e.g. "Are you sure you want to change the language to Spanish? You cannot change it once the game has started. / ¿Estás seguro de que quieres cambiar el idioma a español? No podrás cambiarlo una vez que el juego haya comenzado." The selector is hidden in `ChatPage`.
+
+- [ ] **3.4 Error message i18n** — The app's `friendlyError()` utility maps API error codes to English strings. Refactor to use i18next translation keys instead of hardcoded strings. Extend to cover Zod validation errors (per Phase 1.8) — the app should display its own translated error messages based on error codes rather than raw Zod messages.
+
+- [ ] **3.5 Translation files** — Create `es.json`, `fr.json`, etc. as new languages are needed. Small surface area (~100 strings) makes this manageable.
+
+---
+
+## Phase 4: Marketing Site i18n (Infrastructure Only)
+
+> **Note:** This phase sets up the i18n infrastructure and extracts English strings into translation files. Actual translations into other languages are **not** in scope — they will be authored later as new markets are targeted.
+
+- [ ] **4.1 Library setup: `next-intl` v4** — Install `next-intl` in `packages/marketing`. Create `packages/marketing/src/i18n/config.ts` (locales list, default locale). Create `packages/marketing/src/i18n/request.ts` (`getRequestConfig` for next-intl).
+
+- [ ] **4.2 Locale-prefixed routing** — Create `packages/marketing/src/middleware.ts` (locale detection from `Accept-Language` header, redirect bare paths to `/en/...`). Move all pages under `src/app/[locale]/`: layout.tsx, page.tsx, families/page.tsx, hen-parties/page.tsx, team-building/page.tsx, checkout/success/page.tsx.
+
+- [ ] **4.3 English extraction** — Create `packages/marketing/messages/en.json` (extract all ~8,000 words of hardcoded content). Structure by page: `home.*`, `families.*`, `henParties.*`, `teamBuilding.*`, `common.*`, `metadata.*`. Replace hardcoded strings in all pages with `useTranslations()` / `getTranslations()` calls. No other language files yet — those are created when translations are authored.
+
+- [ ] **4.4 SEO** — `layout.tsx`: dynamic `<html lang={locale}>`, locale-aware `generateMetadata`, translated JSON-LD. Add `<link rel="alternate" hrefLang>` tags via next-intl. `sitemap.ts`: generate entries for all locale/page combinations. Each page's `generateMetadata` uses translated title/description.
+
+- [ ] **4.5 UI updates** — Add language switcher to `Header.tsx` (dropdown or flag icons). Update `CTAButton.tsx` (translated button label and loading/error text). Update `FAQ.tsx` (FAQ items from translation files). Update `ChatDemo.tsx` (demo messages from translation files).
+
+- [ ] **4.6 next.config.ts** — Add `next-intl` plugin configuration.
+
+---
+
+## Phase 5: Admin Updates
+
+- [ ] **5.1 Route families UI (new)** — Routes list page now shows **route families** instead of individual routes. Each family card shows: family name, city, and language badges (e.g. "EN", "ES", "FR") for each variant that exists. Clicking a family opens a **family detail page** showing all language variants side by side. "Create Route Family" button to create the parent entity (name + city). Within a family: "Add Language Variant" button to create a new route in a specific language. Editors can easily cross-reference between languages when authoring content.
+
+- [ ] **5.2 Route editor updates** — Route editor stays largely the same but now includes a read-only language badge. The route's family context is visible (breadcrumb: Family Name > English / Spanish / etc.). Language is set at route creation time (when adding a variant) and is immutable after.
+
+- [ ] **5.3 Message banks management** — Add language filter/tab to message banks page. Add language field to message bank create/edit form.
+
+- [ ] **5.4 Admin panel stays English** — No i18n for the admin UI itself (internal users only, low ROI).
+
+---
+
+## Phase 6: LLM Translation Workflow
+
+The existing LLM authoring pipeline (`docs/llm-authoring/`) needs a new translation workflow. The use case: an English route is complete, and you want to create a Spanish (or other language) variant in the same family.
+
+- [ ] **6.1 New doc: `docs/llm-authoring/translation-guide.md`** — Instructions for the LLM to translate an existing route into a new language.
+
+  **Workflow:**
+  1. Read the source route (English) via `GET /admin/routes/:id` (includes all groups and blocks)
+  2. Check if a variant already exists in the target language for this family
+  3. Create the new route via `POST /admin/routes/bulk-groups` with same `route_family_id`, target `language`, translated content, same structure
+
+  **Block translation rules:**
+  - `message` blocks: Translate `content` text. Keep template variables (`{{CITY_NAME}}`, etc.) as-is.
+  - `image` blocks: Reuse same `image_url` (images are language-agnostic unless they contain text overlays).
+  - `map` blocks: Reuse same Google Maps URL (Maps URLs are location-based, display in user's device language automatically).
+  - `question` blocks: Translate `clue`, `accepted_answers`, all `hints` sequences. Keep same structure and count.
+  - `action` blocks: Translate the `label` text.
+  - `delay_ms`: Keep the same timing values.
+
+  **What NOT to change:** Google Maps URLs, image URLs (unless containing English text), template variable names, block ordering/group structure, delay timings.
+
+- [ ] **6.2 Update existing authoring docs** — `api-reference.md`: document new `language` and `route_family_id` fields. `data-model.md`: document route families and language field. `content-guide.md`: add "Translation" section with tone/style guidance per language.
+
+- [ ] **6.3 API endpoint for translation reference** — Ensure `GET /admin/routes/:id` returns complete route data. Consider adding `GET /admin/route-families/:id/routes` endpoint for cross-referencing all variants.
+
+---
+
+## Phase 7: Content Authoring (Ongoing)
+
+- [ ] **7.1 Message bank seed script** — There are 9 message bank types, each needing multiple entries per language. Create a seed script (or LLM-assisted bulk creation endpoint) to generate initial message bank entries for a new language. Manual entry via admin UI is impractical at scale.
+- [ ] **7.2 Author routes** — Create routes in new languages using the LLM translation workflow or admin editor.
+- [ ] **7.3 Validate translations** — Play through each translated route end-to-end in the target language to verify AI responses, message bank entries, and UI strings are all correct.
+
+---
+
+## Verification Plan
+
+1. **Database**: Run migrations, verify columns exist with correct defaults, check existing data tagged 'en'
+2. **API**: Create a test event with `language: 'es'`, verify message bank queries filter correctly, verify AI prompts include language context
+3. **Player App**: Join a Spanish-language event, verify UI renders in Spanish, verify chat messages from AI pipeline come back in Spanish
+4. **Marketing Site**: Visit `/es/`, verify translated content renders, verify locale switcher works, verify SEO metadata is locale-specific
+5. **Admin**: Create a route family, add Spanish variant, create Spanish message bank entries, verify they appear correctly filtered
+6. **LLM Translation**: Use the LLM authoring workflow to translate an English route to Spanish, verify all blocks translated correctly
+7. **End-to-end**: Purchase a Spanish route via marketing site, receive event code, play through in Spanish, verify entire flow
+
+---
+
+## Key Files Reference
+
+| Area | Critical Files |
+|------|---------------|
+| Schema | `packages/api/src/db/schema/route-families.ts` (new), `routes.ts`, `events.ts`, `message-banks.ts` |
+| Types | `packages/shared/src/types/enums.ts`, `entities.ts`, `api.ts` |
+| Pipeline | `packages/api/src/services/pipeline/orchestrator.ts`, `classifier.ts`, `idle-timer.ts`, `guide-response-cap.ts` |
+| AI Prompts | `packages/api/src/services/pipeline/handlers/answer-attempt.ts`, `question.ts` |
+| Matching | `packages/api/src/services/pipeline/deterministic-match.ts`, `word-match.ts` |
+| Checkout/Email | `packages/api/src/routes/checkout.ts` |
+| Events API | `packages/api/src/routes/events.ts` |
+| WebSocket | `packages/api/src/services/pipeline/incoming-subscriber.ts` |
+| Template Vars | `packages/api/src/services/template-vars.ts` |
+| Validation | `packages/shared/src/validation/user-input.ts`, `admin-input.ts` |
+| Player App | `packages/app/src/pages/JoinPage.tsx`, `ChatPage.tsx`, `LobbyPage.tsx`, `CompletePage.tsx` |
+| Marketing | `packages/marketing/src/app/layout.tsx`, `page.tsx`, `next.config.ts` |
+| Admin | `packages/admin/src/pages/RouteEditorPage.tsx`, `MessageBanksPage.tsx` |
+| LLM Authoring | `docs/llm-authoring/translation-guide.md` (new), `api-reference.md`, `data-model.md`, `content-guide.md` |
 
 ---
 
 ## Learnings
 
-- **ESM imports**: All `.ts` files under `packages/shared/src/types/` must use `.js` extensions in import paths (e.g. `'./sequence.js'`). This is the established convention and required for Node ESM resolution.
-- **Validation consistency**: Existing Zod schemas use `.trim().min(1)` for required string fields. New schemas must follow the same pattern.
-- **Redundant discriminants**: When an entity has both a top-level `type` field and a `config` with its own `type` discriminant, the Zod schema must enforce they match (via `.refine()`) or derive one from the other.
-- **URL field validation**: Existing URL fields (e.g. `stopSchema.google_maps_link`) don't use `.trim()` before `.url()`. New URL fields should follow the same pattern for consistency, but this is a codebase-wide improvement candidate.
-- **Max length limits**: Most string fields in existing schemas (city, name, clue) lack max length constraints. Only `refund_note` and `routeGroupSchema.name` have them. Future phases should consider adding max lengths consistently across all user-input string fields.
-- **Position gaps in migration**: The data migration from stops to blocks may leave position gaps (e.g. position 0 skipped if no directions). This is fine — the group runner should ORDER BY position rather than assume contiguous values.
-- **No unique constraint on position**: Unlike stops' `(route_id, stop_number)` unique constraint, route_groups and route_blocks intentionally omit position uniqueness to simplify reorder operations at the application level.
-- **Template vars canonical pattern**: `template-vars.ts` centralizes template variable building. Future phases (5.1 orchestrator, 5.5 event start) should migrate inline `.replace()` chains to use `applyTemplateVars` + `buildRouteTemplateVars` instead of duplicating the logic.
-- **Phase 5 test rewrite pattern**: When refactoring handlers from stop-based to block-based, tests need: (1) replace `stops.findFirst` mocks with `routeBlocks.findFirst`, (2) add mocks for `group-runner` (advanceAfterBlock), `send-sequence` (sendSequence), `template-vars` (buildRouteTemplateVars), (3) update context helpers to include `currentBlockId`/`currentGroupId`, (4) replace `makeMockStop` with `makeMockQuestionBlock`. Counter-based mock sequencing (mockResolvedValueOnce chains) is fragile but works when call order is deterministic.
-- **Mock reset discipline**: When adding new `query.*` mocks to the mock DB object, always add corresponding `.mockReset()` calls in `beforeEach`. Missing resets cause inter-test state leakage that can mask real failures.
-- **QuestionBlockConfig consistency**: Always use `as QuestionBlockConfig` (from `@cityroam/shared`) when casting block config for question blocks. Avoid inline type assertions like `as { clue?: string }` — the shared type is the canonical source of truth and is used consistently across orchestrator.ts and all handler files.
-- **Dead code removal thoroughness**: When removing a major entity (like stops), check comments, mock helpers, seed data, and test data paths across all packages — not just the schema and route files. Stale references often hide in test helpers (mock factories), S3 path strings in test data, and inline comments that reference old architecture.
-
----
-
-# Implementation Plan — Block Interactions After Event Completion
-
-## Status Key
-- [ ] Not started
-- [~] In progress
-- [x] Complete
-
----
-
-## Overview
-
-When an event reaches a terminal state (COMPLETED, EXPIRED, REFUNDED), old game links can still be used to interact with the API. Sessions persist in Redis for 24h after completion, and several endpoints have no status guards. This adds two-layer defense: proactive session invalidation on completion + defensive status checks on all remaining endpoints.
-
-### What Already Works
-- WebSocket auth rejects terminal events with close code 4004 (`ws/auth.ts`)
-- Pipeline orchestrator silently drops messages for non-IN_PROGRESS events (`orchestrator.ts`)
-- `POST /join` blocks terminal events with 410
-- App treats close code 4004 as fatal (no reconnect)
-
----
-
-## Phase 1: Session Invalidation Infrastructure [COMPLETE]
-
-- [x] **1.1 Add `deleteSessionsByEventId`**
-- [x] **1.2 Export new function**
-
-## Phase 2: Block Session Re-population [COMPLETE]
-
-- [x] **2.1 Guard DB fallback in session middleware**
-
-## Phase 3: Guard Unprotected HTTP Endpoints [COMPLETE]
-
-- [x] **3.1 Add `TERMINAL_STATUSES` set** — Extracted to `packages/shared/src/constants/index.ts`
-- [x] **3.2 Guard `GET /event/:code/messages`**
-- [x] **3.3 Guard `POST /event/:code/name`**
-- [x] **3.4 Guard `POST /event/:code/leave`**
-
-## Phase 4: Reduce Data Exposure on GET /event/:code [COMPLETE]
-
-- [x] **4.1 Strip participant data for terminal events**
-
-## Phase 5: Invalidate Sessions on State Transitions [COMPLETE]
-
-- [x] **5.1 On game completion**
-- [x] **5.2 On admin refund**
-- [x] **5.3 On lazy expiry**
-
-## Phase 6: Strip Participant Tokens from Admin API [COMPLETE]
-
-- [x] **6.1 Remove tokens from admin event detail**
-
-## Phase 7: App Handling of Terminal Event States [COMPLETE]
-
-- [x] **7.1 LobbyPage: handle EXPIRED/REFUNDED**
-- [x] **7.2 ChatPage: handle 410 responses**
-- [x] **7.3 App API client: detect 410 status**
-
-## Phase 8: Race Condition Guards [COMPLETE]
-
-- [x] **8.1 Atomic lead election on join**
-- [x] **8.2 Atomic event start**
-
-## Learnings
-
-- **DRY for status sets**: When multiple files need the same set of terminal statuses, define it once in a shared location (e.g. shared constants or a single API-level constants file) and import it. Duplicating `new Set(["COMPLETED", "EXPIRED", "REFUNDED"])` across `events.ts` and `session.ts` creates a maintenance trap.
-- **Use defined constants consistently**: If a constant like `TERMINAL_STATUSES` is defined in a file, use it everywhere in that file. The lazy expiry check in `events.ts` used an inline if-chain instead of the Set defined 20 lines above — always prefer the named constant.
-- **Non-fatal session invalidation**: `deleteSessionsByEventId` calls should be wrapped in try/catch at all call sites. Redis failure should not block the primary operation (DB status update) since sessions TTL naturally. Log the error and continue.
-- **Session invalidation ordering**: Always invalidate sessions AFTER all DB writes complete (status update + any follow-up inserts like completion messages). If invalidation happens before a subsequent DB write fails, sessions are gone but the state transition didn't complete.
-- **Admin endpoints vs player endpoints**: Terminal status guards on admin endpoints are a separate concern from blocking player interactions. Admins may legitimately need to modify event states (e.g., refund a completed event). Don't conflate the two.
+### From Task 1.1 (Shared types & constants)
+- **Bridge pattern**: When updating shared types before DB schema, API routes need temporary hardcoded values (`'en' as any`) to satisfy TypeScript. These must use `as any` since the DB column doesn't exist yet. Track all instances for cleanup in the DB migration tasks (1.2-1.5).
+- **Test data lag**: Tests that exercise API endpoints need both the old field (for DB writes) and new fields (for response assertions) during the transition period. Remove old fields once DB migrations land.
+- **RouteEditorPage form**: Still uses `city` internally since the DB column persists. The form interface (`RouteForm`) is internal to the page, not the shared `Route` type. Full form migration should happen in task 5.2 after DB schema changes.
+- **Pre-existing issues to fix in 1.7**: `messageBankTypeSchema` in `admin-input.ts` is missing `hint-offer` and `hint-decline` types (confirmed during review).
+- **`as any` casts**: 12 instances across admin.ts and events.ts need cleanup when DB columns are added. Consider a helper function to map DB rows to response types to centralize this.

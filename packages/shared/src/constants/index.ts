@@ -24,3 +24,8 @@ export const SESSION_TOKEN_EXPIRY_HOURS = 24;
 // Event code
 export const EVENT_CODE_LENGTH = 8;
 export const EVENT_CODE_ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789"; // no 0/o, 1/i/l
+
+// Language
+import type { SupportedLanguage } from "../types/enums.js";
+export const SUPPORTED_LANGUAGES: readonly SupportedLanguage[] = ["en", "es", "fr", "de", "nl"] as const;
+export const DEFAULT_LANGUAGE: SupportedLanguage = "en";

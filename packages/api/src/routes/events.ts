@@ -6,6 +6,7 @@ import type {
   JoinEventResponse,
   MessageHistoryResponse,
   ChatMessagePayload,
+  SupportedLanguage,
 } from "@cityroam/shared/types";
 import {
   joinEventRequestSchema,
@@ -115,10 +116,12 @@ eventRoutes.get("/event/:code", async (c) => {
       current_stop: event.current_stop,
       started_at: event.started_at ? new Date(event.started_at).toISOString() : null,
       created_at: new Date(event.created_at).toISOString(),
+      language: 'en' as EventDetailResponse["event"]["language"],
     },
     participants: isTerminal ? [] : participantRows,
     lead_name: isTerminal ? null : (leadParticipant?.display_name ?? null),
     current_participant: isTerminal ? null : currentParticipant,
+    available_languages: ['en'] as SupportedLanguage[],
   };
 
   return c.json(response, 200);
@@ -257,9 +260,11 @@ eventRoutes.post("/event/:code/join", async (c) => {
       code,
       status: (isLead ? "WAITING" : eventData.status) as JoinEventResponse["event"]["status"],
       current_stop: eventData.current_stop,
+      language: 'en' as JoinEventResponse["event"]["language"],
     },
     messages: cachedMessages,
     participants: participantRows,
+    available_languages: ['en'] as JoinEventResponse["available_languages"],
   };
 
   return c.json(response, 201);

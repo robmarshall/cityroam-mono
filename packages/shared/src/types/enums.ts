@@ -20,3 +20,5 @@ export type MessageBankType =
   | "unknown-answer"
   | "completion"
   | "over-length";
+
+export type SupportedLanguage = "en" | "es" | "fr" | "de" | "nl";

@@ -3,6 +3,7 @@ export type {
   SenderType,
   ParticipantLeftReason,
   MessageBankType,
+  SupportedLanguage,
 } from "./enums.js";
 
 export type {
@@ -10,6 +11,7 @@ export type {
   Participant,
   Message,
   Route,
+  RouteFamily,
   MessageBank,
   RouteGroup,
   RouteBlock,
@@ -60,6 +62,8 @@ export type {
   AdminCreateEventResponse,
   AdminMessageBankListResponse,
   AdminRouteGroupResponse,
+  AdminRouteFamilyListResponse,
+  AdminRouteFamilyDetailResponse,
 } from "./api.js";
 
 export type { ApiErrorResponse, ApiErrorCode } from "./api-errors.js";

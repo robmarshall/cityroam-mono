@@ -434,6 +434,8 @@ describe("POST /admin/upload", () => {
 describe("Admin Route CRUD", () => {
   const routeData = {
     city: "Leeds",
+    language: "en",
+    route_family_id: "",
     name: "City Centre Tour",
     description: "A nice walk",
     estimated_duration_mins: 60,
@@ -473,7 +475,7 @@ describe("Admin Route CRUD", () => {
 
       const body = await res.json();
       expect(body.route.name).toBe("City Centre Tour");
-      expect(body.route.city).toBe("Leeds");
+      expect(body.route.language).toBe("en");
     });
   });
 
@@ -903,7 +905,7 @@ describe("POST /admin/routes/bulk-groups", () => {
     const groupId = fakeUUID();
     const blockId = fakeUUID();
 
-    const route = mockRoute({ id: routeId, name: "Bulk Route", city: "London" });
+    const route = mockRoute({ id: routeId, name: "Bulk Route", language: "en" });
     const group = mockRouteGroup({ id: groupId, route_id: routeId, position: 0, name: "Intro" });
     const block = mockRouteBlock({
       id: blockId,
@@ -922,6 +924,8 @@ describe("POST /admin/routes/bulk-groups", () => {
     const res = await adminRequest(app, "POST", "/admin/routes/bulk-groups", {
       route: {
         city: "London",
+        language: "en",
+        route_family_id: "",
         name: "Bulk Route",
         description: "A test route",
         estimated_duration_mins: 60,
@@ -947,7 +951,7 @@ describe("POST /admin/routes/bulk-groups", () => {
 
     const body = await res.json();
     expect(body.route.name).toBe("Bulk Route");
-    expect(body.route.city).toBe("London");
+    expect(body.route.language).toBe("en");
     expect(body.groups).toHaveLength(1);
     expect(body.groups[0].name).toBe("Intro");
     expect(body.groups[0].blocks).toHaveLength(1);

@@ -78,7 +78,7 @@ export default function RoutesListPage() {
                   Name
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                  City
+                  Language
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Groups
@@ -108,7 +108,7 @@ export default function RoutesListPage() {
                     {route.name}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
-                    {route.city}
+                    {route.language.toUpperCase()}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
                     {route.group_count}

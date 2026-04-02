@@ -147,7 +147,7 @@ const EMPTY_ROUTE_FORM: RouteForm = {
 function routeToForm(r: Route): RouteForm {
   return {
     name: r.name,
-    city: r.city,
+    city: '',
     description: r.description ?? "",
     estimated_duration_mins: String(r.estimated_duration_mins),
     estimated_distance_km: String(r.estimated_distance_km),
