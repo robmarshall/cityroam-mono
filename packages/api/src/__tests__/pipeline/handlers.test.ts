@@ -155,6 +155,7 @@ function makeAnswerCtx(overrides: Partial<AnswerAttemptContext> = {}): AnswerAtt
     currentStop: 1,
     wrongAttempts: 0,
     hintsGiven: 0,
+    language: "en",
     ...overrides,
   };
 }
@@ -166,6 +167,7 @@ function makeHintCtx(overrides: Partial<HintRequestContext> = {}): HintRequestCo
     currentBlockId: "block-1",
     currentStop: 1,
     hintsGiven: 0,
+    language: "en",
     ...overrides,
   };
 }
@@ -177,6 +179,7 @@ function makeQuestionCtx(overrides: Partial<QuestionContext> = {}): QuestionCont
     routeId: "route-1",
     currentBlockId: "block-1",
     currentStop: 1,
+    language: "en",
     ...overrides,
   };
 }
@@ -187,6 +190,7 @@ function makeSilentCtx(overrides: Partial<SilentHandlerContext> = {}): SilentHan
     eventCode: "ABC123",
     currentStop: 1,
     messageId: "user-msg-1",
+    language: "en",
     ...overrides,
   };
 }

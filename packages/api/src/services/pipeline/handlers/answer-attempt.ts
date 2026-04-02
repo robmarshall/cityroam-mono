@@ -1,6 +1,8 @@
 import { eq, and } from "drizzle-orm";
 import type { ChatMessagePayload, BlockType } from "@cityroam/shared/types";
 import type { QuestionBlockConfig, AnswerMatchResult } from "@cityroam/shared/types";
+import type { SupportedLanguage } from "@cityroam/shared/types";
+import { LANGUAGE_NAMES } from "@cityroam/shared/constants";
 import type { LLMService } from "../../llm/interface.js";
 import { db, schema } from "../../../db/index.js";
 import { appendMessage, publishMessage } from "../../../redis/index.js";
@@ -21,6 +23,7 @@ export interface AnswerAttemptContext {
   currentStop: number;
   wrongAttempts: number;
   hintsGiven: number;
+  language: SupportedLanguage;
 }
 
 /**
@@ -31,6 +34,7 @@ export interface AnswerAttemptResult {
   correct: boolean;
 }
 
+
 /**
  * Build the LLM prompt for answer matching.
  */
@@ -38,8 +42,10 @@ function buildAnswerMatchPrompt(
   currentClue: string,
   acceptedAnswers: string[],
   userMessage: string,
+  language: SupportedLanguage = "en",
 ): string {
-  return `You are an answer checker for a city exploration game. Your only job is to decide whether the player's message is a correct answer to the current clue.
+  const langName = LANGUAGE_NAMES[language] ?? LANGUAGE_NAMES.en;
+  return `You are an answer checker for a city exploration game. Your only job is to decide whether the player's message is a correct answer to the current clue. The game language is ${langName}.
 
 Clue: "${currentClue}"
 Accepted answers: ${JSON.stringify(acceptedAnswers)}
@@ -49,7 +55,8 @@ Matching rules:
 - Accept minor spelling errors (1–2 character transpositions or omissions).
 - Accept common abbreviations (e.g. "St" for "Saint", "Rd" for "Road").
 - Accept the answer embedded in a sentence (e.g. "I think it's the Town Hall" matches "Town Hall").
-- Ignore leading/trailing articles ("the", "a", "an").
+- Ignore leading/trailing articles in any language ("the", "a", "an", "el", "la", "le", "der", "die", "das", "de", "het").
+- Accept answers in the game language or English.
 - Do NOT accept answers that are only vaguely related or thematically similar but factually different.
 
 Respond with ONLY one of:
@@ -110,16 +117,22 @@ export async function writeGuideMessage(
 /**
  * Get a random active message from the specified bank type.
  */
-export async function getRandomMessageBank(type: string): Promise<string | null> {
+export async function getRandomMessageBank(type: string, language: SupportedLanguage = "en"): Promise<string | null> {
   const rows = await db
     .select({ content: schema.messageBanks.content })
     .from(schema.messageBanks)
     .where(
       and(
         eq(schema.messageBanks.type, type),
+        eq(schema.messageBanks.language, language),
         eq(schema.messageBanks.is_active, true),
       ),
     );
+
+  // Fall back to English if no messages found for target language
+  if (rows.length === 0 && language !== "en") {
+    return getRandomMessageBank(type, "en");
+  }
 
   if (rows.length === 0) return null;
   const idx = Math.floor(Math.random() * rows.length);
@@ -142,7 +155,7 @@ export async function handleAnswerAttempt(
 ): Promise<AnswerAttemptResult> {
   if (!ctx.currentBlockId) {
     log.error("no current block id", { eventId: ctx.eventId });
-    const fallback = await getRandomMessageBank("clarification");
+    const fallback = await getRandomMessageBank("clarification", ctx.language);
     if (fallback) {
       await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback);
     }
@@ -160,7 +173,7 @@ export async function handleAnswerAttempt(
       blockId: ctx.currentBlockId,
       type: currentBlock?.type,
     });
-    const fallback = await getRandomMessageBank("clarification");
+    const fallback = await getRandomMessageBank("clarification", ctx.language);
     if (fallback) {
       await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback);
     }
@@ -171,7 +184,7 @@ export async function handleAnswerAttempt(
   const acceptedAnswers = config.accepted_answers;
 
   // Call LLM for answer matching
-  const prompt = buildAnswerMatchPrompt(config.clue, acceptedAnswers, userMessage);
+  const prompt = buildAnswerMatchPrompt(config.clue, acceptedAnswers, userMessage, ctx.language);
   const result = await llm.classify(prompt);
 
   // Parse the result
@@ -190,7 +203,7 @@ export async function handleAnswerAttempt(
   // LLM failure → use deterministic fallback instead of clarification
   if (matchResult === null) {
     log.warn("LLM answer match failed, using deterministic fallback");
-    const isMatch = deterministicAnswerMatch(userMessage, acceptedAnswers);
+    const isMatch = deterministicAnswerMatch(userMessage, acceptedAnswers, ctx.language);
     matchResult = { type: isMatch ? "answer-correct" : "answer-incorrect" };
   }
 
@@ -211,8 +224,8 @@ export async function handleAnswerAttempt(
  */
 async function handleCorrectAnswer(ctx: AnswerAttemptContext): Promise<void> {
   // 1. Success message
-  const successMsg = await getRandomMessageBank("success");
-  const successContent = successMsg ?? "Correct!";
+  const successMsg = await getRandomMessageBank("success", ctx.language);
+  const successContent = successMsg ?? (SUCCESS_FALLBACK[ctx.language] ?? SUCCESS_FALLBACK.en);
   await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, successContent);
 
   // 2. Reset counters
@@ -228,6 +241,30 @@ async function handleCorrectAnswer(ctx: AnswerAttemptContext): Promise<void> {
   // 3. Advance past the question block — sends remaining blocks in group, then next group
   await advanceAfterBlock(ctx.eventId, ctx.eventCode, ctx.currentBlockId!);
 }
+
+const SUCCESS_FALLBACK: Record<SupportedLanguage, string> = {
+  en: "Correct!",
+  es: "¡Correcto!",
+  fr: "Correct !",
+  de: "Richtig!",
+  nl: "Correct!",
+};
+
+const FAILURE_FALLBACK: Record<SupportedLanguage, string> = {
+  en: "That's not quite right. Try again!",
+  es: "Eso no es del todo correcto. ¡Inténtalo de nuevo!",
+  fr: "Ce n'est pas tout à fait ça. Réessayez !",
+  de: "Das ist nicht ganz richtig. Versuch es nochmal!",
+  nl: "Dat is niet helemaal juist. Probeer het opnieuw!",
+};
+
+const HINT_NUDGE_SUFFIX: Record<SupportedLanguage, string> = {
+  en: " You might want to ask for a hint.",
+  es: " Quizás quieras pedir una pista.",
+  fr: " Vous voudrez peut-être demander un indice.",
+  de: " Vielleicht möchtest du nach einem Hinweis fragen.",
+  nl: " Misschien wil je om een hint vragen.",
+};
 
 /**
  * Handle an incorrect answer:
@@ -247,12 +284,12 @@ async function handleIncorrectAnswer(
     .where(eq(schema.events.id, ctx.eventId));
 
   // Get failure message
-  let failureMsg = await getRandomMessageBank("failure");
-  failureMsg = failureMsg ?? "That's not quite right. Try again!";
+  let failureMsg = await getRandomMessageBank("failure", ctx.language);
+  failureMsg = failureMsg ?? (FAILURE_FALLBACK[ctx.language] ?? FAILURE_FALLBACK.en);
 
   // Append hint nudge if 3+ wrong attempts and no hints used
   if (newWrongAttempts >= 3 && ctx.hintsGiven === 0) {
-    failureMsg += " You might want to ask for a hint.";
+    failureMsg += HINT_NUDGE_SUFFIX[ctx.language] ?? HINT_NUDGE_SUFFIX.en;
   }
 
   await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, failureMsg);

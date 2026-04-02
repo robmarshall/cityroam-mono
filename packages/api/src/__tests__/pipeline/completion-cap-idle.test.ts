@@ -90,6 +90,7 @@ describe("handleGameCompletion", () => {
     eventCode: "ABCD1234",
     routeId: "route-1",
     currentStop: 5,
+    language: "en" as const,
   };
 
   beforeEach(() => {

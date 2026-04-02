@@ -1,8 +1,18 @@
 import { eq, sql } from "drizzle-orm";
 import { MAX_GUIDE_RESPONSES_PER_EVENT } from "@cityroam/shared/constants";
 import type { ChatMessagePayload } from "@cityroam/shared/types";
+import type { SupportedLanguage } from "@cityroam/shared/types";
 import { db, schema } from "../../db/index.js";
 import { appendMessage, publishMessage } from "../../redis/index.js";
+
+/** Per-language guide cap messages. */
+const CAP_MESSAGES: Record<SupportedLanguage, string> = {
+  en: "The guide has reached its message limit for this event.",
+  es: "El guía ha alcanzado su límite de mensajes para este evento.",
+  fr: "Le guide a atteint sa limite de messages pour cet événement.",
+  de: "Der Guide hat sein Nachrichtenlimit für dieses Event erreicht.",
+  nl: "De gids heeft de berichtenlimiet voor dit evenement bereikt.",
+};
 
 /**
  * Check whether the guide response cap has been reached for an event.
@@ -29,6 +39,7 @@ export async function sendCapReachedMessage(
   eventId: string,
   eventCode: string,
   currentStop: number,
+  language: SupportedLanguage = "en",
 ): Promise<void> {
   const [msg] = await db
     .insert(schema.messages)
@@ -37,7 +48,7 @@ export async function sendCapReachedMessage(
       step_number: currentStop,
       sender_type: "system",
       sender_name: "System",
-      content: "The guide has reached its message limit for this event.",
+      content: CAP_MESSAGES[language] ?? CAP_MESSAGES.en,
       participant_id: null,
       image_url: null,
     })

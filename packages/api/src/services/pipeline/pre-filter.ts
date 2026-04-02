@@ -2,9 +2,17 @@ import {
   MAX_MESSAGE_LENGTH,
   MIN_MESSAGE_LENGTH,
 } from "@cityroam/shared/constants";
-import { eq, and } from "drizzle-orm";
-import { db, schema } from "../../db/index.js";
+import type { SupportedLanguage } from "@cityroam/shared/types";
 import { checkParticipantRateLimit } from "../../redis/rate-limit.js";
+import { getRandomMessageBank } from "./handlers/answer-attempt.js";
+
+const OVER_LENGTH_FALLBACK: Record<SupportedLanguage, string> = {
+  en: "Your message is too long. Please keep it shorter.",
+  es: "Tu mensaje es demasiado largo. Por favor, hazlo más corto.",
+  fr: "Votre message est trop long. Veuillez le raccourcir.",
+  de: "Deine Nachricht ist zu lang. Bitte kürze sie.",
+  nl: "Je bericht is te lang. Houd het alsjeblieft korter.",
+};
 
 export interface PreFilterResult {
   action: "pass" | "drop" | "respond";
@@ -19,6 +27,7 @@ export async function preFilter(
   text: string,
   eventCode: string,
   participantId: string,
+  language: SupportedLanguage = "en",
 ): Promise<PreFilterResult> {
   const trimmed = text.trim();
 
@@ -34,8 +43,8 @@ export async function preFilter(
 
   // 3. Over MAX_MESSAGE_LENGTH → drop message, respond with over-length bank message
   if (trimmed.length > MAX_MESSAGE_LENGTH) {
-    const response = await getRandomMessageBank("over-length");
-    return { action: "respond", response: response ?? "Your message is too long. Please keep it shorter." };
+    const response = await getRandomMessageBank("over-length", language);
+    return { action: "respond", response: response ?? (OVER_LENGTH_FALLBACK[language] ?? OVER_LENGTH_FALLBACK.en) };
   }
 
   // 4. Participant rate limit → silently drop (not stored)
@@ -45,20 +54,4 @@ export async function preFilter(
   }
 
   return { action: "pass" };
-}
-
-async function getRandomMessageBank(type: string): Promise<string | null> {
-  const rows = await db
-    .select({ content: schema.messageBanks.content })
-    .from(schema.messageBanks)
-    .where(
-      and(
-        eq(schema.messageBanks.type, type),
-        eq(schema.messageBanks.is_active, true),
-      ),
-    );
-
-  if (rows.length === 0) return null;
-  const idx = Math.floor(Math.random() * rows.length);
-  return rows[idx].content;
 }

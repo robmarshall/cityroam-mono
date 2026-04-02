@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import type { QuestionBlockConfig, SequenceItem } from "@cityroam/shared/types";
+import type { SupportedLanguage } from "@cityroam/shared/types";
 import { db, schema } from "../../../db/index.js";
 import { writeGuideMessage, getRandomMessageBank } from "./answer-attempt.js";
 import { advanceAfterBlock } from "../../group-runner.js";
@@ -8,6 +9,14 @@ import { buildRouteTemplateVars } from "../../template-vars.js";
 import { createLogger } from "../../../lib/logger.js";
 
 const log = createLogger("hint-request");
+
+const HINT_EXHAUSTED_FALLBACK: Record<SupportedLanguage, string> = {
+  en: "The answer is {{ANSWER}}. Let's move on.",
+  es: "La respuesta es {{ANSWER}}. Sigamos adelante.",
+  fr: "La réponse est {{ANSWER}}. Continuons.",
+  de: "Die Antwort ist {{ANSWER}}. Machen wir weiter.",
+  nl: "Het antwoord is {{ANSWER}}. Laten we verder gaan.",
+};
 
 /**
  * Context needed by the hint-request handler.
@@ -18,6 +27,7 @@ export interface HintRequestContext {
   currentBlockId: string | null;
   currentStop: number;
   hintsGiven: number;
+  language: SupportedLanguage;
 }
 
 /**
@@ -41,7 +51,7 @@ export async function handleHintRequest(
 ): Promise<HintRequestResult> {
   if (!ctx.currentBlockId) {
     log.error("no current block id", { eventId: ctx.eventId });
-    const fallback = await getRandomMessageBank("clarification");
+    const fallback = await getRandomMessageBank("clarification", ctx.language);
     if (fallback) {
       await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback);
     }
@@ -59,7 +69,7 @@ export async function handleHintRequest(
       blockId: ctx.currentBlockId,
       type: currentBlock?.type,
     });
-    const fallback = await getRandomMessageBank("clarification");
+    const fallback = await getRandomMessageBank("clarification", ctx.language);
     if (fallback) {
       await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback);
     }
@@ -115,8 +125,8 @@ async function handleHintExhaustion(
   const answer = config.accepted_answers[0] ?? "unknown";
 
   // 1. Hint-exhausted message with answer reveal
-  let exhaustedMsg = await getRandomMessageBank("hint-exhausted");
-  exhaustedMsg = exhaustedMsg ?? `The answer is ${answer}. Let's move on.`;
+  let exhaustedMsg = await getRandomMessageBank("hint-exhausted", ctx.language);
+  exhaustedMsg = exhaustedMsg ?? (HINT_EXHAUSTED_FALLBACK[ctx.language] ?? HINT_EXHAUSTED_FALLBACK.en).replace("{{ANSWER}}", answer);
   exhaustedMsg = exhaustedMsg.replace("{{ANSWER}}", answer);
   await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, exhaustedMsg);
 

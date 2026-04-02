@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import type { ChatMessagePayload } from "@cityroam/shared/types";
+import type { SupportedLanguage } from "@cityroam/shared/types";
 import { db, schema } from "../../../db/index.js";
 import { appendMessage, publishMessage, publishControl, deleteSessionsByEventId } from "../../../redis/index.js";
 import { getRandomMessageBank } from "./answer-attempt.js";
@@ -17,7 +18,16 @@ export interface GameCompletionContext {
   eventCode: string;
   routeId: string;
   currentStop: number;
+  language: SupportedLanguage;
 }
+
+const COMPLETION_FALLBACK: Record<SupportedLanguage, string> = {
+  en: "Congratulations! You've completed the game.",
+  es: "¡Felicidades! Has completado el juego.",
+  fr: "Félicitations ! Vous avez terminé le jeu.",
+  de: "Herzlichen Glückwunsch! Du hast das Spiel abgeschlossen.",
+  nl: "Gefeliciteerd! Je hebt het spel voltooid.",
+};
 
 /**
  * Handle game completion — triggered when last group's last block completes,
@@ -42,8 +52,8 @@ export async function handleGameCompletion(
   }
 
   // Get completion template
-  let completionMsg = await getRandomMessageBank("completion");
-  completionMsg = completionMsg ?? "Congratulations! You've completed the game.";
+  let completionMsg = await getRandomMessageBank("completion", ctx.language);
+  completionMsg = completionMsg ?? (COMPLETION_FALLBACK[ctx.language] ?? COMPLETION_FALLBACK.en);
 
   // Apply template variables
   completionMsg = applyTemplateVars(completionMsg, templateVars);

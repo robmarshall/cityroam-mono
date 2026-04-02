@@ -20,6 +20,11 @@ const VALIDATION_MESSAGES: Record<string, string> = {
   MESSAGE_TOO_LONG: `Message must be at most ${MAX_MESSAGE_LENGTH} characters`,
   MESSAGE_EMPTY: "Message must not be empty",
   EVENT_CODE_INVALID: "Invalid event code format",
+  ACTION_LEAD_ONLY: "Only the group lead can confirm actions",
+  ACTION_MISSING_BLOCK: "Missing action reference — please try again",
+  ACTION_BLOCK_MISMATCH: "This action is no longer current",
+  INVALID_JSON: "Message could not be sent — please try again",
+  UNKNOWN_MESSAGE_TYPE: "Unsupported message type",
 };
 
 export function validationMessage(code: string): string {

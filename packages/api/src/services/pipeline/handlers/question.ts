@@ -1,5 +1,7 @@
 import { eq } from "drizzle-orm";
 import type { QuestionBlockConfig } from "@cityroam/shared/types";
+import type { SupportedLanguage } from "@cityroam/shared/types";
+import { LANGUAGE_NAMES } from "@cityroam/shared/constants";
 import type { LLMService } from "../../llm/interface.js";
 import { db, schema } from "../../../db/index.js";
 import { writeGuideMessage, getRandomMessageBank } from "./answer-attempt.js";
@@ -16,7 +18,9 @@ export interface QuestionContext {
   routeId: string;
   currentBlockId: string | null;
   currentStop: number;
+  language: SupportedLanguage;
 }
+
 
 /**
  * Result from the question handler.
@@ -35,12 +39,15 @@ function buildQuestionPrompt(
   clue: string,
   estimatedDistanceRemaining: string,
   userMessage: string,
+  language: SupportedLanguage = "en",
 ): string {
   return `You are the guide for a city exploration game in ${cityName}. A player has asked you a direct question. Answer using ONLY the information provided below. If you cannot answer from the information given, respond with exactly: {"type": "unknown"}
 
 Otherwise respond with: {"type": "answer", "text": "<your response>"}
 
 Your response text should match the guide's tone: dry, brief, knowledgeable. 2 sentences maximum. No exclamation marks. No excessive enthusiasm.
+
+Respond in ${LANGUAGE_NAMES[language] ?? LANGUAGE_NAMES.en}.
 
 Current stop: Stop ${currentStopNumber} of ${totalStops}
 Clue: "${clue}"
@@ -65,7 +72,7 @@ export async function handleQuestion(
 ): Promise<QuestionResult> {
   if (!ctx.currentBlockId) {
     log.error("no current block id", { eventId: ctx.eventId });
-    const fallback = await getRandomMessageBank("clarification");
+    const fallback = await getRandomMessageBank("clarification", ctx.language);
     if (fallback) {
       await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback);
     }
@@ -83,7 +90,7 @@ export async function handleQuestion(
       blockId: ctx.currentBlockId,
       type: currentBlock?.type,
     });
-    const fallback = await getRandomMessageBank("clarification");
+    const fallback = await getRandomMessageBank("clarification", ctx.language);
     if (fallback) {
       await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback);
     }
@@ -100,7 +107,7 @@ export async function handleQuestion(
 
   if (!routeData) {
     log.error("route not found", { routeId: ctx.routeId });
-    const fallback = await getRandomMessageBank("clarification");
+    const fallback = await getRandomMessageBank("clarification", ctx.language);
     if (fallback) {
       await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback);
     }
@@ -126,6 +133,7 @@ export async function handleQuestion(
     config.clue,
     estimatedDistanceRemaining,
     userMessage,
+    ctx.language,
   );
 
   const result = await llm.classify(prompt);
@@ -133,7 +141,7 @@ export async function handleQuestion(
   // LLM failure / timeout → clarification bank
   if (result === null) {
     log.error("LLM returned null", { reason: "timeout or failure" });
-    const clarification = await getRandomMessageBank("clarification");
+    const clarification = await getRandomMessageBank("clarification", ctx.language);
     if (clarification) {
       await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, clarification);
     }
@@ -151,7 +159,7 @@ export async function handleQuestion(
 
   if (parsed.type === "unknown") {
     // LLM cannot answer from provided info → unknown-answer bank
-    const unknownMsg = await getRandomMessageBank("unknown-answer");
+    const unknownMsg = await getRandomMessageBank("unknown-answer", ctx.language);
     if (unknownMsg) {
       await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, unknownMsg);
     }
@@ -160,7 +168,7 @@ export async function handleQuestion(
 
   // Invalid JSON structure → clarification bank
   log.error("invalid LLM result", { result: JSON.stringify(result) });
-  const clarification = await getRandomMessageBank("clarification");
+  const clarification = await getRandomMessageBank("clarification", ctx.language);
   if (clarification) {
     await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, clarification);
   }

@@ -1,5 +1,7 @@
 import { createLogger } from "../../lib/logger.js";
 import { eq } from "drizzle-orm";
+import type { SupportedLanguage } from "@cityroam/shared/types";
+import { SUPPORTED_LANGUAGES } from "@cityroam/shared/constants";
 import type {
   IncomingMessagePayload,
   ChatMessagePayload,
@@ -46,6 +48,14 @@ import { getRandomMessageBank } from "./handlers/answer-attempt.js";
 const log = createLogger("pipeline");
 const llm = new DeepSeekService();
 
+const HINT_DECLINE_FALLBACK: Record<SupportedLanguage, string> = {
+  en: "No worries — keep at it!",
+  es: "¡No te preocupes, sigue adelante!",
+  fr: "Pas de souci — continuez comme ça !",
+  de: "Kein Problem — mach weiter so!",
+  nl: "Geen zorgen — ga zo door!",
+};
+
 /**
  * Main entry point for the AI guide pipeline.
  * Receives incoming user messages from the Redis subscriber and
@@ -81,6 +91,7 @@ export async function processIncomingMessage(
       wrong_attempts: true,
       guide_response_count: true,
       hint_offered: true,
+      language: true,
     },
   });
 
@@ -94,6 +105,11 @@ export async function processIncomingMessage(
     log.info("ignoring message for non-active event", { eventCode, status: event.status });
     return;
   }
+
+  const rawLang = event.language ?? "en";
+  const language: SupportedLanguage = (SUPPORTED_LANGUAGES as readonly string[]).includes(rawLang)
+    ? (rawLang as SupportedLanguage)
+    : "en";
 
   // Step 3: Store user message (three-step write: DB → cache → pub/sub)
   const [userMsg] = await db
@@ -124,10 +140,10 @@ export async function processIncomingMessage(
   await publishMessage(eventCode, userMsgPayload);
 
   // Step 4: Run Layer 1 pre-filter
-  const preFilterResult = await preFilter(text, eventCode, participantId);
+  const preFilterResult = await preFilter(text, eventCode, participantId, language);
 
   if (preFilterResult.action === "drop") {
-    updateIdleTimestamp(eventCode, eventId);
+    updateIdleTimestamp(eventCode, eventId, language);
     return;
   }
 
@@ -140,21 +156,21 @@ export async function processIncomingMessage(
         preFilterResult.response!,
       );
     }
-    updateIdleTimestamp(eventCode, eventId);
+    updateIdleTimestamp(eventCode, eventId, language);
     return;
   }
 
   // Step 5: Check guide response cap before LLM work
   if (await isGuideResponseCapReached(eventId)) {
-    await sendCapReachedMessage(eventId, eventCode, event.current_stop);
-    updateIdleTimestamp(eventCode, eventId);
+    await sendCapReachedMessage(eventId, eventCode, event.current_stop, language);
+    updateIdleTimestamp(eventCode, eventId, language);
     return;
   }
 
   // Step 6: Check guide rate limit
   const guideRateLimit = await checkGuideRateLimit(eventCode);
   if (!guideRateLimit.allowed) {
-    updateIdleTimestamp(eventCode, eventId);
+    updateIdleTimestamp(eventCode, eventId, language);
     return;
   }
 
@@ -166,7 +182,7 @@ export async function processIncomingMessage(
       .set({ hint_offered: false })
       .where(eq(schema.events.id, eventId));
 
-    if (isAffirmativeResponse(text)) {
+    if (isAffirmativeResponse(text, language)) {
       // Player confirmed — serve the hint (no LLM needed)
       await publishTyping(eventCode, {
         type: "guide_typing",
@@ -181,6 +197,7 @@ export async function processIncomingMessage(
           currentBlockId: event.current_block_id,
           currentStop: event.current_stop,
           hintsGiven: event.hints_given,
+          language,
         });
       } finally {
         await publishTyping(eventCode, {
@@ -190,11 +207,11 @@ export async function processIncomingMessage(
           is_typing: false,
         });
       }
-      updateIdleTimestamp(eventCode, eventId);
+      updateIdleTimestamp(eventCode, eventId, language);
       return;
     }
 
-    if (isNegativeResponse(text)) {
+    if (isNegativeResponse(text, language)) {
       // Player declined — send encouraging message (no LLM needed)
       await publishTyping(eventCode, {
         type: "guide_typing",
@@ -203,8 +220,8 @@ export async function processIncomingMessage(
         is_typing: true,
       });
       try {
-        const declineMsg = await getRandomMessageBank("hint-decline");
-        const content = declineMsg ?? "No worries — keep at it!";
+        const declineMsg = await getRandomMessageBank("hint-decline", language);
+        const content = declineMsg ?? (HINT_DECLINE_FALLBACK[language] ?? HINT_DECLINE_FALLBACK.en);
         await writeGuideMessage(eventId, eventCode, event.current_stop, content);
       } finally {
         await publishTyping(eventCode, {
@@ -214,7 +231,7 @@ export async function processIncomingMessage(
           is_typing: false,
         });
       }
-      updateIdleTimestamp(eventCode, eventId);
+      updateIdleTimestamp(eventCode, eventId, language);
       return;
     }
 
@@ -249,14 +266,14 @@ export async function processIncomingMessage(
     }
 
     // Step 9: Run Layer 2 intent classification
-    const classification = await classifyIntent(llm, currentClue, text);
+    const classification = await classifyIntent(llm, currentClue, text, language);
 
     // LLM failure → try deterministic answer match before falling back to clarification
     let intent: string;
     if (classification !== null) {
       intent = classification.type;
     } else {
-      if (acceptedAnswers.length > 0 && deterministicAnswerMatch(text, acceptedAnswers)) {
+      if (acceptedAnswers.length > 0 && deterministicAnswerMatch(text, acceptedAnswers, language)) {
         log.info("LLM down, deterministic match hit", { eventCode });
         intent = "answer-attempt";
       } else {
@@ -267,8 +284,8 @@ export async function processIncomingMessage(
     // Step 10: Re-check cap before sending handler response
     if (intent !== "off-topic-chat" && intent !== "contextual-comment") {
       if (await isGuideResponseCapReached(eventId)) {
-        await sendCapReachedMessage(eventId, eventCode, event.current_stop);
-        updateIdleTimestamp(eventCode, eventId);
+        await sendCapReachedMessage(eventId, eventCode, event.current_stop, language);
+        updateIdleTimestamp(eventCode, eventId, language);
         return;
       }
     }
@@ -279,6 +296,7 @@ export async function processIncomingMessage(
       eventCode,
       currentStop: event.current_stop,
       messageId: userMsg.id,
+      language,
     };
 
     switch (intent) {
@@ -292,6 +310,7 @@ export async function processIncomingMessage(
             currentStop: event.current_stop,
             wrongAttempts: event.wrong_attempts,
             hintsGiven: event.hints_given,
+            language,
           },
           text,
         );
@@ -304,6 +323,7 @@ export async function processIncomingMessage(
           currentBlockId: event.current_block_id,
           currentStop: event.current_stop,
           hintsGiven: event.hints_given,
+          language,
         });
         break;
 
@@ -312,6 +332,7 @@ export async function processIncomingMessage(
           eventId,
           eventCode,
           currentStop: event.current_stop,
+          language,
         });
         break;
 
@@ -324,6 +345,7 @@ export async function processIncomingMessage(
             routeId: event.route_id,
             currentBlockId: event.current_block_id,
             currentStop: event.current_stop,
+            language,
           },
           text,
         );
@@ -356,9 +378,9 @@ export async function processIncomingMessage(
     }
 
     // Step 12: Update idle timer
-    const wasPaused = updateIdleTimestamp(eventCode, eventId);
+    const wasPaused = updateIdleTimestamp(eventCode, eventId, language);
     if (wasPaused) {
-      await handleIdleResume(eventId, eventCode);
+      await handleIdleResume(eventId, eventCode, language);
     }
 
     // Step 13: Remove from idle tracking if game completed during this pipeline run

@@ -245,3 +245,11 @@ The existing LLM authoring pipeline (`docs/llm-authoring/`) needs a new translat
 - **RouteEditorPage form**: Still uses `city` internally since the DB column persists. The form interface (`RouteForm`) is internal to the page, not the shared `Route` type. Full form migration should happen in task 5.2 after DB schema changes.
 - **Pre-existing issues to fix in 1.7**: `messageBankTypeSchema` in `admin-input.ts` is missing `hint-offer` and `hint-decline` types (confirmed during review).
 - **`as any` casts**: 12 instances across admin.ts and events.ts need cleanup when DB columns are added. Consider a helper function to map DB rows to response types to centralize this.
+
+### From Phase 2 Review
+- **Fallback string pattern**: When adding per-language support, ALL fallback strings for user-facing messages must use per-language fallback maps (like `COMPLETION_FALLBACK`, `HINT_OFFER_FALLBACK`). Don't leave English-only `?? "some string"` — create a `Record<string, string>` with all 5 languages and fall back with `MAP[language] ?? MAP.en`.
+- **Language threading completeness**: Every code path that can reach a user-facing message needs `language`. `runGroup` was missed because it's an entry point separate from the orchestrator pipeline. Audit all entry points, not just the main pipeline path.
+- **WS error pattern**: When replacing English error strings with error codes, put the code in the `code` field and either omit `message` (let client map) or put a generic human-readable string in `message`. Don't put the code as the message.
+- **Zod validation errors**: When Zod safeParse fails and the issue message is already an error code (from custom error maps), that code should be sent as the WS `code` field, not wrapped in a generic "VALIDATION_ERROR" code. Otherwise the client can't look up the specific error.
+- **Type consistency for fallback maps**: All per-language fallback maps should use `Record<SupportedLanguage, string>` (not `Record<string, string>`) to get compile-time enforcement that all languages are covered.
+- **Constant deduplication**: Shared constants like `LANGUAGE_NAMES` that appear in multiple pipeline files should live in a single shared location. Three copies is the threshold to extract.

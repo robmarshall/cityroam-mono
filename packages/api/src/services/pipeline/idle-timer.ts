@@ -4,6 +4,7 @@ import {
   IDLE_PAUSE_TIMEOUT_MS,
 } from "@cityroam/shared/constants";
 import type { ChatMessagePayload, QuestionBlockConfig } from "@cityroam/shared/types";
+import type { SupportedLanguage } from "@cityroam/shared/types";
 import { db, schema } from "../../db/index.js";
 import { appendMessage, publishMessage } from "../../redis/index.js";
 import { createLogger } from "../../lib/logger.js";
@@ -18,6 +19,7 @@ interface IdleState {
   nudgeSent: boolean;
   pauseSent: boolean;
   eventId: string;
+  language: SupportedLanguage;
 }
 
 /** In-memory map of eventCode → idle state for all IN_PROGRESS events */
@@ -28,6 +30,35 @@ let scanInterval: ReturnType<typeof setInterval> | null = null;
 
 /** Interval frequency for scanning idle events (60 seconds) */
 const SCAN_INTERVAL_MS = 60_000;
+
+/** Per-language fallback messages for idle timer events. */
+const IDLE_MESSAGES: Record<SupportedLanguage, { resume: string; nudge: string; pause: string }> = {
+  en: {
+    resume: "Welcome back. Here's your current clue:",
+    nudge: "Still exploring? Send a message when you're ready to continue.",
+    pause: "It's been a while — the game is paused. Send any message to pick up where you left off.",
+  },
+  es: {
+    resume: "Bienvenido de vuelta. Aquí está tu pista actual:",
+    nudge: "¿Sigues explorando? Envía un mensaje cuando quieras continuar.",
+    pause: "Ha pasado un rato — el juego está en pausa. Envía cualquier mensaje para continuar donde lo dejaste.",
+  },
+  fr: {
+    resume: "Bon retour. Voici votre indice actuel :",
+    nudge: "Toujours en exploration ? Envoyez un message quand vous êtes prêt à continuer.",
+    pause: "Cela fait un moment — le jeu est en pause. Envoyez n'importe quel message pour reprendre là où vous en étiez.",
+  },
+  de: {
+    resume: "Willkommen zurück. Hier ist dein aktueller Hinweis:",
+    nudge: "Noch am Erkunden? Sende eine Nachricht, wenn du weitermachen möchtest.",
+    pause: "Es ist eine Weile her — das Spiel ist pausiert. Sende eine Nachricht, um dort weiterzumachen, wo du aufgehört hast.",
+  },
+  nl: {
+    resume: "Welkom terug. Hier is je huidige aanwijzing:",
+    nudge: "Nog aan het verkennen? Stuur een bericht als je klaar bent om verder te gaan.",
+    pause: "Het is even geleden — het spel is gepauzeerd. Stuur een bericht om verder te gaan waar je gebleven was.",
+  },
+};
 
 /**
  * Write a system message using the three-step write sequence (DB → cache → pub/sub).
@@ -74,6 +105,7 @@ async function writeSystemMessage(
 export function updateIdleTimestamp(
   eventCode: string,
   eventId: string,
+  language: SupportedLanguage = "en",
 ): boolean {
   const existing = trackedEvents.get(eventCode);
   const wasPaused = existing?.pauseSent ?? false;
@@ -83,6 +115,7 @@ export function updateIdleTimestamp(
     nudgeSent: false,
     pauseSent: false,
     eventId,
+    language,
   });
 
   return wasPaused;
@@ -95,6 +128,7 @@ export function updateIdleTimestamp(
 export async function handleIdleResume(
   eventId: string,
   eventCode: string,
+  language: SupportedLanguage = "en",
 ): Promise<void> {
   const event = await db.query.events.findFirst({
     where: eq(schema.events.id, eventId),
@@ -103,7 +137,14 @@ export async function handleIdleResume(
 
   if (!event) return;
 
-  let clue = "your current clue";
+  const CLUE_FALLBACK: Record<SupportedLanguage, string> = {
+    en: "your current clue",
+    es: "tu pista actual",
+    fr: "votre indice actuel",
+    de: "dein aktueller Hinweis",
+    nl: "je huidige aanwijzing",
+  };
+  let clue = CLUE_FALLBACK[language] ?? CLUE_FALLBACK.en;
   if (event.current_block_id) {
     const block = await db.query.routeBlocks.findFirst({
       where: eq(schema.routeBlocks.id, event.current_block_id),
@@ -115,11 +156,12 @@ export async function handleIdleResume(
     }
   }
 
+  const msgs = IDLE_MESSAGES[language] ?? IDLE_MESSAGES.en;
   await writeSystemMessage(
     eventId,
     eventCode,
     event.current_stop,
-    `Welcome back. Here's your current clue: "${clue}"`,
+    `${msgs.resume} "${clue}"`,
   );
 }
 
@@ -152,11 +194,12 @@ async function scanIdleEvents(): Promise<void> {
           continue;
         }
 
+        const pauseMsgs = IDLE_MESSAGES[state.language] ?? IDLE_MESSAGES.en;
         await writeSystemMessage(
           state.eventId,
           eventCode,
           event.current_stop,
-          "It's been a while — the game is paused. Send any message to pick up where you left off.",
+          pauseMsgs.pause,
         );
         state.pauseSent = true;
         state.nudgeSent = true; // No need to send nudge if pause already sent
@@ -171,11 +214,12 @@ async function scanIdleEvents(): Promise<void> {
           continue;
         }
 
+        const nudgeMsgs = IDLE_MESSAGES[state.language] ?? IDLE_MESSAGES.en;
         await writeSystemMessage(
           state.eventId,
           eventCode,
           event.current_stop,
-          "Still exploring? Send a message when you're ready to continue.",
+          nudgeMsgs.nudge,
         );
         state.nudgeSent = true;
       }

@@ -29,3 +29,10 @@ export const EVENT_CODE_ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789"; // no 0/o,
 import type { SupportedLanguage } from "../types/enums.js";
 export const SUPPORTED_LANGUAGES: readonly SupportedLanguage[] = ["en", "es", "fr", "de", "nl"] as const;
 export const DEFAULT_LANGUAGE: SupportedLanguage = "en";
+export const LANGUAGE_NAMES: Record<SupportedLanguage, string> = {
+  en: "English",
+  es: "Spanish",
+  fr: "French",
+  de: "German",
+  nl: "Dutch",
+};

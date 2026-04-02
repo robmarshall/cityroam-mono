@@ -315,7 +315,7 @@ export default function ChatPage() {
         }
         case "error": {
           const payload = msg.payload as ErrorPayload;
-          setErrorToast(validationMessage(payload.message));
+          setErrorToast(validationMessage(payload.code ?? payload.message));
           setTimeout(() => setErrorToast(null), 4000);
           break;
         }
