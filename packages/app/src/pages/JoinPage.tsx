@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import i18n from "../i18n/index";
 import { displayNameSchema } from "@cityroam/shared/validation";
 import { MIN_DISPLAY_NAME_LENGTH, MAX_DISPLAY_NAME_LENGTH } from "@cityroam/shared/constants";
 import { POSTHOG_EVENTS } from "@cityroam/shared/analytics";
@@ -39,7 +40,7 @@ export default function JoinPage() {
   const location = useLocation();
   const { t } = useTranslation();
   const { setParticipant, setToken } = useParticipant();
-  const { setEvent, setParticipants } = useEvent();
+  const { setEvent, setParticipants, setAvailableLanguages } = useEvent();
 
   const sessionExpired = (location.state as { sessionExpired?: boolean } | null)?.sessionExpired === true;
 
@@ -74,8 +75,11 @@ export default function JoinPage() {
             code: data.event.code,
             status: data.event.status,
             current_stop: data.event.current_stop,
+            language: data.event.language,
           });
           setParticipants(data.participants);
+          setAvailableLanguages(data.available_languages);
+          i18n.changeLanguage(data.event.language);
           redirectForStatus(navigate, code!, data.event.status);
           return;
         }
@@ -116,7 +120,7 @@ export default function JoinPage() {
     return () => {
       cancelled = true;
     };
-  }, [code, navigate, setParticipant, setEvent, setParticipants]);
+  }, [code, navigate, setParticipant, setEvent, setParticipants, setAvailableLanguages]);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -145,8 +149,11 @@ export default function JoinPage() {
           code: data.event.code,
           status: data.event.status,
           current_stop: data.event.current_stop,
+          language: data.event.language,
         });
         setParticipants(data.participants);
+        setAvailableLanguages(data.available_languages);
+        i18n.changeLanguage(data.event.language);
 
         // Track analytics
         trackEvent(POSTHOG_EVENTS.GAME_JOINED, {
@@ -170,6 +177,7 @@ export default function JoinPage() {
       setToken,
       setEvent,
       setParticipants,
+      setAvailableLanguages,
     ],
   );
 

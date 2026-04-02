@@ -5,7 +5,7 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
-import type { EventStatus } from "@cityroam/shared/types";
+import type { EventStatus, SupportedLanguage } from "@cityroam/shared/types";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -15,6 +15,7 @@ interface EventInfo {
   code: string;
   status: EventStatus;
   current_stop: number;
+  language?: SupportedLanguage;
 }
 
 interface EventParticipant {
@@ -27,6 +28,7 @@ interface EventParticipant {
 interface EventState {
   event: EventInfo | null;
   participants: EventParticipant[];
+  available_languages: SupportedLanguage[];
 }
 
 type EventAction =
@@ -35,7 +37,8 @@ type EventAction =
   | { type: "UPDATE_PARTICIPANT"; id: string; updates: Partial<EventParticipant> }
   | { type: "ADD_PARTICIPANT"; participant: EventParticipant }
   | { type: "REMOVE_PARTICIPANT"; id: string }
-  | { type: "CLEAR" };
+  | { type: "CLEAR" }
+  | { type: "SET_AVAILABLE_LANGUAGES"; languages: SupportedLanguage[] };
 
 interface EventContextValue extends EventState {
   setEvent: (event: EventInfo) => void;
@@ -43,6 +46,7 @@ interface EventContextValue extends EventState {
   updateParticipant: (id: string, updates: Partial<EventParticipant>) => void;
   addParticipant: (participant: EventParticipant) => void;
   removeParticipant: (id: string) => void;
+  setAvailableLanguages: (languages: SupportedLanguage[]) => void;
   clearEvent: () => void;
 }
 
@@ -53,6 +57,7 @@ interface EventContextValue extends EventState {
 const initialState: EventState = {
   event: null,
   participants: [],
+  available_languages: [],
 };
 
 function eventReducer(state: EventState, action: EventAction): EventState {
@@ -80,6 +85,8 @@ function eventReducer(state: EventState, action: EventAction): EventState {
       };
     case "CLEAR":
       return initialState;
+    case "SET_AVAILABLE_LANGUAGES":
+      return { ...state, available_languages: action.languages };
   }
 }
 
@@ -119,6 +126,10 @@ export function EventProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "REMOVE_PARTICIPANT", id });
   }, []);
 
+  const setAvailableLanguages = useCallback((languages: SupportedLanguage[]) => {
+    dispatch({ type: "SET_AVAILABLE_LANGUAGES", languages });
+  }, []);
+
   const clearEvent = useCallback(() => {
     dispatch({ type: "CLEAR" });
   }, []);
@@ -132,6 +143,7 @@ export function EventProvider({ children }: { children: ReactNode }) {
         updateParticipant,
         addParticipant,
         removeParticipant,
+        setAvailableLanguages,
         clearEvent,
       }}
     >

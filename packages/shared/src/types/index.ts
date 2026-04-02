@@ -46,6 +46,7 @@ export type {
   ErrorPayload,
   ActionConfirmPayload,
   ActionWaitingPayload,
+  LanguageChangedPayload,
 } from "./websocket.js";
 
 export type {

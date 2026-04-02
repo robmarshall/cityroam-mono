@@ -258,3 +258,7 @@ The existing LLM authoring pipeline (`docs/llm-authoring/`) needs a new translat
 ### From Phase 3.1 Review
 - **Don't forget aria-labels**: When extracting hardcoded strings for i18n, remember to include `aria-label` attributes — they are user-facing (screen readers) and must be translated. Grep for `aria-label="` to catch them.
 - **i18n outside React components**: For utility files like `errors.ts` and class components like `ErrorBoundary`, import `i18next` directly and use `i18n.t()` rather than the `useTranslation()` hook. This avoids circular dependencies since `i18n/index.ts` doesn't import from `lib/` or `components/`.
+
+### From Phase 3.3 Review
+- **Preserve all fields in setEvent replacements**: `SET_EVENT` replaces the entire event object (not a merge). Every `setEvent()` call must include all fields, especially newly added optional fields like `language`. Use `eventRef.current?.language` to carry forward.
+- **Use specific enum types in WS payloads**: All payload interfaces should use specific enum types (e.g., `SupportedLanguage`) instead of `string` for type safety — consistent with `SenderType`, `ParticipantLeftReason`, etc.

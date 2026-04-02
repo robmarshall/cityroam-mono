@@ -1,11 +1,14 @@
 import { useEffect, useCallback, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import i18n from "../i18n/index";
 import { POSTHOG_EVENTS } from "@cityroam/shared/analytics";
 import type {
   ParticipantJoinedPayload,
   ParticipantLeftPayload,
   GameStartedPayload,
+  LanguageChangedPayload,
+  SupportedLanguage,
 } from "@cityroam/shared/types";
 import { api, ApiError } from "../lib/api";
 import { trackEvent } from "../lib/analytics";
@@ -25,6 +28,7 @@ export default function LobbyPage() {
   const {
     event,
     participants,
+    available_languages,
     setEvent,
     addParticipant,
     removeParticipant,
@@ -40,6 +44,8 @@ export default function LobbyPage() {
 
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [changingLanguage, setChangingLanguage] = useState(false);
+  const [languageConfirm, setLanguageConfirm] = useState<SupportedLanguage | null>(null);
 
   // Guard: redirect to join if no session context
   useEffect(() => {
@@ -115,7 +121,18 @@ export default function LobbyPage() {
             code: code!,
             status: "IN_PROGRESS",
             current_stop: eventRef.current?.current_stop ?? 1,
+            language: eventRef.current?.language,
           });
+          break;
+        }
+        case "language_changed": {
+          const payload = msg.payload as LanguageChangedPayload;
+          const newLang = payload.language;
+          setEvent({
+            ...eventRef.current!,
+            language: newLang,
+          });
+          i18n.changeLanguage(newLang);
           break;
         }
       }
@@ -125,7 +142,7 @@ export default function LobbyPage() {
   }, [subscribe, code, addParticipant, removeParticipant, setEvent]);
 
   const handleStart = useCallback(async () => {
-    if (!code || starting) return;
+    if (!code || !event || starting) return;
     setStarting(true);
     setError(null);
 
@@ -141,6 +158,7 @@ export default function LobbyPage() {
         code,
         status: "IN_PROGRESS",
         current_stop: 1,
+        language: eventRef.current?.language ?? event.language,
       });
     } catch (err) {
       if (err instanceof ApiError) {
@@ -151,6 +169,26 @@ export default function LobbyPage() {
       setStarting(false);
     }
   }, [code, starting, participants.length, setEvent]);
+
+  const handleLanguageChange = useCallback(async () => {
+    if (!code || !languageConfirm || changingLanguage) return;
+    setChangingLanguage(true);
+    setError(null);
+
+    try {
+      await api.put(`/event/${code}/language`, { language: languageConfirm });
+      // The WS language_changed event will update context and i18n
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.message);
+      } else {
+        setError(t("error.generic"));
+      }
+    } finally {
+      setChangingLanguage(false);
+      setLanguageConfirm(null);
+    }
+  }, [code, languageConfirm, changingLanguage, t]);
 
   // Don't render if no context — show loading spinner during redirect
   if (!participant || !event || !code) {
@@ -204,6 +242,74 @@ export default function LobbyPage() {
         <h1 className="mb-6 text-center text-2xl font-bold text-gray-900">
           {t("lobby.title")}
         </h1>
+
+        {/* Language selector — lead only, multiple languages available */}
+        {isLead && available_languages.length > 1 && (
+          <div className="mb-6 w-full max-w-sm">
+            <label
+              htmlFor="language-select"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
+              {t("language.selectorLabel")}
+            </label>
+            <select
+              id="language-select"
+              value={event.language ?? "en"}
+              onChange={(e) => {
+                const target = e.target.value as SupportedLanguage;
+                if (target !== event.language) {
+                  setLanguageConfirm(target);
+                }
+              }}
+              disabled={changingLanguage}
+              className="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {available_languages.map((lang) => (
+                <option key={lang} value={lang}>
+                  {t(`language.${lang}`)}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Bilingual language change confirmation dialog */}
+        {languageConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+            <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+              <h2 className="mb-3 text-lg font-bold text-gray-900">
+                {t("language.confirmTitle")}
+              </h2>
+              <p className="mb-2 text-sm text-gray-700">
+                {t("language.confirmMessage")}
+              </p>
+              {/* Show target language confirmation in that language */}
+              {languageConfirm !== "en" && (
+                <p className="mb-4 text-sm italic text-gray-500">
+                  {t(`language.bilingualConfirm.${languageConfirm}`)}
+                </p>
+              )}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setLanguageConfirm(null)}
+                  disabled={changingLanguage}
+                  className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                >
+                  {t("common.cancel")}
+                </button>
+                <button
+                  onClick={handleLanguageChange}
+                  disabled={changingLanguage}
+                  className="flex-1 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
+                >
+                  {changingLanguage
+                    ? t("language.changing")
+                    : `${t("language.confirmButton")} — ${t(`language.${languageConfirm}`)}`}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Participant list */}
         <div className="mb-8 w-full max-w-sm">

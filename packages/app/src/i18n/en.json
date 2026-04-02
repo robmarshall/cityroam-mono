@@ -36,6 +36,24 @@
     "fatalEventEnded": "This event has ended.",
     "fatalNotActive": "You are no longer active in this event."
   },
+  "language": {
+    "selectorLabel": "Game Language",
+    "confirmTitle": "Change Language?",
+    "confirmMessage": "You cannot change the language once the game has started.",
+    "confirmButton": "Change",
+    "changing": "Changing...",
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "nl": "Nederlands",
+    "bilingualConfirm": {
+      "es": "¿Estás seguro de que quieres cambiar el idioma a español? No podrás cambiarlo una vez que el juego haya comenzado.",
+      "fr": "Êtes-vous sûr de vouloir changer la langue en français ? Vous ne pourrez plus la changer une fois le jeu commencé.",
+      "de": "Möchten Sie die Sprache wirklich auf Deutsch ändern? Sie können die Sprache nicht mehr ändern, sobald das Spiel begonnen hat.",
+      "nl": "Weet je zeker dat je de taal wilt wijzigen naar Nederlands? Je kunt de taal niet meer wijzigen zodra het spel is begonnen."
+    }
+  },
   "chat": {
     "headerTitle": "City Roam",
     "optionsMenu": "Options menu",
