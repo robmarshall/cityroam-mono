@@ -1,0 +1,133 @@
+{
+  "common": {
+    "loading": "Wird geladen...",
+    "connecting": "Verbindung wird hergestellt...",
+    "reconnecting": "Verbindung wird wiederhergestellt...",
+    "connected": "Verbunden",
+    "unableToReconnect": "Verbindung konnte nicht wiederhergestellt werden",
+    "retry": "Erneut versuchen",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "saving": "Wird gespeichert...",
+    "connectionClosed": "Verbindung geschlossen."
+  },
+  "join": {
+    "title": "Tritt dem Team bei",
+    "nameLabel": "Dein Name",
+    "namePlaceholder": "Gib deinen Anzeigenamen ein",
+    "submitButton": "Team beitreten",
+    "submitting": "Beitritt...",
+    "sessionExpired": "Deine Sitzung ist abgelaufen. Bitte tritt erneut mit deinem Namen bei.",
+    "statusCompleted": "Dieses Event ist bereits beendet.",
+    "statusExpired": "Dieses Event ist abgelaufen.",
+    "statusRefunded": "Dieses Event wurde erstattet.",
+    "statusUnavailable": "Dieses Event ist nicht mehr verfügbar."
+  },
+  "lobby": {
+    "title": "Warten auf Spieler",
+    "leadBadge": "Leitung",
+    "youBadge": "Du",
+    "waitingForLead": "Warte darauf, dass {{name}} das Spiel startet...",
+    "waitingForLeadDefault": "Warte darauf, dass die Leitung das Spiel startet...",
+    "startButton": "Spiel starten",
+    "starting": "Wird gestartet...",
+    "startFailed": "Spiel konnte nicht gestartet werden. Bitte versuche es erneut.",
+    "fatalEventNotFound": "Event nicht gefunden.",
+    "fatalEventEnded": "Dieses Event ist beendet.",
+    "fatalNotActive": "Du bist nicht mehr aktiv in diesem Event."
+  },
+  "language": {
+    "selectorLabel": "Spielsprache",
+    "confirmTitle": "Sprache ändern?",
+    "confirmMessage": "Du kannst die Sprache nicht mehr ändern, sobald das Spiel begonnen hat.",
+    "confirmButton": "Ändern",
+    "changing": "Wird geändert...",
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "nl": "Nederlands",
+    "bilingualConfirm": {
+      "es": "¿Estás seguro de que quieres cambiar el idioma a español? No podrás cambiarlo una vez que el juego haya comenzado.",
+      "fr": "Êtes-vous sûr de vouloir changer la langue en français ? Vous ne pourrez plus la changer une fois le jeu commencé.",
+      "de": "Möchten Sie die Sprache wirklich auf Deutsch ändern? Sie können die Sprache nicht mehr ändern, sobald das Spiel begonnen hat.",
+      "nl": "Weet je zeker dat je de taal wilt wijzigen naar Nederlands? Je kunt de taal niet meer wijzigen zodra het spel is begonnen."
+    }
+  },
+  "chat": {
+    "headerTitle": "City Roam",
+    "optionsMenu": "Optionsmenü",
+    "changeName": "Name ändern",
+    "leaveGame": "Spiel verlassen",
+    "inputPlaceholder": "Nachricht eingeben...",
+    "offlineError": "Du bist offline — Nachricht wurde nicht gesendet.",
+    "guideLabel": "Guide",
+    "typingOne": "{{name}} tippt...",
+    "typingMultiple": "Mehrere Personen tippen...",
+    "waitingForLead": "Warte auf {{name}}...",
+    "waitingForLeadDefault": "Warte auf die Leitung...",
+    "newMessages": "Neue Nachrichten ↓",
+    "viewOnMaps": "Auf Google Maps ansehen",
+    "nameChangeError": "Name konnte nicht geändert werden. Bitte versuche es erneut.",
+    "fatalEventNotFound": "Event nicht gefunden.",
+    "fatalEventEnded": "Dieses Event ist beendet.",
+    "fatalNotActive": "Du bist nicht mehr aktiv in diesem Event.",
+    "participantJoined": "{{name}} ist dem Spiel beigetreten",
+    "participantLeft": "{{name}} hat das Spiel verlassen",
+    "nameChanged": "{{oldName}} hat den Namen zu {{newName}} geändert",
+    "leaveDialog": {
+      "title": "Spiel verlassen?",
+      "message": "Du wirst aus dem Spiel entfernt. Du kannst später erneut beitreten, indem du den Link wieder öffnest.",
+      "leaveButton": "Verlassen",
+      "leaving": "Wird verlassen..."
+    },
+    "nameDialog": {
+      "title": "Name ändern",
+      "placeholder": "Gib deinen Namen ein"
+    },
+    "sendAriaLabel": "Nachricht senden",
+    "closeAriaLabel": "Schließen"
+  },
+  "complete": {
+    "title": "Spiel abgeschlossen!",
+    "defaultSummary": "Gut gemacht! Du hast das Spiel abgeschlossen. Wir hoffen, dir hat die Erkundung der Stadt gefallen.",
+    "reviewPrompt": "Hat es dir gefallen? Hinterlasse uns eine Bewertung!",
+    "reviewButton": "Google Review schreiben",
+    "shareButton": "Mit Freunden teilen",
+    "shared": "Geteilt!",
+    "linkCopied": "Link kopiert!",
+    "doneButton": "Fertig",
+    "shareTitle": "City Roam - KI-Stadtabenteuer",
+    "shareText": "Ich habe gerade ein tolles KI-geführtes Stadtabenteuer abgeschlossen! Schau es dir an:"
+  },
+  "error": {
+    "title": "Etwas ist schiefgelaufen",
+    "description": "Es ist ein unerwarteter Fehler aufgetreten. Tippe unten, um es erneut zu versuchen.",
+    "retryButton": "Erneut versuchen",
+    "eventNotFound": "Dieses Event existiert nicht. Überprüfe den Link und versuche es erneut.",
+    "eventFull": "Dieses Event ist voll — keine Plätze mehr verfügbar.",
+    "eventExpired": "Dieses Event ist abgelaufen.",
+    "eventCompleted": "Dieses Event ist bereits beendet.",
+    "eventRefunded": "Dieses Event wurde erstattet.",
+    "invalidInput": "Das sieht nicht nach einem gültigen Event-Code aus. Überprüfe den Link oder Code, den du erhalten hast.",
+    "rateLimited": "Zu viele Versuche. Bitte warte einen Moment und versuche es erneut.",
+    "unauthorized": "Deine Sitzung ist abgelaufen. Bitte tritt dem Spiel erneut bei.",
+    "networkError": "Verbindung fehlgeschlagen. Überprüfe dein Signal und versuche es erneut.",
+    "generic": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
+  },
+  "validation": {
+    "DISPLAY_NAME_TOO_SHORT": "Der Anzeigename muss mindestens {{min}} Zeichen lang sein",
+    "DISPLAY_NAME_TOO_LONG": "Der Anzeigename darf höchstens {{max}} Zeichen lang sein",
+    "DISPLAY_NAME_HTML": "Der Anzeigename darf keine HTML-Tags enthalten",
+    "DISPLAY_NAME_INVALID_CHARS": "Der Anzeigename darf nur Buchstaben, Zahlen, Leerzeichen, Bindestriche und Apostrophe enthalten",
+    "MESSAGE_TOO_SHORT": "Nachricht muss mindestens {{min}} Zeichen lang sein",
+    "MESSAGE_TOO_LONG": "Nachricht darf höchstens {{max}} Zeichen lang sein",
+    "MESSAGE_EMPTY": "Nachricht darf nicht leer sein",
+    "EVENT_CODE_INVALID": "Ungültiges Event-Code-Format",
+    "ACTION_LEAD_ONLY": "Nur die Gruppenleitung kann Aktionen bestätigen",
+    "ACTION_MISSING_BLOCK": "Fehlende Aktionsreferenz — bitte versuche es erneut",
+    "ACTION_BLOCK_MISMATCH": "Diese Aktion ist nicht mehr aktuell",
+    "INVALID_JSON": "Nachricht konnte nicht gesendet werden — bitte versuche es erneut",
+    "UNKNOWN_MESSAGE_TYPE": "Nicht unterstützter Nachrichtentyp"
+  }
+}

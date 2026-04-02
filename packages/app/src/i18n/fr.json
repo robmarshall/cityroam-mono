@@ -1,0 +1,133 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "connecting": "Connexion...",
+    "reconnecting": "Reconnexion...",
+    "connected": "Connecté",
+    "unableToReconnect": "Impossible de se reconnecter",
+    "retry": "Réessayer",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "saving": "Enregistrement...",
+    "connectionClosed": "Connexion fermée."
+  },
+  "join": {
+    "title": "Rejoins l'équipe",
+    "nameLabel": "Ton nom",
+    "namePlaceholder": "Entre ton nom d'affichage",
+    "submitButton": "Rejoindre l'équipe",
+    "submitting": "Connexion...",
+    "sessionExpired": "Ta session a expiré. Rejoins à nouveau avec ton nom.",
+    "statusCompleted": "Cet événement est déjà terminé.",
+    "statusExpired": "Cet événement a expiré.",
+    "statusRefunded": "Cet événement a été remboursé.",
+    "statusUnavailable": "Cet événement n'est plus disponible."
+  },
+  "lobby": {
+    "title": "En attente des joueurs",
+    "leadBadge": "Chef",
+    "youBadge": "Toi",
+    "waitingForLead": "En attente que {{name}} lance la partie...",
+    "waitingForLeadDefault": "En attente que le chef lance la partie...",
+    "startButton": "Lancer la partie",
+    "starting": "Lancement...",
+    "startFailed": "Impossible de lancer la partie. Réessaie.",
+    "fatalEventNotFound": "Événement introuvable.",
+    "fatalEventEnded": "Cet événement est terminé.",
+    "fatalNotActive": "Tu ne fais plus partie de cet événement."
+  },
+  "language": {
+    "selectorLabel": "Langue du jeu",
+    "confirmTitle": "Changer de langue ?",
+    "confirmMessage": "Tu ne pourras plus changer la langue une fois la partie commencée.",
+    "confirmButton": "Changer",
+    "changing": "Changement...",
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "nl": "Nederlands",
+    "bilingualConfirm": {
+      "es": "¿Estás seguro de que quieres cambiar el idioma a español? No podrás cambiarlo una vez que el juego haya comenzado.",
+      "fr": "Êtes-vous sûr de vouloir changer la langue en français ? Vous ne pourrez plus la changer une fois le jeu commencé.",
+      "de": "Möchten Sie die Sprache wirklich auf Deutsch ändern? Sie können die Sprache nicht mehr ändern, sobald das Spiel begonnen hat.",
+      "nl": "Weet je zeker dat je de taal wilt wijzigen naar Nederlands? Je kunt de taal niet meer wijzigen zodra het spel is begonnen."
+    }
+  },
+  "chat": {
+    "headerTitle": "City Roam",
+    "optionsMenu": "Menu d'options",
+    "changeName": "Changer de nom",
+    "leaveGame": "Quitter la partie",
+    "inputPlaceholder": "Écris un message...",
+    "offlineError": "Tu es hors ligne — message non envoyé.",
+    "guideLabel": "Guide",
+    "typingOne": "{{name}} écrit...",
+    "typingMultiple": "Plusieurs personnes écrivent...",
+    "waitingForLead": "En attente de {{name}}...",
+    "waitingForLeadDefault": "En attente du chef...",
+    "newMessages": "Nouveaux messages ↓",
+    "viewOnMaps": "Voir sur Google Maps",
+    "nameChangeError": "Impossible de changer de nom. Réessaie.",
+    "fatalEventNotFound": "Événement introuvable.",
+    "fatalEventEnded": "Cet événement est terminé.",
+    "fatalNotActive": "Tu ne fais plus partie de cet événement.",
+    "participantJoined": "{{name}} a rejoint la partie",
+    "participantLeft": "{{name}} a quitté la partie",
+    "nameChanged": "{{oldName}} a changé son nom en {{newName}}",
+    "leaveDialog": {
+      "title": "Quitter la partie ?",
+      "message": "Tu seras retiré de la partie. Tu pourras revenir plus tard en ouvrant le lien à nouveau.",
+      "leaveButton": "Quitter",
+      "leaving": "Départ..."
+    },
+    "nameDialog": {
+      "title": "Changer de nom",
+      "placeholder": "Entre ton nom"
+    },
+    "sendAriaLabel": "Envoyer le message",
+    "closeAriaLabel": "Fermer"
+  },
+  "complete": {
+    "title": "Partie terminée !",
+    "defaultSummary": "Bravo ! Tu as terminé la partie. On espère que tu as aimé explorer la ville.",
+    "reviewPrompt": "Tu as aimé l'expérience ? Laisse-nous un avis !",
+    "reviewButton": "Laisser un Google Review",
+    "shareButton": "Partager avec des amis",
+    "shared": "Partagé !",
+    "linkCopied": "Lien copié !",
+    "doneButton": "Terminé",
+    "shareTitle": "City Roam - Aventure urbaine guidée par l'IA",
+    "shareText": "Je viens de terminer une incroyable aventure urbaine guidée par l'IA ! Découvre ça :"
+  },
+  "error": {
+    "title": "Un problème est survenu",
+    "description": "L'appli a rencontré une erreur inattendue. Appuie ci-dessous pour réessayer.",
+    "retryButton": "Réessayer",
+    "eventNotFound": "Cet événement n'existe pas. Vérifie le lien et réessaie.",
+    "eventFull": "Cet événement est complet — plus de places disponibles.",
+    "eventExpired": "Cet événement a expiré.",
+    "eventCompleted": "Cet événement est déjà terminé.",
+    "eventRefunded": "Cet événement a été remboursé.",
+    "invalidInput": "Ça ne ressemble pas à un code d'événement valide. Vérifie le lien ou le code qu'on t'a donné.",
+    "rateLimited": "Trop de tentatives. Attends un instant et réessaie.",
+    "unauthorized": "Ta session a expiré. Rejoins la partie à nouveau.",
+    "networkError": "Connexion impossible. Vérifie ton signal et réessaie.",
+    "generic": "Un problème est survenu. Réessaie."
+  },
+  "validation": {
+    "DISPLAY_NAME_TOO_SHORT": "Le nom d'affichage doit contenir au moins {{min}} caractères",
+    "DISPLAY_NAME_TOO_LONG": "Le nom d'affichage doit contenir au maximum {{max}} caractères",
+    "DISPLAY_NAME_HTML": "Le nom d'affichage ne doit pas contenir de balises HTML",
+    "DISPLAY_NAME_INVALID_CHARS": "Le nom d'affichage ne peut contenir que des lettres, chiffres, espaces, tirets et apostrophes",
+    "MESSAGE_TOO_SHORT": "Le message doit contenir au moins {{min}} caractères",
+    "MESSAGE_TOO_LONG": "Le message doit contenir au maximum {{max}} caractères",
+    "MESSAGE_EMPTY": "Le message ne doit pas être vide",
+    "EVENT_CODE_INVALID": "Format de code d'événement invalide",
+    "ACTION_LEAD_ONLY": "Seul le chef de groupe peut confirmer les actions",
+    "ACTION_MISSING_BLOCK": "Référence d'action manquante — réessaie",
+    "ACTION_BLOCK_MISMATCH": "Cette action n'est plus d'actualité",
+    "INVALID_JSON": "Le message n'a pas pu être envoyé — réessaie",
+    "UNKNOWN_MESSAGE_TYPE": "Type de message non pris en charge"
+  }
+}
