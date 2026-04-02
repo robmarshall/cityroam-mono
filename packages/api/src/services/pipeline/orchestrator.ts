@@ -29,6 +29,7 @@ import {
   writeGuideMessage,
 } from "./handlers/answer-attempt.js";
 import { handleHintRequest } from "./handlers/hint-request.js";
+import { handleHintNudge } from "./handlers/hint-nudge.js";
 import { handleQuestion } from "./handlers/question.js";
 import {
   handleOffTopic,
@@ -39,6 +40,8 @@ import {
 } from "./handlers/silent.js";
 import type { SilentHandlerContext } from "./handlers/silent.js";
 import { deterministicAnswerMatch } from "./deterministic-match.js";
+import { isAffirmativeResponse, isNegativeResponse } from "./word-match.js";
+import { getRandomMessageBank } from "./handlers/answer-attempt.js";
 
 const log = createLogger("pipeline");
 const llm = new DeepSeekService();
@@ -77,6 +80,7 @@ export async function processIncomingMessage(
       hints_given: true,
       wrong_attempts: true,
       guide_response_count: true,
+      hint_offered: true,
     },
   });
 
@@ -152,6 +156,70 @@ export async function processIncomingMessage(
   if (!guideRateLimit.allowed) {
     updateIdleTimestamp(eventCode, eventId);
     return;
+  }
+
+  // Step 6.5: Check if a hint was offered and this is a confirmation/decline
+  if (event.hint_offered) {
+    // Clear the flag regardless of response
+    await db
+      .update(schema.events)
+      .set({ hint_offered: false })
+      .where(eq(schema.events.id, eventId));
+
+    if (isAffirmativeResponse(text)) {
+      // Player confirmed — serve the hint (no LLM needed)
+      await publishTyping(eventCode, {
+        type: "guide_typing",
+        participant_name: null,
+        participant_id: null,
+        is_typing: true,
+      });
+      try {
+        await handleHintRequest({
+          eventId,
+          eventCode,
+          currentBlockId: event.current_block_id,
+          currentStop: event.current_stop,
+          hintsGiven: event.hints_given,
+        });
+      } finally {
+        await publishTyping(eventCode, {
+          type: "guide_typing",
+          participant_name: null,
+          participant_id: null,
+          is_typing: false,
+        });
+      }
+      updateIdleTimestamp(eventCode, eventId);
+      return;
+    }
+
+    if (isNegativeResponse(text)) {
+      // Player declined — send encouraging message (no LLM needed)
+      await publishTyping(eventCode, {
+        type: "guide_typing",
+        participant_name: null,
+        participant_id: null,
+        is_typing: true,
+      });
+      try {
+        const declineMsg = await getRandomMessageBank("hint-decline");
+        const content = declineMsg ?? "No worries — keep at it!";
+        await writeGuideMessage(eventId, eventCode, event.current_stop, content);
+      } finally {
+        await publishTyping(eventCode, {
+          type: "guide_typing",
+          participant_name: null,
+          participant_id: null,
+          is_typing: false,
+        });
+      }
+      updateIdleTimestamp(eventCode, eventId);
+      return;
+    }
+
+    // TODO: Neither affirmative nor negative — fall through to normal classification.
+    // The player may have ignored the hint offer and sent an answer or other message.
   }
 
   // Step 7: Publish guide typing on
@@ -236,6 +304,14 @@ export async function processIncomingMessage(
           currentBlockId: event.current_block_id,
           currentStop: event.current_stop,
           hintsGiven: event.hints_given,
+        });
+        break;
+
+      case "hint-nudge":
+        await handleHintNudge({
+          eventId,
+          eventCode,
+          currentStop: event.current_stop,
         });
         break;
 

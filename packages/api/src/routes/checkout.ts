@@ -94,8 +94,8 @@ checkoutRoutes.post("/webhook/stripe", async (c) => {
     });
 
     if (!activeRoute) {
-      log.error("no active route found");
-      return c.json({ received: true }, 200);
+      log.error("no active route found — returning 500 so Stripe retries");
+      return c.json({ error: "No active route" }, 500);
     }
 
     // Generate unique event code with retry on collision
@@ -112,22 +112,33 @@ checkoutRoutes.post("/webhook/stripe", async (c) => {
     }
 
     if (!eventCode) {
-      log.error("failed to generate unique event code", { attempts: 5 });
-      return c.json({ received: true }, 200);
+      log.error("failed to generate unique event code — returning 500 so Stripe retries", { attempts: 5 });
+      return c.json({ error: "Event code generation failed" }, 500);
     }
 
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + EVENT_EXPIRY_DAYS);
 
-    await db.insert(events).values({
-      code: eventCode,
-      status: "NOT_STARTED",
-      route_id: activeRoute.id,
-      stripe_session_id: session.id,
-      stripe_payment_id: stripePaymentId,
-      buyer_email: buyerEmail,
-      expires_at: expiresAt,
-    });
+    try {
+      await db.insert(events).values({
+        code: eventCode,
+        status: "NOT_STARTED",
+        route_id: activeRoute.id,
+        stripe_session_id: session.id,
+        stripe_payment_id: stripePaymentId,
+        buyer_email: buyerEmail,
+        expires_at: expiresAt,
+      });
+    } catch (dbErr) {
+      // If a concurrent webhook already inserted this session, treat as success
+      const msg = dbErr instanceof Error ? dbErr.message : "";
+      if (msg.includes("unique") || msg.includes("duplicate")) {
+        log.info("concurrent webhook already created event", { sessionId: session.id });
+        return c.json({ received: true }, 200);
+      }
+      log.error("failed to insert event — returning 500 so Stripe retries", { error: msg });
+      return c.json({ error: "Database error" }, 500);
+    }
 
     // Send confirmation email (non-blocking — log errors but don't fail)
     if (buyerEmail) {

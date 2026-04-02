@@ -99,23 +99,6 @@ Examples:
 - "Too long. Try again with fewer words."
 - "I stopped reading halfway through. Shorter, please."
 
-### opening
-
-Sent from the message bank when the game starts. Note: opening content is typically authored as message blocks in the route's first group, giving full control over the introduction sequence. The message bank opening is a fallback/supplement.
-
-**Tone:** businesslike, sets expectations.
-
-**Template variables:**
-- `{{CITY_NAME}}` — the city of the route
-- `{{TOTAL_STOPS}}` — number of groups in the route
-
-Example:
-```
-Welcome to {{CITY_NAME}}. I'll be your guide today — I know where we're going, you do the leg work.
-
-Here's how it works: I'll give you a clue at each stop, you figure it out, and we move on. Ask for a hint if you're stuck.
-```
-
 ### completion
 
 Sent when the player completes the final group.

@@ -221,6 +221,7 @@ async function handleCorrectAnswer(ctx: AnswerAttemptContext): Promise<void> {
     .set({
       hints_given: 0,
       wrong_attempts: 0,
+      hint_offered: false,
     })
     .where(eq(schema.events.id, ctx.eventId));
 

@@ -57,11 +57,14 @@ export default function LobbyPage() {
     }
   }, [event?.status, code, navigate]);
 
-  // Handle close codes — redirect to join on auth failure
+  // Handle close codes — redirect to join on auth failure with explanation
   useEffect(() => {
     if (closeCode === null || !code) return;
     if (REJOIN_CLOSE_CODES.has(closeCode)) {
-      navigate(`/event/${code}`, { replace: true });
+      navigate(`/event/${code}`, {
+        replace: true,
+        state: { sessionExpired: true },
+      });
     }
   }, [closeCode, code, navigate]);
 
@@ -147,9 +150,13 @@ export default function LobbyPage() {
     }
   }, [code, starting, participants.length, setEvent]);
 
-  // Don't render if no context
+  // Don't render if no context — show loading spinner during redirect
   if (!participant || !event || !code) {
-    return null;
+    return (
+      <div className="flex min-h-svh items-center justify-center bg-white">
+        <p className="text-system-text">Loading...</p>
+      </div>
+    );
   }
 
   const isLead = participant.is_lead;

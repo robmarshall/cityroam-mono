@@ -1,0 +1,1 @@
+ALTER TABLE "events" ADD COLUMN "hint_offered" boolean DEFAULT false NOT NULL;

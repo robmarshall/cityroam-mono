@@ -7,6 +7,7 @@ const log = createLogger("classifier");
 const VALID_INTENTS: ReadonlySet<IntentClassification["type"]> = new Set([
   "answer-attempt",
   "hint-request",
+  "hint-nudge",
   "contextual-comment",
   "question",
   "off-topic-chat",
@@ -26,7 +27,8 @@ The current clue is: "${currentClue}"
 Classify the message into exactly one type:
 
 - "answer-attempt": The player is trying to answer the clue.
-- "hint-request": Explicit request for a hint or help. E.g. "give us a hint", "we're stuck", "help".
+- "hint-request": Explicit, direct request for a hint or clue. E.g. "give us a hint", "can we get a clue", "we need a hint please".
+- "hint-nudge": The player is expressing frustration or being stuck without directly asking for a hint. E.g. "I'm stuck", "I don't know what I'm doing", "I have no idea", "help me", "this is impossible", "we're stuck".
 - "contextual-comment": In-game comment that is neither an answer attempt nor a hint request. E.g. "we've got this", "we definitely don't need a hint", "this is hard".
 - "question": A direct question to the guide about directions, the stop, the game, or what to do next.
 - "off-topic-chat": Talking to other players. Casual reactions, side chat unrelated to solving the clue.

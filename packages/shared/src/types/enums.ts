@@ -14,8 +14,9 @@ export type MessageBankType =
   | "success"
   | "failure"
   | "hint-exhausted"
+  | "hint-offer"
+  | "hint-decline"
   | "clarification"
   | "unknown-answer"
-  | "opening"
   | "completion"
   | "over-length";

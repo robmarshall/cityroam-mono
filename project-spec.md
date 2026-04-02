@@ -766,25 +766,9 @@ Player's question: "{{USER_MESSAGE}}"
 "Say that another way and I'll try to help."
 ```
 
-### 5.7 Opening Message (Programmatic Template)
+### 5.7 Opening Message
 
-The opening message is a predefined template populated with stop data at game start. No LLM call required.
-
-```
-Welcome. I'll be your guide today — I know where we're going, you do the leg work.
-
-Here's how it works: I'll give you a clue at each stop, you figure it out, and we move on. Ask for a hint if you're stuck. Shouldn't take more than 90 minutes if you keep moving.
-
-Right. Head to {{FIRST_STOP_DIRECTIONS}}.
-
-When you get there, your first clue:
-
-"{{FIRST_CLUE}}"
-
-[IMAGE:first_stop_overview.jpg]
-```
-
-Maintain a bank of 3–5 opening template variants (stored in the database, editable via the admin panel). A variant is selected at random on game start.
+Opening content is authored as message blocks in the route's first group, giving full control over the introduction sequence. No separate message bank type is needed.
 
 ### 5.8 Completion Message (Programmatic Template)
 
@@ -802,7 +786,7 @@ Maintain a bank of 3–5 completion template variants. Selected at random on hun
 
 ### 5.9 Programmatic Message Banks — Implementation Notes
 
-All message banks (success, failure, hint-exhausted, clarification, unknown-answer, opening, completion) should be:
+All message banks (success, failure, hint-exhausted, clarification, unknown-answer, completion, over-length) should be:
 
 - Stored in the database (a `message_banks` table, seeded on deploy) rather than hardcoded in application logic.
 - Editable via the admin panel without a deployment.
@@ -959,7 +943,7 @@ Event definitions, names, and property types are all defined in the shared packa
 | Field | Type | Notes |
 |---|---|---|
 | id | UUID | Primary key |
-| type | varchar | e.g. `"success"`, `"failure"`, `"hint-exhausted"`, `"clarification"`, `"unknown-answer"`, `"opening"`, `"completion"` |
+| type | varchar | e.g. `"success"`, `"failure"`, `"hint-exhausted"`, `"clarification"`, `"unknown-answer"`, `"completion"`, `"over-length"` |
 | content | text | The message text. May contain template variables (e.g. `{{ANSWER}}`). |
 | is_active | boolean | Inactive entries are excluded from random selection. |
 | created_at | timestamptz | |

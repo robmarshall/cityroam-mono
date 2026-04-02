@@ -215,8 +215,8 @@ Some message types support template variables that are replaced at runtime:
 | Variable | Available In | Replaced With |
 |----------|-------------|---------------|
 | `{{ANSWER}}` | hint-exhausted | First item from accepted_answers |
-| `{{CITY_NAME}}` | opening, completion, message blocks | route.city |
-| `{{TOTAL_STOPS}}` | opening, completion, message blocks | route.total_stops |
+| `{{CITY_NAME}}` | completion, message blocks | route.city |
+| `{{TOTAL_STOPS}}` | completion, message blocks | route.total_stops |
 | `{{DISTANCE_KM}}` | completion, message blocks | route.estimated_distance_km |
 | `{{REVIEW_LINK}}` | completion, message blocks | Configured review URL |
 
@@ -232,7 +232,6 @@ Template variables in message block `content` fields are replaced at runtime, so
 | clarification | 2 | 3 |
 | unknown-answer | 2 | 3 |
 | over-length | 2 | 3 |
-| opening | 2 | 3 |
 | completion | 2 | 3 |
 
 ---

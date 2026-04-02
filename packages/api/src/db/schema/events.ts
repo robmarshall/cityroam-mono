@@ -19,6 +19,7 @@ export const events = pgTable("events", {
   hints_given: integer("hints_given").notNull().default(0),
   wrong_attempts: integer("wrong_attempts").notNull().default(0),
   guide_response_count: integer("guide_response_count").notNull().default(0),
+  hint_offered: boolean("hint_offered").notNull().default(false),
   created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   started_at: timestamp("started_at", { withTimezone: true }),
   completed_at: timestamp("completed_at", { withTimezone: true }),

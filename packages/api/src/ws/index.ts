@@ -28,6 +28,7 @@ const log = createLogger("ws");
 declare module "ws" {
   interface WebSocket {
     isAlive: boolean;
+    missedPongs: number;
   }
 }
 
@@ -92,7 +93,8 @@ app.get(
 
         // Track pong responses for liveness detection
         raw.isAlive = true;
-        raw.on("pong", () => { raw.isAlive = true; });
+        raw.missedPongs = 0;
+        raw.on("pong", () => { raw.isAlive = true; raw.missedPongs = 0; });
 
         log.info("connection opened", { eventCode: session.event_code, participantId: session.participant_id });
 
@@ -152,6 +154,8 @@ injectWebSocket(server);
 // detects dead clients that didn't cleanly disconnect.
 // ---------------------------------------------------------------------------
 
+const MAX_MISSED_PONGS = 2;
+
 const pingInterval = setInterval(() => {
   for (const eventCode of getAllEventCodes()) {
     const eventConnections = getConnections(eventCode);
@@ -159,10 +163,14 @@ const pingInterval = setInterval(() => {
 
     for (const [participantId, ws] of eventConnections) {
       if (!ws.isAlive) {
-        // Already missed one pong cycle — terminate the dead connection
-        log.warn("terminating unresponsive connection", { eventCode, participantId });
-        ws.terminate();
-        continue;
+        ws.missedPongs = (ws.missedPongs ?? 0) + 1;
+        if (ws.missedPongs >= MAX_MISSED_PONGS) {
+          log.warn("terminating unresponsive connection", { eventCode, participantId, missedPongs: ws.missedPongs });
+          ws.terminate();
+          continue;
+        }
+      } else {
+        ws.missedPongs = 0;
       }
 
       // Mark as not-alive; the pong handler in onOpen will reset this to true

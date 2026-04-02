@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { displayNameSchema } from "@cityroam/shared/validation";
 import { MIN_DISPLAY_NAME_LENGTH, MAX_DISPLAY_NAME_LENGTH } from "@cityroam/shared/constants";
 import { POSTHOG_EVENTS } from "@cityroam/shared/analytics";
@@ -62,11 +62,16 @@ function friendlyError(err: unknown): string {
 export default function JoinPage() {
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { setParticipant, setToken } = useParticipant();
   const { setEvent, setParticipants } = useEvent();
 
+  const sessionExpired = (location.state as { sessionExpired?: boolean } | null)?.sessionExpired === true;
+
   const [displayName, setDisplayName] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    sessionExpired ? "Your session expired. Please rejoin with your name." : null,
+  );
   const [fieldError, setFieldError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import type {
   AdminRouteDetailResponse,
@@ -16,7 +16,6 @@ import {
 import {
   DndContext,
   closestCorners,
-  closestCenter,
   KeyboardSensor,
   PointerSensor,
   useSensor,
@@ -1144,6 +1143,38 @@ export default function RouteEditorPage() {
   // Block DnD cross-group state
   const [activeBlockId, setActiveBlockId] = useState<string | null>(null);
   const [movingBlockId, setMovingBlockId] = useState<string | null>(null);
+  const [activeItemType, setActiveItemType] = useState<
+    "group" | "block" | null
+  >(null);
+
+  // ------- Dirty state tracking -------
+  const savedRouteForm = useRef<RouteForm>(EMPTY_ROUTE_FORM);
+  useEffect(() => {
+    if (route) savedRouteForm.current = routeToForm(route);
+  }, [route]);
+
+  const isDirty = useMemo(() => {
+    // Route form changed?
+    const formKeys = Object.keys(savedRouteForm.current) as (keyof RouteForm)[];
+    const routeChanged = formKeys.some(
+      (k) => routeForm[k] !== savedRouteForm.current[k],
+    );
+    // Open block editors with unsaved changes?
+    const hasOpenEditors = openEditors.size > 0;
+    // Pending reorders?
+    const hasPendingGroupReorder = reorderedGroupIds !== null;
+    const hasPendingBlockReorder = Object.keys(pendingBlockReorders).length > 0;
+    return routeChanged || hasOpenEditors || hasPendingGroupReorder || hasPendingBlockReorder;
+  }, [routeForm, openEditors, reorderedGroupIds, pendingBlockReorders]);
+
+  useEffect(() => {
+    if (!isDirty) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isDirty]);
 
   // ------- Editor helpers -------
   function updateEditor(key: string, patch: Partial<BlockEditorState>) {
@@ -1394,13 +1425,17 @@ export default function RouteEditorPage() {
     }
   }
 
-  // ------- Group drag & drop -------
-  const groupSensors = useSensors(
+  // ------- Drag & drop (unified for groups + blocks) -------
+  const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     }),
   );
+
+  function isGroupId(id: string): boolean {
+    return groups.some((g) => g.id === id);
+  }
 
   function handleGroupDragEnd(event: DragEndEvent) {
     const { active, over } = event;
@@ -1445,14 +1480,6 @@ export default function RouteEditorPage() {
     }
   }
 
-  // ------- Block drag & drop (unified cross-group) -------
-  const blockSensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
-  );
-
   function findGroupForBlock(blockId: string): string | undefined {
     return groups.find((g) => g.blocks.some((b) => b.id === blockId))?.id;
   }
@@ -1466,16 +1493,22 @@ export default function RouteEditorPage() {
     return findGroupForBlock(droppableId);
   }
 
-  function handleBlockDragStart(event: DragStartEvent) {
-    const blockId = String(event.active.id);
-    setActiveBlockId(blockId);
-    // Close accordion for dragged block (discard unsaved edits)
-    if (openEditors.has(blockId)) {
-      removeEditor(blockId);
+  function handleDragStart(event: DragStartEvent) {
+    const id = String(event.active.id);
+    if (isGroupId(id)) {
+      setActiveItemType("group");
+    } else {
+      setActiveItemType("block");
+      setActiveBlockId(id);
+      // Close accordion for dragged block (discard unsaved edits)
+      if (openEditors.has(id)) {
+        removeEditor(id);
+      }
     }
   }
 
-  function handleBlockDragOver(event: DragOverEvent) {
+  function handleDragOver(event: DragOverEvent) {
+    if (activeItemType !== "block") return;
     const { active, over } = event;
     if (!over) return;
 
@@ -1587,6 +1620,17 @@ export default function RouteEditorPage() {
       } finally {
         setMovingBlockId(null);
       }
+    }
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    const type = activeItemType;
+    setActiveItemType(null);
+
+    if (type === "group") {
+      handleGroupDragEnd(event);
+    } else if (type === "block") {
+      handleBlockDragEnd(event);
     }
   }
 
@@ -1817,12 +1861,25 @@ export default function RouteEditorPage() {
   return (
     <div>
       {/* Back link */}
-      <Link
-        to="/routes"
-        className="mb-4 inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
-      >
-        &larr; Back to Routes
-      </Link>
+      {isDirty ? (
+        <button
+          onClick={() => {
+            if (window.confirm("You have unsaved changes. Are you sure you want to leave?")) {
+              navigate("/routes");
+            }
+          }}
+          className="mb-4 inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
+        >
+          &larr; Back to Routes
+        </button>
+      ) : (
+        <Link
+          to="/routes"
+          className="mb-4 inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
+        >
+          &larr; Back to Routes
+        </Link>
+      )}
 
       {/* Header */}
       <h1 className="mb-6 text-2xl font-bold text-gray-900">
@@ -1987,24 +2044,18 @@ export default function RouteEditorPage() {
             </p>
           ) : (
             <div className="mb-4 space-y-3">
-              {/* Group-level DnD */}
+              {/* Unified DnD for groups + blocks */}
               <DndContext
-                sensors={groupSensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleGroupDragEnd}
+                sensors={sensors}
+                collisionDetection={closestCorners}
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
+                onDragEnd={handleDragEnd}
               >
                 <SortableContext
                   items={groups.map((g) => g.id)}
                   strategy={verticalListSortingStrategy}
                 >
-                  {/* Block-level DnD (single context for all groups) */}
-                  <DndContext
-                    sensors={blockSensors}
-                    collisionDetection={closestCorners}
-                    onDragStart={handleBlockDragStart}
-                    onDragOver={handleBlockDragOver}
-                    onDragEnd={handleBlockDragEnd}
-                  >
                     {groups.map((group, groupIndex) => (
                       <SortableGroup
                         key={group.id}
@@ -2220,7 +2271,6 @@ export default function RouteEditorPage() {
                     <DragOverlay>
                       {activeBlock ? <BlockOverlay block={activeBlock} /> : null}
                     </DragOverlay>
-                  </DndContext>
                 </SortableContext>
               </DndContext>
 

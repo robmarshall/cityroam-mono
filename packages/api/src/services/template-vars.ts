@@ -18,7 +18,7 @@ export function applyTemplateVars(
 
 /**
  * Build the standard template variables for a route.
- * Used by opening messages, completion messages, and message blocks.
+ * Used by completion messages and message blocks.
  */
 export async function buildRouteTemplateVars(
   routeId: string,

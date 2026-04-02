@@ -40,6 +40,8 @@ export default function EventDetailPage() {
   const [savingNote, setSavingNote] = useState(false);
   const [noteSaved, setNoteSaved] = useState(false);
   const [noteError, setNoteError] = useState<string | null>(null);
+  const [isEditingRefund, setIsEditingRefund] = useState(false);
+  const [refreshError, setRefreshError] = useState<string | null>(null);
   const authFetch = useAuthFetch();
 
   const fetchEvent = useCallback(async () => {
@@ -72,20 +74,27 @@ export default function EventDetailPage() {
   }, [data]);
 
   // Silent auto-refresh every 5 seconds so new messages appear without manual reload
+  // Pauses when user is editing the refund section to avoid overwriting their changes
   useEffect(() => {
+    if (isEditingRefund) return;
+
     const interval = setInterval(async () => {
       try {
         const res = await authFetch(() =>
           api.get<AdminEventDetailResponse>(`/admin/events/${id}`),
         );
         setData(res);
-      } catch {
-        // Silently ignore refresh errors — initial load handles error display
+        setRefreshError(null);
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 401) {
+          setRefreshError("Session expired — please log in again.");
+        }
+        // Other errors are silently ignored — initial load handles error display
       }
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [authFetch, id]);
+  }, [authFetch, id, isEditingRefund]);
 
   const handleCopyPaymentId = async (paymentId: string) => {
     await navigator.clipboard.writeText(paymentId);
@@ -180,6 +189,13 @@ export default function EventDetailPage() {
           {STATUS_LABELS[event.status]}
         </span>
       </div>
+
+      {/* Session expired warning */}
+      {refreshError && (
+        <div className="mb-4 rounded-md bg-yellow-50 p-3 text-sm text-yellow-800">
+          {refreshError}
+        </div>
+      )}
 
       {/* Refund feedback */}
       {refundSuccess && (
@@ -295,6 +311,8 @@ export default function EventDetailPage() {
         <textarea
           value={refundNote}
           onChange={(e) => setRefundNote(e.target.value)}
+          onFocus={() => setIsEditingRefund(true)}
+          onBlur={() => setIsEditingRefund(false)}
           placeholder="Add notes about the refund..."
           rows={3}
           maxLength={2000}
