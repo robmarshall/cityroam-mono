@@ -87,33 +87,33 @@ This means the marketing site never needs to know or care about language — it 
 
 ---
 
-## Phase 2: API Pipeline Language Threading
+## Phase 2: API Pipeline Language Threading [COMPLETE]
 
-- [ ] **2.1 Message bank queries** — Update `getRandomMessageBank()` to accept `language` parameter and filter by `(type, language, is_active)`.
+- [x] **2.1 Message bank queries** — Update `getRandomMessageBank()` to accept `language` parameter and filter by `(type, language, is_active)`.
 
-- [ ] **2.2 Orchestrator language threading** — In `packages/api/src/services/pipeline/orchestrator.ts`: load `event.language` at Step 1, pass it through to all handler contexts. Add `language` field to all handler context interfaces.
+- [x] **2.2 Orchestrator language threading** — In `packages/api/src/services/pipeline/orchestrator.ts`: load `event.language` at Step 1, pass it through to all handler contexts. Add `language` field to all handler context interfaces.
 
-- [ ] **2.3 Update all handlers** — `answer-attempt.ts`: pass language to `getRandomMessageBank()` and `buildAnswerMatchPrompt()`. `hint-request.ts`: pass language to message bank calls. `hint-nudge.ts`: pass language to message bank calls. `question.ts`: pass language to `buildQuestionPrompt()`. `silent.ts`: pass language where needed. `pre-filter.ts`: pass language to over-length message bank.
+- [x] **2.3 Update all handlers** — `answer-attempt.ts`: pass language to `getRandomMessageBank()` and `buildAnswerMatchPrompt()`. `hint-request.ts`: pass language to message bank calls. `hint-nudge.ts`: pass language to message bank calls. `question.ts`: pass language to `buildQuestionPrompt()`. `silent.ts`: pass language where needed. `pre-filter.ts`: pass language to over-length message bank.
 
-- [ ] **2.4 AI prompt adaptation** — `classifier.ts`: add `"The player is communicating in ${language}"` to classification prompt; add multilingual examples for hint-request, hint-nudge, etc. `answer-attempt.ts`: add `"The game language is ${language}"` to answer match prompt. `question.ts`: add `"Respond in ${languageName}"` to question prompt.
+- [x] **2.4 AI prompt adaptation** — `classifier.ts`: add `"The player is communicating in ${language}"` to classification prompt; add multilingual examples for hint-request, hint-nudge, etc. `answer-attempt.ts`: add `"The game language is ${language}"` to answer match prompt. `question.ts`: add `"Respond in ${languageName}"` to question prompt.
 
-- [ ] **2.5 Deterministic matching** — `deterministic-match.ts`: make article stripping language-aware (en: the/a/an, es: el/la/los/las, fr: le/la/les, etc.). Add Unicode normalization (NFD + strip combining marks) so accented characters match their base forms (e.g., `café` matches `cafe`). Handle language-specific characters like `ñ`, `ß`, `ü`.
+- [x] **2.5 Deterministic matching** — `deterministic-match.ts`: make article stripping language-aware (en: the/a/an, es: el/la/los/las, fr: le/la/les, etc.). Add Unicode normalization (NFD + strip combining marks) so accented characters match their base forms (e.g., `café` matches `cafe`). Handle language-specific characters like `ñ`, `ß`, `ü`.
 
-- [ ] **2.6 Per-language word lists config** — Currently `word-match.ts` has hardcoded English-only `AFFIRMATIVE_WORDS` and `NEGATIVE_WORDS` arrays used for hint offer confirmation in the orchestrator. Replace with a config file (e.g. `packages/api/src/config/word-lists.ts`) that exports a `Record<SupportedLanguage, { affirmative: string[], negative: string[] }>` object. The `isAffirmativeResponse()` and `isNegativeResponse()` functions take a `language` parameter and look up the correct word list from the config. No database or admin UI needed -- just a typed config file that developers edit when adding a new language.
+- [x] **2.6 Per-language word lists config** — Currently `word-match.ts` has hardcoded English-only `AFFIRMATIVE_WORDS` and `NEGATIVE_WORDS` arrays used for hint offer confirmation in the orchestrator. Replace with a config file (e.g. `packages/api/src/config/word-lists.ts`) that exports a `Record<SupportedLanguage, { affirmative: string[], negative: string[] }>` object. The `isAffirmativeResponse()` and `isNegativeResponse()` functions take a `language` parameter and look up the correct word list from the config. No database or admin UI needed -- just a typed config file that developers edit when adding a new language.
 
-- [ ] **2.7 Idle timer messages** — `idle-timer.ts` has 3 hardcoded player-facing messages ("Welcome back...", "It's been a while...", "Still exploring?"). These need to either become new message bank types (`idle-resume`, `idle-pause`, `idle-nudge`) or use per-language fallback maps.
+- [x] **2.7 Idle timer messages** — `idle-timer.ts` has 3 hardcoded player-facing messages ("Welcome back...", "It's been a while...", "Still exploring?"). These need to either become new message bank types (`idle-resume`, `idle-pause`, `idle-nudge`) or use per-language fallback maps.
 
-- [ ] **2.8 Guide response cap message** — `guide-response-cap.ts` has a hardcoded system message ("The guide has reached its message limit..."). Add as a new message bank type (`guide-cap`) or per-language fallback map.
+- [x] **2.8 Guide response cap message** — `guide-response-cap.ts` has a hardcoded system message ("The guide has reached its message limit..."). Add as a new message bank type (`guide-cap`) or per-language fallback map.
 
-- [ ] **2.9 Event creation & API responses** — `packages/api/src/routes/checkout.ts`: when creating event from Stripe webhook, set `event.route_family_id` from the route family, set `event.route_id` to the default English variant, set `event.language` to `'en'`. `packages/api/src/routes/events.ts`: include `language` and available language variants in `GET /event/:code` response. Add `PUT /event/:code/language` endpoint for lead to change language before game start (updates `route_id` and `language`). Admin event creation endpoint: accept optional `language` or default to `'en'`.
+- [x] **2.9 Event creation & API responses** — `packages/api/src/routes/checkout.ts`: when creating event from Stripe webhook, set `event.route_family_id` from the route family, set `event.route_id` to the default English variant, set `event.language` to `'en'`. `packages/api/src/routes/events.ts`: include `language` and available language variants in `GET /event/:code` response. Add `PUT /event/:code/language` endpoint for lead to change language before game start (updates `route_id` and `language`). Admin event creation endpoint: accept optional `language` or default to `'en'`.
 
-- [ ] **2.10 Confirmation email i18n** — The Stripe webhook in `checkout.ts` sends a hardcoded English confirmation email (subject, body, instructions). Create per-language email templates. The email language comes from the event's language (which comes from the route).
+- [x] **2.10 Confirmation email i18n** — The Stripe webhook in `checkout.ts` sends a hardcoded English confirmation email (subject, body, instructions). Create per-language email templates. The email language comes from the event's language (which comes from the route).
 
-- [ ] **2.11 Template vars city lookup** — `template-vars.ts` queries `route.city` for the `{{CITY_NAME}}` variable. After moving `city` to `route_families`, update `buildRouteTemplateVars()` to join `route_families` to get the city name.
+- [x] **2.11 Template vars city lookup** — `template-vars.ts` queries `route.city` for the `{{CITY_NAME}}` variable. After moving `city` to `route_families`, update `buildRouteTemplateVars()` to join `route_families` to get the city name.
 
-- [ ] **2.12 WebSocket system messages** — Audit all WebSocket payloads for hardcoded English text. `GameStartedPayload`, `GameCompletePayload`, `ErrorPayload`, and system messages sent via `incoming-subscriber.ts` may carry player-facing strings. Move any hardcoded text to message banks or per-language fallback maps.
+- [x] **2.12 WebSocket system messages** — Audit all WebSocket payloads for hardcoded English text. `GameStartedPayload`, `GameCompletePayload`, `ErrorPayload`, and system messages sent via `incoming-subscriber.ts` may carry player-facing strings. Move any hardcoded text to message banks or per-language fallback maps.
 
-- [ ] **2.13 Checkout flow: Stripe product → route family mapping** — Currently the Stripe webhook picks the first active route. With route families, one Stripe product maps to one route family. The marketing site passes the `route_family_id` to `POST /checkout/create-session`, which stores it in Stripe session metadata. The webhook reads the metadata, finds the English variant of that family as the default, and creates the event linked to both the family and the default route. Language selection happens later in the app lobby — the marketing site locale is irrelevant.
+- [x] **2.13 Checkout flow: Stripe product → route family mapping** — Currently the Stripe webhook picks the first active route. With route families, one Stripe product maps to one route family. The marketing site passes the `route_family_id` to `POST /checkout/create-session`, which stores it in Stripe session metadata. The webhook reads the metadata, finds the English variant of that family as the default, and creates the event linked to both the family and the default route. Language selection happens later in the app lobby — the marketing site locale is irrelevant.
 
 ---
 
