@@ -556,7 +556,7 @@ The 8-character `code` is what players use to join the event.
 | position | number | No | 0-indexed integer. Defaults to array index if omitted. |
 | type | string | Yes | One of: `message`, `image`, `question`, `action`, `map` |
 | config | object | Yes | Must match type (see below) |
-| delay_ms | number | No | 0-30000ms, default: 0 |
+| delay_ms | number | No | 0-300000ms (5 minutes max), default: 0 |
 
 ### Block Config — By Type
 

@@ -97,7 +97,7 @@ export const routeBlockSchema = z.object({
   position: z.number().int().min(0).optional(),
   type: z.enum(["message", "image", "question", "action", "map"]),
   config: blockConfigSchema,
-  delay_ms: z.number().int().min(0).max(30000).default(0),
+  delay_ms: z.number().int().min(0).max(300000).default(0),
 }).refine((data) => data.type === data.config.type, {
   message: "Block type must match config type",
   path: ["type"],

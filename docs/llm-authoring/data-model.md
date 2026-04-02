@@ -68,7 +68,7 @@ Blocks are the individual content units within a group. They are ordered by `pos
 | position | Order within the group (0, 1, 2...) |
 | type | One of: `message`, `image`, `question`, `action`, `map` |
 | config | Type-specific configuration (see below) |
-| delay_ms | Milliseconds to wait before sending (0-30000). Creates a natural typing pause. |
+| delay_ms | Milliseconds to wait before sending (0-300000, i.e. up to 5 minutes). Creates natural pacing — short pauses for typing feel, longer delays for en-route commentary while players walk. |
 
 ### Block Types
 
@@ -132,18 +132,33 @@ Use for: helping players navigate to a location. Rendered as a styled map link c
 
 ## Typical Group Structure
 
-A standard location group follows this pattern:
+### Minimal Group Structure (acceptable)
 
 ```
 Group: "Leeds Town Hall"
-  ├── Block 1: message  — directions to walk here from previous location
-  ├── Block 2: image    — photo of the location (optional)
-  ├── Block 3: question — riddle + accepted answers + hints
-  ├── Block 4: message  — fun fact (sent after correct answer)
-  └── Block 5: map      — Google Maps link (optional)
+  ├── Block 1: question — riddle + accepted answers + hints (delay: 0)
+  ├── Block 2: message  — fun fact (delay: 1500ms)
+  ├── Block 3: map      — Google Maps link (delay: 500ms)
+  └── Block 4: message  — directions to next location (delay: 2000ms)
 ```
 
-But the block system is flexible. You can have groups with no questions (pure narrative), multiple questions, action blocks for group coordination, or any combination.
+### Rich Group Structure (preferred)
+
+```
+Group: "Leeds Town Hall"
+  ├── Block 1: question — riddle (delay: 0)
+  ├── Block 2: image    — photo of the location (delay: 1500ms)
+  ├── Block 3: message  — fun fact #1 (delay: 2000ms)
+  ├── Block 4: message  — fun fact #2 / tidbit (delay: 2500ms)
+  ├── Block 5: map      — Google Maps link (delay: 500ms)
+  ├── Block 6: message  — walking directions (delay: 3000ms)
+  ├── Block 7: message  — en-route commentary (delay: 60000ms)
+  └── Block 8: image    — en-route point of interest (delay: 30000ms)
+```
+
+All blocks after the question are delivered sequentially after the correct answer, with `delay_ms` spacing them out. This means the post-answer enrichment (image, facts), directions, and en-route commentary all form one reward-and-transition sequence.
+
+The block system is flexible. You can have groups with no questions (pure narrative), multiple questions, action blocks for group coordination, or any combination. See the content guide for detailed patterns.
 
 ---
 
@@ -159,6 +174,8 @@ Pre-filter (length checks, rate limits)
 Intent Classifier (LLM)
   ├── "answer-attempt" → Answer Matcher (LLM checks against accepted_answers)
   │     ├── Correct → success bank + remaining blocks in group + next group
+  │     │     (All blocks after the question — images, fun facts, directions,
+  │     │      en-route commentary — fire as a sequence with their delay_ms values)
   │     └── Incorrect → failure bank (+ hint nudge after 3 wrong with 0 hints)
   ├── "hint-request" → Serve next hint from question block hints (no LLM)
   │     └── All hints used → hint-exhausted bank (reveals answer) + advance

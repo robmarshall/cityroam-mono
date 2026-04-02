@@ -4,6 +4,19 @@ This document explains how to write high-quality treasure hunt routes for City R
 
 ---
 
+## Research Requirement
+
+When creating or editing a route, you **must use a research tool** (web search, knowledge base, etc.) to gather information about each location and the surrounding area before writing content. This applies to:
+
+- **Fun facts** — verify historical dates, architect names, anecdotes
+- **En-route commentary** — discover notable buildings, statues, plaques, and stories along the walking path between stops
+- **Hints** — confirm visible architectural features, street names, dates on inscriptions
+- **Clue writing** — check what's actually visible at each location
+
+Do not rely on training data alone. Research ensures accuracy and surfaces the interesting, surprising details that make a route feel alive.
+
+---
+
 ## Route Design Principles
 
 - **5-8 groups** (locations) is the sweet spot. Fewer feels too short; more causes fatigue.
@@ -23,22 +36,74 @@ A route is made up of **groups**, and each group contains **blocks**. Groups rep
 
 ### Typical Location Group
 
-Most groups follow this pattern:
+Most groups follow this enriched pattern:
 
 1. **Question block** — the riddle for this location
-2. **Message block** — fun fact (delivered after the player answers correctly)
-3. **Map block** — Google Maps link (optional, helps players find the spot)
-4. **Message block** — walking directions to the next location
+2. **Image block** — photo of the location (delivered after correct answer)
+3. **Message block** — fun fact about the place
+4. **Message block** — second tidbit from a different angle (optional)
+5. **Map block** — Google Maps link (optional)
+6. **Message block** — walking directions to the next location
+7. **Message block** — en-route commentary about something they'll pass (optional, with long delay)
+8. **Image block** — photo of the en-route point of interest (optional)
 
-You can also include image blocks, action blocks (for group coordination), or additional message blocks as needed. The first group might be a pure introduction with no question.
+The first group should be a conversational introduction with no question. See "Conversational Introduction Pattern" below.
 
 ### Delays Between Blocks
 
-Use `delay_ms` on blocks to create natural pacing. When the game engine sends multiple blocks in sequence (e.g. after a correct answer), delays simulate typing pauses:
+Use `delay_ms` on blocks to create natural pacing. The maximum is 300,000ms (5 minutes). Use short delays for conversational rhythm and longer delays for en-route commentary while players are walking.
 
-- **0ms** — instant (good for questions, the first block in a sequence)
-- **1000-2000ms** — short pause (good for follow-up messages)
-- **2000-3000ms** — longer pause (good for directions after a fun fact)
+| Delay | Use |
+|-------|-----|
+| **0ms** | Questions, first block in a sequence |
+| **1000-2000ms** | Follow-up within a cluster (intro messages, related facts) |
+| **3000-5000ms** | Between topically distinct messages (fun fact → directions) |
+| **15000-30000ms** | First en-route commentary (player has just started walking) |
+| **60000-180000ms** | Later en-route commentary (player has been walking a few minutes) |
+
+Use longer delays for groups where the walk is longer. If two stops are 5 minutes apart, space en-route messages across that window. If the walk is under 2 minutes, skip en-route commentary.
+
+---
+
+## Conversational Introduction Pattern
+
+The introduction group sets the tone for the entire hunt. Break it into **5-6 short messages** with varied delays so it feels like a real guide chatting, not a robotic instruction dump.
+
+### Pattern
+
+1. **Greeting** (0ms) — personality-forward opener, 1 sentence
+2. **Character colour** (1500ms) — one sentence establishing who the guide is
+3. **How it works** (2000ms) — one sentence on the game mechanic
+4. **What to expect** (2000ms) — stops and distance, use template variables
+5. **Hint mechanic** (2000ms) — one sentence on asking for hints
+6. **First directions** (3000ms) — where to head first
+
+Each message is **1-2 sentences max**. The guide's personality should come through from the very first message.
+
+### Good Example
+
+```json
+[
+  { "type": "message", "config": { "type": "message", "content": "Right then. Welcome to {{CITY_NAME}}." }, "delay_ms": 0 },
+  { "type": "message", "config": { "type": "message", "content": "I know these streets better than most. You just need to keep up." }, "delay_ms": 1500 },
+  { "type": "message", "config": { "type": "message", "content": "I'll give you a clue at each stop. You figure it out, we move on." }, "delay_ms": 2000 },
+  { "type": "message", "config": { "type": "message", "content": "{{TOTAL_STOPS}} stops, roughly {{DISTANCE_KM}}km. Should take about an hour if you don't dawdle." }, "delay_ms": 2000 },
+  { "type": "message", "config": { "type": "message", "content": "If you get stuck, ask for a hint. I won't judge. Much." }, "delay_ms": 2000 },
+  { "type": "message", "config": { "type": "message", "content": "Head to The Headrow in the city centre. Look for the building with the tall columns — hard to miss." }, "delay_ms": 3000 }
+]
+```
+
+### Bad Example
+
+```json
+[
+  { "type": "message", "config": { "type": "message", "content": "Welcome to {{CITY_NAME}}. I'll be your guide today — I know where we're going, you do the leg work." }, "delay_ms": 0 },
+  { "type": "message", "config": { "type": "message", "content": "Here's how it works: I'll give you a clue at each stop, you figure it out, and we move on. There are {{TOTAL_STOPS}} stops covering {{DISTANCE_KM}}km. Ask for a hint if you're stuck." }, "delay_ms": 2000 },
+  { "type": "message", "config": { "type": "message", "content": "Head to The Headrow in the city centre. You'll see a grand building with tall columns — you can't miss it." }, "delay_ms": 2000 }
+]
+```
+
+The bad example crams mechanics into one message and lacks personality. The good example builds character across several short messages.
 
 ---
 
@@ -126,16 +191,53 @@ After all hints are exhausted, the system **automatically reveals the answer** a
 
 ---
 
+## Post-Answer Enrichment
+
+When a player answers correctly, the system sends a success message from the message bank automatically. Everything positioned after the question block in the same group is then delivered as a sequence. This is your opportunity to reward the player with interesting content about the place they just identified.
+
+### Pattern
+
+1. *(Success message — automatic from message bank, do NOT add a "well done" block)*
+2. **Image block** — photo of the location (delay: 1500ms). The player sees what they just identified.
+3. **Message block** — primary fun fact, 1-2 sentences (delay: 2000ms). Pick the most interesting detail.
+4. **Message block** — second tidbit from a different angle (delay: 2500ms). Optional — only include if there's something genuinely worth saying. Human stories, absurd stats, or connections to modern life work well.
+
+### Rules
+
+- **Image first** — the player just identified this place, show it to them while they read the facts
+- **1-2 sentences per message** — never a wall of text
+- **Don't duplicate the success acknowledgement** — the message bank handles "correct" / "got it" / etc.
+- **Different angles** — if you include a second tidbit, approach from a different direction than the first fact (e.g. first fact is historical, second is a quirky modern detail)
+- **Match the guide's dry tone** — see guide-personality.md
+
+### Good Example
+
+```json
+{ "type": "image", "config": { "type": "image", "image_url": "{{IMAGE:leeds-town-hall-facade}}" }, "delay_ms": 1500 },
+{ "type": "message", "config": { "type": "message", "content": "Brodrick designed this when he was 30. He died in poverty in Paris. Architecture's a tough business." }, "delay_ms": 2000 },
+{ "type": "message", "config": { "type": "message", "content": "The organ inside has over 6,500 pipes. They still use it for concerts every month." }, "delay_ms": 2500 }
+```
+
+### Bad Example
+
+```json
+{ "type": "message", "config": { "type": "message", "content": "Leeds Town Hall was designed by Cuthbert Brodrick and opened in 1858. It is a Grade I listed building located on The Headrow in the city centre. The building features a Corinthian colonnade and a distinctive clock tower. It was originally used for civic functions and courts but now hosts concerts and events. The organ inside has over 6,500 pipes." }, "delay_ms": 1500 }
+```
+
+One massive block, no image, Wikipedia-style density. Players will skim past it.
+
+---
+
 ## Directions (Message Blocks)
 
-Use message blocks for walking directions between locations. Place them at the end of a group, after the fun fact, so they're delivered after the player solves the current riddle.
+Use message blocks for walking directions between locations. Place them after the post-answer enrichment blocks, before any en-route commentary.
 
 ### For the first group
 Give directions from a well-known starting point in a message block:
 - "Head to The Headrow in the city centre. You'll see a grand building with tall columns — you can't miss it."
 
 ### For subsequent groups
-Give walking directions from the previous location in the last message block of the preceding group:
+Give walking directions from the previous location in the last section of the preceding group:
 - "Walk south down Vicar Lane, past the markets. After about 5 minutes you'll see a distinctive domed roof on your right."
 
 ### Rules
@@ -147,23 +249,48 @@ Give walking directions from the previous location in the last message block of 
 
 ---
 
-## Fun Facts (Message Blocks)
+## En-Route Commentary
 
-Use message blocks for fun facts, placed immediately after the question block in the same group. They're delivered after a correct answer and reward the player with interesting knowledge.
+En-route commentary fills the walk between stops with interesting observations about things the player will pass. These blocks use longer delays to arrive while the player is actually walking, creating the feeling of a guide pointing things out along the way.
+
+### Placement
+
+En-route commentary blocks go **after the directions message**, still within the same group. Since all blocks after the question fire sequentially after a correct answer, the delays space them out across the walk.
+
+### Pattern
+
+```
+... (post-answer enrichment blocks) ...
+Message: directions to next stop (delay: 3000-5000ms)
+Message: en-route observation #1 (delay: 15000-60000ms)
+Image:   photo of en-route point of interest (delay: 15000-30000ms)  [optional]
+Message: en-route observation #2 (delay: 60000-120000ms)  [optional]
+```
 
 ### Rules
-- **1-3 sentences**.
-- Match the guide's tone: dry, knowledgeable, understated. No exclamation marks.
-- Focus on **history, architecture, or surprising facts**.
-- Avoid Wikipedia-style density. Pick one or two interesting details.
+
+- **Max 3 en-route blocks per group** — don't overwhelm players while they're walking
+- **1-2 sentences each** — casual, offhand observations
+- **Only mention things actually on the walking route** — research the path between stops
+- **Skip for short walks** — if the walk is under 2 minutes or there's nothing notable, don't force it
+- **Tone is casual observation, not lecturing** — see guide-personality.md for voice guidance
+- **Scale delays to walk length** — 3-minute walk gets one observation at ~30s; 7-minute walk can have 2-3 observations spread across 1-3 minutes
 
 ### Good Example
 
-"Leeds Town Hall was designed by Cuthbert Brodrick and opened in 1858. The organ inside has over 6,500 pipes."
+```json
+{ "type": "message", "config": { "type": "message", "content": "Walk south down Vicar Lane, past the markets. About 5 minutes." }, "delay_ms": 4000 },
+{ "type": "message", "config": { "type": "message", "content": "Kirkgate Market on your right is one of the largest covered markets in Europe. Worth a look on the way back." }, "delay_ms": 45000 },
+{ "type": "message", "config": { "type": "message", "content": "You'll pass a narrow alley on your left just before the church. That's where the first Leeds newspaper was printed." }, "delay_ms": 90000 }
+```
 
 ### Bad Example
 
-"Leeds Town Hall is a Grade I listed building in Leeds, West Yorkshire, England! It was built between 1853 and 1858 and is located on The Headrow! The architect was Cuthbert Brodrick who won a competition to design it! The building features a Corinthian colonnade and a dome!"
+```json
+{ "type": "message", "config": { "type": "message", "content": "Walk south down Vicar Lane. On your right you will see Kirkgate Market, which is one of the largest covered markets in Europe. It was established in 1822 and has over 400 traders. Continue past the market and you will also see a narrow alley where the first Leeds newspaper was printed in 1718. After about 5 minutes you will see a distinctive domed roof on your right." }, "delay_ms": 2000 }
+```
+
+Everything crammed into one message with a short delay. The player reads it all before they've even started walking.
 
 ---
 
@@ -192,9 +319,23 @@ Keep labels short and actionable.
 
 ## Images
 
-Images can be included via `image` blocks with a URL. When creating routes programmatically, you can either:
-- Use publicly accessible image URLs directly
-- Leave image blocks out and add them later through the admin panel
+Images can be included via `image` blocks with a URL. They are a key tool for making the route feel rich and visual.
+
+### When to Use Images
+
+- **Post-answer** — photo of the location the player just identified (most important use)
+- **En-route** — notable things players will pass while walking
+- **Hints** — visual clues within hint sequences
+- **Introduction** — optional hero image of the city (first block of intro group)
+
+### When NOT to Use Images
+
+- **Before a question** — showing a photo of the location spoils the riddle
+- **More than 2 images per group** — visual fatigue; pick the best ones
+
+### Image URLs
+
+When creating routes programmatically, use descriptive placeholder URLs in the format `{{IMAGE:description}}` (e.g. `{{IMAGE:leeds-town-hall-facade}}`, `{{IMAGE:kirkgate-market-interior}}`). An admin will replace these with real URLs through the admin panel before the route goes live.
 
 ---
 
@@ -215,9 +356,24 @@ Useful for introduction and closing messages:
 
 ---
 
+## Anti-Patterns
+
+Avoid these common mistakes when authoring routes:
+
+- **Wall of text** — any message over 3 sentences. Split into multiple blocks with delays.
+- **Robotic Q&A loop** — question, single fun fact, directions, repeat. Break the loop with images, multi-message enrichment, and en-route commentary.
+- **Personality-free intro** — a mechanical "here's how it works" dump with no character.
+- **Dead air between stops** — no content between directions and the next question. Players are walking for 5 minutes with nothing from the guide.
+- **Spoiler images** — showing a photo of a location before the riddle is answered.
+- **Delay-free dumps** — 4+ blocks all with `delay_ms: 0`. The player gets a wall of content all at once.
+- **Over-commenting** — more than 3 en-route blocks per group, or commentary on a very short walk where there's nothing notable.
+- **Duplicating the success message** — adding a "Well done" or "Correct" block after a question. The message bank handles this automatically.
+
+---
+
 ## Complete Worked Example
 
-Here's a well-structured 3-location route with an introduction group:
+Here's a well-structured 2-location route demonstrating all the patterns above:
 
 ```json
 {
@@ -235,18 +391,33 @@ Here's a well-structured 3-location route with an introduction group:
       "blocks": [
         {
           "type": "message",
-          "config": { "type": "message", "content": "Welcome to {{CITY_NAME}}. I'll be your guide today — I know where we're going, you do the leg work." },
+          "config": { "type": "message", "content": "Right then. Welcome to {{CITY_NAME}}." },
           "delay_ms": 0
         },
         {
           "type": "message",
-          "config": { "type": "message", "content": "Here's how it works: I'll give you a clue at each stop, you figure it out, and we move on. Ask for a hint if you're stuck." },
+          "config": { "type": "message", "content": "I know these streets better than most. You just need to keep up." },
+          "delay_ms": 1500
+        },
+        {
+          "type": "message",
+          "config": { "type": "message", "content": "I'll give you a clue at each stop. You figure it out, we move on." },
           "delay_ms": 2000
         },
         {
           "type": "message",
-          "config": { "type": "message", "content": "Head to The Headrow in the city centre. You'll see a grand building with tall columns — you can't miss it." },
+          "config": { "type": "message", "content": "{{TOTAL_STOPS}} stops, roughly {{DISTANCE_KM}}km. Should take about an hour if you don't dawdle." },
           "delay_ms": 2000
+        },
+        {
+          "type": "message",
+          "config": { "type": "message", "content": "If you get stuck, ask for a hint. I won't judge. Much." },
+          "delay_ms": 2000
+        },
+        {
+          "type": "message",
+          "config": { "type": "message", "content": "Head to The Headrow in the city centre. Look for the building with the tall columns — hard to miss." },
+          "delay_ms": 3000
         }
       ]
     },
@@ -267,9 +438,19 @@ Here's a well-structured 3-location route with an introduction group:
           "delay_ms": 0
         },
         {
-          "type": "message",
-          "config": { "type": "message", "content": "Leeds Town Hall was designed by Cuthbert Brodrick and opened in 1858. The organ inside has over 6,500 pipes." },
+          "type": "image",
+          "config": { "type": "image", "image_url": "{{IMAGE:leeds-town-hall-facade}}" },
           "delay_ms": 1500
+        },
+        {
+          "type": "message",
+          "config": { "type": "message", "content": "Brodrick designed this when he was 30. He died in poverty in Paris. Architecture's a tough business." },
+          "delay_ms": 2000
+        },
+        {
+          "type": "message",
+          "config": { "type": "message", "content": "The organ inside has over 6,500 pipes. They still use it for concerts every month." },
+          "delay_ms": 2500
         },
         {
           "type": "map",
@@ -278,8 +459,23 @@ Here's a well-structured 3-location route with an introduction group:
         },
         {
           "type": "message",
-          "config": { "type": "message", "content": "Walk south down Vicar Lane, past the markets. After about 5 minutes you'll see a distinctive domed roof on your right." },
-          "delay_ms": 2000
+          "config": { "type": "message", "content": "Walk south down Vicar Lane, past the markets. About 5 minutes." },
+          "delay_ms": 4000
+        },
+        {
+          "type": "message",
+          "config": { "type": "message", "content": "Kirkgate Market on your right is one of the largest covered markets in Europe. Worth a look on the way back." },
+          "delay_ms": 45000
+        },
+        {
+          "type": "image",
+          "config": { "type": "image", "image_url": "{{IMAGE:kirkgate-market-exterior}}" },
+          "delay_ms": 15000
+        },
+        {
+          "type": "message",
+          "config": { "type": "message", "content": "You'll pass a narrow alley on your left just before the church. That's where the first Leeds newspaper was printed." },
+          "delay_ms": 90000
         }
       ]
     },
@@ -300,46 +496,23 @@ Here's a well-structured 3-location route with an introduction group:
           "delay_ms": 0
         },
         {
-          "type": "message",
-          "config": { "type": "message", "content": "The Corn Exchange is another Cuthbert Brodrick design. Its elliptical shape was revolutionary for 1863 and it's now Grade I listed." },
+          "type": "image",
+          "config": { "type": "image", "image_url": "{{IMAGE:corn-exchange-dome}}" },
           "delay_ms": 1500
+        },
+        {
+          "type": "message",
+          "config": { "type": "message", "content": "Another Brodrick design. The elliptical shape was revolutionary for 1863 — engineers weren't sure the roof would hold." },
+          "delay_ms": 2000
+        },
+        {
+          "type": "message",
+          "config": { "type": "message", "content": "It nearly got demolished in the 1980s. Locals fought to save it. Now it's Grade I listed and full of independent shops." },
+          "delay_ms": 2500
         },
         {
           "type": "map",
           "config": { "type": "map", "google_maps_link": "https://maps.google.com/?q=Leeds+Corn+Exchange" },
-          "delay_ms": 500
-        },
-        {
-          "type": "message",
-          "config": { "type": "message", "content": "Head east along Kirkgate for about 3 minutes. Look for the church on your left." },
-          "delay_ms": 2000
-        }
-      ]
-    },
-    {
-      "name": "Leeds Minster",
-      "blocks": [
-        {
-          "type": "question",
-          "config": {
-            "type": "question",
-            "clue": "The oldest site of worship here, I've watched this city grow each year. My name was raised from parish church — now 'Minster' puts me a notch above the rest.",
-            "accepted_answers": ["Leeds Minster", "the Minster", "Leeds Parish Church"],
-            "hints": [
-              [{ "content": "It's the oldest religious site in Leeds, on Kirkgate.", "image_url": null, "delay_ms": 0 }],
-              [{ "content": "It became a Minster in 2012 — before that it was Leeds Parish Church.", "image_url": null, "delay_ms": 0 }]
-            ]
-          },
-          "delay_ms": 0
-        },
-        {
-          "type": "message",
-          "config": { "type": "message", "content": "Leeds Minster stands on a site of Christian worship dating back to the 7th century. The current building is mostly Victorian but the site is over 1,300 years old." },
-          "delay_ms": 1500
-        },
-        {
-          "type": "map",
-          "config": { "type": "map", "google_maps_link": "https://maps.google.com/?q=Leeds+Minster" },
           "delay_ms": 500
         }
       ]
@@ -349,11 +522,12 @@ Here's a well-structured 3-location route with an introduction group:
 ```
 
 Notice how:
-- The introduction group sets the scene with no question
-- Directions flow logically — each group's last message block gives directions to the next location
-- Clues reference things you can see at the location
-- Accepted answers cover the common ways someone might say the name
-- Hints escalate from vague to specific
-- Fun facts are concise and interesting
-- `delay_ms` creates natural pacing between messages
-- Map blocks help players navigate
+- The **introduction** builds personality across 6 short messages — each 1-2 sentences with varied delays
+- **Post-answer enrichment** starts with an image, then layers in fun facts from different angles
+- **En-route commentary** fills the walk with observations, spaced out with long delays (45s, 15s, 90s) so they arrive while the player is actually walking
+- **Images appear after answers**, not before — no spoilers
+- **Delays are varied and intentional** — short for conversational rhythm, long for walking gaps
+- **Individual messages stay short** — 1-2 sentences each, never a wall of text
+- The **guide's personality** comes through in word choice and pacing, not in lengthy explanations
+- The **success acknowledgement is NOT duplicated** — it comes from the message bank automatically
+- **Image placeholders** use `{{IMAGE:description}}` format for admin to replace later

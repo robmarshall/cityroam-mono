@@ -627,7 +627,7 @@ function DelayInput({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           min="0"
-          max="30000"
+          max="300000"
           step="100"
           className={INPUT_CLS + " !w-24"}
         />
