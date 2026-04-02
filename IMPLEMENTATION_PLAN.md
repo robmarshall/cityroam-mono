@@ -70,17 +70,17 @@ This means the marketing site never needs to know or care about language — it 
 
 - [x] **1.1 Shared package types & constants** — Add `SupportedLanguage` type to `packages/shared/src/types/enums.ts`. Add `SUPPORTED_LANGUAGES` and `DEFAULT_LANGUAGE` to `packages/shared/src/constants/index.ts`. Add `RouteFamily` type to `packages/shared/src/types/entities.ts`. Add `language` and `route_family_id` fields to `Route` entity type. Remove `city` from `Route` type. Add `language` and `route_family_id` fields to `Event` entity type. Add `language` field to `MessageBank` entity type. Add `language` and `available_languages` to `EventDetailResponse` and `JoinEventResponse` in `packages/shared/src/types/api.ts`.
 
-- [ ] **1.2 New table: `route_families`** — Create `packages/api/src/db/schema/route-families.ts` with columns: `id` (uuid PK), `name` (varchar NOT NULL), `city` (varchar NOT NULL), `created_at`, `updated_at`. Export from schema index.
+- [x] **1.2 New table: `route_families`** — Create `packages/api/src/db/schema/route-families.ts` with columns: `id` (uuid PK), `name` (varchar NOT NULL), `city` (varchar NOT NULL), `created_at`, `updated_at`. Export from schema index.
 
-- [ ] **1.3 Alter `routes` table** — Add `language varchar NOT NULL DEFAULT 'en'`. Add `route_family_id uuid` FK → `route_families.id`. Remove `city` from `routes` (it now lives on `route_families`). Migration strategy: create a route_family for each existing route (using its city + name), set the FK, then make FK NOT NULL, then drop `city`.
+- [x] **1.3 Alter `routes` table** — Add `language varchar NOT NULL DEFAULT 'en'`. Add `route_family_id uuid` FK → `route_families.id`. Remove `city` from `routes` (it now lives on `route_families`). Migration strategy: create a route_family for each existing route (using its city + name), set the FK, then make FK NOT NULL, then drop `city`.
 
-- [ ] **1.4 Alter `events` table** — Add `language varchar NOT NULL DEFAULT 'en'`. Add `route_family_id uuid` FK → `route_families.id`. Migration: set `route_family_id` from each event's `route.route_family_id`, then make NOT NULL.
+- [x] **1.4 Alter `events` table** — Add `language varchar NOT NULL DEFAULT 'en'`. Add `route_family_id uuid` FK → `route_families.id`. Migration: set `route_family_id` from each event's `route.route_family_id`, then make NOT NULL.
 
-- [ ] **1.5 Alter `message_banks` table** — Add `language varchar NOT NULL DEFAULT 'en'`. Update index to include `(type, language)` for efficient querying.
+- [x] **1.5 Alter `message_banks` table** — Add `language varchar NOT NULL DEFAULT 'en'`. Update index to include `(type, language)` for efficient querying.
 
-- [ ] **1.6 Seed data & migration** — Create route_families for all existing routes and link them. Tag all existing message bank entries as `language: 'en'`. All existing routes/events default to 'en'.
+- [x] **1.6 Seed data & migration** — Create route_families for all existing routes and link them. Tag all existing message bank entries as `language: 'en'`. All existing routes/events default to 'en'.
 
-- [ ] **1.7 Fix message bank type validation** — Pre-existing bug: `messageBankTypeSchema` in `admin-input.ts` is missing `"hint-offer"` and `"hint-decline"` types. Admins cannot create these message bank entries through the UI. Fix the validation schema to include all 9 types. This must be fixed before we can create language-specific hint-offer/hint-decline messages.
+- [x] **1.7 Fix message bank type validation** — Pre-existing bug: `messageBankTypeSchema` in `admin-input.ts` is missing `"hint-offer"` and `"hint-decline"` types. Admins cannot create these message bank entries through the UI. Fix the validation schema to include all 9 types. This must be fixed before we can create language-specific hint-offer/hint-decline messages.
 
 - [ ] **1.8 Player-facing validation messages** — Zod schemas in `user-input.ts` have ~8 hardcoded English error messages (display name too short/long, message too long, etc.). These surface in the player app. Two options: (a) make the app show its own i18n error messages based on error codes rather than the raw Zod messages, or (b) accept that validation errors stay English since they're rare edge cases. Recommend option (a) -- the app already has `friendlyError()` for API errors, extend this pattern to validation errors.
 
