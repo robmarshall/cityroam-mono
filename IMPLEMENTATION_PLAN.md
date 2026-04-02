@@ -137,7 +137,8 @@ This means the marketing site never needs to know or care about language — it 
 
 > **Note:** This phase sets up the i18n infrastructure and extracts English strings into translation files. Actual translations into other languages are **not** in scope — they will be authored later as new markets are targeted.
 
-- [ ] **4.1 Library setup: `next-intl` v4** — Install `next-intl` in `packages/marketing`. Create `packages/marketing/src/i18n/config.ts` (locales list, default locale). Create `packages/marketing/src/i18n/request.ts` (`getRequestConfig` for next-intl).
+- [~] **4.1 Library setup: `next-intl` v4** — Install `next-intl` in `packages/marketing`. Create `packages/marketing/src/i18n/config.ts` (locales list, default locale). Create `packages/marketing/src/i18n/request.ts` (`getRequestConfig` for next-intl).
+  - **Learnings:** next-intl v4 requires a `routing.ts` file using `defineRouting()` in addition to config/request — added as `src/i18n/routing.ts`. Also bundled 4.6 (next.config.ts plugin) here since the library won't initialize without it. The `en.json` messages file is created empty — 4.3 handles extraction.
 
 - [ ] **4.2 Locale-prefixed routing** — Create `packages/marketing/src/middleware.ts` (locale detection from `Accept-Language` header, redirect bare paths to `/en/...`). Move all pages under `src/app/[locale]/`: layout.tsx, page.tsx, families/page.tsx, hen-parties/page.tsx, team-building/page.tsx, checkout/success/page.tsx.
 
