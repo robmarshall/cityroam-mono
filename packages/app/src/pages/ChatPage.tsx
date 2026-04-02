@@ -113,6 +113,17 @@ export default function ChatPage() {
     }
   }, [participant, event, code, navigate]);
 
+  // Disconnect WebSocket when ChatPage unmounts (e.g. back navigation)
+  useEffect(() => {
+    return () => {
+      // Only disconnect if not navigating to the complete page
+      // (CompletePage handles its own disconnect)
+      if (window.location.pathname.includes("/complete")) return;
+      disconnect();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Connect WebSocket if we landed here directly (e.g. auto-rejoin of IN_PROGRESS event)
   // Use a ref to avoid re-running when `connect` reference changes across renders.
   const connectRef = useRef(connect);
@@ -155,11 +166,14 @@ export default function ChatPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code, token]);
 
-  // Handle close codes — redirect to join on auth failure
+  // Handle close codes — redirect to join on auth failure with explanation
   useEffect(() => {
     if (closeCode === null || !code) return;
     if (REJOIN_CLOSE_CODES.has(closeCode)) {
-      navigate(`/event/${code}`, { replace: true });
+      navigate(`/event/${code}`, {
+        replace: true,
+        state: { sessionExpired: true },
+      });
     }
   }, [closeCode, code, navigate]);
 
@@ -385,7 +399,12 @@ export default function ChatPage() {
     const result = chatMessageSchema.safeParse(trimmed);
     if (!result.success) return;
 
-    send({ type: "user_message", payload: { text: trimmed } });
+    const sent = send({ type: "user_message", payload: { text: trimmed } });
+    if (!sent) {
+      setErrorToast("You're offline — message not sent.");
+      setTimeout(() => setErrorToast(null), 4000);
+      return;
+    }
     setInputText("");
     sendTypingStop();
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
@@ -423,11 +442,15 @@ export default function ChatPage() {
   };
 
   // Confirm action block
+  const [actionConfirming, setActionConfirming] = useState(false);
   const handleActionConfirm = useCallback(() => {
-    if (!pendingAction) return;
+    if (!pendingAction || actionConfirming) return;
+    setActionConfirming(true);
     send({ type: "action_confirm", payload: { block_id: pendingAction.block_id } });
     setPendingAction(null);
-  }, [pendingAction, send]);
+    // Reset after a short delay so the button stays disabled until the next action
+    setTimeout(() => setActionConfirming(false), 2000);
+  }, [pendingAction, actionConfirming, send]);
 
   // Leave game
   const handleLeave = useCallback(async () => {
@@ -491,7 +514,13 @@ export default function ChatPage() {
     }
   }, [code, nameInput, savingName, participant, setParticipant]);
 
-  if (!participant || !event || !code) return null;
+  if (!participant || !event || !code) {
+    return (
+      <div className="flex min-h-svh items-center justify-center bg-white">
+        <p className="text-system-text">Loading...</p>
+      </div>
+    );
+  }
 
   const isValidMessage = chatMessageSchema.safeParse(inputText.trim()).success;
 
@@ -627,7 +656,8 @@ export default function ChatPage() {
               {participant.is_lead ? (
                 <button
                   onClick={handleActionConfirm}
-                  className="flex items-center gap-2 rounded-2xl bg-brand-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-700 active:bg-brand-800"
+                  disabled={actionConfirming}
+                  className="flex items-center gap-2 rounded-2xl bg-brand-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-700 active:bg-brand-800 disabled:opacity-50"
                 >
                   <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="20 6 9 17 4 12" />

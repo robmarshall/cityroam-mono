@@ -9,8 +9,8 @@ export const routeSchema = z.object({
   city: z.string().trim().min(1, "City is required"),
   name: z.string().trim().min(1, "Route name is required"),
   description: z.string().trim().optional(),
-  estimated_duration_mins: z.number().positive("Duration must be greater than 0"),
-  estimated_distance_km: z.number().positive("Distance must be greater than 0"),
+  estimated_duration_mins: z.number().positive("Duration must be greater than 0").max(1440, "Duration cannot exceed 24 hours"),
+  estimated_distance_km: z.number().positive("Distance must be greater than 0").max(100, "Distance cannot exceed 100 km"),
   is_active: z.boolean().optional().default(true),
 });
 
@@ -137,7 +137,6 @@ export const messageBankSchema = z.object({
     "hint-exhausted",
     "clarification",
     "unknown-answer",
-    "opening",
     "completion",
     "over-length",
   ]),

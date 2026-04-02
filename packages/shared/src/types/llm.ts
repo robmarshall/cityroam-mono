@@ -2,6 +2,7 @@ export interface IntentClassification {
   type:
     | "answer-attempt"
     | "hint-request"
+    | "hint-nudge"
     | "contextual-comment"
     | "question"
     | "off-topic-chat"

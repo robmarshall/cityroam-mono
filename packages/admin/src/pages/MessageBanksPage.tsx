@@ -13,18 +13,11 @@ const BANK_TYPES: { value: MessageBankType; label: string }[] = [
   { value: "hint-exhausted", label: "Hint Exhausted" },
   { value: "clarification", label: "Clarification" },
   { value: "unknown-answer", label: "Unknown Answer" },
-  { value: "opening", label: "Opening" },
   { value: "completion", label: "Completion" },
   { value: "over-length", label: "Over-length" },
 ];
 
 const TEMPLATE_VARS: Partial<Record<MessageBankType, string[]>> = {
-  opening: [
-    "{{FIRST_STOP_DIRECTIONS}}",
-    "{{FIRST_CLUE}}",
-    "{{CITY_NAME}}",
-    "{{TOTAL_STOPS}}",
-  ],
   completion: [
     "{{TOTAL_STOPS}}",
     "{{DISTANCE_KM}}",

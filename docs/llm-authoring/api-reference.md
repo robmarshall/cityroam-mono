@@ -443,7 +443,7 @@ Authorization: Bearer <token>
 }
 ```
 
-Valid types: `success`, `failure`, `hint-exhausted`, `clarification`, `unknown-answer`, `opening`, `completion`, `over-length`
+Valid types: `success`, `failure`, `hint-exhausted`, `clarification`, `unknown-answer`, `completion`, `over-length`
 
 ### Update / Delete
 

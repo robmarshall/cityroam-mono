@@ -33,6 +33,7 @@ import {
   publishControl,
 } from "../redis/index.js";
 import { runGroup } from "../services/group-runner.js";
+import { createLogger } from "../lib/logger.js";
 import {
   sessionAuth,
   resolveSession,
@@ -42,6 +43,8 @@ import {
   AppError,
 } from "../middleware/index.js";
 import type { SessionContext } from "../middleware/index.js";
+
+const log = createLogger("events");
 
 export const eventRoutes = new Hono();
 
@@ -327,8 +330,13 @@ eventRoutes.post("/event/:code/start", sessionAuth, async (c) => {
   });
 
   // Run the first group asynchronously (don't block the HTTP response)
-  runGroup(event.id, code, firstGroup.id).catch(() => {
-    // Errors are logged inside runGroup
+  runGroup(event.id, code, firstGroup.id).catch((err) => {
+    log.error("runGroup failed after game start", {
+      eventCode: code,
+      eventId: event.id,
+      groupId: firstGroup.id,
+      error: err instanceof Error ? err.message : String(err),
+    });
   });
 
   return c.json({ success: true }, 200);

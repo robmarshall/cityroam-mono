@@ -4,6 +4,12 @@
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
-    "jsx": "react-jsx"
-  }
+    "jsx": "react-jsx",
+    "paths": {
+      "@cityroam/shared/*": ["../shared/src/*/index.ts"]
+    }
+  },
+  "references": [
+    { "path": "../shared" }
+  ]
 }

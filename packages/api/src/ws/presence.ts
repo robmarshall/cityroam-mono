@@ -42,7 +42,20 @@ export function startPresenceSweep(
 
     for (const code of eventCodes) {
       try {
-        const keys = await redis.keys(`presence:${code}:*`);
+        // Use SCAN instead of KEYS to avoid blocking Redis
+        const keys: string[] = [];
+        let cursor = "0";
+        do {
+          const [nextCursor, batch] = await redis.scan(
+            cursor,
+            "MATCH",
+            `presence:${code}:*`,
+            "COUNT",
+            100,
+          );
+          cursor = nextCursor;
+          keys.push(...batch);
+        } while (cursor !== "0");
 
         for (const key of keys) {
           const lastSeenIso = await redis.get(key);

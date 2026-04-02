@@ -3,6 +3,12 @@
   "include": ["src"],
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src"
-  }
+    "rootDir": "src",
+    "paths": {
+      "@cityroam/shared/*": ["../shared/src/*/index.ts"]
+    }
+  },
+  "references": [
+    { "path": "../shared" }
+  ]
 }

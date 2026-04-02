@@ -73,7 +73,7 @@ export interface WebSocketContextValue {
   reconnectAttempt: number;
   maxAttemptsReached: boolean;
   catchUpMessages: ChatMessagePayload[];
-  send: (message: object) => void;
+  send: (message: object) => boolean;
   subscribe: (callback: MessageCallback) => () => void;
   connect: (code: string, token: string) => void;
   disconnect: () => void;
@@ -354,10 +354,12 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     connectionParamsRef.current = null;
   }, [clearReconnectTimer, clearPingInterval]);
 
-  const send = useCallback((message: object) => {
+  const send = useCallback((message: object): boolean => {
     if (socketRef.current?.readyState === WebSocket.OPEN) {
       socketRef.current.send(JSON.stringify(message));
+      return true;
     }
+    return false;
   }, []);
 
   const subscribe = useCallback((callback: MessageCallback) => {

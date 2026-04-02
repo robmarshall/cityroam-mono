@@ -36,6 +36,20 @@
       "when": 1775004057335,
       "tag": "0004_material_master_chief",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1743523200000,
+      "tag": "0005_remove_opening_message_bank",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1743523200001,
+      "tag": "0006_add_hint_offered",
+      "breakpoints": true
     }
   ]
 }

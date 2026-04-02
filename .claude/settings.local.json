@@ -76,7 +76,9 @@
       "Bash(where.exe gh:*)",
       "Bash(find /mnt/c/Users/rober/projects/cityroam/city-roam-marketing -type f \\\\\\(-name *.tsx -o -name *.scss -o -name *.css -o -name *.ts \\\\\\))",
       "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3NDg3MTM4NCwiZXhwIjoxNzc0OTAwMTg0fQ.OAWEmPcTWXSXxKBYT2t7y3uNpbU2gD9P_i7Th7Cq_VQ\")",
-      "Bash(npx run-p:*)"
+      "Bash(npx run-p:*)",
+      "Bash(npx -w @cityroam/shared tsc)",
+      "Bash(npx -w @cityroam/app tsc --noEmit)"
     ],
     "deny": [],
     "ask": []
