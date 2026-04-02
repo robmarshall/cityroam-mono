@@ -68,7 +68,7 @@ This means the marketing site never needs to know or care about language — it 
 
 ## Phase 1: Foundation (Shared + Database Schema)
 
-- [ ] **1.1 Shared package types & constants** — Add `SupportedLanguage` type to `packages/shared/src/types/enums.ts`. Add `SUPPORTED_LANGUAGES` and `DEFAULT_LANGUAGE` to `packages/shared/src/constants/index.ts`. Add `RouteFamily` type to `packages/shared/src/types/entities.ts`. Add `language` and `route_family_id` fields to `Route` entity type. Remove `city` from `Route` type. Add `language` and `route_family_id` fields to `Event` entity type. Add `language` field to `MessageBank` entity type. Add `language` and `available_languages` to `EventDetailResponse` and `JoinEventResponse` in `packages/shared/src/types/api.ts`.
+- [x] **1.1 Shared package types & constants** — Add `SupportedLanguage` type to `packages/shared/src/types/enums.ts`. Add `SUPPORTED_LANGUAGES` and `DEFAULT_LANGUAGE` to `packages/shared/src/constants/index.ts`. Add `RouteFamily` type to `packages/shared/src/types/entities.ts`. Add `language` and `route_family_id` fields to `Route` entity type. Remove `city` from `Route` type. Add `language` and `route_family_id` fields to `Event` entity type. Add `language` field to `MessageBank` entity type. Add `language` and `available_languages` to `EventDetailResponse` and `JoinEventResponse` in `packages/shared/src/types/api.ts`.
 
 - [ ] **1.2 New table: `route_families`** — Create `packages/api/src/db/schema/route-families.ts` with columns: `id` (uuid PK), `name` (varchar NOT NULL), `city` (varchar NOT NULL), `created_at`, `updated_at`. Export from schema index.
 
