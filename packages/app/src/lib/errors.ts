@@ -18,35 +18,45 @@ const VALIDATION_INTERPOLATION: Record<string, Record<string, unknown>> = {
   MESSAGE_TOO_LONG: { max: MAX_MESSAGE_LENGTH },
 };
 
+/**
+ * Maps API error codes to i18next translation keys.
+ * Any code with a matching `error.<camelCase>` key will be translated;
+ * unrecognised codes fall back to the generic error message.
+ */
+const ERROR_CODE_KEYS: Record<string, string> = {
+  EVENT_NOT_FOUND: "error.eventNotFound",
+  EVENT_FULL: "error.eventFull",
+  EVENT_EXPIRED: "error.eventExpired",
+  EVENT_COMPLETED: "error.eventCompleted",
+  EVENT_REFUNDED: "error.eventRefunded",
+  INVALID_INPUT: "error.invalidInput",
+  RATE_LIMITED: "error.rateLimited",
+  UNAUTHORIZED: "error.unauthorized",
+};
+
 export function validationMessage(code: string): string {
   const key = `validation.${code}`;
   if (i18n.exists(key)) {
     return i18n.t(key, VALIDATION_INTERPOLATION[code]);
   }
-  return code;
+  // Code may also be a known API error code (e.g. WS errors reuse them)
+  const errorKey = ERROR_CODE_KEYS[code];
+  if (errorKey) {
+    return i18n.t(errorKey);
+  }
+  return i18n.t("error.generic");
 }
 
 export function friendlyError(err: unknown): string {
   if (err instanceof ApiError) {
-    switch (err.code) {
-      case "EVENT_NOT_FOUND":
-        return i18n.t("error.eventNotFound");
-      case "EVENT_FULL":
-        return i18n.t("error.eventFull");
-      case "EVENT_EXPIRED":
-        return i18n.t("error.eventExpired");
-      case "EVENT_COMPLETED":
-        return i18n.t("error.eventCompleted");
-      case "EVENT_REFUNDED":
-        return i18n.t("error.eventRefunded");
-      case "INVALID_INPUT":
-        return i18n.t("error.invalidInput");
-      default:
-        if (err.status === 404) {
-          return i18n.t("error.eventNotFound");
-        }
-        return err.message;
+    const key = err.code ? ERROR_CODE_KEYS[err.code] : undefined;
+    if (key) {
+      return i18n.t(key);
     }
+    if (err.status === 404) {
+      return i18n.t("error.eventNotFound");
+    }
+    return i18n.t("error.generic");
   }
   if (err instanceof TypeError && err.message === "Failed to fetch") {
     return i18n.t("error.networkError");

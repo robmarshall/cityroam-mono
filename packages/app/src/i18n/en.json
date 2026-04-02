@@ -110,6 +110,8 @@
     "eventCompleted": "This event has already finished.",
     "eventRefunded": "This event has been refunded.",
     "invalidInput": "That doesn't look like a valid event code. Double-check the link or code you were given.",
+    "rateLimited": "Too many attempts. Please wait a moment and try again.",
+    "unauthorized": "Your session has expired. Please rejoin the game.",
     "networkError": "Couldn't connect. Check your signal and try again.",
     "generic": "Something went wrong. Please try again."
   },
