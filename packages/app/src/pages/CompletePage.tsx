@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { POSTHOG_EVENTS } from "@cityroam/shared/analytics";
 import { trackEvent } from "../lib/analytics";
 import { useParticipant } from "../contexts/ParticipantContext";
@@ -13,6 +14,7 @@ export default function CompletePage() {
   const { participant, clearParticipant } = useParticipant();
   const { event, participants, clearEvent } = useEvent();
   const { disconnect } = useWebSocket();
+  const { t } = useTranslation();
 
   const [shared, setShared] = useState(false);
 
@@ -58,8 +60,8 @@ export default function CompletePage() {
     if (!code) return;
 
     const shareData: ShareData = {
-      title: "City Roam - AI City Adventure",
-      text: "I just completed an amazing AI-guided city adventure! Check it out:",
+      title: t("complete.shareTitle"),
+      text: t("complete.shareText"),
       url: `${window.location.origin}/app/event/${code}`,
     };
 
@@ -113,7 +115,7 @@ export default function CompletePage() {
         </div>
 
         <h1 className="mb-3 text-center text-2xl font-bold text-gray-900">
-          Game Complete!
+          {t("complete.title")}
         </h1>
 
         {/* Summary from the guide's completion message */}
@@ -123,8 +125,7 @@ export default function CompletePage() {
 
         {!summary && (
           <p className="mb-8 max-w-md text-center text-gray-600">
-            Well done! You've completed the game. We hope you enjoyed
-            exploring the city.
+            {t("complete.defaultSummary")}
           </p>
         )}
 
@@ -132,7 +133,7 @@ export default function CompletePage() {
         {reviewLink && (
           <div className="mb-6 w-full max-w-sm">
             <p className="mb-3 text-center text-sm font-medium text-gray-700">
-              Enjoyed the experience? Leave us a review!
+              {t("complete.reviewPrompt")}
             </p>
             <a
               href={reviewLink}
@@ -147,7 +148,7 @@ export default function CompletePage() {
                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
               </svg>
-              Leave a Google Review
+              {t("complete.reviewButton")}
             </a>
           </div>
         )}
@@ -169,7 +170,7 @@ export default function CompletePage() {
                 >
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
-                {"share" in navigator ? "Shared!" : "Link Copied!"}
+                {"share" in navigator ? t("complete.shared") : t("complete.linkCopied")}
               </>
             ) : (
               <>
@@ -180,7 +181,7 @@ export default function CompletePage() {
                 >
                   <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z" />
                 </svg>
-                Share with Friends
+                {t("complete.shareButton")}
               </>
             )}
           </button>
@@ -191,7 +192,7 @@ export default function CompletePage() {
           onClick={handleDone}
           className="text-sm font-medium text-system-text hover:text-gray-700"
         >
-          Done
+          {t("complete.doneButton")}
         </button>
       </div>
     </div>

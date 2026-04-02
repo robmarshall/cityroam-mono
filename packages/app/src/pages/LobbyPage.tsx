@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { POSTHOG_EVENTS } from "@cityroam/shared/analytics";
 import type {
   ParticipantJoinedPayload,
@@ -19,6 +20,7 @@ import {
 export default function LobbyPage() {
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { participant, token } = useParticipant();
   const {
     event,
@@ -144,7 +146,7 @@ export default function LobbyPage() {
       if (err instanceof ApiError) {
         setError(err.message);
       } else {
-        setError("Failed to start the game. Please try again.");
+        setError(t("lobby.startFailed"));
       }
       setStarting(false);
     }
@@ -154,7 +156,7 @@ export default function LobbyPage() {
   if (!participant || !event || !code) {
     return (
       <div className="flex min-h-svh items-center justify-center bg-white">
-        <p className="text-system-text">Loading...</p>
+        <p className="text-system-text">{t("common.loading")}</p>
       </div>
     );
   }
@@ -167,10 +169,10 @@ export default function LobbyPage() {
   const fatalMessage =
     closeCode !== null && FATAL_CLOSE_CODES.has(closeCode)
       ? closeCode === 4003
-        ? "Event not found."
+        ? t("lobby.fatalEventNotFound")
         : closeCode === 4004
-          ? "This event has ended."
-          : "You are no longer active in this event."
+          ? t("lobby.fatalEventEnded")
+          : t("lobby.fatalNotActive")
       : null;
 
   return (
@@ -178,17 +180,17 @@ export default function LobbyPage() {
       {/* Connection status banners */}
       {wsStatus === "reconnecting" && (
         <div className="shrink-0 bg-yellow-400 px-4 py-1.5 text-center text-sm font-medium text-yellow-900">
-          Reconnecting...
+          {t("common.reconnecting")}
         </div>
       )}
       {maxAttemptsReached && (
         <div className="flex shrink-0 items-center justify-center gap-3 bg-red-500 px-4 py-2 text-center text-sm font-medium text-white">
-          <span>Unable to reconnect</span>
+          <span>{t("common.unableToReconnect")}</span>
           <button
             onClick={manualRetry}
             className="rounded-md bg-white/20 px-3 py-0.5 text-sm font-semibold hover:bg-white/30"
           >
-            Retry
+            {t("common.retry")}
           </button>
         </div>
       )}
@@ -200,7 +202,7 @@ export default function LobbyPage() {
 
       <div className="flex flex-1 flex-col items-center justify-center px-4">
         <h1 className="mb-6 text-center text-2xl font-bold text-gray-900">
-          Waiting for players
+          {t("lobby.title")}
         </h1>
 
         {/* Participant list */}
@@ -215,11 +217,11 @@ export default function LobbyPage() {
                 <span className="text-gray-900">{p.display_name}</span>
                 {p.is_lead && (
                   <span className="ml-auto text-xs font-medium text-brand-600">
-                    Lead
+                    {t("lobby.leadBadge")}
                   </span>
                 )}
                 {p.id === participant.id && !p.is_lead && (
-                  <span className="ml-auto text-xs text-gray-400">You</span>
+                  <span className="ml-auto text-xs text-gray-400">{t("lobby.youBadge")}</span>
                 )}
               </li>
             ))}
@@ -238,17 +240,17 @@ export default function LobbyPage() {
             disabled={starting}
             className="w-full max-w-sm rounded-lg bg-brand-600 px-6 py-3 text-lg font-semibold text-white transition-colors hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {starting ? "Starting..." : "Start the Game"}
+            {starting ? t("lobby.starting") : t("lobby.startButton")}
           </button>
         ) : (
           <p className="text-center text-system-text">
-            Waiting for {leadName ?? "the lead"} to start the game...
+            {leadName ? t("lobby.waitingForLead", { name: leadName }) : t("lobby.waitingForLeadDefault")}
           </p>
         )}
 
         {/* Connection status */}
         {wsStatus === "connecting" && (
-          <p className="mt-4 text-sm text-gray-400">Connecting...</p>
+          <p className="mt-4 text-sm text-gray-400">{t("common.connecting")}</p>
         )}
       </div>
     </div>

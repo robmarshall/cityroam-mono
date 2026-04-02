@@ -11,9 +11,11 @@
   "dependencies": {
     "@cityroam/shared": "*",
     "@headlessui/react": "^2.2.9",
+    "i18next": "^26.0.3",
     "posthog-js": "^1.364.1",
     "react": "^19",
     "react-dom": "^19",
+    "react-i18next": "^17.0.2",
     "react-router-dom": "^6.30.3"
   },
   "devDependencies": {

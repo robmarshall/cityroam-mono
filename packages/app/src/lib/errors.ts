@@ -1,3 +1,4 @@
+import i18n from "i18next";
 import { ApiError } from "./api";
 import {
   MIN_DISPLAY_NAME_LENGTH,
@@ -7,54 +8,48 @@ import {
 } from "@cityroam/shared/constants";
 
 /**
- * Maps validation error codes from Zod schemas to user-facing messages.
- * When i18n lands (Phase 3), these will be replaced with translation keys.
+ * Maps validation error codes from Zod schemas to user-facing messages
+ * using i18next translation keys.
  */
-const VALIDATION_MESSAGES: Record<string, string> = {
-  DISPLAY_NAME_TOO_SHORT: `Display name must be at least ${MIN_DISPLAY_NAME_LENGTH} characters`,
-  DISPLAY_NAME_TOO_LONG: `Display name must be at most ${MAX_DISPLAY_NAME_LENGTH} characters`,
-  DISPLAY_NAME_HTML: "Display name must not contain HTML tags",
-  DISPLAY_NAME_INVALID_CHARS:
-    "Display name may only contain letters, numbers, spaces, hyphens, and apostrophes",
-  MESSAGE_TOO_SHORT: `Message must be at least ${MIN_MESSAGE_LENGTH} characters`,
-  MESSAGE_TOO_LONG: `Message must be at most ${MAX_MESSAGE_LENGTH} characters`,
-  MESSAGE_EMPTY: "Message must not be empty",
-  EVENT_CODE_INVALID: "Invalid event code format",
-  ACTION_LEAD_ONLY: "Only the group lead can confirm actions",
-  ACTION_MISSING_BLOCK: "Missing action reference — please try again",
-  ACTION_BLOCK_MISMATCH: "This action is no longer current",
-  INVALID_JSON: "Message could not be sent — please try again",
-  UNKNOWN_MESSAGE_TYPE: "Unsupported message type",
+const VALIDATION_INTERPOLATION: Record<string, Record<string, unknown>> = {
+  DISPLAY_NAME_TOO_SHORT: { min: MIN_DISPLAY_NAME_LENGTH },
+  DISPLAY_NAME_TOO_LONG: { max: MAX_DISPLAY_NAME_LENGTH },
+  MESSAGE_TOO_SHORT: { min: MIN_MESSAGE_LENGTH },
+  MESSAGE_TOO_LONG: { max: MAX_MESSAGE_LENGTH },
 };
 
 export function validationMessage(code: string): string {
-  return VALIDATION_MESSAGES[code] ?? code;
+  const key = `validation.${code}`;
+  if (i18n.exists(key)) {
+    return i18n.t(key, VALIDATION_INTERPOLATION[code]);
+  }
+  return code;
 }
 
 export function friendlyError(err: unknown): string {
   if (err instanceof ApiError) {
     switch (err.code) {
       case "EVENT_NOT_FOUND":
-        return "This event doesn't exist. Check the link and try again.";
+        return i18n.t("error.eventNotFound");
       case "EVENT_FULL":
-        return "This event is full — no more spaces available.";
+        return i18n.t("error.eventFull");
       case "EVENT_EXPIRED":
-        return "This event has expired.";
+        return i18n.t("error.eventExpired");
       case "EVENT_COMPLETED":
-        return "This event has already finished.";
+        return i18n.t("error.eventCompleted");
       case "EVENT_REFUNDED":
-        return "This event has been refunded.";
+        return i18n.t("error.eventRefunded");
       case "INVALID_INPUT":
-        return "That doesn't look like a valid event code. Double-check the link or code you were given.";
+        return i18n.t("error.invalidInput");
       default:
         if (err.status === 404) {
-          return "This event doesn't exist. Check the link and try again.";
+          return i18n.t("error.eventNotFound");
         }
         return err.message;
     }
   }
   if (err instanceof TypeError && err.message === "Failed to fetch") {
-    return "Couldn't connect. Check your signal and try again.";
+    return i18n.t("error.networkError");
   }
-  return "Something went wrong. Please try again.";
+  return i18n.t("error.generic");
 }
