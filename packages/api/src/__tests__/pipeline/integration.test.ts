@@ -36,6 +36,7 @@ vi.mock("../../db/index.js", () => {
       routes: { findFirst: vi.fn() },
       routeBlocks: { findFirst: vi.fn() },
       messageBanks: { findFirst: vi.fn() },
+      routeFamilies: { findFirst: vi.fn() },
     },
     select: vi.fn(() => mockDb),
     from: vi.fn(() => mockDb),
@@ -67,6 +68,10 @@ vi.mock("../../db/index.js", () => {
       content: "mb.content",
       type: "mb.type",
       is_active: "mb.is_active",
+    },
+    routeFamilies: {
+      id: "route_families.id",
+      city: "route_families.city",
     },
   };
   return { db: mockDb, disconnectDb: vi.fn(), schema: mockSchema };
@@ -890,10 +895,15 @@ describe("End-to-end message lifecycle integration", () => {
       // Question handler also needs route data
       mockDb.query.routes.findFirst.mockResolvedValue({
         id: ROUTE_ID,
-        city: "Leeds",
+        route_family_id: "fam-001",
         name: "Test Route",
         total_stops: 3,
         estimated_distance_km: "2.5",
+      });
+
+      // Route family for city lookup
+      mockDb.query.routeFamilies.findFirst.mockResolvedValue({
+        city: "Leeds",
       });
 
       mockDb.query.events.findFirst.mockResolvedValue(eventRow);

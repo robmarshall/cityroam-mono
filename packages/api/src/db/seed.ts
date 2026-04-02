@@ -1,6 +1,7 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { messageBanks } from "./schema/message-banks.js";
+import { routeFamilies } from "./schema/route-families.js";
 import { routes } from "./schema/routes.js";
 
 const DATABASE_URL = process.env.DATABASE_URL ?? "postgres://cityroam:cityroam@postgres:5432/cityroam";
@@ -62,10 +63,15 @@ const messageBankSeedData = [
   { type: "completion", content: "Done. All {{TOTAL_STOPS}} stops complete.\n\nYou've covered about {{DISTANCE_KM}}km of {{CITY_NAME}} and hopefully learned a thing or two.\n\nLeave a review if you're feeling generous: {{REVIEW_LINK}}" },
 ] as const;
 
-const devRouteData = {
+const devRouteFamilyData = {
+  name: "Leeds City Centre Discovery",
   city: "Leeds",
+};
+
+const devRouteData = {
   name: "Leeds City Centre Discovery",
   description: "A short development route through the heart of Leeds for testing the city exploration experience.",
+  language: "en",
   total_stops: 3,
   estimated_duration_mins: 30,
   estimated_distance_km: "1.5",
@@ -86,9 +92,12 @@ async function main() {
   );
   console.log(`Inserted ${messageBankSeedData.length} message bank entries.`);
 
-  console.log("Seeding development route...");
-  const [route] = await db.insert(routes).values(devRouteData).returning({ id: routes.id });
+  console.log("Seeding development route family...");
+  const [family] = await db.insert(routeFamilies).values(devRouteFamilyData).returning({ id: routeFamilies.id });
+  console.log(`Inserted route family: ${family.id}`);
 
+  console.log("Seeding development route...");
+  const [route] = await db.insert(routes).values({ ...devRouteData, route_family_id: family.id }).returning({ id: routes.id });
   console.log(`Inserted route: ${route.id}`);
 
 

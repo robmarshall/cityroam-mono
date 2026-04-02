@@ -109,6 +109,13 @@ eventRoutes.get("/event/:code", async (c) => {
 
   const isTerminal = TERMINAL_STATUSES.has(event.status);
 
+  // Find available language variants for this route family
+  const familyRoutes = await db
+    .select({ language: routes.language })
+    .from(routes)
+    .where(and(eq(routes.route_family_id, event.route_family_id), eq(routes.is_active, true)));
+  const availableLanguages = familyRoutes.map((r) => r.language) as SupportedLanguage[];
+
   const response: EventDetailResponse = {
     event: {
       code: event.code,
@@ -116,12 +123,12 @@ eventRoutes.get("/event/:code", async (c) => {
       current_stop: event.current_stop,
       started_at: event.started_at ? new Date(event.started_at).toISOString() : null,
       created_at: new Date(event.created_at).toISOString(),
-      language: 'en' as EventDetailResponse["event"]["language"],
+      language: event.language as EventDetailResponse["event"]["language"],
     },
     participants: isTerminal ? [] : participantRows,
     lead_name: isTerminal ? null : (leadParticipant?.display_name ?? null),
     current_participant: isTerminal ? null : currentParticipant,
-    available_languages: ['en'] as SupportedLanguage[],
+    available_languages: availableLanguages,
   };
 
   return c.json(response, 200);
@@ -249,6 +256,13 @@ eventRoutes.post("/event/:code/join", async (c) => {
     data: { name: display_name, participant_count: participantCount },
   });
 
+  // Find available language variants for this route family
+  const joinFamilyRoutes = await db
+    .select({ language: routes.language })
+    .from(routes)
+    .where(and(eq(routes.route_family_id, eventData.route_family_id), eq(routes.is_active, true)));
+  const joinAvailableLanguages = joinFamilyRoutes.map((r) => r.language) as SupportedLanguage[];
+
   const response: JoinEventResponse = {
     participant: {
       id: newParticipant.id,
@@ -260,11 +274,11 @@ eventRoutes.post("/event/:code/join", async (c) => {
       code,
       status: (isLead ? "WAITING" : eventData.status) as JoinEventResponse["event"]["status"],
       current_stop: eventData.current_stop,
-      language: 'en' as JoinEventResponse["event"]["language"],
+      language: eventData.language as JoinEventResponse["event"]["language"],
     },
     messages: cachedMessages,
     participants: participantRows,
-    available_languages: ['en'] as JoinEventResponse["available_languages"],
+    available_languages: joinAvailableLanguages,
   };
 
   return c.json(response, 201);

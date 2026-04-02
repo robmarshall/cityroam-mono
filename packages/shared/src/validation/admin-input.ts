@@ -6,13 +6,18 @@ export const adminLoginSchema = z.object({
 });
 
 export const routeSchema = z.object({
-  city: z.string().trim().min(1, "City is required"),
   name: z.string().trim().min(1, "Route name is required"),
   description: z.string().trim().optional(),
+  language: z.string().trim().min(2).max(5).optional().default("en"),
+  route_family_id: z.preprocess((val) => (val === "" ? undefined : val), z.string().uuid().optional()),
+  city: z.string().trim().min(1).optional(), // Used to auto-create a route family when route_family_id is not provided
   estimated_duration_mins: z.number().positive("Duration must be greater than 0").max(1440, "Duration cannot exceed 24 hours"),
   estimated_distance_km: z.number().positive("Distance must be greater than 0").max(100, "Distance cannot exceed 100 km"),
   is_active: z.boolean().optional().default(true),
-});
+}).refine(
+  (data) => data.route_family_id || data.city,
+  { message: "Either route_family_id or city must be provided", path: ["route_family_id"] },
+);
 
 export const sequenceItemSchema = z.object({
   content: z.string().default(""),
@@ -135,11 +140,14 @@ export const messageBankSchema = z.object({
     "success",
     "failure",
     "hint-exhausted",
+    "hint-offer",
+    "hint-decline",
     "clarification",
     "unknown-answer",
     "completion",
     "over-length",
   ]),
+  language: z.string().trim().min(2).max(5).optional().default("en"),
   content: z.string().trim().min(1, "Content is required"),
   is_active: z.boolean().optional().default(true),
 });

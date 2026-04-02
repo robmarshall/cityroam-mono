@@ -207,6 +207,14 @@ The existing LLM authoring pipeline (`docs/llm-authoring/`) needs a new translat
 
 ---
 
+## Learnings
+
+- **Mock DB setup pattern**: When adding a new schema table (e.g. `routeFamilies`), ALL test files with mock DB `query` objects need the new table added — even if current tests don't exercise that path. Files to update: `admin.test.ts`, `handlers.test.ts`, `completion-cap-idle.test.ts`, `integration.test.ts`.
+- **Drizzle migration for moving columns**: When moving a column from one table to a new parent table (e.g. `city` from `routes` to `route_families`), the migration pattern is: (1) create parent table, (2) INSERT data from child, (3) add nullable FK on child, (4) UPDATE child FK from parent match, (5) make FK NOT NULL, (6) DROP old column. Use `DISTINCT` in the INSERT to avoid duplicates.
+- **Zod `z.string().uuid()` rejects empty strings**: When a form field may be empty, use `z.preprocess()` to convert `""` to `undefined` before the UUID validator.
+
+---
+
 ## Key Files Reference
 
 | Area | Critical Files |

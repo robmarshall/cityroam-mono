@@ -92,9 +92,10 @@ export async function handleQuestion(
 
   const config = currentBlock.config as QuestionBlockConfig;
 
-  // Load route data for city name and total stops
+  // Load route data for total stops and family reference
   const routeData = await db.query.routes.findFirst({
     where: eq(schema.routes.id, ctx.routeId),
+    columns: { route_family_id: true, total_stops: true, estimated_distance_km: true },
   });
 
   if (!routeData) {
@@ -106,6 +107,12 @@ export async function handleQuestion(
     return { handled: true };
   }
 
+  // Look up city from route family
+  const family = await db.query.routeFamilies.findFirst({
+    where: eq(schema.routeFamilies.id, routeData.route_family_id),
+    columns: { city: true },
+  });
+
   // Calculate estimated distance remaining (rough: proportional to stops remaining)
   const stopsRemaining = routeData.total_stops - ctx.currentStop + 1;
   const distancePerStop =
@@ -113,7 +120,7 @@ export async function handleQuestion(
   const estimatedDistanceRemaining = `${(stopsRemaining * distancePerStop).toFixed(1)} km`;
 
   const prompt = buildQuestionPrompt(
-    routeData.city,
+    family?.city ?? "the city",
     ctx.currentStop,
     routeData.total_stops,
     config.clue,

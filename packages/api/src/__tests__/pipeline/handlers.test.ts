@@ -21,6 +21,7 @@ vi.mock("../../db/index.js", async () => {
       routes: { findFirst: vi.fn() },
       routeBlocks: { findFirst: vi.fn() },
       messageBanks: { findFirst: vi.fn() },
+      routeFamilies: { findFirst: vi.fn() },
     },
     select: vi.fn(() => mockDb),
     from: vi.fn(() => mockDb),
@@ -139,7 +140,7 @@ function makeMockQuestionBlock(overrides: Record<string, unknown> = {}) {
 function makeMockRoute(overrides: Record<string, unknown> = {}) {
   return {
     id: "route-1",
-    city: "Melbourne",
+    route_family_id: "family-1",
     total_stops: 5,
     estimated_distance_km: "3.5",
     ...overrides,

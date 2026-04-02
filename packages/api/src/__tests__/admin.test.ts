@@ -13,6 +13,7 @@ vi.mock("../db/index.js", () => {
       messageBanks: { findFirst: vi.fn() },
       routeBlocks: { findFirst: vi.fn() },
       routeGroups: { findFirst: vi.fn() },
+      routeFamilies: { findFirst: vi.fn() },
     },
     select: vi.fn(() => mockDb),
     from: vi.fn(() => mockDb),
@@ -468,7 +469,10 @@ describe("Admin Route CRUD", () => {
   describe("POST /admin/routes", () => {
     it("creates a new route", async () => {
       const route = mockRoute({ ...routeData, total_stops: 0 });
-      (db as any).returning.mockReturnValueOnce([route]);
+      // Family insert runs first (route_family_id is empty → creates new family)
+      (db as any).returning
+        .mockReturnValueOnce([{ id: fakeUUID(), name: "City Centre Tour", city: "Leeds" }])
+        .mockReturnValueOnce([route]);
 
       const res = await adminRequest(app, "POST", "/admin/routes", routeData);
       expect(res.status).toBe(201);
@@ -915,8 +919,9 @@ describe("POST /admin/routes/bulk-groups", () => {
       config: { type: "message", content: "Welcome!" },
     });
 
-    // Transaction: insert route returning
+    // Transaction: family insert first (route_family_id is empty → creates new family), then route, group, block
     (db as any).returning
+      .mockReturnValueOnce([{ id: fakeUUID(), name: "Bulk Route", city: "London" }])  // family insert
       .mockReturnValueOnce([route])    // route insert
       .mockReturnValueOnce([group])    // group insert
       .mockReturnValueOnce([block]);   // block insert

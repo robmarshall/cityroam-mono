@@ -1,5 +1,6 @@
 import { pgTable, uuid, varchar, integer, timestamp, index, check, boolean, text } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
+import { routeFamilies } from "./route-families.js";
 import { routes } from "./routes.js";
 import { routeGroups } from "./route-groups.js";
 import { routeBlocks } from "./route-blocks.js";
@@ -9,6 +10,8 @@ export const events = pgTable("events", {
   code: varchar("code", { length: 8 }).unique().notNull(),
   status: varchar("status").notNull().default("NOT_STARTED"),
   route_id: uuid("route_id").notNull().references(() => routes.id),
+  route_family_id: uuid("route_family_id").notNull().references(() => routeFamilies.id),
+  language: varchar("language").notNull().default("en"),
   stripe_session_id: varchar("stripe_session_id"),
   stripe_payment_id: varchar("stripe_payment_id"),
   buyer_email: varchar("buyer_email"),

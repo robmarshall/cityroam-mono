@@ -5,10 +5,10 @@ import { adminLoginSchema, adminUpdateEventStatusSchema, adminCreateEventSchema,
 import { generateEventCode } from "@cityroam/shared/utils";
 import { EVENT_EXPIRY_DAYS } from "@cityroam/shared/constants";
 import { generatePresignedUploadUrl } from "../services/s3.js";
-import type { AdminDashboardResponse, AdminEventListResponse, AdminEventDetailResponse, AdminRouteDetailResponse, AdminRouteListResponse, AdminMessageBankListResponse, AdminRouteGroupResponse } from "@cityroam/shared/types";
+import type { AdminDashboardResponse, AdminEventListResponse, AdminEventDetailResponse, AdminRouteDetailResponse, AdminRouteListResponse, AdminMessageBankListResponse, AdminRouteGroupResponse, SupportedLanguage } from "@cityroam/shared/types";
 import { env } from "../env.js";
 import { db } from "../db/index.js";
-import { events, participants, messages, routes, messageBanks, routeGroups, routeBlocks } from "../db/schema/index.js";
+import { routeFamilies, events, participants, messages, routes, messageBanks, routeGroups, routeBlocks } from "../db/schema/index.js";
 import { AppError } from "../middleware/error-handler.js";
 import { adminAuth, signAdminToken } from "../middleware/admin.js";
 import { deleteSessionsByEventId } from "../redis/index.js";
@@ -202,6 +202,8 @@ adminRoutes.post("/admin/events", adminAuth, async (c) => {
     code: eventCode,
     status: "NOT_STARTED",
     route_id: data.route_id,
+    route_family_id: route.route_family_id,
+    language: route.language,
     buyer_email: data.buyer_email ?? null,
     expires_at: expiresAt,
   }).returning();
@@ -272,8 +274,8 @@ adminRoutes.get("/admin/events/:id", adminAuth, async (c) => {
       stripe_payment_id: event.stripe_payment_id,
       refund_requested: event.refund_requested,
       refund_note: event.refund_note,
-      language: 'en' as any,
-      route_family_id: '',
+      language: event.language as SupportedLanguage,
+      route_family_id: event.route_family_id,
     },
     route_name: route?.name ?? null,
     total_stops: route?.total_stops ?? null,
@@ -452,8 +454,8 @@ adminRoutes.get("/admin/routes", adminAuth, async (c) => {
   const response: AdminRouteListResponse = {
     routes: routeRows.map((r) => ({
       id: r.id,
-      language: 'en' as any,
-      route_family_id: '',
+      language: r.language as SupportedLanguage,
+      route_family_id: r.route_family_id,
       name: r.name,
       description: r.description ?? "",
       total_stops: r.total_stops,
@@ -474,12 +476,23 @@ adminRoutes.post("/admin/routes", adminAuth, async (c) => {
   const body = await c.req.json();
   const data = routeSchema.parse(body);
 
+  // Resolve or create route family
+  let familyId = data.route_family_id;
+  if (!familyId) {
+    const [family] = await db
+      .insert(routeFamilies)
+      .values({ name: data.name, city: data.city! })
+      .returning();
+    familyId = family.id;
+  }
+
   const [route] = await db
     .insert(routes)
     .values({
-      city: data.city,
       name: data.name,
       description: data.description ?? null,
+      language: data.language,
+      route_family_id: familyId,
       total_stops: 0,
       estimated_duration_mins: data.estimated_duration_mins,
       estimated_distance_km: String(data.estimated_distance_km),
@@ -490,8 +503,8 @@ adminRoutes.post("/admin/routes", adminAuth, async (c) => {
   return c.json({
     route: {
       id: route.id,
-      language: 'en' as any,
-      route_family_id: '',
+      language: route.language,
+      route_family_id: route.route_family_id,
       name: route.name,
       description: route.description ?? "",
       total_stops: route.total_stops,
@@ -561,8 +574,8 @@ adminRoutes.get("/admin/routes/:id", adminAuth, async (c) => {
   const response: AdminRouteDetailResponse = {
     route: {
       id: route.id,
-      language: 'en' as any,
-      route_family_id: '',
+      language: route.language as SupportedLanguage,
+      route_family_id: route.route_family_id,
       name: route.name,
       description: route.description ?? "",
       total_stops: route.total_stops,
@@ -595,7 +608,6 @@ adminRoutes.put("/admin/routes/:id", adminAuth, async (c) => {
   const [updated] = await db
     .update(routes)
     .set({
-      city: data.city,
       name: data.name,
       description: data.description ?? null,
       estimated_duration_mins: data.estimated_duration_mins,
@@ -609,8 +621,8 @@ adminRoutes.put("/admin/routes/:id", adminAuth, async (c) => {
   return c.json({
     route: {
       id: updated.id,
-      language: 'en' as any,
-      route_family_id: '',
+      language: updated.language,
+      route_family_id: updated.route_family_id,
       name: updated.name,
       description: updated.description ?? "",
       total_stops: updated.total_stops,
@@ -661,12 +673,23 @@ adminRoutes.post("/admin/routes/bulk-groups", adminAuth, async (c) => {
   const data = bulkRouteGroupCreateSchema.parse(body);
 
   const result = await db.transaction(async (tx) => {
+    // Resolve or create route family
+    let familyId = data.route.route_family_id;
+    if (!familyId) {
+      const [family] = await tx
+        .insert(routeFamilies)
+        .values({ name: data.route.name, city: data.route.city! })
+        .returning();
+      familyId = family.id;
+    }
+
     const [route] = await tx
       .insert(routes)
       .values({
-        city: data.route.city,
         name: data.route.name,
         description: data.route.description ?? null,
+        language: data.route.language,
+        route_family_id: familyId,
         total_stops: data.groups.length,
         estimated_duration_mins: data.route.estimated_duration_mins,
         estimated_distance_km: String(data.route.estimated_distance_km),
@@ -712,8 +735,8 @@ adminRoutes.post("/admin/routes/bulk-groups", adminAuth, async (c) => {
   return c.json({
     route: {
       id: result.route.id,
-      language: 'en' as any,
-      route_family_id: '',
+      language: result.route.language,
+      route_family_id: result.route.route_family_id,
       name: result.route.name,
       description: result.route.description ?? "",
       total_stops: result.route.total_stops,
@@ -1236,7 +1259,7 @@ adminRoutes.get("/admin/message-banks", adminAuth, async (c) => {
       id: m.id,
       type: m.type,
       content: m.content,
-      language: 'en' as any,
+      language: m.language,
       is_active: m.is_active,
       created_at: m.created_at.toISOString(),
       updated_at: m.updated_at.toISOString(),
@@ -1255,6 +1278,7 @@ adminRoutes.post("/admin/message-banks", adminAuth, async (c) => {
     .insert(messageBanks)
     .values({
       type: data.type,
+      language: data.language,
       content: data.content,
       is_active: data.is_active,
     })
@@ -1264,6 +1288,7 @@ adminRoutes.post("/admin/message-banks", adminAuth, async (c) => {
     message_bank: {
       id: entry.id,
       type: entry.type,
+      language: entry.language,
       content: entry.content,
       is_active: entry.is_active,
       created_at: entry.created_at.toISOString(),
@@ -1290,6 +1315,7 @@ adminRoutes.put("/admin/message-banks/:id", adminAuth, async (c) => {
     .update(messageBanks)
     .set({
       type: data.type,
+      language: data.language,
       content: data.content,
       is_active: data.is_active,
       updated_at: new Date(),
@@ -1301,6 +1327,7 @@ adminRoutes.put("/admin/message-banks/:id", adminAuth, async (c) => {
     message_bank: {
       id: updated.id,
       type: updated.type,
+      language: updated.language,
       content: updated.content,
       is_active: updated.is_active,
       created_at: updated.created_at.toISOString(),

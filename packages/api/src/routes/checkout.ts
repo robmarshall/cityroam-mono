@@ -124,6 +124,8 @@ checkoutRoutes.post("/webhook/stripe", async (c) => {
         code: eventCode,
         status: "NOT_STARTED",
         route_id: activeRoute.id,
+        route_family_id: activeRoute.route_family_id,
+        language: activeRoute.language,
         stripe_session_id: session.id,
         stripe_payment_id: stripePaymentId,
         buyer_email: buyerEmail,
