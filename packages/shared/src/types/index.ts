@@ -66,7 +66,7 @@ export type {
   AdminRouteFamilyDetailResponse,
 } from "./api.js";
 
-export type { ApiErrorResponse, ApiErrorCode } from "./api-errors.js";
+export type { ApiErrorResponse, ApiErrorCode, ValidationErrorCode } from "./api-errors.js";
 
 export type {
   IntentClassification,

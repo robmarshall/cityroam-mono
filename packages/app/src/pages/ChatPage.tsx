@@ -35,6 +35,7 @@ import type {
   ActionWaitingPayload,
 } from "@cityroam/shared/types";
 import { api, ApiError } from "../lib/api";
+import { validationMessage } from "../lib/errors";
 import { trackEvent } from "../lib/analytics";
 import { useParticipant } from "../contexts/ParticipantContext";
 import { useEvent } from "../contexts/EventContext";
@@ -314,7 +315,7 @@ export default function ChatPage() {
         }
         case "error": {
           const payload = msg.payload as ErrorPayload;
-          setErrorToast(payload.message);
+          setErrorToast(validationMessage(payload.message));
           setTimeout(() => setErrorToast(null), 4000);
           break;
         }
@@ -485,7 +486,7 @@ export default function ChatPage() {
     const trimmed = nameInput.trim();
     const result = displayNameSchema.safeParse(trimmed);
     if (!result.success) {
-      setNameError(result.error.issues[0]?.message ?? "Invalid name");
+      setNameError(validationMessage(result.error.issues[0]?.message ?? "DISPLAY_NAME_TOO_SHORT"));
       return;
     }
     if (participant && trimmed === participant.display_name) {

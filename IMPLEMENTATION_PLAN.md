@@ -82,7 +82,8 @@ This means the marketing site never needs to know or care about language — it 
 
 - [x] **1.7 Fix message bank type validation** — Pre-existing bug: `messageBankTypeSchema` in `admin-input.ts` is missing `"hint-offer"` and `"hint-decline"` types. Admins cannot create these message bank entries through the UI. Fix the validation schema to include all 9 types. This must be fixed before we can create language-specific hint-offer/hint-decline messages.
 
-- [ ] **1.8 Player-facing validation messages** — Zod schemas in `user-input.ts` have ~8 hardcoded English error messages (display name too short/long, message too long, etc.). These surface in the player app. Two options: (a) make the app show its own i18n error messages based on error codes rather than the raw Zod messages, or (b) accept that validation errors stay English since they're rare edge cases. Recommend option (a) -- the app already has `friendlyError()` for API errors, extend this pattern to validation errors.
+- [x] **1.8 Player-facing validation messages** — Zod schemas in `user-input.ts` have ~8 hardcoded English error messages (display name too short/long, message too long, etc.). These surface in the player app. Two options: (a) make the app show its own i18n error messages based on error codes rather than the raw Zod messages, or (b) accept that validation errors stay English since they're rare edge cases. Recommend option (a) -- the app already has `friendlyError()` for API errors, extend this pattern to validation errors.
+  - **Learnings:** Zod schemas now emit error codes; `errors.ts` in the app maps codes → English. The `validationMessage()` fallback returns the raw code if unmapped, which is safe. Phase 3.4 (i18n error messages) can swap the mapping for i18next keys with no schema changes.
 
 ---
 

@@ -8,7 +8,8 @@ import type {
   JoinEventResponse,
   EventStatus,
 } from "@cityroam/shared/types";
-import { api, ApiError } from "../lib/api";
+import { api } from "../lib/api";
+import { friendlyError, validationMessage } from "../lib/errors";
 import { trackEvent } from "../lib/analytics";
 import { useParticipant } from "../contexts/ParticipantContext";
 import { useEvent } from "../contexts/EventContext";
@@ -29,34 +30,6 @@ function redirectForStatus(
       navigate(`/event/${code}/lobby`, { replace: true });
       break;
   }
-}
-
-function friendlyError(err: unknown): string {
-  if (err instanceof ApiError) {
-    switch (err.code) {
-      case "EVENT_NOT_FOUND":
-        return "This event doesn't exist. Check the link and try again.";
-      case "EVENT_FULL":
-        return "This event is full — no more spaces available.";
-      case "EVENT_EXPIRED":
-        return "This event has expired.";
-      case "EVENT_COMPLETED":
-        return "This event has already finished.";
-      case "EVENT_REFUNDED":
-        return "This event has been refunded.";
-      case "INVALID_INPUT":
-        return "That doesn't look like a valid event code. Double-check the link or code you were given.";
-      default:
-        if (err.status === 404) {
-          return "This event doesn't exist. Check the link and try again.";
-        }
-        return err.message;
-    }
-  }
-  if (err instanceof TypeError && err.message === "Failed to fetch") {
-    return "Couldn't connect. Check your signal and try again.";
-  }
-  return "Something went wrong. Please try again.";
 }
 
 export default function JoinPage() {
@@ -141,7 +114,7 @@ export default function JoinPage() {
       // Validate display name
       const result = displayNameSchema.safeParse(displayName);
       if (!result.success) {
-        setFieldError(result.error.issues[0]?.message ?? "Invalid name");
+        setFieldError(validationMessage(result.error.issues[0]?.message ?? "DISPLAY_NAME_TOO_SHORT"));
         return;
       }
 
