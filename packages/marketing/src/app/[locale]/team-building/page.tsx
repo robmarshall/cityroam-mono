@@ -1,28 +1,41 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { CTAButton } from "@/components/CTAButton";
 
-export const metadata: Metadata = {
-  title: "Team Building — City Roam",
-  description:
-    "Get your team out of the office with an AI-guided treasure hunt in Leeds. Real collaboration, genuine problem-solving, and actual fun — perfect for teams of 4-10+.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("metadata");
+  return {
+    title: t("teamBuilding.title"),
+    description: t("teamBuilding.description"),
+  };
+}
 
-export default function TeamBuilding() {
+const BENEFIT_ITEMS = [
+  { icon: "\ud83d\udcac", key: "0" },
+  { icon: "\ud83d\udca1", key: "1" },
+  { icon: "\ud83e\udd1d", key: "2" },
+  { icon: "\ud83d\udcc8", key: "3" },
+  { icon: "\u2b50", key: "4" },
+  { icon: "\ud83c\udfaf", key: "5" },
+];
+
+export default async function TeamBuilding() {
+  const t = await getTranslations("teamBuilding");
+  const tc = await getTranslations("common");
+
   return (
     <main className="min-h-screen bg-white">
       {/* Hero */}
       <section className="px-6 py-24 text-center sm:py-32">
         <div className="mx-auto max-w-3xl">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-            Team Building Beyond the Boardroom
+            {t("hero.title")}
           </h1>
           <p className="mt-6 text-lg leading-8 text-gray-600 sm:text-xl">
-            Get your team out of the office and working together in a completely
-            new environment. Real collaboration, genuine problem-solving, and
-            actual fun.
+            {t("hero.subtitle")}
           </p>
           <div className="mt-10">
-            <CTAButton location="team-hero" label="Book Team Experience" />
+            <CTAButton location="team-hero" label={t("hero.cta")} />
           </div>
         </div>
       </section>
@@ -31,22 +44,13 @@ export default function TeamBuilding() {
       <section className="bg-gray-50 px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-3xl">
           <p className="text-xl leading-relaxed text-gray-700">
-            <strong className="text-gray-900">
-              Forget awkward icebreakers and forced trust falls.
-            </strong>{" "}
-            City Roam creates natural collaboration as your team works together
-            to solve real challenges.
+            {t.rich("problem.text1", { b: (chunks) => <strong className="text-gray-900">{chunks}</strong> })}
           </p>
           <p className="mt-6 text-xl leading-relaxed text-gray-700">
-            Watch colleagues who barely interact at work suddenly become
-            problem-solving partners. See quiet team members shine as they crack
-            crucial clues. Experience genuine teamwork away from emails and
-            meetings.
+            {t("problem.text2")}
           </p>
           <p className="mt-6 text-xl leading-relaxed text-gray-700">
-            Perfect for teams of 4&ndash;10 people. Larger groups? We recommend
-            splitting into multiple teams for a friendly competition that brings
-            everyone together.
+            {t("problem.text3")}
           </p>
         </div>
       </section>
@@ -55,24 +59,24 @@ export default function TeamBuilding() {
       <section className="px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            Why Companies Choose City Roam
+            {t("whyChoose.title")}
           </h2>
           <div className="mt-12 grid gap-8 sm:grid-cols-2">
             <FeatureCard
-              title="Real Collaboration"
-              description="Teams must communicate, delegate, and combine different strengths to succeed. No forced activities \u2014 just natural teamwork that emerges organically."
+              title={t("whyChoose.collaboration.title")}
+              description={t("whyChoose.collaboration.description")}
             />
             <FeatureCard
-              title="Fresh Perspective"
-              description="Remove your team from their usual environment and watch new ideas emerge. Different setting, different thinking, better solutions."
+              title={t("whyChoose.perspective.title")}
+              description={t("whyChoose.perspective.description")}
             />
             <FeatureCard
-              title="Inclusive for Everyone"
-              description="No physical challenges or uncomfortable activities. Everyone can contribute regardless of fitness level, personality type, or experience."
+              title={t("whyChoose.inclusive.title")}
+              description={t("whyChoose.inclusive.description")}
             />
             <FeatureCard
-              title="Energised Teams"
-              description="Teams return to the office more connected and engaged. A shared experience that becomes a natural reference point for collaboration."
+              title={t("whyChoose.energised.title")}
+              description={t("whyChoose.energised.description")}
             />
           </div>
         </div>
@@ -82,27 +86,26 @@ export default function TeamBuilding() {
       <section className="bg-gray-50 px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            Perfect For Your Team
+            {t("perfectFor.title")}
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-center text-lg text-gray-600">
-            Whether you&rsquo;re building new relationships or strengthening
-            existing ones.
+            {t("perfectFor.subtitle")}
           </p>
           <div className="mt-12 grid gap-8 sm:grid-cols-3">
             <IconCard
-              icon="\ud83d\udc4b"
-              title="New Team Integration"
-              description="Help new hires connect with existing team members in a relaxed, natural setting. Break down barriers quickly."
+              icon="👋"
+              title={t("perfectFor.newTeam.title")}
+              description={t("perfectFor.newTeam.description")}
             />
             <IconCard
-              icon="\ud83d\udd17"
-              title="Cross-Department Collaboration"
-              description="Get different departments working together. Perfect for project kickoffs or breaking down workplace silos."
+              icon="🔗"
+              title={t("perfectFor.crossDept.title")}
+              description={t("perfectFor.crossDept.description")}
             />
             <IconCard
-              icon="\ud83c\udfaf"
-              title="Team Morale Boost"
-              description="Reward your hardworking team with something genuinely fun. Show appreciation while building stronger relationships."
+              icon="🎯"
+              title={t("perfectFor.morale.title")}
+              description={t("perfectFor.morale.description")}
             />
           </div>
         </div>
@@ -112,37 +115,33 @@ export default function TeamBuilding() {
       <section className="px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            Flexible Team Sizes
+            {t("sizes.title")}
           </h2>
           <div className="mx-auto mt-12 max-w-3xl grid gap-6 sm:grid-cols-2">
             <div className="rounded-card bg-gray-50 p-6">
               <h3 className="text-lg font-semibold text-gray-900">
-                4&ndash;10 People: The Sweet Spot
+                {t("sizes.sweetSpot.title")}
               </h3>
               <p className="mt-2 text-gray-600 leading-relaxed">
-                Everyone can contribute meaningfully, communication flows
-                naturally, and team dynamics emerge organically.
+                {t("sizes.sweetSpot.description")}
               </p>
             </div>
             <div className="rounded-card bg-gray-50 p-6">
               <h3 className="text-lg font-semibold text-gray-900">
-                11+ People: Multiple Teams
+                {t("sizes.multiple.title")}
               </h3>
               <p className="mt-2 text-gray-600 leading-relaxed">
-                Split into smaller teams for a friendly competition. Teams can
-                start at different times or race against each other.
+                {t("sizes.multiple.description")}
               </p>
             </div>
           </div>
           <div className="mx-auto mt-6 max-w-3xl">
             <div className="rounded-card border border-brand-200 bg-brand-50 p-6 text-center">
               <h3 className="text-lg font-semibold text-brand-800">
-                Multi-Team Competition
+                {t("sizes.competition.title")}
               </h3>
               <p className="mt-2 text-brand-700 leading-relaxed">
-                Turn your team building into a company-wide event. Teams compete
-                on the same route with bragging rights on the line. Contact us
-                for multi-team pricing.
+                {t("sizes.competition.description")}
               </p>
             </div>
           </div>
@@ -153,23 +152,16 @@ export default function TeamBuilding() {
       <section className="bg-gray-50 px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            Benefits You&rsquo;ll Actually See
+            {t("benefits.title")}
           </h2>
           <ul className="mt-12 grid gap-4 sm:grid-cols-2">
-            {[
-              { icon: "\ud83d\udcac", text: "Improved communication and active listening" },
-              { icon: "\ud83d\udca1", text: "Enhanced creative problem-solving abilities" },
-              { icon: "\ud83e\udd1d", text: "Stronger interpersonal relationships" },
-              { icon: "\ud83d\udcc8", text: "Increased team confidence and morale" },
-              { icon: "\u2b50", text: "Better understanding of individual strengths" },
-              { icon: "\ud83c\udfaf", text: "Shared experience and inside references" },
-            ].map((item, i) => (
+            {BENEFIT_ITEMS.map((item) => (
               <li
-                key={i}
+                key={item.key}
                 className="flex items-start gap-4 rounded-card bg-white p-4 shadow-sm"
               >
                 <span className="text-2xl">{item.icon}</span>
-                <span className="text-gray-700 leading-relaxed">{item.text}</span>
+                <span className="text-gray-700 leading-relaxed">{t(`benefits.items.${item.key}`)}</span>
               </li>
             ))}
           </ul>
@@ -180,24 +172,12 @@ export default function TeamBuilding() {
       <section className="px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-3xl">
           <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            Practical Information
+            {t("practical.title")}
           </h2>
           <div className="mt-8 space-y-6 text-lg leading-relaxed text-gray-700">
-            <p>
-              We make corporate bookings simple. Book for your team with proper
-              invoicing, expense-friendly pricing, and flexible scheduling that
-              works around business needs.
-            </p>
-            <p>
-              The experience takes 2&ndash;3 hours depending on pace, perfect
-              for a morning or afternoon session. Teams can start any time
-              between 9am&ndash;4pm, and we provide detailed briefing materials.
-            </p>
-            <p>
-              All participants need is comfortable walking shoes and a
-              smartphone. We handle everything else, including coordination for
-              multiple teams and custom start times.
-            </p>
+            <p>{t("practical.text1")}</p>
+            <p>{t("practical.text2")}</p>
+            <p>{t("practical.text3")}</p>
           </div>
         </div>
       </section>
@@ -206,44 +186,19 @@ export default function TeamBuilding() {
       <section className="bg-gray-50 px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            What Companies Are Saying
+            {t("testimonials.title")}
           </h2>
           <div className="mt-12 grid gap-8 sm:grid-cols-2">
-            {[
-              {
-                quote:
-                  "Best team building we\u2019ve done. Natural collaboration, everyone engaged, and actual problem-solving. The team came back energised and more connected.",
-                name: "Sarah Mitchell, Marketing Director",
-                company: "Tech Startup",
-              },
-              {
-                quote:
-                  "Perfect for our remote team\u2019s quarterly meetup. Gave people a chance to interact face-to-face in a relaxed setting. Much better than another conference room.",
-                name: "James Parker, Engineering Manager",
-                company: "Software Company",
-              },
-              {
-                quote:
-                  "We split our 16-person department into two teams. The friendly competition was brilliant, and everyone learned something new about their colleagues.",
-                name: "Lisa Chen, Operations Lead",
-                company: "Financial Services",
-              },
-              {
-                quote:
-                  "Easy to book, professional service, and genuine team building outcomes. We\u2019ll definitely be doing this again with new hires.",
-                name: "Mark Thompson, HR Director",
-                company: "Manufacturing",
-              },
-            ].map((item, i) => (
+            {Array.from({ length: 4 }, (_, i) => (
               <div key={i} className="rounded-card bg-white p-6 shadow-sm">
                 <p className="text-gray-700 leading-relaxed italic">
-                  &ldquo;{item.quote}&rdquo;
+                  &ldquo;{t(`testimonials.${i}.quote`)}&rdquo;
                 </p>
                 <div className="mt-4">
                   <p className="text-sm font-medium text-gray-900">
-                    {item.name}
+                    {t(`testimonials.${i}.name`)}
                   </p>
-                  <p className="text-sm text-gray-500">{item.company}</p>
+                  <p className="text-sm text-gray-500">{t(`testimonials.${i}.company`)}</p>
                 </div>
               </div>
             ))}
@@ -255,30 +210,13 @@ export default function TeamBuilding() {
       <section className="px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            Corporate Booking Questions
+            {t("faq.title")}
           </h2>
           <div className="mx-auto mt-12 max-w-2xl divide-y divide-gray-200">
-            {[
-              {
-                q: "How do we book for a corporate team?",
-                a: "Simple! Contact us with your preferred dates and team size. We\u2019ll handle invoicing, provide booking confirmations for expense claims, and coordinate timing that works for your schedule.",
-              },
-              {
-                q: "What if we have more than 10 people?",
-                a: "We recommend splitting into multiple teams of 4\u20136 people each. Teams can compete against each other or start at different times. We\u2019ll help coordinate multiple bookings and can provide leaderboards for the competitive element.",
-              },
-              {
-                q: "What\u2019s the weather contingency plan?",
-                a: "Teams can pause and resume another day if weather becomes an issue. We also offer full rescheduling for severe weather with no additional charges.",
-              },
-              {
-                q: "Is there corporate pricing available?",
-                a: "Yes, we offer competitive rates for corporate bookings and discounts for multiple teams. Contact us for a custom quote based on your requirements.",
-              },
-            ].map((item, i) => (
+            {Array.from({ length: 4 }, (_, i) => (
               <div key={i} className="py-5">
-                <h3 className="text-lg font-medium text-gray-900">{item.q}</h3>
-                <p className="mt-2 text-gray-600 leading-relaxed">{item.a}</p>
+                <h3 className="text-lg font-medium text-gray-900">{t(`faq.${i}.question`)}</h3>
+                <p className="mt-2 text-gray-600 leading-relaxed">{t(`faq.${i}.answer`)}</p>
               </div>
             ))}
           </div>
@@ -289,16 +227,15 @@ export default function TeamBuilding() {
       <section className="bg-brand-500 px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-2xl font-bold leading-tight text-white sm:text-3xl">
-            Real teamwork. Genuine collaboration. Get your team out of the
-            office.
+            {t("cta.text")}
           </p>
           <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-            <CTAButton location="team-cta" label="Book Team Experience" />
+            <CTAButton location="team-cta" label={t("cta.label")} />
             <a
               href="mailto:hello@cityroam.com"
               className="rounded-button border-2 border-white px-8 py-4 text-lg font-semibold text-white transition-colors hover:bg-white hover:text-brand-600"
             >
-              Contact for Group Pricing
+              {t("cta.contactLabel")}
             </a>
           </div>
         </div>
@@ -315,7 +252,7 @@ export default function TeamBuilding() {
               hello@cityroam.com
             </a>
           </p>
-          <p className="mt-2">&copy; {new Date().getFullYear()} City Roam. All rights reserved.</p>
+          <p className="mt-2">{tc("footer.copyright", { year: new Date().getFullYear() })}</p>
         </div>
       </footer>
     </main>

@@ -1,8 +1,28 @@
+import { getTranslations } from "next-intl/server";
 import { CTAButton } from "@/components/CTAButton";
 import { FAQ } from "@/components/FAQ";
 import IphoneDemo from "@/components/IphoneDemo/IphoneDemo";
 
-export default function Home() {
+const PHONE_FEATURES = [
+  { icon: "📱", key: "0" },
+  { icon: "☁️", key: "1" },
+  { icon: "💬", key: "2" },
+  { icon: "⏸️", key: "3" },
+];
+
+const INCLUDED_ITEMS = [
+  { icon: "🗺️", key: "0" },
+  { icon: "🧩", key: "1" },
+  { icon: "🍻", key: "2" },
+  { icon: "📱", key: "3" },
+  { icon: "⏸️", key: "4" },
+  { icon: "♿", key: "5" },
+];
+
+export default async function Home() {
+  const t = await getTranslations("home");
+  const tc = await getTranslations("common");
+
   return (
     <main className="min-h-screen bg-white">
       {/* Hero */}
@@ -10,11 +30,10 @@ export default function Home() {
         <div className="mx-auto max-w-5xl flex flex-col items-center gap-12 lg:flex-row lg:items-center lg:gap-16">
           <div className="flex-1 text-center lg:text-left">
             <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-              AI-Guided Treasure Hunts in Leeds
+              {t("hero.title")}
             </h1>
             <p className="mt-6 text-lg leading-8 text-gray-600 sm:text-xl">
-              Solve clues, discover hidden gems, and explore the city with
-              friends &mdash; all guided by AI on your phone.
+              {t("hero.subtitle")}
             </p>
             <div className="mt-10">
               <CTAButton location="hero" />
@@ -30,18 +49,13 @@ export default function Home() {
       <section className="bg-gray-50 px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-3xl">
           <p className="text-xl leading-relaxed text-gray-700">
-            <strong className="text-gray-900">No schedules. No guides.</strong>{" "}
-            Just your group, your phone, and a trail of clues.
+            {t.rich("problem.text1", { b: (chunks) => <strong className="text-gray-900">{chunks}</strong> })}
           </p>
           <p className="mt-6 text-xl leading-relaxed text-gray-700">
-            City Roam is a phone-based exploration game that takes you through
-            the heart of Leeds. No app to download. Just clues, discoveries, and
-            good times.
+            {t("problem.text2")}
           </p>
           <p className="mt-6 text-xl leading-relaxed text-gray-700">
-            Solve riddles, uncover hidden stories, and explore at your own pace.
-            Whether you&rsquo;re with family, friends, or colleagues &mdash;
-            it&rsquo;s made to be shared.
+            {t("problem.text3")}
           </p>
         </div>
       </section>
@@ -50,28 +64,28 @@ export default function Home() {
       <section className="px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            How It Works
+            {t("howItWorks.title")}
           </h2>
           <div className="mt-16 grid gap-12 sm:grid-cols-2 sm:gap-8">
             <Step
               number="1"
-              title="Start in the City"
-              description="Choose your starting point and hit go when you're ready. Begin your adventure from anywhere in the city centre."
+              title={t("howItWorks.step1Title")}
+              description={t("howItWorks.step1Desc")}
             />
             <Step
               number="2"
-              title="Solve Clues Together"
-              description="Use your phone to crack creative clues that lead you around town. Each puzzle brings you closer to hidden gems."
+              title={t("howItWorks.step2Title")}
+              description={t("howItWorks.step2Desc")}
             />
             <Step
               number="3"
-              title="Discover Hidden Stories"
-              description="Learn about secret spots, local legends, and fascinating history as you explore. See Leeds with fresh eyes."
+              title={t("howItWorks.step3Title")}
+              description={t("howItWorks.step3Desc")}
             />
             <Step
               number="4"
-              title="Play at Your Pace"
-              description="Stop for drinks, lunch, or even pick it back up another day. There are no time limits — it's your adventure."
+              title={t("howItWorks.step4Title")}
+              description={t("howItWorks.step4Desc")}
             />
           </div>
         </div>
@@ -82,22 +96,16 @@ export default function Home() {
         <div className="mx-auto max-w-5xl flex flex-col items-center gap-12 md:flex-row md:gap-16">
           <div className="flex-1 order-2 md:order-1">
             <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-              Just Take Your Phone
+              {t("phone.title")}
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-gray-600">
-              No app to download. No equipment to carry. Just open your
-              phone&rsquo;s browser and start exploring.
+              {t("phone.subtitle")}
             </p>
             <ul className="mt-8 space-y-4">
-              {[
-                { icon: "\ud83d\udcf1", text: "Works on any smartphone" },
-                { icon: "\u2601\ufe0f", text: "No downloads \u2014 runs in your browser" },
-                { icon: "\ud83d\udcac", text: "Chat-based AI guide walks you through" },
-                { icon: "\u23f8\ufe0f", text: "Pause and resume whenever you like" },
-              ].map((item, i) => (
-                <li key={i} className="flex items-center gap-3 text-gray-700">
+              {PHONE_FEATURES.map((item) => (
+                <li key={item.key} className="flex items-center gap-3 text-gray-700">
                   <span className="text-xl">{item.icon}</span>
-                  <span className="text-lg">{item.text}</span>
+                  <span className="text-lg">{t(`phone.features.${item.key}`)}</span>
                 </li>
               ))}
             </ul>
@@ -112,27 +120,19 @@ export default function Home() {
       <section className="px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            What&rsquo;s Included
+            {t("included.title")}
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-center text-lg text-gray-600">
-            Everything you need for a brilliant day out &mdash; just bring your
-            sense of adventure.
+            {t("included.subtitle")}
           </p>
           <ul className="mt-12 grid gap-4 sm:grid-cols-2">
-            {[
-              { icon: "\ud83d\uddfa\ufe0f", text: "A hand-crafted route through Leeds (~2.5 miles)" },
-              { icon: "\ud83e\udde9", text: "Interactive clues, riddles & mini challenges" },
-              { icon: "\ud83c\udf7b", text: "Local food & drink tips throughout the game" },
-              { icon: "\ud83d\udcf1", text: "No downloads \u2014 just use your phone\u2019s browser" },
-              { icon: "\u23f8\ufe0f", text: "Pause and resume whenever you like" },
-              { icon: "\u267f", text: "Pushchair, wheelchair & dog friendly" },
-            ].map((item, i) => (
+            {INCLUDED_ITEMS.map((item) => (
               <li
-                key={i}
+                key={item.key}
                 className="flex items-start gap-4 rounded-card bg-white p-4 shadow-sm"
               >
                 <span className="text-2xl">{item.icon}</span>
-                <span className="text-gray-700 leading-relaxed">{item.text}</span>
+                <span className="text-gray-700 leading-relaxed">{t(`included.items.${item.key}`)}</span>
               </li>
             ))}
           </ul>
@@ -143,31 +143,31 @@ export default function Home() {
       <section className="px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            Why Choose City Roam?
+            {t("whyChoose.title")}
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-center text-lg text-gray-600">
-            Flexible, fun, and full of surprises. Not your average city tour.
+            {t("whyChoose.subtitle")}
           </p>
           <div className="mt-12 grid gap-8 sm:grid-cols-2">
             <FeatureCard
-              icon="\ud83d\udcda"
-              title="Local Knowledge"
-              description="Designed by locals to showcase the stories and hidden spots we love \u2014 no cookie-cutter sightseeing."
+              icon="📚"
+              title={t("whyChoose.localKnowledge.title")}
+              description={t("whyChoose.localKnowledge.description")}
             />
             <FeatureCard
-              icon="\ud83d\udcf2"
-              title="Just Your Phone"
-              description="Works straight from your browser. No apps. No downloads. No tech stress."
+              icon="📲"
+              title={t("whyChoose.justYourPhone.title")}
+              description={t("whyChoose.justYourPhone.description")}
             />
             <FeatureCard
-              icon="\ud83c\udf88"
-              title="Play Your Way"
-              description="Start when you want. Stop for coffee. Pick up tomorrow. You\u2019re in charge."
+              icon="🎈"
+              title={t("whyChoose.playYourWay.title")}
+              description={t("whyChoose.playYourWay.description")}
             />
             <FeatureCard
-              icon="\ud83c\udf89"
-              title="Built for Groups"
-              description="Whether you\u2019re with mates, family, or colleagues \u2014 it\u2019s great for groups."
+              icon="🎉"
+              title={t("whyChoose.builtForGroups.title")}
+              description={t("whyChoose.builtForGroups.description")}
             />
           </div>
         </div>
@@ -177,16 +177,16 @@ export default function Home() {
       <section id="pricing" className="bg-gray-50 px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            Simple Pricing
+            {t("pricing.title")}
           </h2>
           <p className="mt-4 text-lg text-gray-600">
-            One price for the whole group. Up to 10 people.
+            {t("pricing.subtitle")}
           </p>
           <div className="mt-10">
             <div className="inline-block rounded-card border border-gray-200 bg-white px-10 py-8 shadow-sm">
-              <p className="text-sm font-medium text-gray-500 line-through">&pound;49</p>
-              <p className="mt-1 text-5xl font-bold tracking-tight text-gray-900">&pound;29</p>
-              <p className="mt-2 text-sm font-medium text-brand-600">Launch pricing</p>
+              <p className="text-sm font-medium text-gray-500 line-through">{t("pricing.originalPrice")}</p>
+              <p className="mt-1 text-5xl font-bold tracking-tight text-gray-900">{t("pricing.price")}</p>
+              <p className="mt-2 text-sm font-medium text-brand-600">{t("pricing.badge")}</p>
               <div className="mt-8">
                 <CTAButton location="pricing" />
               </div>
@@ -199,20 +199,20 @@ export default function Home() {
       <section className="px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            What People Say
+            {t("reviews.title")}
           </h2>
           <div className="mt-12 grid gap-8 sm:grid-cols-3">
             <ReviewCard
-              quote="Such a fun afternoon! The AI guide was surprisingly witty."
-              name="Sarah T."
+              quote={t("reviews.0.quote")}
+              name={t("reviews.0.name")}
             />
             <ReviewCard
-              quote="Perfect for a birthday outing. Everyone loved solving the clues together."
-              name="James M."
+              quote={t("reviews.1.quote")}
+              name={t("reviews.1.name")}
             />
             <ReviewCard
-              quote="Way better than a boring walking tour. We discovered places we never knew existed!"
-              name="Priya K."
+              quote={t("reviews.2.quote")}
+              name={t("reviews.2.name")}
             />
           </div>
         </div>
@@ -222,11 +222,10 @@ export default function Home() {
       <section className="bg-brand-50 px-6 py-16">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-2xl font-bold text-brand-800">
-            100% Fun Guarantee
+            {t("guarantee.title")}
           </p>
           <p className="mt-3 text-lg text-brand-700">
-            Didn&rsquo;t have fun? We&rsquo;ll refund you. No questions asked.
-            We want everyone to enjoy exploring with City Roam.
+            {t("guarantee.description")}
           </p>
         </div>
       </section>
@@ -235,7 +234,7 @@ export default function Home() {
       <section className="px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            Frequently Asked Questions
+            {t("faqTitle")}
           </h2>
           <div className="mt-12">
             <FAQ />
@@ -257,7 +256,7 @@ export default function Home() {
               hello@cityroam.com
             </a>
           </p>
-          <p className="mt-2">&copy; {new Date().getFullYear()} City Roam. All rights reserved.</p>
+          <p className="mt-2">{tc("footer.copyright", { year: new Date().getFullYear() })}</p>
         </div>
       </footer>
     </main>
@@ -305,7 +304,7 @@ function FeatureCard({
 function ReviewCard({ quote, name }: { quote: string; name: string }) {
   return (
     <div className="rounded-card bg-gray-50 p-6">
-      <p className="text-gray-700 leading-relaxed">&ldquo;{quote}&rdquo;</p>
+      <p className="text-gray-700 leading-relaxed">{"\u201C"}{quote}{"\u201D"}</p>
       <p className="mt-4 text-sm font-medium text-gray-900">{name}</p>
     </div>
   );

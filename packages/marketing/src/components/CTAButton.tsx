@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { POSTHOG_EVENTS } from "@cityroam/shared/analytics";
 import type { CheckoutSessionResponse } from "@cityroam/shared/types";
 import { trackEvent } from "@/lib/analytics";
@@ -9,11 +10,13 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 export function CTAButton({
   location,
-  label = "Book Your Experience",
+  label,
 }: {
   location: string;
   label?: string;
 }) {
+  const t = useTranslations("cta");
+  const displayLabel = label ?? t("defaultLabel");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
@@ -51,12 +54,10 @@ export function CTAButton({
         disabled={loading}
         className="inline-flex items-center justify-center rounded-button bg-brand-500 px-8 py-4 text-lg font-semibold text-white transition-colors hover:bg-brand-600 active:bg-brand-700 disabled:opacity-70 disabled:cursor-not-allowed"
       >
-        {loading ? "Redirecting to checkout..." : label}
+        {loading ? t("loading") : displayLabel}
       </button>
       {error && (
-        <p className="text-sm text-red-600">
-          Something went wrong. Please try again.
-        </p>
+        <p className="text-sm text-red-600">{t("error")}</p>
       )}
     </div>
   );

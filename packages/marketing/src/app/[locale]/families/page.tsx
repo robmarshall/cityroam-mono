@@ -1,28 +1,41 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { CTAButton } from "@/components/CTAButton";
 
-export const metadata: Metadata = {
-  title: "Family Adventures — City Roam",
-  description:
-    "Turn your family day out into an exciting AI-guided treasure hunt in Leeds. Suitable for all ages, pushchair friendly, and designed to keep everyone entertained.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("metadata");
+  return {
+    title: t("families.title"),
+    description: t("families.description"),
+  };
+}
 
-export default function Families() {
+const FEATURE_ITEMS = [
+  { icon: "\u267f", key: "0" },
+  { icon: "\ud83e\udde9", key: "1" },
+  { icon: "\u2615", key: "2" },
+  { icon: "\ud83d\udcd6", key: "3" },
+  { icon: "\ud83d\udc15", key: "4" },
+  { icon: "\u23f8\ufe0f", key: "5" },
+];
+
+export default async function Families() {
+  const t = await getTranslations("families");
+  const tc = await getTranslations("common");
+
   return (
     <main className="min-h-screen bg-white">
       {/* Hero */}
       <section className="px-6 py-24 text-center sm:py-32">
         <div className="mx-auto max-w-3xl">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-            Family Adventures Made Easy
+            {t("hero.title")}
           </h1>
           <p className="mt-6 text-lg leading-8 text-gray-600 sm:text-xl">
-            Turn your family day out into an exciting treasure hunt. Perfect for
-            creating memories that last a lifetime &mdash; and keeping everyone
-            entertained.
+            {t("hero.subtitle")}
           </p>
           <div className="mt-10">
-            <CTAButton location="families-hero" label="Book Family Adventure" />
+            <CTAButton location="families-hero" label={t("hero.cta")} />
           </div>
         </div>
       </section>
@@ -31,21 +44,13 @@ export default function Families() {
       <section className="bg-gray-50 px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-3xl">
           <p className="text-xl leading-relaxed text-gray-700">
-            <strong className="text-gray-900">
-              Tired of hearing &ldquo;Are we there yet?&rdquo;
-            </strong>{" "}
-            City Roam turns your family walk into an adventure that keeps
-            everyone engaged.
+            {t.rich("problem.text1", { b: (chunks) => <strong className="text-gray-900">{chunks}</strong> })}
           </p>
           <p className="mt-6 text-xl leading-relaxed text-gray-700">
-            No more dragging reluctant kids around tourist spots. Instead, watch
-            them race ahead to solve the next clue while discovering amazing
-            places and stories about the city.
+            {t("problem.text2")}
           </p>
           <p className="mt-6 text-xl leading-relaxed text-gray-700">
-            Designed to work for mixed ages &mdash; from curious 8-year-olds to
-            teenagers and grandparents. Everyone contributes, everyone learns,
-            everyone has fun.
+            {t("problem.text3")}
           </p>
         </div>
       </section>
@@ -54,24 +59,24 @@ export default function Families() {
       <section className="px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            Why Families Love City Roam
+            {t("whyLove.title")}
           </h2>
           <div className="mt-12 grid gap-8 sm:grid-cols-2">
             <FeatureCard
-              title="Keeps Everyone Engaged"
-              description="No more bored kids or dragged feet. The clues and challenges keep minds active and feet moving willingly."
+              title={t("whyLove.engaged.title")}
+              description={t("whyLove.engaged.description")}
             />
             <FeatureCard
-              title="Educational & Fun"
-              description="Learn about history, architecture, and local culture without feeling like a school trip. Knowledge comes naturally through play."
+              title={t("whyLove.educational.title")}
+              description={t("whyLove.educational.description")}
             />
             <FeatureCard
-              title="Works for All Ages"
-              description="From 8 to 80 — everyone can contribute. Younger kids solve visual clues, teens help with directions, adults share stories."
+              title={t("whyLove.allAges.title")}
+              description={t("whyLove.allAges.description")}
             />
             <FeatureCard
-              title="Real Family Bonding"
-              description="Put phones away (except for the game!) and work together as a team. Create memories while exploring together."
+              title={t("whyLove.bonding.title")}
+              description={t("whyLove.bonding.description")}
             />
           </div>
         </div>
@@ -81,27 +86,26 @@ export default function Families() {
       <section className="bg-gray-50 px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            Perfect For Every Family
+            {t("perfectFor.title")}
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-center text-lg text-gray-600">
-            Whether you&rsquo;re locals wanting to see your city differently or
-            visitors exploring somewhere new.
+            {t("perfectFor.subtitle")}
           </p>
           <div className="mt-12 grid gap-8 sm:grid-cols-3">
             <IconCard
               icon="\ud83d\udc74\ud83d\udc75"
-              title="Visiting Grandparents"
-              description="Show them around in a fun, interactive way. They'll love the stories and history, while the kids love the adventure."
+              title={t("perfectFor.grandparents.title")}
+              description={t("perfectFor.grandparents.description")}
             />
             <IconCard
               icon="\u2600\ufe0f"
-              title="Weekend Family Time"
-              description="Turn a regular Saturday into something special. Get out, get moving, and discover parts of your own city you never knew existed."
+              title={t("perfectFor.weekend.title")}
+              description={t("perfectFor.weekend.description")}
             />
             <IconCard
               icon="\ud83c\udf92"
-              title="School Holidays"
-              description="Beat the holiday boredom with an educational adventure. It's learning disguised as play — and they'll never notice."
+              title={t("perfectFor.holidays.title")}
+              description={t("perfectFor.holidays.description")}
             />
           </div>
         </div>
@@ -111,23 +115,23 @@ export default function Families() {
       <section className="px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            How Your Family Adventure Works
+            {t("howItWorks.title")}
           </h2>
           <div className="mx-auto mt-12 max-w-2xl space-y-8">
             <NumberedStep
               number="1"
-              title="Start When Ready"
-              description="No rushing to meet a tour group. Begin when everyone's fed, watered, and ready to explore."
+              title={t("howItWorks.step1Title")}
+              description={t("howItWorks.step1Desc")}
             />
             <NumberedStep
               number="2"
-              title="Work as a Team"
-              description="Let different family members take the lead on different clues. Everyone gets to be the hero."
+              title={t("howItWorks.step2Title")}
+              description={t("howItWorks.step2Desc")}
             />
             <NumberedStep
               number="3"
-              title="Take Your Time"
-              description="Stop for ice cream, let the kids run around, or just enjoy a moment. The adventure waits for you."
+              title={t("howItWorks.step3Title")}
+              description={t("howItWorks.step3Desc")}
             />
           </div>
         </div>
@@ -137,27 +141,19 @@ export default function Families() {
       <section className="bg-gray-50 px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            Family-Friendly Features
+            {t("features.title")}
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-center text-lg text-gray-600">
-            Everything designed with real families in mind &mdash; because we
-            know how family outings actually work.
+            {t("features.subtitle")}
           </p>
           <ul className="mt-12 grid gap-4 sm:grid-cols-2">
-            {[
-              { icon: "\u267f", text: "Pushchair and wheelchair accessible route" },
-              { icon: "\ud83e\udde9", text: "Clues suitable for ages 8+ (younger with help)" },
-              { icon: "\u2615", text: "Plenty of places to stop for snacks and toilet breaks" },
-              { icon: "\ud83d\udcd6", text: "Educational content that doesn't feel like homework" },
-              { icon: "\ud83d\udc15", text: "Dog-friendly route for family pets" },
-              { icon: "\u23f8\ufe0f", text: "Pause and resume \u2014 perfect for attention spans" },
-            ].map((item, i) => (
+            {FEATURE_ITEMS.map((item) => (
               <li
-                key={i}
+                key={item.key}
                 className="flex items-start gap-4 rounded-card bg-white p-4 shadow-sm"
               >
                 <span className="text-2xl">{item.icon}</span>
-                <span className="text-gray-700 leading-relaxed">{item.text}</span>
+                <span className="text-gray-700 leading-relaxed">{t(`features.items.${item.key}`)}</span>
               </li>
             ))}
           </ul>
@@ -168,22 +164,17 @@ export default function Families() {
       <section className="px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-3xl">
           <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            Safety & Practical Information
+            {t("safety.title")}
           </h2>
           <div className="mt-8 space-y-6 text-lg leading-relaxed text-gray-700">
             <p>
-              We know safety comes first when you&rsquo;re out with family. The
-              route stays in busy, well-lit areas with plenty of shops and cafes
-              nearby.
+              {t("safety.text1")}
             </p>
             <p>
-              Routes are around 2.5 miles and generally flat &mdash; perfect for
-              little legs and pushchairs. There are family-friendly stops along
-              the way.
+              {t("safety.text2")}
             </p>
             <p>
-              If the weather turns or someone gets tired, you can pause the game
-              and pick it up another day. No pressure, just pure family fun.
+              {t("safety.text3")}
             </p>
           </div>
         </div>
@@ -193,38 +184,13 @@ export default function Families() {
       <section className="bg-gray-50 px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            Family Questions Answered
+            {t("faq.title")}
           </h2>
           <div className="mx-auto mt-12 max-w-2xl divide-y divide-gray-200">
-            {[
-              {
-                q: "What ages is this suitable for?",
-                a: "Kids aged 8+ can actively participate in solving clues. Younger children (4\u20137) can join in with help from older family members and will enjoy spotting things and being part of the adventure. It\u2019s designed to work for mixed-age groups.",
-              },
-              {
-                q: "Is it pushchair friendly?",
-                a: "Absolutely! The entire route is pushchair and wheelchair accessible. We\u2019ve specifically chosen paths that work for families with buggies, avoiding steps and steep hills.",
-              },
-              {
-                q: "How long does it take with kids?",
-                a: "Most families take 2.5\u20133.5 hours, but there\u2019s no rush! Build in time for snack breaks, toilet stops, and those moments when kids want to explore something interesting. You can pause whenever needed.",
-              },
-              {
-                q: "What if it rains or kids get tired?",
-                a: "You can pause your adventure at any point and resume later \u2014 even on a different day! There are plenty of indoor spots to shelter, and the game saves your progress automatically.",
-              },
-              {
-                q: "Are there places to stop for food?",
-                a: "Yes! The route passes family-friendly cafes, pubs with kids\u2019 menus, and spots perfect for picnics. We include recommendations for the best family stops along the way.",
-              },
-              {
-                q: "Do kids need their own phones?",
-                a: "No, one phone per family is perfect. In fact, it encourages teamwork as everyone gathers around to solve clues together. Much better than everyone staring at separate screens!",
-              },
-            ].map((item, i) => (
+            {Array.from({ length: 6 }, (_, i) => (
               <div key={i} className="py-5">
-                <h3 className="text-lg font-medium text-gray-900">{item.q}</h3>
-                <p className="mt-2 text-gray-600 leading-relaxed">{item.a}</p>
+                <h3 className="text-lg font-medium text-gray-900">{t(`faq.${i}.question`)}</h3>
+                <p className="mt-2 text-gray-600 leading-relaxed">{t(`faq.${i}.answer`)}</p>
               </div>
             ))}
           </div>
@@ -235,11 +201,10 @@ export default function Families() {
       <section className="bg-brand-500 px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-2xl font-bold leading-tight text-white sm:text-3xl">
-            Adventure the whole family will love. Learning disguised as play.
-            Memories that last forever.
+            {t("cta.text")}
           </p>
           <div className="mt-10">
-            <CTAButton location="families-cta" label="Book Family Adventure" />
+            <CTAButton location="families-cta" label={t("cta.label")} />
           </div>
         </div>
       </section>
@@ -255,7 +220,7 @@ export default function Families() {
               hello@cityroam.com
             </a>
           </p>
-          <p className="mt-2">&copy; {new Date().getFullYear()} City Roam. All rights reserved.</p>
+          <p className="mt-2">{tc("footer.copyright", { year: new Date().getFullYear() })}</p>
         </div>
       </footer>
     </main>

@@ -2,49 +2,13 @@
 
 import { useEffect, useState, useRef } from "react";
 import { motion } from "motion/react";
+import { useTranslations } from "next-intl";
 
 type Message = {
   id: number;
   sender: "guide" | "user";
   text: string;
 };
-
-const heroMessages: Message[] = [
-  { id: 1, sender: "user", text: "The Old Town Hall!" },
-  { id: 2, sender: "guide", text: "That\u2019s right! Well done \ud83c\udf89" },
-  {
-    id: 3,
-    sender: "guide",
-    text: "Built in 1858, it\u2019s one of the city\u2019s most iconic landmarks.",
-  },
-  { id: 4, sender: "guide", text: "Let\u2019s head to the next spot\u2026" },
-  {
-    id: 5,
-    sender: "guide",
-    text: "There\u2019s a great coffee shop on the way!",
-  },
-];
-
-const howItWorksMessages: Message[] = [
-  { id: 1, sender: "guide", text: "Welcome to City Roam! \ud83d\udcf1" },
-  { id: 2, sender: "guide", text: "I\u2019ll be your guide today." },
-  {
-    id: 3,
-    sender: "guide",
-    text: "I\u2019ll send you clues and directions as you explore.",
-  },
-  { id: 4, sender: "guide", text: "You can ask me questions anytime." },
-  { id: 5, sender: "guide", text: "Ready to explore?" },
-  { id: 6, sender: "user", text: "Let\u2019s go!" },
-];
-
-const heroInitial: Message[] = [
-  {
-    id: 0,
-    sender: "guide",
-    text: "Find the building with the golden clock on its tower \ud83d\udd70\ufe0f",
-  },
-];
 
 const animationVariants = {
   initial: { opacity: 0, y: 20, scale: 0.95 },
@@ -78,9 +42,11 @@ function TypingIndicator() {
 function MessageBubble({
   message,
   isFirstInGroup,
+  guideLabel,
 }: {
   message: Message;
   isFirstInGroup: boolean;
+  guideLabel: string;
 }) {
   const isUser = message.sender === "user";
 
@@ -94,7 +60,7 @@ function MessageBubble({
       <div className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}>
         {!isUser && isFirstInGroup && (
           <div className="text-[10px] text-gray-500 ml-1 mb-0.5 font-medium">
-            Guide
+            {guideLabel}
           </div>
         )}
         <div
@@ -116,6 +82,29 @@ export default function ChatDemo({
 }: {
   variant: "hero" | "howItWorks";
 }) {
+  const t = useTranslations("chatDemo");
+
+  const heroMessages: Message[] = [
+    { id: 1, sender: "user", text: t("hero.0") },
+    { id: 2, sender: "guide", text: t("hero.1") },
+    { id: 3, sender: "guide", text: t("hero.2") },
+    { id: 4, sender: "guide", text: t("hero.3") },
+    { id: 5, sender: "guide", text: t("hero.4") },
+  ];
+
+  const howItWorksMessages: Message[] = [
+    { id: 1, sender: "guide", text: t("howItWorks.0") },
+    { id: 2, sender: "guide", text: t("howItWorks.1") },
+    { id: 3, sender: "guide", text: t("howItWorks.2") },
+    { id: 4, sender: "guide", text: t("howItWorks.3") },
+    { id: 5, sender: "guide", text: t("howItWorks.4") },
+    { id: 6, sender: "user", text: t("howItWorks.5") },
+  ];
+
+  const heroInitial: Message[] = [
+    { id: 0, sender: "guide", text: t("hero.initial") },
+  ];
+
   const allMessages = variant === "hero" ? heroMessages : howItWorksMessages;
   const initial = variant === "hero" ? heroInitial : [];
 
@@ -166,7 +155,7 @@ export default function ChatDemo({
       timeoutsRef.current.forEach(clearTimeout);
       timeoutsRef.current = [];
     };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -189,6 +178,7 @@ export default function ChatDemo({
             key={`${variant}-${msg.id}`}
             message={msg}
             isFirstInGroup={isFirstInGroup}
+            guideLabel={t("guideLabel")}
           />
         );
       })}

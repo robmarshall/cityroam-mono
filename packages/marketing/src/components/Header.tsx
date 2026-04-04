@@ -2,21 +2,23 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 const NAV_LINKS = [
-  { href: "/families", label: "Families" },
-  { href: "/hen-parties", label: "Hen Parties" },
-  { href: "/team-building", label: "Team Building" },
+  { href: "/families", labelKey: "header.families" },
+  { href: "/hen-parties", labelKey: "header.henParties" },
+  { href: "/team-building", labelKey: "header.teamBuilding" },
 ];
 
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const t = useTranslations("common");
 
   return (
     <header className="border-b border-gray-100 bg-white">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
         <Link href="/" className="text-xl font-bold text-gray-900">
-          City Roam
+          {t("header.brand")}
         </Link>
 
         {/* Desktop nav */}
@@ -27,14 +29,14 @@ export function Header() {
               href={link.href}
               className="text-sm font-medium text-gray-600 transition-colors hover:text-gray-900"
             >
-              {link.label}
+              {t(link.labelKey)}
             </Link>
           ))}
           <Link
             href="/#pricing"
             className="rounded-button bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
           >
-            Book Now
+            {t("header.bookNow")}
           </Link>
         </nav>
 
@@ -42,7 +44,7 @@ export function Header() {
         <button
           onClick={() => setMenuOpen(!menuOpen)}
           className="sm:hidden p-2 text-gray-600"
-          aria-label="Toggle menu"
+          aria-label={t("header.toggleMenu")}
         >
           <svg
             className="h-6 w-6"
@@ -71,7 +73,7 @@ export function Header() {
                 onClick={() => setMenuOpen(false)}
                 className="text-base font-medium text-gray-600 transition-colors hover:text-gray-900"
               >
-                {link.label}
+                {t(link.labelKey)}
               </Link>
             ))}
             <Link
@@ -79,7 +81,7 @@ export function Header() {
               onClick={() => setMenuOpen(false)}
               className="rounded-button bg-brand-500 px-5 py-3 text-center text-base font-semibold text-white transition-colors hover:bg-brand-600"
             >
-              Book Now
+              {t("header.bookNow")}
             </Link>
           </div>
         </nav>

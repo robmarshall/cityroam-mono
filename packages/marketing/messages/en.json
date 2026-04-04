@@ -1,2 +1,574 @@
 {
+  "metadata": {
+    "home": {
+      "title": "City Roam \u2014 AI-Guided Treasure Hunts in Leeds",
+      "description": "Explore Leeds with an AI-powered treasure hunt. Solve clues, discover hidden gems, and have fun with friends \u2014 all guided by AI on your phone.",
+      "ogImageAlt": "City Roam \u2014 AI-Guided Treasure Hunts in Leeds"
+    },
+    "families": {
+      "title": "Family Adventures \u2014 City Roam",
+      "description": "Turn your family day out into an exciting AI-guided treasure hunt in Leeds. Suitable for all ages, pushchair friendly, and designed to keep everyone entertained."
+    },
+    "henParties": {
+      "title": "Hen Party Adventures \u2014 City Roam",
+      "description": "Give the bride-to-be an unforgettable experience. Explore Leeds together, solve clues as a team, and create memories that last long after the wedding."
+    },
+    "teamBuilding": {
+      "title": "Team Building \u2014 City Roam",
+      "description": "Get your team out of the office with an AI-guided treasure hunt in Leeds. Real collaboration, genuine problem-solving, and actual fun \u2014 perfect for teams of 4-10+."
+    }
+  },
+  "common": {
+    "header": {
+      "brand": "City Roam",
+      "families": "Families",
+      "henParties": "Hen Parties",
+      "teamBuilding": "Team Building",
+      "bookNow": "Book Now",
+      "toggleMenu": "Toggle menu"
+    },
+    "footer": {
+      "copyright": "\u00a9 {year} City Roam. All rights reserved."
+    }
+  },
+  "cta": {
+    "defaultLabel": "Book Your Experience",
+    "loading": "Redirecting to checkout...",
+    "error": "Something went wrong. Please try again."
+  },
+  "faq": {
+    "0": {
+      "question": "How many people can play?",
+      "answer": "Up to 10 people can join a single experience. Everyone plays together on their own phone, sharing clues and solving puzzles as a group."
+    },
+    "1": {
+      "question": "How long does it take?",
+      "answer": "Most groups finish in 2\u20133 hours, but you can take your time \u2014 there\u2019s no clock. Stop for a coffee, explore a side street, whatever you like."
+    },
+    "2": {
+      "question": "What do I need?",
+      "answer": "Just a phone with internet access. No app to download \u2014 everything runs in your browser."
+    },
+    "3": {
+      "question": "Is it accessible?",
+      "answer": "The route covers approximately 2.5 miles of city centre walking on paved surfaces. It\u2019s suitable for wheelchairs and pushchairs, and avoids steep hills. If you have specific accessibility needs, get in touch and we\u2019ll help."
+    },
+    "4": {
+      "question": "Is it suitable for kids?",
+      "answer": "Kids aged 8+ will enjoy solving clues and exploring. Younger kids might need help with trickier clues. The route is pushchair friendly too."
+    },
+    "5": {
+      "question": "What if it rains?",
+      "answer": "Light rain? No problem \u2014 there are plenty of cosy spots to duck into. If it pours, you can pause your game and pick it up later. Your adventure is flexible."
+    },
+    "6": {
+      "question": "Is it dog friendly?",
+      "answer": "Definitely. Many stops are outdoors or near dog-friendly pubs. Bring your furry companion along for the adventure."
+    },
+    "7": {
+      "question": "Can I pause and continue another day?",
+      "answer": "Yes! If you want to pause mid-hunt and pick it up tomorrow, that\u2019s totally fine. Your progress is saved automatically."
+    },
+    "8": {
+      "question": "Can I go alone?",
+      "answer": "You can! The experience is just as fun solo. But many people enjoy doing it as a couple, with friends, or as part of a team."
+    },
+    "9": {
+      "question": "What's the refund policy?",
+      "answer": "Full refund, no questions asked. If you're not happy for any reason, just let us know."
+    }
+  },
+  "chatDemo": {
+    "guideLabel": "Guide",
+    "hero": {
+      "initial": "Find the building with the golden clock on its tower \ud83d\udd70\ufe0f",
+      "0": "The Old Town Hall!",
+      "1": "That\u2019s right! Well done \ud83c\udf89",
+      "2": "Built in 1858, it\u2019s one of the city\u2019s most iconic landmarks.",
+      "3": "Let\u2019s head to the next spot\u2026",
+      "4": "There\u2019s a great coffee shop on the way!"
+    },
+    "howItWorks": {
+      "0": "Welcome to City Roam! \ud83d\udcf1",
+      "1": "I\u2019ll be your guide today.",
+      "2": "I\u2019ll send you clues and directions as you explore.",
+      "3": "You can ask me questions anytime.",
+      "4": "Ready to explore?",
+      "5": "Let\u2019s go!"
+    }
+  },
+  "home": {
+    "hero": {
+      "title": "AI-Guided Treasure Hunts in Leeds",
+      "subtitle": "Solve clues, discover hidden gems, and explore the city with friends \u2014 all guided by AI on your phone."
+    },
+    "problem": {
+      "text1": "<b>No schedules. No guides.</b> Just your group, your phone, and a trail of clues.",
+      "text2": "City Roam is a phone-based exploration game that takes you through the heart of Leeds. No app to download. Just clues, discoveries, and good times.",
+      "text3": "Solve riddles, uncover hidden stories, and explore at your own pace. Whether you\u2019re with family, friends, or colleagues \u2014 it\u2019s made to be shared."
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "step1Title": "Start in the City",
+      "step1Desc": "Choose your starting point and hit go when you\u2019re ready. Begin your adventure from anywhere in the city centre.",
+      "step2Title": "Solve Clues Together",
+      "step2Desc": "Use your phone to crack creative clues that lead you around town. Each puzzle brings you closer to hidden gems.",
+      "step3Title": "Discover Hidden Stories",
+      "step3Desc": "Learn about secret spots, local legends, and fascinating history as you explore. See Leeds with fresh eyes.",
+      "step4Title": "Play at Your Pace",
+      "step4Desc": "Stop for drinks, lunch, or even pick it back up another day. There are no time limits \u2014 it\u2019s your adventure."
+    },
+    "phone": {
+      "title": "Just Take Your Phone",
+      "subtitle": "No app to download. No equipment to carry. Just open your phone\u2019s browser and start exploring.",
+      "features": {
+        "0": "Works on any smartphone",
+        "1": "No downloads \u2014 runs in your browser",
+        "2": "Chat-based AI guide walks you through",
+        "3": "Pause and resume whenever you like"
+      }
+    },
+    "included": {
+      "title": "What\u2019s Included",
+      "subtitle": "Everything you need for a brilliant day out \u2014 just bring your sense of adventure.",
+      "items": {
+        "0": "A hand-crafted route through Leeds (~2.5 miles)",
+        "1": "Interactive clues, riddles & mini challenges",
+        "2": "Local food & drink tips throughout the game",
+        "3": "No downloads \u2014 just use your phone\u2019s browser",
+        "4": "Pause and resume whenever you like",
+        "5": "Pushchair, wheelchair & dog friendly"
+      }
+    },
+    "whyChoose": {
+      "title": "Why Choose City Roam?",
+      "subtitle": "Flexible, fun, and full of surprises. Not your average city tour.",
+      "localKnowledge": {
+        "title": "Local Knowledge",
+        "description": "Designed by locals to showcase the stories and hidden spots we love \u2014 no cookie-cutter sightseeing."
+      },
+      "justYourPhone": {
+        "title": "Just Your Phone",
+        "description": "Works straight from your browser. No apps. No downloads. No tech stress."
+      },
+      "playYourWay": {
+        "title": "Play Your Way",
+        "description": "Start when you want. Stop for coffee. Pick up tomorrow. You\u2019re in charge."
+      },
+      "builtForGroups": {
+        "title": "Built for Groups",
+        "description": "Whether you\u2019re with mates, family, or colleagues \u2014 it\u2019s great for groups."
+      }
+    },
+    "pricing": {
+      "title": "Simple Pricing",
+      "subtitle": "One price for the whole group. Up to 10 people.",
+      "originalPrice": "\u00a349",
+      "price": "\u00a329",
+      "badge": "Launch pricing"
+    },
+    "reviews": {
+      "title": "What People Say",
+      "0": {
+        "quote": "Such a fun afternoon! The AI guide was surprisingly witty.",
+        "name": "Sarah T."
+      },
+      "1": {
+        "quote": "Perfect for a birthday outing. Everyone loved solving the clues together.",
+        "name": "James M."
+      },
+      "2": {
+        "quote": "Way better than a boring walking tour. We discovered places we never knew existed!",
+        "name": "Priya K."
+      }
+    },
+    "guarantee": {
+      "title": "100% Fun Guarantee",
+      "description": "Didn\u2019t have fun? We\u2019ll refund you. No questions asked. We want everyone to enjoy exploring with City Roam."
+    },
+    "faqTitle": "Frequently Asked Questions"
+  },
+  "families": {
+    "hero": {
+      "title": "Family Adventures Made Easy",
+      "subtitle": "Turn your family day out into an exciting treasure hunt. Perfect for creating memories that last a lifetime \u2014 and keeping everyone entertained.",
+      "cta": "Book Family Adventure"
+    },
+    "problem": {
+      "text1": "<b>Tired of hearing \u201cAre we there yet?\u201d</b> City Roam turns your family walk into an adventure that keeps everyone engaged.",
+      "text2": "No more dragging reluctant kids around tourist spots. Instead, watch them race ahead to solve the next clue while discovering amazing places and stories about the city.",
+      "text3": "Designed to work for mixed ages \u2014 from curious 8-year-olds to teenagers and grandparents. Everyone contributes, everyone learns, everyone has fun."
+    },
+    "whyLove": {
+      "title": "Why Families Love City Roam",
+      "engaged": {
+        "title": "Keeps Everyone Engaged",
+        "description": "No more bored kids or dragged feet. The clues and challenges keep minds active and feet moving willingly."
+      },
+      "educational": {
+        "title": "Educational & Fun",
+        "description": "Learn about history, architecture, and local culture without feeling like a school trip. Knowledge comes naturally through play."
+      },
+      "allAges": {
+        "title": "Works for All Ages",
+        "description": "From 8 to 80 \u2014 everyone can contribute. Younger kids solve visual clues, teens help with directions, adults share stories."
+      },
+      "bonding": {
+        "title": "Real Family Bonding",
+        "description": "Put phones away (except for the game!) and work together as a team. Create memories while exploring together."
+      }
+    },
+    "perfectFor": {
+      "title": "Perfect For Every Family",
+      "subtitle": "Whether you\u2019re locals wanting to see your city differently or visitors exploring somewhere new.",
+      "grandparents": {
+        "title": "Visiting Grandparents",
+        "description": "Show them around in a fun, interactive way. They\u2019ll love the stories and history, while the kids love the adventure."
+      },
+      "weekend": {
+        "title": "Weekend Family Time",
+        "description": "Turn a regular Saturday into something special. Get out, get moving, and discover parts of your own city you never knew existed."
+      },
+      "holidays": {
+        "title": "School Holidays",
+        "description": "Beat the holiday boredom with an educational adventure. It\u2019s learning disguised as play \u2014 and they\u2019ll never notice."
+      }
+    },
+    "howItWorks": {
+      "title": "How Your Family Adventure Works",
+      "step1Title": "Start When Ready",
+      "step1Desc": "No rushing to meet a tour group. Begin when everyone\u2019s fed, watered, and ready to explore.",
+      "step2Title": "Work as a Team",
+      "step2Desc": "Let different family members take the lead on different clues. Everyone gets to be the hero.",
+      "step3Title": "Take Your Time",
+      "step3Desc": "Stop for ice cream, let the kids run around, or just enjoy a moment. The adventure waits for you."
+    },
+    "features": {
+      "title": "Family-Friendly Features",
+      "subtitle": "Everything designed with real families in mind \u2014 because we know how family outings actually work.",
+      "items": {
+        "0": "Pushchair and wheelchair accessible route",
+        "1": "Clues suitable for ages 8+ (younger with help)",
+        "2": "Plenty of places to stop for snacks and toilet breaks",
+        "3": "Educational content that doesn\u2019t feel like homework",
+        "4": "Dog-friendly route for family pets",
+        "5": "Pause and resume \u2014 perfect for attention spans"
+      }
+    },
+    "safety": {
+      "title": "Safety & Practical Information",
+      "text1": "We know safety comes first when you\u2019re out with family. The route stays in busy, well-lit areas with plenty of shops and cafes nearby.",
+      "text2": "Routes are around 2.5 miles and generally flat \u2014 perfect for little legs and pushchairs. There are family-friendly stops along the way.",
+      "text3": "If the weather turns or someone gets tired, you can pause the game and pick it up another day. No pressure, just pure family fun."
+    },
+    "faq": {
+      "title": "Family Questions Answered",
+      "0": {
+        "question": "What ages is this suitable for?",
+        "answer": "Kids aged 8+ can actively participate in solving clues. Younger children (4\u20137) can join in with help from older family members and will enjoy spotting things and being part of the adventure. It\u2019s designed to work for mixed-age groups."
+      },
+      "1": {
+        "question": "Is it pushchair friendly?",
+        "answer": "Absolutely! The entire route is pushchair and wheelchair accessible. We\u2019ve specifically chosen paths that work for families with buggies, avoiding steps and steep hills."
+      },
+      "2": {
+        "question": "How long does it take with kids?",
+        "answer": "Most families take 2.5\u20133.5 hours, but there\u2019s no rush! Build in time for snack breaks, toilet stops, and those moments when kids want to explore something interesting. You can pause whenever needed."
+      },
+      "3": {
+        "question": "What if it rains or kids get tired?",
+        "answer": "You can pause your adventure at any point and resume later \u2014 even on a different day! There are plenty of indoor spots to shelter, and the game saves your progress automatically."
+      },
+      "4": {
+        "question": "Are there places to stop for food?",
+        "answer": "Yes! The route passes family-friendly cafes, pubs with kids\u2019 menus, and spots perfect for picnics. We include recommendations for the best family stops along the way."
+      },
+      "5": {
+        "question": "Do kids need their own phones?",
+        "answer": "No, one phone per family is perfect. In fact, it encourages teamwork as everyone gathers around to solve clues together. Much better than everyone staring at separate screens!"
+      }
+    },
+    "cta": {
+      "text": "Adventure the whole family will love. Learning disguised as play. Memories that last forever.",
+      "label": "Book Family Adventure"
+    }
+  },
+  "henParties": {
+    "hero": {
+      "title": "The Perfect Hen Do Adventure",
+      "subtitle": "Give the bride-to-be an unforgettable experience. Explore the city together, solve clues as a team, and create memories that\u2019ll last long after the wedding.",
+      "cta": "Book Hen Party Adventure"
+    },
+    "problem": {
+      "text1": "<b>Skip the same old hen party activities.</b> City Roam offers something completely different \u2014 an adventure that brings everyone together while celebrating the bride.",
+      "text2": "Perfect for groups who want something unique, memorable, and Instagram-worthy. No awkward games or forced fun \u2014 just genuine excitement as you explore the city and solve challenges together.",
+      "text3": "Ideal for groups of 6\u201312 friends. Everyone gets involved, bonds form naturally, and the bride gets an experience she\u2019ll treasure forever."
+    },
+    "whyLove": {
+      "title": "Why Hen Parties Love City Roam",
+      "different": {
+        "title": "Something Totally Different",
+        "description": "Stand out from the typical hen do crowd. Give the bride an experience she\u2019s never had before \u2014 and probably never will again!"
+      },
+      "group": {
+        "title": "Perfect Group Activity",
+        "description": "Everyone works together towards a common goal. Great icebreaker for friends who don\u2019t know each other well, and brilliant bonding for old friends."
+      },
+      "instagram": {
+        "title": "Instagram-Worthy Moments",
+        "description": "Discover hidden gems and beautiful spots perfect for those all-important hen party photos. Content as unique as your friendship."
+      },
+      "timing": {
+        "title": "Celebration-Friendly Timing",
+        "description": "Fits perfectly around your other plans. Do it as a daytime activity before evening celebrations, or as a fun start to the weekend."
+      }
+    },
+    "styles": {
+      "title": "Perfect For Every Style of Hen Do",
+      "subtitle": "Whether you\u2019re planning a low-key celebration or a weekend-long extravaganza.",
+      "daytime": {
+        "title": "Daytime Adventures",
+        "description": "Perfect start to your hen weekend. Get everyone together, break the ice, and work up an appetite for your evening celebrations."
+      },
+      "alternative": {
+        "title": "Alternative Celebrations",
+        "description": "For brides who want something different from the usual hen party scene. Unique, memorable, and totally personalized to your group."
+      },
+      "mixed": {
+        "title": "Mixed Groups",
+        "description": "Brilliant when you have friends from different parts of life who don\u2019t know each other. Everyone bonds over solving clues together."
+      }
+    },
+    "organise": {
+      "title": "Easy to Organise",
+      "perfectSize": {
+        "title": "6\u201312 People: Perfect Size",
+        "description": "Everyone stays together, can hear each other, and no one gets left behind. Perfect for group photos too."
+      },
+      "simple": {
+        "title": "Super Simple to Book",
+        "description": "One booking, one payment, one confirmation. Share the details with the group and you\u2019re done. No complex coordination needed."
+      },
+      "special": {
+        "title": "Make the Bride Feel Special",
+        "description": "She\u2019ll love that you chose something unique and thoughtful. An experience that celebrates her while bringing all her favourite people together."
+      }
+    },
+    "special": {
+      "title": "What Makes It Special",
+      "items": {
+        "0": "Amazing photo opportunities at hidden gems",
+        "1": "Teamwork that brings the group together",
+        "2": "Flexible timing around your other celebrations",
+        "3": "Unique experience the bride will never forget",
+        "4": "Great pubs and bars discovered along the route",
+        "5": "Easy for the organiser to coordinate"
+      }
+    },
+    "safety": {
+      "title": "Celebrating Safely",
+      "text1": "The route stays in busy, well-lit areas with plenty of pubs, cafes, and shops along the way.",
+      "text2": "Start any time that suits your weekend schedule \u2014 morning adventures before evening celebrations, or afternoon activities that flow into dinner and drinks.",
+      "text3": "Groups stick together naturally as you solve clues, and there\u2019s plenty of opportunity for those all-important hen party photos. Plus, you\u2019ll discover great spots for your evening celebrations."
+    },
+    "testimonials": {
+      "title": "What Brides & Their Friends Say",
+      "0": {
+        "quote": "Best hen party activity ever! So different from the usual, and everyone loved it. The bride was absolutely glowing \u2014 perfect start to our weekend.",
+        "name": "Lucy, Maid of Honour",
+        "occasion": "Weekend Hen Do"
+      },
+      "1": {
+        "quote": "Brilliant icebreaker for our mixed group. Friends from uni, work, and home all bonded over solving clues. Such a clever way to bring everyone together.",
+        "name": "Sophie, Bride-to-be",
+        "occasion": "Day Celebration"
+      },
+      "2": {
+        "quote": "Perfect timing for our hen weekend. Did this on Saturday afternoon, discovered amazing spots, then went to some of the pubs we\u2019d found for evening drinks!",
+        "name": "Emma, Bridesmaid",
+        "occasion": "Hen Weekend"
+      },
+      "3": {
+        "quote": "So easy to organise and everyone raved about it. The bride said it was her favourite part of the whole hen do. Couldn\u2019t have asked for more!",
+        "name": "Kate, Sister of Bride",
+        "occasion": "Celebration Day"
+      }
+    },
+    "faq": {
+      "title": "Hen Party Planning Questions",
+      "0": {
+        "question": "How do we make it special for the bride?",
+        "answer": "The bride naturally becomes the centre of attention as the group works together. Everyone\u2019s focused on creating a great experience for her, and she gets to be part of something unique and memorable."
+      },
+      "1": {
+        "question": "What time should we start?",
+        "answer": "Totally flexible! Morning starts work great before lunch and evening celebrations. Afternoon adventures can flow perfectly into dinner and drinks. We recommend starting between 10am\u20133pm for best timing."
+      },
+      "2": {
+        "question": "Can we take photos during the experience?",
+        "answer": "Absolutely! You\u2019ll discover beautiful, hidden spots perfect for hen party photos. The route includes some of the most Instagram-worthy locations in the city."
+      },
+      "3": {
+        "question": "Can we have a drink during the adventure?",
+        "answer": "You\u2019ll pass plenty of gorgeous pubs and bars along the route. Many groups stop for a celebratory drink partway through!"
+      },
+      "4": {
+        "question": "What if some people don't know each other?",
+        "answer": "This is actually one of the best icebreakers ever. Working together on clues gets everyone talking and laughing naturally. Much better than awkward introductions over dinner."
+      },
+      "5": {
+        "question": "What if the weather's not great?",
+        "answer": "You can pause the adventure and resume later, or even continue another day. There are plenty of covered areas and indoor spots to duck into. Don\u2019t let British weather stop the celebration!"
+      }
+    },
+    "cta": {
+      "text": "Give the bride something unforgettable. Create memories together. Start her wedding celebrations perfectly.",
+      "label": "Book Hen Party Adventure"
+    }
+  },
+  "teamBuilding": {
+    "hero": {
+      "title": "Team Building Beyond the Boardroom",
+      "subtitle": "Get your team out of the office and working together in a completely new environment. Real collaboration, genuine problem-solving, and actual fun.",
+      "cta": "Book Team Experience"
+    },
+    "problem": {
+      "text1": "<b>Forget awkward icebreakers and forced trust falls.</b> City Roam creates natural collaboration as your team works together to solve real challenges.",
+      "text2": "Watch colleagues who barely interact at work suddenly become problem-solving partners. See quiet team members shine as they crack crucial clues. Experience genuine teamwork away from emails and meetings.",
+      "text3": "Perfect for teams of 4\u201310 people. Larger groups? We recommend splitting into multiple teams for a friendly competition that brings everyone together."
+    },
+    "whyChoose": {
+      "title": "Why Companies Choose City Roam",
+      "collaboration": {
+        "title": "Real Collaboration",
+        "description": "Teams must communicate, delegate, and combine different strengths to succeed. No forced activities \u2014 just natural teamwork that emerges organically."
+      },
+      "perspective": {
+        "title": "Fresh Perspective",
+        "description": "Remove your team from their usual environment and watch new ideas emerge. Different setting, different thinking, better solutions."
+      },
+      "inclusive": {
+        "title": "Inclusive for Everyone",
+        "description": "No physical challenges or uncomfortable activities. Everyone can contribute regardless of fitness level, personality type, or experience."
+      },
+      "energised": {
+        "title": "Energised Teams",
+        "description": "Teams return to the office more connected and engaged. A shared experience that becomes a natural reference point for collaboration."
+      }
+    },
+    "perfectFor": {
+      "title": "Perfect For Your Team",
+      "subtitle": "Whether you\u2019re building new relationships or strengthening existing ones.",
+      "newTeam": {
+        "title": "New Team Integration",
+        "description": "Help new hires connect with existing team members in a relaxed, natural setting. Break down barriers quickly."
+      },
+      "crossDept": {
+        "title": "Cross-Department Collaboration",
+        "description": "Get different departments working together. Perfect for project kickoffs or breaking down workplace silos."
+      },
+      "morale": {
+        "title": "Team Morale Boost",
+        "description": "Reward your hardworking team with something genuinely fun. Show appreciation while building stronger relationships."
+      }
+    },
+    "sizes": {
+      "title": "Flexible Team Sizes",
+      "sweetSpot": {
+        "title": "4\u201310 People: The Sweet Spot",
+        "description": "Everyone can contribute meaningfully, communication flows naturally, and team dynamics emerge organically."
+      },
+      "multiple": {
+        "title": "11+ People: Multiple Teams",
+        "description": "Split into smaller teams for a friendly competition. Teams can start at different times or race against each other."
+      },
+      "competition": {
+        "title": "Multi-Team Competition",
+        "description": "Turn your team building into a company-wide event. Teams compete on the same route with bragging rights on the line. Contact us for multi-team pricing."
+      }
+    },
+    "benefits": {
+      "title": "Benefits You\u2019ll Actually See",
+      "items": {
+        "0": "Improved communication and active listening",
+        "1": "Enhanced creative problem-solving abilities",
+        "2": "Stronger interpersonal relationships",
+        "3": "Increased team confidence and morale",
+        "4": "Better understanding of individual strengths",
+        "5": "Shared experience and inside references"
+      }
+    },
+    "practical": {
+      "title": "Practical Information",
+      "text1": "We make corporate bookings simple. Book for your team with proper invoicing, expense-friendly pricing, and flexible scheduling that works around business needs.",
+      "text2": "The experience takes 2\u20133 hours depending on pace, perfect for a morning or afternoon session. Teams can start any time between 9am\u20134pm, and we provide detailed briefing materials.",
+      "text3": "All participants need is comfortable walking shoes and a smartphone. We handle everything else, including coordination for multiple teams and custom start times."
+    },
+    "testimonials": {
+      "title": "What Companies Are Saying",
+      "0": {
+        "quote": "Best team building we\u2019ve done. Natural collaboration, everyone engaged, and actual problem-solving. The team came back energised and more connected.",
+        "name": "Sarah Mitchell, Marketing Director",
+        "company": "Tech Startup"
+      },
+      "1": {
+        "quote": "Perfect for our remote team\u2019s quarterly meetup. Gave people a chance to interact face-to-face in a relaxed setting. Much better than another conference room.",
+        "name": "James Parker, Engineering Manager",
+        "company": "Software Company"
+      },
+      "2": {
+        "quote": "We split our 16-person department into two teams. The friendly competition was brilliant, and everyone learned something new about their colleagues.",
+        "name": "Lisa Chen, Operations Lead",
+        "company": "Financial Services"
+      },
+      "3": {
+        "quote": "Easy to book, professional service, and genuine team building outcomes. We\u2019ll definitely be doing this again with new hires.",
+        "name": "Mark Thompson, HR Director",
+        "company": "Manufacturing"
+      }
+    },
+    "faq": {
+      "title": "Corporate Booking Questions",
+      "0": {
+        "question": "How do we book for a corporate team?",
+        "answer": "Simple! Contact us with your preferred dates and team size. We\u2019ll handle invoicing, provide booking confirmations for expense claims, and coordinate timing that works for your schedule."
+      },
+      "1": {
+        "question": "What if we have more than 10 people?",
+        "answer": "We recommend splitting into multiple teams of 4\u20136 people each. Teams can compete against each other or start at different times. We\u2019ll help coordinate multiple bookings and can provide leaderboards for the competitive element."
+      },
+      "2": {
+        "question": "What\u2019s the weather contingency plan?",
+        "answer": "Teams can pause and resume another day if weather becomes an issue. We also offer full rescheduling for severe weather with no additional charges."
+      },
+      "3": {
+        "question": "Is there corporate pricing available?",
+        "answer": "Yes, we offer competitive rates for corporate bookings and discounts for multiple teams. Contact us for a custom quote based on your requirements."
+      }
+    },
+    "cta": {
+      "text": "Real teamwork. Genuine collaboration. Get your team out of the office.",
+      "label": "Book Team Experience",
+      "contactLabel": "Contact for Group Pricing"
+    }
+  },
+  "checkout": {
+    "loading": "Setting up your experience...",
+    "error": {
+      "title": "We couldn't find your booking",
+      "description": "Check your email for the event link, or contact us.",
+      "backHome": "Back to Home"
+    },
+    "success": {
+      "title": "You're all set!",
+      "eventLinkLabel": "Your event link",
+      "copy": "Copy",
+      "copied": "Copied!",
+      "share": "Share with Friends",
+      "shareTitle": "Join my City Roam adventure!",
+      "whatsNext": "What's next?",
+      "whatsNextDescription": "Share this link with your group. Everyone opens it, enters their name, and the lead person starts when everyone's ready.",
+      "refundNote": "Not happy? Get a full refund \u2014 no questions asked."
+    }
+  }
 }
