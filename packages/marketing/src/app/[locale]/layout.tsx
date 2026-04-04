@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
-import "./globals.css";
+import { notFound } from "next/navigation";
+import { NextIntlClientProvider, hasLocale } from "next-intl";
+import { getMessages } from "next-intl/server";
+import "../globals.css";
 import { PostHogProvider } from "@/components/PostHogProvider";
 import { Header } from "@/components/Header";
+import { locales } from "@/i18n/config";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://cityroam.co.uk";
 
@@ -35,11 +39,21 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function LocaleLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: Promise<{ locale: string }>;
 }) {
+  const { locale } = await params;
+
+  if (!hasLocale(locales, locale)) {
+    notFound();
+  }
+
+  const messages = await getMessages();
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -68,7 +82,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en">
+    <html lang={locale}>
       <head>
         <script
           type="application/ld+json"
@@ -76,8 +90,10 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <Header />
-        <PostHogProvider>{children}</PostHogProvider>
+        <NextIntlClientProvider messages={messages}>
+          <Header />
+          <PostHogProvider>{children}</PostHogProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );
