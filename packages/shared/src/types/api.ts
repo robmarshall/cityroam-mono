@@ -109,6 +109,7 @@ export type AdminRouteGroupResponse = RouteGroup & {
 
 export interface AdminRouteDetailResponse {
   route: Route;
+  route_family: RouteFamily;
   groups: AdminRouteGroupResponse[];
 }
 

@@ -4,9 +4,12 @@ import type {
   AdminRouteDetailResponse,
   AdminRouteGroupResponse,
   Route,
+  RouteFamily,
   RouteBlock,
   BlockType,
+  SupportedLanguage,
 } from "@cityroam/shared/types";
+import { LANGUAGE_NAMES } from "@cityroam/shared/constants";
 import {
   routeSchema,
   blockConfigSchema,
@@ -43,7 +46,6 @@ import { useAuthFetch } from "../contexts/AuthContext";
 
 interface RouteForm {
   name: string;
-  city: string;
   description: string;
   estimated_duration_mins: string;
   estimated_distance_km: string;
@@ -137,7 +139,6 @@ function zodFieldErrors(err: {
 
 const EMPTY_ROUTE_FORM: RouteForm = {
   name: "",
-  city: "",
   description: "",
   estimated_duration_mins: "",
   estimated_distance_km: "",
@@ -147,7 +148,6 @@ const EMPTY_ROUTE_FORM: RouteForm = {
 function routeToForm(r: Route): RouteForm {
   return {
     name: r.name,
-    city: '',
     description: r.description ?? "",
     estimated_duration_mins: String(r.estimated_duration_mins),
     estimated_distance_km: String(r.estimated_distance_km),
@@ -1100,6 +1100,7 @@ export default function RouteEditorPage() {
 
   // Loaded data (edit mode)
   const [route, setRoute] = useState<Route | null>(null);
+  const [routeFamily, setRouteFamily] = useState<RouteFamily | null>(null);
   const [groups, setGroups] = useState<AdminRouteGroupResponse[]>([]);
   const [loading, setLoading] = useState(isEdit);
   const [fetchError, setFetchError] = useState<string | null>(null);
@@ -1204,6 +1205,7 @@ export default function RouteEditorPage() {
         api.get<AdminRouteDetailResponse>(`/admin/routes/${id}`),
       );
       setRoute(res.route);
+      setRouteFamily(res.route_family);
       const sorted = [...res.groups].sort((a, b) => a.position - b.position);
       sorted.forEach((g) => {
         g.blocks = [...g.blocks].sort((a, b) => a.position - b.position);
@@ -1269,7 +1271,7 @@ export default function RouteEditorPage() {
   async function handleSaveRoute() {
     const payload = {
       name: routeForm.name,
-      city: routeForm.city,
+      city: routeFamily?.city ?? "",
       description: routeForm.description || undefined,
       estimated_duration_mins: Number(routeForm.estimated_duration_mins) || 0,
       estimated_distance_km: Number(routeForm.estimated_distance_km) || 0,
@@ -1311,7 +1313,7 @@ export default function RouteEditorPage() {
     setDeleting(true);
     try {
       await authFetch(() => api.delete(`/admin/routes/${id}`));
-      navigate("/routes");
+      navigate(routeFamily ? `/routes/families/${routeFamily.id}` : "/routes");
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.status === 409) {
@@ -1860,31 +1862,65 @@ export default function RouteEditorPage() {
 
   return (
     <div>
-      {/* Back link */}
-      {isDirty ? (
-        <button
-          onClick={() => {
-            if (window.confirm("You have unsaved changes. Are you sure you want to leave?")) {
-              navigate("/routes");
-            }
-          }}
-          className="mb-4 inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
-        >
-          &larr; Back to Routes
-        </button>
-      ) : (
-        <Link
-          to="/routes"
-          className="mb-4 inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
-        >
-          &larr; Back to Routes
-        </Link>
-      )}
+      {/* Breadcrumb */}
+      <nav className="mb-4 flex items-center gap-1 text-sm text-gray-500">
+        {isDirty ? (
+          <button
+            onClick={() => {
+              if (window.confirm("You have unsaved changes. Are you sure you want to leave?")) {
+                navigate("/routes");
+              }
+            }}
+            className="text-blue-600 hover:text-blue-800"
+          >
+            Routes
+          </button>
+        ) : (
+          <Link to="/routes" className="text-blue-600 hover:text-blue-800">
+            Routes
+          </Link>
+        )}
+        {isEdit && routeFamily && (
+          <>
+            <span>/</span>
+            {isDirty ? (
+              <button
+                onClick={() => {
+                  if (window.confirm("You have unsaved changes. Are you sure you want to leave?")) {
+                    navigate(`/routes/families/${routeFamily.id}`);
+                  }
+                }}
+                className="text-blue-600 hover:text-blue-800"
+              >
+                {routeFamily.name}
+              </button>
+            ) : (
+              <Link
+                to={`/routes/families/${routeFamily.id}`}
+                className="text-blue-600 hover:text-blue-800"
+              >
+                {routeFamily.name}
+              </Link>
+            )}
+            <span>/</span>
+            <span className="text-gray-700">
+              {LANGUAGE_NAMES[route?.language as SupportedLanguage] ?? route?.language}
+            </span>
+          </>
+        )}
+      </nav>
 
       {/* Header */}
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">
-        {isEdit ? "Edit Route" : "Create Route"}
-      </h1>
+      <div className="mb-6 flex items-center gap-3">
+        <h1 className="text-2xl font-bold text-gray-900">
+          {isEdit ? "Edit Route" : "Create Route"}
+        </h1>
+        {isEdit && route && (
+          <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-medium text-indigo-700">
+            {LANGUAGE_NAMES[route.language] ?? route.language}
+          </span>
+        )}
+      </div>
 
       {/* Route Form */}
       <div className="mb-8 rounded-lg border border-gray-200 bg-white p-6">
@@ -1912,22 +1948,6 @@ export default function RouteEditorPage() {
             />
             {routeErrors.name && (
               <p className="mt-1 text-sm text-red-600">{routeErrors.name}</p>
-            )}
-          </div>
-
-          {/* City */}
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              City *
-            </label>
-            <input
-              type="text"
-              value={routeForm.city}
-              onChange={(e) => updateRouteField("city", e.target.value)}
-              className={INPUT_CLS}
-            />
-            {routeErrors.city && (
-              <p className="mt-1 text-sm text-red-600">{routeErrors.city}</p>
             )}
           </div>
 

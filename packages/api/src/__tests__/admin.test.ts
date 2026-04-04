@@ -114,7 +114,7 @@ import {
   mockEvent,
   mockParticipant,
   mockRoute,
-
+  mockRouteFamily,
   mockRouteGroup,
   mockRouteBlock,
   mockMessageBank,
@@ -486,9 +486,12 @@ describe("Admin Route CRUD", () => {
   describe("GET /admin/routes/:id", () => {
     it("returns route detail with groups", async () => {
       const routeId = fakeUUID();
-      const route = mockRoute({ id: routeId });
+      const familyId = fakeUUID();
+      const route = mockRoute({ id: routeId, route_family_id: familyId });
+      const family = mockRouteFamily({ id: familyId });
 
       (db as any).query.routes.findFirst.mockResolvedValueOnce(route);
+      (db as any).query.routeFamilies.findFirst.mockResolvedValueOnce(family);
       // Groups query (terminal: orderBy)
       (db as any).orderBy.mockResolvedValueOnce([]);
 
@@ -497,6 +500,8 @@ describe("Admin Route CRUD", () => {
 
       const body = await res.json();
       expect(body.route.id).toBe(routeId);
+      expect(body.route_family.id).toBe(familyId);
+      expect(body.route_family.name).toBe("Test Family");
       expect(body.groups).toHaveLength(0);
     });
 

@@ -571,6 +571,14 @@ adminRoutes.get("/admin/routes/:id", adminAuth, async (c) => {
     })),
   }));
 
+  const family = await db.query.routeFamilies.findFirst({
+    where: eq(routeFamilies.id, route.route_family_id),
+  });
+
+  if (!family) {
+    throw new AppError(500, "Route family not found", "ROUTE_FAMILY_NOT_FOUND");
+  }
+
   const response: AdminRouteDetailResponse = {
     route: {
       id: route.id,
@@ -584,6 +592,13 @@ adminRoutes.get("/admin/routes/:id", adminAuth, async (c) => {
       is_active: route.is_active,
       created_at: route.created_at.toISOString(),
       updated_at: route.updated_at.toISOString(),
+    },
+    route_family: {
+      id: family.id,
+      name: family.name,
+      city: family.city,
+      created_at: family.created_at.toISOString(),
+      updated_at: family.updated_at.toISOString(),
     },
     groups,
   };
