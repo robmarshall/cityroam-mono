@@ -11,7 +11,10 @@ const LoginPage = lazy(() => import("./pages/LoginPage"));
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const EventsListPage = lazy(() => import("./pages/EventsListPage"));
 const EventDetailPage = lazy(() => import("./pages/EventDetailPage"));
-const RoutesListPage = lazy(() => import("./pages/RoutesListPage"));
+const RouteFamiliesPage = lazy(() => import("./pages/RouteFamiliesPage"));
+const RouteFamilyDetailPage = lazy(
+  () => import("./pages/RouteFamilyDetailPage"),
+);
 const RouteEditorPage = lazy(() => import("./pages/RouteEditorPage"));
 const MessageBanksPage = lazy(() => import("./pages/MessageBanksPage"));
 
@@ -82,7 +85,15 @@ export const router = createBrowserRouter(
           path: "routes",
           element: (
             <SuspenseWrapper>
-              <RoutesListPage />
+              <RouteFamiliesPage />
+            </SuspenseWrapper>
+          ),
+        },
+        {
+          path: "routes/families/:familyId",
+          element: (
+            <SuspenseWrapper>
+              <RouteFamilyDetailPage />
             </SuspenseWrapper>
           ),
         },

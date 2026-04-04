@@ -5,7 +5,7 @@ import { adminLoginSchema, adminUpdateEventStatusSchema, adminCreateEventSchema,
 import { generateEventCode } from "@cityroam/shared/utils";
 import { EVENT_EXPIRY_DAYS } from "@cityroam/shared/constants";
 import { generatePresignedUploadUrl } from "../services/s3.js";
-import type { AdminDashboardResponse, AdminEventListResponse, AdminEventDetailResponse, AdminRouteDetailResponse, AdminRouteListResponse, AdminMessageBankListResponse, AdminRouteGroupResponse, SupportedLanguage } from "@cityroam/shared/types";
+import type { AdminDashboardResponse, AdminEventListResponse, AdminEventDetailResponse, AdminRouteDetailResponse, AdminRouteListResponse, AdminMessageBankListResponse, AdminRouteGroupResponse, AdminRouteFamilyListResponse, AdminRouteFamilyDetailResponse, SupportedLanguage } from "@cityroam/shared/types";
 import { env } from "../env.js";
 import { db } from "../db/index.js";
 import { routeFamilies, events, participants, messages, routes, messageBanks, routeGroups, routeBlocks } from "../db/schema/index.js";
@@ -1349,6 +1349,219 @@ adminRoutes.delete("/admin/message-banks/:id", adminAuth, async (c) => {
   }
 
   await db.delete(messageBanks).where(eq(messageBanks.id, id));
+
+  return c.json({ success: true }, 200);
+});
+
+// GET /admin/route-families — list all route families with their route variants
+adminRoutes.get("/admin/route-families", adminAuth, async (c) => {
+  const familyRows = await db
+    .select()
+    .from(routeFamilies)
+    .orderBy(asc(routeFamilies.name));
+
+  const familyIds = familyRows.map((f) => f.id);
+  let routesByFamily: Record<string, Array<{ id: string; language: SupportedLanguage; name: string; is_active: boolean }>> = {};
+
+  if (familyIds.length > 0) {
+    const routeRows = await db
+      .select({
+        id: routes.id,
+        language: routes.language,
+        name: routes.name,
+        is_active: routes.is_active,
+        route_family_id: routes.route_family_id,
+      })
+      .from(routes)
+      .where(inArray(routes.route_family_id, familyIds));
+
+    for (const r of routeRows) {
+      if (!routesByFamily[r.route_family_id]) {
+        routesByFamily[r.route_family_id] = [];
+      }
+      routesByFamily[r.route_family_id].push({
+        id: r.id,
+        language: r.language as SupportedLanguage,
+        name: r.name,
+        is_active: r.is_active,
+      });
+    }
+  }
+
+  const response: AdminRouteFamilyListResponse = {
+    route_families: familyRows.map((f) => ({
+      id: f.id,
+      name: f.name,
+      city: f.city,
+      created_at: f.created_at.toISOString(),
+      updated_at: f.updated_at.toISOString(),
+      routes: routesByFamily[f.id] ?? [],
+    })),
+  };
+
+  return c.json(response, 200);
+});
+
+// GET /admin/route-families/:id — route family detail with all routes
+adminRoutes.get("/admin/route-families/:id", adminAuth, async (c) => {
+  const id = c.req.param("id");
+
+  const family = await db.query.routeFamilies.findFirst({
+    where: eq(routeFamilies.id, id),
+  });
+
+  if (!family) {
+    throw new AppError(404, "Route family not found", "ROUTE_FAMILY_NOT_FOUND");
+  }
+
+  const routeRows = await db
+    .select()
+    .from(routes)
+    .where(eq(routes.route_family_id, id))
+    .orderBy(desc(routes.created_at));
+
+  // Get group counts per route
+  const routeIds = routeRows.map((r) => r.id);
+  let groupCounts: Record<string, number> = {};
+  if (routeIds.length > 0) {
+    const countRows = await db
+      .select({
+        route_id: routeGroups.route_id,
+        count: count(),
+      })
+      .from(routeGroups)
+      .where(inArray(routeGroups.route_id, routeIds))
+      .groupBy(routeGroups.route_id);
+
+    for (const row of countRows) {
+      groupCounts[row.route_id] = Number(row.count);
+    }
+  }
+
+  const response: AdminRouteFamilyDetailResponse = {
+    route_family: {
+      id: family.id,
+      name: family.name,
+      city: family.city,
+      created_at: family.created_at.toISOString(),
+      updated_at: family.updated_at.toISOString(),
+    },
+    routes: routeRows.map((r) => ({
+      id: r.id,
+      language: r.language as SupportedLanguage,
+      route_family_id: r.route_family_id,
+      name: r.name,
+      description: r.description ?? "",
+      total_stops: r.total_stops,
+      estimated_duration_mins: r.estimated_duration_mins,
+      estimated_distance_km: Number(r.estimated_distance_km),
+      is_active: r.is_active,
+      created_at: r.created_at.toISOString(),
+      updated_at: r.updated_at.toISOString(),
+      group_count: groupCounts[r.id] ?? 0,
+    })),
+  };
+
+  return c.json(response, 200);
+});
+
+// POST /admin/route-families — create a new route family
+adminRoutes.post("/admin/route-families", adminAuth, async (c) => {
+  const body = await c.req.json();
+  const { name, city } = body;
+
+  if (!name || typeof name !== "string" || name.trim().length === 0) {
+    throw new AppError(400, "Name is required", "VALIDATION_ERROR");
+  }
+  if (!city || typeof city !== "string" || city.trim().length === 0) {
+    throw new AppError(400, "City is required", "VALIDATION_ERROR");
+  }
+
+  const [family] = await db
+    .insert(routeFamilies)
+    .values({ name: name.trim(), city: city.trim() })
+    .returning();
+
+  return c.json({
+    route_family: {
+      id: family.id,
+      name: family.name,
+      city: family.city,
+      created_at: family.created_at.toISOString(),
+      updated_at: family.updated_at.toISOString(),
+    },
+  }, 201);
+});
+
+// PUT /admin/route-families/:id — update a route family
+adminRoutes.put("/admin/route-families/:id", adminAuth, async (c) => {
+  const id = c.req.param("id");
+
+  const existing = await db.query.routeFamilies.findFirst({
+    where: eq(routeFamilies.id, id),
+  });
+
+  if (!existing) {
+    throw new AppError(404, "Route family not found", "ROUTE_FAMILY_NOT_FOUND");
+  }
+
+  const body = await c.req.json();
+  const updates: Record<string, unknown> = { updated_at: new Date() };
+
+  if (body.name !== undefined) {
+    if (typeof body.name !== "string" || body.name.trim().length === 0) {
+      throw new AppError(400, "Name must be a non-empty string", "VALIDATION_ERROR");
+    }
+    updates.name = body.name.trim();
+  }
+
+  if (body.city !== undefined) {
+    if (typeof body.city !== "string" || body.city.trim().length === 0) {
+      throw new AppError(400, "City must be a non-empty string", "VALIDATION_ERROR");
+    }
+    updates.city = body.city.trim();
+  }
+
+  const [updated] = await db
+    .update(routeFamilies)
+    .set(updates)
+    .where(eq(routeFamilies.id, id))
+    .returning();
+
+  return c.json({
+    route_family: {
+      id: updated.id,
+      name: updated.name,
+      city: updated.city,
+      created_at: updated.created_at.toISOString(),
+      updated_at: updated.updated_at.toISOString(),
+    },
+  }, 200);
+});
+
+// DELETE /admin/route-families/:id — delete a route family
+adminRoutes.delete("/admin/route-families/:id", adminAuth, async (c) => {
+  const id = c.req.param("id");
+
+  const existing = await db.query.routeFamilies.findFirst({
+    where: eq(routeFamilies.id, id),
+  });
+
+  if (!existing) {
+    throw new AppError(404, "Route family not found", "ROUTE_FAMILY_NOT_FOUND");
+  }
+
+  const familyRoutes = await db
+    .select({ id: routes.id })
+    .from(routes)
+    .where(eq(routes.route_family_id, id))
+    .limit(1);
+
+  if (familyRoutes.length > 0) {
+    throw new AppError(409, "Cannot delete route family with existing routes", "FAMILY_HAS_ROUTES");
+  }
+
+  await db.delete(routeFamilies).where(eq(routeFamilies.id, id));
 
   return c.json({ success: true }, 200);
 });

@@ -270,3 +270,9 @@ The existing LLM authoring pipeline (`docs/llm-authoring/`) needs a new translat
 ### From Phase 4.4 Review
 - **Hreflang consistency**: When adding `alternates.languages` to page-level `generateMetadata()`, ensure ALL pages get the treatment — including the home page. Easy to miss because the layout also declares alternates, but page-level alternates are needed for correct per-URL hreflang signals.
 - **JSON-LD script safety**: Always escape `<` in `JSON.stringify` output used in `dangerouslySetInnerHTML` (`JSON.stringify(jsonLd).replace(/</g, "\\u003c")`) to prevent `</script>` breakout. Low risk with developer-controlled strings but a defense-in-depth best practice.
+
+### From Phase 5.1 Review
+- **Error catch consistency**: Admin pages must handle both `ApiError` and generic errors in catch blocks. Pattern: `if (err instanceof ApiError && err.status !== 401) { setError(...) } else if (!(err instanceof ApiError)) { setError("Failed to ...") }`. Missing the non-ApiError branch causes silent failures on network errors.
+- **Use `<Link>` for clickable cards**: Clickable card elements should use React Router `<Link>` instead of `<div onClick>` for keyboard accessibility and screen reader semantics. This matches the pattern in EventDetailPage.
+- **Derive language lists from shared constants**: Don't hardcode `SUPPORTED_LANGUAGES` arrays in UI components. Import from `@cityroam/shared` so new languages are automatically available everywhere.
+- **Modal styling consistency**: Admin modals should use `mx-4 w-full` on the inner container, `font-semibold` on headings, and `gap-2` on button rows. Reference MessageBanksPage/EventDetailPage modals as the canonical pattern.
