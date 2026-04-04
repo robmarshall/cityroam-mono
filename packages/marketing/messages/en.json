@@ -25,7 +25,9 @@
       "henParties": "Hen Parties",
       "teamBuilding": "Team Building",
       "bookNow": "Book Now",
-      "toggleMenu": "Toggle menu"
+      "toggleMenu": "Toggle menu",
+      "changeLanguage": "Change language",
+      "currentLanguage": "English"
     },
     "footer": {
       "copyright": "\u00a9 {year} City Roam. All rights reserved."

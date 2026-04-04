@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { POSTHOG_EVENTS } from "@cityroam/shared/analytics";
 import type { CheckoutSuccessResponse } from "@cityroam/shared/types";
 import { trackEvent } from "@/lib/analytics";
@@ -146,12 +147,12 @@ function ErrorState() {
     <>
       <h1 className="text-2xl font-bold text-gray-900">{t("error.title")}</h1>
       <p className="mt-4 text-gray-600 leading-relaxed">{t("error.description")}</p>
-      <a
+      <Link
         href="/"
         className="mt-8 inline-block rounded-button bg-brand-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-brand-600"
       >
         {t("error.backHome")}
-      </a>
+      </Link>
     </>
   );
 }
