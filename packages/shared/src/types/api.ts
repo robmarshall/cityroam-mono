@@ -123,6 +123,8 @@ export interface AdminCreateEventResponse {
     code: string;
     status: string;
     route_id: string;
+    route_family_id: string;
+    language: string;
     buyer_email: string | null;
     created_at: string;
     expires_at: string;

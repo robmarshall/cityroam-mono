@@ -7,15 +7,16 @@ This document explains how routes, groups, blocks, events, and the AI pipeline f
 ## Entity Relationships
 
 ```
-Route
-  ├── has many Groups (ordered by position, 0-indexed)
-  │     └── has many Blocks (ordered by position, 0-indexed)
-  └── has many Events (runtime game instances)
-        ├── has many Participants
-        └── has many Messages (chat log)
+Route Family
+  └── has many Routes (one per language variant)
+        ├── has many Groups (ordered by position, 0-indexed)
+        │     └── has many Blocks (ordered by position, 0-indexed)
+        └── has many Events (runtime game instances)
+              ├── has many Participants
+              └── has many Messages (chat log)
 
-Message Banks (global, not per-route)
-  └── Templates used by the AI guide
+Message Banks (global, per-language)
+  └── Templates used by the AI guide, filtered by language
 ```
 
 ### What You Author
@@ -26,13 +27,27 @@ Events are usually generated automatically when a customer purchases a hunt via 
 
 ---
 
-## Routes
+## Route Families
 
-A route is a treasure hunt in a specific city. It defines the overall journey.
+Route families group language variants of the same logical route. A "Leeds City Centre" family might contain an English route, a Spanish route, and a French route — all covering the same locations but with content in different languages.
 
 | Field | Purpose |
 |-------|---------|
-| city | The city where the route takes place |
+| name | Canonical name of the route (e.g. "Leeds City Centre") |
+| city | The city where all variants take place |
+
+Routes inherit their city from the family. When creating a route, either link it to an existing family via `route_family_id` or provide `city` to auto-create a new family.
+
+---
+
+## Routes
+
+A route is a language-specific variant of a treasure hunt within a route family. Each route belongs to a family and defines the journey in a particular language.
+
+| Field | Purpose |
+|-------|---------|
+| route_family_id | Links this route to its parent family. Set at creation time. |
+| language | The language of this route variant (e.g. 'en', 'es', 'fr', 'de', 'nl'). Set at creation time, immutable. |
 | name | Display name of the route |
 | description | Brief description for admin reference |
 | estimated_duration_mins | Expected total time in minutes |
@@ -195,7 +210,8 @@ The LLM-based answer matcher is fuzzy. It accepts:
 - **1-2 character typos** — "Tow Hall" matches "Town Hall"
 - **Common abbreviations** — "St" for "Saint", "Rd" for "Road"
 - **Answers in sentences** — "I think it's the Town Hall" matches "Town Hall"
-- **Articles ignored** — "the", "a", "an" are stripped
+- **Articles ignored** — articles are stripped per language (en: the/a/an, es: el/la/los/las, fr: le/la/les, de: der/die/das/den/dem/des, nl: de/het)
+- **Unicode normalization** — accented characters are normalized (café matches cafe)
 
 It does NOT accept answers that are only vaguely related or thematically similar but factually different.
 
@@ -215,13 +231,15 @@ The guide **cannot** access information beyond what's in the block data. Write d
 
 ## Message Banks
 
-Message banks are global template collections — they are not per-route. All routes share the same message bank.
+Message banks are global template collections filtered by language — they are not per-route. All routes of the same language share the same message bank entries for that language.
 
 ### How Selection Works
 
 When the system needs a message of a given type:
-1. It queries all **active** (`is_active: true`) entries of that type
+1. It queries all **active** (`is_active: true`) entries matching the `(type, language)` pair
 2. It selects one at random
+
+When creating content for a new language, you need message bank entries in that language for all 9 types.
 
 Having multiple active messages per type makes the experience feel less robotic.
 
@@ -232,20 +250,22 @@ Some message types support template variables that are replaced at runtime:
 | Variable | Available In | Replaced With |
 |----------|-------------|---------------|
 | `{{ANSWER}}` | hint-exhausted | First item from accepted_answers |
-| `{{CITY_NAME}}` | completion, message blocks | route.city |
+| `{{CITY_NAME}}` | completion, message blocks | route_family.city |
 | `{{TOTAL_STOPS}}` | completion, message blocks | route.total_stops |
 | `{{DISTANCE_KM}}` | completion, message blocks | route.estimated_distance_km |
 | `{{REVIEW_LINK}}` | completion, message blocks | Configured review URL |
 
 Template variables in message block `content` fields are replaced at runtime, so you can use `{{CITY_NAME}}` etc. in your block content.
 
-### Recommended Counts Per Type
+### Recommended Counts Per Type (Per Language)
 
 | Type | Minimum | Recommended |
 |------|---------|-------------|
 | success | 3 | 5-7 |
 | failure | 3 | 5-7 |
 | hint-exhausted | 2 | 3 |
+| hint-offer | 2 | 3 |
+| hint-decline | 2 | 3 |
 | clarification | 2 | 3 |
 | unknown-answer | 2 | 3 |
 | over-length | 2 | 3 |
@@ -255,7 +275,7 @@ Template variables in message block `content` fields are replaced at runtime, so
 
 ## Event Lifecycle (For Reference)
 
-Events are runtime instances — you don't create them, but understanding the lifecycle helps:
+Events are runtime instances — you don't create them, but understanding the lifecycle helps. Each event has a `language` field set when the lead picks a language in the lobby. The language determines which message bank entries and AI prompt language to use during gameplay.
 
 1. **NOT_STARTED** — Created by Stripe checkout. An 8-character event code is generated.
 2. **WAITING** — First participant has joined and is waiting for others.

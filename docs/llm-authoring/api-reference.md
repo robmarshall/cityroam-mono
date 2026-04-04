@@ -40,23 +40,40 @@ Content-Type: application/json
 Authorization: Bearer <token>
 
 {
-  "city": "Leeds",
   "name": "Leeds City Centre Discovery",
   "description": "A walking tour through the historic heart of Leeds.",
+  "language": "en",
+  "route_family_id": "uuid-of-existing-family",
   "estimated_duration_mins": 60,
   "estimated_distance_km": 2.5,
   "is_active": true
 }
 ```
 
+Or, without a family (auto-creates one from `city`):
+```json
+{
+  "name": "Leeds City Centre Discovery",
+  "description": "A walking tour through the historic heart of Leeds.",
+  "language": "en",
+  "city": "Leeds",
+  "estimated_duration_mins": 60,
+  "estimated_distance_km": 2.5,
+  "is_active": true
+}
+```
+
+> Either `route_family_id` or `city` must be provided. If `route_family_id` is given, the route is added to that family. If `city` is given without a family ID, a new route family is auto-created.
+
 Response (201 Created):
 ```json
 {
   "route": {
     "id": "uuid",
-    "city": "Leeds",
     "name": "Leeds City Centre Discovery",
     "description": "A walking tour through the historic heart of Leeds.",
+    "language": "en",
+    "route_family_id": "uuid",
     "total_stops": 0,
     "estimated_duration_mins": 60,
     "estimated_distance_km": 2.5,
@@ -84,9 +101,10 @@ Authorization: Bearer <token>
 ```json
 {
   "route": {
-    "city": "Leeds",
     "name": "Leeds City Centre Discovery",
     "description": "A walking tour through the historic heart of Leeds.",
+    "language": "en",
+    "route_family_id": "uuid-of-existing-family",
     "estimated_duration_mins": 60,
     "estimated_distance_km": 2.5,
     "is_active": true
@@ -205,15 +223,18 @@ Authorization: Bearer <token>
 }
 ```
 
+The `route` object also accepts `city` instead of `route_family_id` to auto-create a family (same rules as the metadata-only endpoint above).
+
 ### Response (201 Created)
 
 ```json
 {
   "route": {
     "id": "uuid",
-    "city": "Leeds",
     "name": "Leeds City Centre Discovery",
     "description": "A walking tour through the historic heart of Leeds.",
+    "language": "en",
+    "route_family_id": "uuid",
     "total_stops": 4,
     "estimated_duration_mins": 60,
     "estimated_distance_km": 2.5,
@@ -265,7 +286,7 @@ GET /admin/routes/:id
 Authorization: Bearer <token>
 ```
 
-Returns the full route object with an ordered array of groups, each containing an ordered array of blocks. This is the primary read endpoint — use it to understand what currently exists before making edits.
+Returns the full route object with an ordered array of groups, each containing an ordered array of blocks. The response also includes `route_family` info alongside `route` and `groups`. This is the primary read endpoint — use it to understand what currently exists before making edits.
 
 ---
 
@@ -279,7 +300,6 @@ Content-Type: application/json
 Authorization: Bearer <token>
 
 {
-  "city": "Leeds",
   "name": "Updated Route Name",
   "description": "Updated description.",
   "estimated_duration_mins": 75,
@@ -287,6 +307,8 @@ Authorization: Bearer <token>
   "is_active": true
 }
 ```
+
+> Note: `language` and `route_family_id` are immutable after creation. `city` is now managed on the route family, not the route.
 
 ### Delete a Route
 
@@ -417,6 +439,107 @@ All block IDs for the group must be included. The new order matches the array or
 
 ---
 
+## Route Families
+
+Route families group language variants of the same route together. A family has a city and contains one or more routes in different languages.
+
+### List Route Families
+
+```
+GET /admin/route-families
+Authorization: Bearer <token>
+```
+
+Returns all route families with their language variants.
+
+Response:
+```json
+{
+  "route_families": [
+    {
+      "id": "uuid",
+      "name": "Leeds City Centre",
+      "city": "Leeds",
+      "created_at": "...",
+      "updated_at": "...",
+      "routes": [
+        { "id": "uuid", "language": "en", "name": "Leeds City Centre Discovery", "is_active": true },
+        { "id": "uuid", "language": "es", "name": "Descubrimiento del Centro de Leeds", "is_active": true }
+      ]
+    }
+  ]
+}
+```
+
+### Get Route Family Detail
+
+```
+GET /admin/route-families/:id
+Authorization: Bearer <token>
+```
+
+Returns the family and all its route variants with group counts. Use this to see all language variants and cross-reference when translating.
+
+Response:
+```json
+{
+  "route_family": {
+    "id": "uuid",
+    "name": "Leeds City Centre",
+    "city": "Leeds",
+    "created_at": "...",
+    "updated_at": "..."
+  },
+  "routes": [
+    {
+      "id": "uuid",
+      "language": "en",
+      "route_family_id": "uuid",
+      "name": "Leeds City Centre Discovery",
+      "description": "...",
+      "total_stops": 4,
+      "estimated_duration_mins": 60,
+      "estimated_distance_km": 2.5,
+      "is_active": true,
+      "created_at": "...",
+      "updated_at": "...",
+      "group_count": 4
+    }
+  ]
+}
+```
+
+### Create Route Family
+
+```
+POST /admin/route-families
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{ "name": "Leeds City Centre", "city": "Leeds" }
+```
+
+### Update Route Family
+
+```
+PUT /admin/route-families/:id
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{ "name": "Updated Name", "city": "Updated City" }
+```
+
+### Delete Route Family
+
+```
+DELETE /admin/route-families/:id
+Authorization: Bearer <token>
+```
+
+Fails with 409 if routes exist in the family.
+
+---
+
 ## Message Banks
 
 Message banks are global templates used by the AI guide. You can read them to understand the guide's tone, and create/update them.
@@ -426,8 +549,11 @@ Message banks are global templates used by the AI guide. You can read them to un
 ```
 GET /admin/message-banks
 GET /admin/message-banks?type=success
+GET /admin/message-banks?type=success&language=en
 Authorization: Bearer <token>
 ```
+
+Supports filtering by `type` and `language` query parameters.
 
 ### Create Message Bank Entry
 
@@ -438,12 +564,15 @@ Authorization: Bearer <token>
 
 {
   "type": "success",
+  "language": "en",
   "content": "That's the one.",
   "is_active": true
 }
 ```
 
-Valid types: `success`, `failure`, `hint-exhausted`, `clarification`, `unknown-answer`, `completion`, `over-length`
+Valid types: `success`, `failure`, `hint-exhausted`, `hint-offer`, `hint-decline`, `clarification`, `unknown-answer`, `completion`, `over-length`
+
+> Message banks are filtered by language at runtime so the AI guide uses messages matching the route's language.
 
 ### Update / Delete
 
@@ -509,6 +638,8 @@ Authorization: Bearer <token>
 | buyer_email | string | No | Must be valid email if provided |
 | expires_in_days | number | No | 1-365, defaults to 90 |
 
+> The `route_family_id` and `language` are automatically derived from the route.
+
 Response (201 Created):
 ```json
 {
@@ -517,6 +648,8 @@ Response (201 Created):
     "code": "abc12def",
     "status": "NOT_STARTED",
     "route_id": "uuid",
+    "route_family_id": "uuid",
+    "language": "en",
     "buyer_email": "test@example.com",
     "expires_at": "2025-04-15T10:30:00.000Z",
     "created_at": "2025-01-15T10:30:00.000Z"
@@ -534,12 +667,16 @@ The 8-character `code` is what players use to join the event.
 
 | Field | Type | Required | Constraints |
 |-------|------|----------|-------------|
-| city | string | Yes | Min 1 char, trimmed |
 | name | string | Yes | Min 1 char, trimmed |
 | description | string | No | Trimmed |
+| language | string | No | Default: `"en"`. One of: `en`, `es`, `fr`, `de`, `nl` |
+| route_family_id | string (UUID) | No | Must reference an existing route family |
+| city | string | No | Min 1 char, trimmed. Used to auto-create a route family |
 | estimated_duration_mins | number | Yes | Must be > 0 |
 | estimated_distance_km | number | Yes | Must be > 0 |
 | is_active | boolean | No | Default: true |
+
+> Either `route_family_id` or `city` is required when creating a route.
 
 `total_stops` is read-only — automatically set to the number of groups. Do not include it in request bodies.
 
@@ -627,6 +764,8 @@ Common codes:
 - `ROUTE_NOT_FOUND` (404) — Route ID doesn't exist
 - `GROUP_NOT_FOUND` (404) — Group ID doesn't exist
 - `BLOCK_NOT_FOUND` (404) — Block ID doesn't exist
+- `ROUTE_FAMILY_NOT_FOUND` (404) — Route family ID doesn't exist
+- `FAMILY_HAS_ROUTES` (409) — Can't delete family with existing routes
 - `ROUTE_HAS_EVENTS` (409) — Can't delete route with linked events
 - `DUPLICATE_GROUP_IDS` (400) — Reorder array has duplicate IDs
 - `INCOMPLETE_GROUP_LIST` (400) — Reorder array missing group IDs

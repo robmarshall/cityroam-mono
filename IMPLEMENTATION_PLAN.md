@@ -162,7 +162,7 @@ This means the marketing site never needs to know or care about language — it 
 
 - [x] **5.3 Message banks management** — Add language filter/tab to message banks page. Add language field to message bank create/edit form.
 
-- [ ] **5.4 Admin panel stays English** — No i18n for the admin UI itself (internal users only, low ROI).
+- [x] **5.4 Admin panel stays English** — No i18n for the admin UI itself (internal users only, low ROI).
 
 ---
 
@@ -170,7 +170,7 @@ This means the marketing site never needs to know or care about language — it 
 
 The existing LLM authoring pipeline (`docs/llm-authoring/`) needs a new translation workflow. The use case: an English route is complete, and you want to create a Spanish (or other language) variant in the same family.
 
-- [ ] **6.1 New doc: `docs/llm-authoring/translation-guide.md`** — Instructions for the LLM to translate an existing route into a new language.
+- [x] **6.1 New doc: `docs/llm-authoring/translation-guide.md`** — Instructions for the LLM to translate an existing route into a new language.
 
   **Workflow:**
   1. Read the source route (English) via `GET /admin/routes/:id` (includes all groups and blocks)
@@ -187,9 +187,9 @@ The existing LLM authoring pipeline (`docs/llm-authoring/`) needs a new translat
 
   **What NOT to change:** Google Maps URLs, image URLs (unless containing English text), template variable names, block ordering/group structure, delay timings.
 
-- [ ] **6.2 Update existing authoring docs** — `api-reference.md`: document new `language` and `route_family_id` fields. `data-model.md`: document route families and language field. `content-guide.md`: add "Translation" section with tone/style guidance per language.
+- [x] **6.2 Update existing authoring docs** — `api-reference.md`: document new `language` and `route_family_id` fields. `data-model.md`: document route families and language field. `content-guide.md`: add "Translation" section with tone/style guidance per language.
 
-- [ ] **6.3 API endpoint for translation reference** — Ensure `GET /admin/routes/:id` returns complete route data. Consider adding `GET /admin/route-families/:id/routes` endpoint for cross-referencing all variants.
+- [x] **6.3 API endpoint for translation reference** — Ensure `GET /admin/routes/:id` returns complete route data. Consider adding `GET /admin/route-families/:id/routes` endpoint for cross-referencing all variants. [Both endpoints already exist — `GET /admin/routes/:id` returns full route + route_family + groups/blocks, `GET /admin/route-families/:id` returns family + all route variants. Documented in api-reference.md.]
 
 ---
 

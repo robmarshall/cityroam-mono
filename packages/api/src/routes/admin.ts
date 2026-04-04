@@ -216,6 +216,8 @@ adminRoutes.post("/admin/events", adminAuth, async (c) => {
       code: created.code,
       status: created.status,
       route_id: created.route_id,
+      route_family_id: created.route_family_id,
+      language: created.language,
       buyer_email: created.buyer_email,
       created_at: created.created_at.toISOString(),
       expires_at: created.expires_at.toISOString(),

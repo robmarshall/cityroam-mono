@@ -356,6 +356,40 @@ Useful for introduction and closing messages:
 
 ---
 
+## Translation
+
+When translating an existing route into a new language, follow the translation workflow in `translation-guide.md`. This section covers tone and style guidance specific to translated content.
+
+### Personality Across Languages
+
+The guide's core personality — dry, brief, knowledgeable — must survive translation. But "dry British humour" doesn't translate literally. Adapt the personality to feel natural in the target language:
+
+**English (en):** Understated, sardonic. "That's the one." / "Not quite."
+**Spanish (es):** Laconic, matter-of-fact. Avoid the overly polite register common in tourism. "Esa es." / "No del todo."
+**French (fr):** Wry, slightly detached. The guide knows more than they say. "C'est ça." / "Pas tout à fait."
+**German (de):** Direct, no-nonsense. Comfortable with brevity. "Stimmt." / "Nicht ganz."
+**Dutch (nl):** Straightforward, casually confident. "Klopt." / "Niet helemaal."
+
+### Translation Rules
+
+- **Never translate literally** — adapt idioms and phrasing to sound natural in the target language
+- **Keep messages the same length** — if the English version is 1-2 sentences, the translation should be too
+- **Preserve template variables** — `{{CITY_NAME}}`, `{{TOTAL_STOPS}}`, etc. must remain as-is (they are replaced at runtime)
+- **Match the delay timing** — do not adjust `delay_ms` values; the pacing is designed for the walking route, not the language
+- **Translate accepted answers to the local name** — "Leeds Town Hall" stays "Leeds Town Hall" in Spanish because it's a proper noun, but the clue and hints must be in Spanish. Use the locally known name where one exists.
+- **Rhyming clues don't need to rhyme** — if the English clue rhymes, the translation should be an engaging riddle in the target language, but forcing a rhyme at the expense of clarity is worse than a clear non-rhyming clue
+- **En-route commentary stays local** — the buildings and landmarks don't change, but descriptions should use natural phrasing for the target language
+
+### What NOT to Translate
+
+- Image URLs (images are language-agnostic unless they contain English text overlays)
+- Google Maps URLs (Google Maps displays in the user's device language automatically)
+- Template variable names
+- Block types, positions, or structure
+- Delay timings
+
+---
+
 ## Anti-Patterns
 
 Avoid these common mistakes when authoring routes:
