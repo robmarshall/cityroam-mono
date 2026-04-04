@@ -1,12 +1,21 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { CTAButton } from "@/components/CTAButton";
+import { locales } from "@/i18n/config";
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://cityroam.co.uk";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("metadata");
   return {
     title: t("families.title"),
     description: t("families.description"),
+    alternates: {
+      languages: Object.fromEntries([
+        ["x-default", `${siteUrl}/families`],
+        ...locales.map((l) => [l, `${siteUrl}/${l}/families`]),
+      ]),
+    },
   };
 }
 

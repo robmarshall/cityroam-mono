@@ -266,3 +266,7 @@ The existing LLM authoring pipeline (`docs/llm-authoring/`) needs a new translat
 ### From Phase 3.3 Review
 - **Preserve all fields in setEvent replacements**: `SET_EVENT` replaces the entire event object (not a merge). Every `setEvent()` call must include all fields, especially newly added optional fields like `language`. Use `eventRef.current?.language` to carry forward.
 - **Use specific enum types in WS payloads**: All payload interfaces should use specific enum types (e.g., `SupportedLanguage`) instead of `string` for type safety — consistent with `SenderType`, `ParticipantLeftReason`, etc.
+
+### From Phase 4.4 Review
+- **Hreflang consistency**: When adding `alternates.languages` to page-level `generateMetadata()`, ensure ALL pages get the treatment — including the home page. Easy to miss because the layout also declares alternates, but page-level alternates are needed for correct per-URL hreflang signals.
+- **JSON-LD script safety**: Always escape `<` in `JSON.stringify` output used in `dangerouslySetInnerHTML` (`JSON.stringify(jsonLd).replace(/</g, "\\u003c")`) to prevent `</script>` breakout. Low risk with developer-controlled strings but a defense-in-depth best practice.

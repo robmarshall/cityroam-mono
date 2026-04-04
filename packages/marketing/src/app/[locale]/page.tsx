@@ -1,7 +1,11 @@
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { CTAButton } from "@/components/CTAButton";
 import { FAQ } from "@/components/FAQ";
 import IphoneDemo from "@/components/IphoneDemo/IphoneDemo";
+import { locales } from "@/i18n/config";
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://cityroam.co.uk";
 
 const PHONE_FEATURES = [
   { icon: "📱", key: "0" },
@@ -18,6 +22,20 @@ const INCLUDED_ITEMS = [
   { icon: "⏸️", key: "4" },
   { icon: "♿", key: "5" },
 ];
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("metadata");
+  return {
+    title: t("home.title"),
+    description: t("home.description"),
+    alternates: {
+      languages: Object.fromEntries([
+        ["x-default", siteUrl],
+        ...locales.map((l) => [l, `${siteUrl}/${l}`]),
+      ]),
+    },
+  };
+}
 
 export default async function Home() {
   const t = await getTranslations("home");
