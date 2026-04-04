@@ -160,7 +160,7 @@ This means the marketing site never needs to know or care about language — it 
 
 - [x] **5.2 Route editor updates** — Route editor stays largely the same but now includes a read-only language badge. The route's family context is visible (breadcrumb: Family Name > English / Spanish / etc.). Language is set at route creation time (when adding a variant) and is immutable after.
 
-- [ ] **5.3 Message banks management** — Add language filter/tab to message banks page. Add language field to message bank create/edit form.
+- [x] **5.3 Message banks management** — Add language filter/tab to message banks page. Add language field to message bank create/edit form.
 
 - [ ] **5.4 Admin panel stays English** — No i18n for the admin UI itself (internal users only, low ROI).
 
