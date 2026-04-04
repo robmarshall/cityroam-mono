@@ -156,7 +156,7 @@ This means the marketing site never needs to know or care about language — it 
 
 ## Phase 5: Admin Updates
 
-- [ ] **5.1 Route families UI (new)** — Routes list page now shows **route families** instead of individual routes. Each family card shows: family name, city, and language badges (e.g. "EN", "ES", "FR") for each variant that exists. Clicking a family opens a **family detail page** showing all language variants side by side. "Create Route Family" button to create the parent entity (name + city). Within a family: "Add Language Variant" button to create a new route in a specific language. Editors can easily cross-reference between languages when authoring content.
+- [x] **5.1 Route families UI (new)** — Routes list page now shows **route families** instead of individual routes. Each family card shows: family name, city, and language badges (e.g. "EN", "ES", "FR") for each variant that exists. Clicking a family opens a **family detail page** showing all language variants side by side. "Create Route Family" button to create the parent entity (name + city). Within a family: "Add Language Variant" button to create a new route in a specific language. Editors can easily cross-reference between languages when authoring content.
 
 - [ ] **5.2 Route editor updates** — Route editor stays largely the same but now includes a read-only language badge. The route's family context is visible (breadcrumb: Family Name > English / Spanish / etc.). Language is set at route creation time (when adding a variant) and is immutable after.
 
