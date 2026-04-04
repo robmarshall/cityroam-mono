@@ -36,7 +36,8 @@
   "cta": {
     "defaultLabel": "Book Your Experience",
     "loading": "Redirecting to checkout...",
-    "error": "Something went wrong. Please try again."
+    "error": "Something went wrong. Please try again.",
+    "retry": "Try Again"
   },
   "faq": {
     "0": {
@@ -559,6 +560,7 @@
     "error": {
       "title": "We couldn't find your booking",
       "description": "Check your email for the event link, or contact us.",
+      "tryAgain": "Try Again",
       "backHome": "Back to Home"
     },
     "success": {

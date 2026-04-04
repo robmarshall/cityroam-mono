@@ -180,18 +180,24 @@ checkoutRoutes.post("/webhook/stripe", async (c) => {
 
     // Send confirmation email (non-blocking — log errors but don't fail)
     if (buyerEmail) {
-      try {
-        const resend = getResend();
-        const eventUrl = buildEventUrl(env.APP_URL, eventCode);
+      const resend = getResend();
+      const eventUrl = buildEventUrl(env.APP_URL, eventCode);
+      const emailPayload = {
+        from: env.RESEND_FROM_EMAIL,
+        to: buyerEmail,
+        subject: getEmailSubject(activeRoute.language as SupportedLanguage),
+        html: buildConfirmationEmail(eventUrl, eventCode, activeRoute.language as SupportedLanguage),
+      };
 
-        await resend.emails.send({
-          from: env.RESEND_FROM_EMAIL,
-          to: buyerEmail,
-          subject: getEmailSubject(activeRoute.language as SupportedLanguage),
-          html: buildConfirmationEmail(eventUrl, eventCode, activeRoute.language as SupportedLanguage),
-        });
+      try {
+        await resend.emails.send(emailPayload);
       } catch (emailErr) {
-        log.error("failed to send confirmation email", { error: emailErr instanceof Error ? emailErr.message : String(emailErr) });
+        log.warn("first email attempt failed, retrying", { error: emailErr instanceof Error ? emailErr.message : String(emailErr) });
+        try {
+          await resend.emails.send(emailPayload);
+        } catch (retryErr) {
+          log.error("failed to send confirmation email after retry", { error: retryErr instanceof Error ? retryErr.message : String(retryErr) });
+        }
       }
     }
   }
@@ -235,6 +241,7 @@ const EMAIL_CONTENT: Record<SupportedLanguage, {
   subject: string;
   title: string;
   intro: string;
+  linkIntro: string;
   linkLabel: string;
   codeLabel: string;
   howTitle: string;
@@ -246,6 +253,7 @@ const EMAIL_CONTENT: Record<SupportedLanguage, {
     subject: "Your City Roam experience is booked!",
     title: "Your experience is booked!",
     intro: "Your City Roam event is ready. Share the link below with your group to get started:",
+    linkIntro: "Your event link:",
     linkLabel: "Open Event",
     codeLabel: "Event code",
     howTitle: "How it works:",
@@ -257,6 +265,7 @@ const EMAIL_CONTENT: Record<SupportedLanguage, {
     subject: "¡Tu experiencia City Roam está reservada!",
     title: "¡Tu experiencia está reservada!",
     intro: "Tu evento City Roam está listo. Comparte el enlace con tu grupo para empezar:",
+    linkIntro: "Tu enlace del evento:",
     linkLabel: "Abrir Evento",
     codeLabel: "Código del evento",
     howTitle: "Cómo funciona:",
@@ -268,6 +277,7 @@ const EMAIL_CONTENT: Record<SupportedLanguage, {
     subject: "Votre expérience City Roam est réservée !",
     title: "Votre expérience est réservée !",
     intro: "Votre événement City Roam est prêt. Partagez le lien ci-dessous avec votre groupe pour commencer :",
+    linkIntro: "Votre lien d'événement :",
     linkLabel: "Ouvrir l'événement",
     codeLabel: "Code de l'événement",
     howTitle: "Comment ça marche :",
@@ -279,6 +289,7 @@ const EMAIL_CONTENT: Record<SupportedLanguage, {
     subject: "Dein City Roam Erlebnis ist gebucht!",
     title: "Dein Erlebnis ist gebucht!",
     intro: "Dein City Roam Event ist bereit. Teile den Link mit deiner Gruppe, um loszulegen:",
+    linkIntro: "Dein Event-Link:",
     linkLabel: "Event öffnen",
     codeLabel: "Event-Code",
     howTitle: "So funktioniert's:",
@@ -290,6 +301,7 @@ const EMAIL_CONTENT: Record<SupportedLanguage, {
     subject: "Je City Roam ervaring is geboekt!",
     title: "Je ervaring is geboekt!",
     intro: "Je City Roam evenement is klaar. Deel de link hieronder met je groep om te beginnen:",
+    linkIntro: "Je evenementlink:",
     linkLabel: "Open Evenement",
     codeLabel: "Evenementcode",
     howTitle: "Hoe het werkt:",
@@ -299,11 +311,11 @@ const EMAIL_CONTENT: Record<SupportedLanguage, {
   },
 };
 
-function getEmailSubject(language: SupportedLanguage): string {
+export function getEmailSubject(language: SupportedLanguage): string {
   return (EMAIL_CONTENT[language] ?? EMAIL_CONTENT.en).subject;
 }
 
-function buildConfirmationEmail(eventUrl: string, eventCode: string, language: SupportedLanguage = "en"): string {
+export function buildConfirmationEmail(eventUrl: string, eventCode: string, language: SupportedLanguage = "en"): string {
   const t = EMAIL_CONTENT[language] ?? EMAIL_CONTENT.en;
   return `
 <!DOCTYPE html>
@@ -318,7 +330,7 @@ function buildConfirmationEmail(eventUrl: string, eventCode: string, language: S
   <p>${t.intro}</p>
 
   <div style="background: #f0f4ff; border-radius: 8px; padding: 16px; margin: 24px 0; text-align: center;">
-    <p style="margin: 0 0 8px; font-size: 14px; color: #666;">Your event link:</p>
+    <p style="margin: 0 0 8px; font-size: 14px; color: #666;">${t.linkIntro}</p>
     <a href="${eventUrl}" style="display: inline-block; background: #2563eb; color: #fff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 16px;">
       ${t.linkLabel}
     </a>

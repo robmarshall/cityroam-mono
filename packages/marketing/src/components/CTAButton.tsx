@@ -57,7 +57,15 @@ export function CTAButton({
         {loading ? t("loading") : displayLabel}
       </button>
       {error && (
-        <p className="text-sm text-red-600">{t("error")}</p>
+        <div className="flex flex-col items-center gap-1">
+          <p className="text-sm text-red-600">{t("error")}</p>
+          <button
+            onClick={handleClick}
+            className="text-sm font-medium text-brand-600 underline hover:text-brand-700"
+          >
+            {t("retry")}
+          </button>
+        </div>
       )}
     </div>
   );

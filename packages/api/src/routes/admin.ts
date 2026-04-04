@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { eq, sql, count, desc, and, asc, inArray, type SQL } from "drizzle-orm";
 import Stripe from "stripe";
 import { adminLoginSchema, adminUpdateEventStatusSchema, adminCreateEventSchema, routeSchema, imageUploadRequestSchema, messageBankSchema, routeBlockSchema, groupUpdateSchema, bulkRouteGroupCreateSchema, groupReorderSchema, blockReorderSchema, blockMoveSchema } from "@cityroam/shared/validation";
-import { generateEventCode } from "@cityroam/shared/utils";
+import { generateEventCode, buildEventUrl } from "@cityroam/shared/utils";
 import { EVENT_EXPIRY_DAYS } from "@cityroam/shared/constants";
 import { generatePresignedUploadUrl } from "../services/s3.js";
 import type { AdminDashboardResponse, AdminEventListResponse, AdminEventDetailResponse, AdminRouteDetailResponse, AdminRouteListResponse, AdminMessageBankListResponse, AdminRouteGroupResponse, AdminRouteFamilyListResponse, AdminRouteFamilyDetailResponse, SupportedLanguage } from "@cityroam/shared/types";
@@ -402,6 +402,40 @@ adminRoutes.post("/admin/events/:id/refund", adminAuth, async (c) => {
   log.info("Event refunded", { event_id: id, stripe_payment_id: event.stripe_payment_id });
 
   return c.json({ success: true, status: "REFUNDED" }, 200);
+});
+
+// POST /admin/events/:id/resend-email — resend confirmation email to buyer
+adminRoutes.post("/admin/events/:id/resend-email", adminAuth, async (c) => {
+  const { Resend } = await import("resend");
+  const { getEmailSubject, buildConfirmationEmail } = await import("./checkout.js");
+
+  const id = c.req.param("id");
+
+  const event = await db.query.events.findFirst({
+    where: eq(events.id, id),
+  });
+
+  if (!event) {
+    throw new AppError(404, "Event not found", "EVENT_NOT_FOUND");
+  }
+
+  if (!event.buyer_email) {
+    throw new AppError(400, "Event has no buyer email", "NO_BUYER_EMAIL");
+  }
+
+  const eventUrl = buildEventUrl(env.APP_URL, event.code);
+  const language = (event.language ?? "en") as SupportedLanguage;
+
+  const resend = new Resend(env.RESEND_API_KEY);
+  await resend.emails.send({
+    from: env.RESEND_FROM_EMAIL,
+    to: event.buyer_email,
+    subject: getEmailSubject(language),
+    html: buildConfirmationEmail(eventUrl, event.code, language),
+  });
+
+  log.info("Resent confirmation email", { event_id: id, email: event.buyer_email });
+  return c.json({ success: true }, 200);
 });
 
 // ── S3 Upload ───────────────────────────────────────────────────────
