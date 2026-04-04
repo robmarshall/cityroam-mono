@@ -244,6 +244,9 @@ The existing LLM authoring pipeline (`docs/llm-authoring/`) needs a new translat
 
 ## Learnings
 
+### From Task 7.2 (Author routes — seed script)
+- **Diacritical marks in generated translations**: When LLM-generating or manually authoring translations, verify that all diacritical marks are present (accents, umlauts, ß, cedillas, etc.). Missing diacritics make text look broken and unprofessional. This applies to seed scripts, bulk imports, and any programmatic content creation. Always validate non-ASCII characters are preserved through the full pipeline.
+
 ### From Task 1.1 (Shared types & constants)
 - **Bridge pattern**: When updating shared types before DB schema, API routes need temporary hardcoded values (`'en' as any`) to satisfy TypeScript. These must use `as any` since the DB column doesn't exist yet. Track all instances for cleanup in the DB migration tasks (1.2-1.5).
 - **Test data lag**: Tests that exercise API endpoints need both the old field (for DB writes) and new fields (for response assertions) during the transition period. Remove old fields once DB migrations land.

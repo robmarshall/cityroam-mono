@@ -19,6 +19,7 @@
     "migrate": "tsx --env-file=../../.env src/db/migrate.ts",
     "seed": "tsx --env-file=../../.env src/db/seed.ts",
     "seed:message-banks": "tsx --env-file=../../.env src/db/seed-message-banks.ts",
+    "seed:routes": "tsx --env-file=../../.env src/db/seed-routes.ts",
     "test": "vitest run"
   },
   "dependencies": {
