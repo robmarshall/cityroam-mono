@@ -195,7 +195,7 @@ The existing LLM authoring pipeline (`docs/llm-authoring/`) needs a new translat
 
 ## Phase 7: Content Authoring (Ongoing)
 
-- [ ] **7.1 Message bank seed script** — There are 9 message bank types, each needing multiple entries per language. Create a seed script (or LLM-assisted bulk creation endpoint) to generate initial message bank entries for a new language. Manual entry via admin UI is impractical at scale.
+- [x] **7.1 Message bank seed script** — There are 9 message bank types, each needing multiple entries per language. Create a seed script (or LLM-assisted bulk creation endpoint) to generate initial message bank entries for a new language. Manual entry via admin UI is impractical at scale.
 - [ ] **7.2 Author routes** — Create routes in new languages using the LLM translation workflow or admin editor.
 - [ ] **7.3 Validate translations** — Play through each translated route end-to-end in the target language to verify AI responses, message bank entries, and UI strings are all correct.
 
