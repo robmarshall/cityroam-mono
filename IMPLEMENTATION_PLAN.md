@@ -148,9 +148,9 @@ This means the marketing site never needs to know or care about language — it 
 
 - [x] **4.4 SEO** — `layout.tsx`: dynamic `<html lang={locale}>`, locale-aware `generateMetadata`, translated JSON-LD. Add `<link rel="alternate" hrefLang>` tags via next-intl. `sitemap.ts`: generate entries for all locale/page combinations. Each page's `generateMetadata` uses translated title/description. [COMPLETE — 111037e]
 
-- [ ] **4.5 UI updates** — Add language switcher to `Header.tsx` (dropdown or flag icons). Update `CTAButton.tsx` (translated button label and loading/error text). Update `FAQ.tsx` (FAQ items from translation files). Update `ChatDemo.tsx` (demo messages from translation files).
+- [x] **4.5 UI updates** — Add language switcher to `Header.tsx` (dropdown or flag icons). Update `CTAButton.tsx` (translated button label and loading/error text). Update `FAQ.tsx` (FAQ items from translation files). Update `ChatDemo.tsx` (demo messages from translation files). [COMPLETE — 30136fe]
 
-- [ ] **4.6 next.config.ts** — Add `next-intl` plugin configuration.
+- [x] **4.6 next.config.ts** — Add `next-intl` plugin configuration. [COMPLETE — done in 4.1]
 
 ---
 
