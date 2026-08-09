@@ -3,6 +3,7 @@
   "installCommand": "cd ../.. && npm install && npm install --no-save @esbuild/linux-x64 lightningcss-linux-x64-gnu @tailwindcss/oxide-linux-x64-gnu",
   "rewrites": [
     { "source": "/app/assets/:path*", "destination": "/assets/:path*" },
+    { "source": "/app/", "destination": "/index.html" },
     { "source": "/app/:path*", "destination": "/index.html" }
   ]
 }

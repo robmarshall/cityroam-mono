@@ -11,7 +11,7 @@
     "start:migrate": "node --import tsx dist/db/migrate.js",
     "start:seed": "node --import tsx dist/db/seed.js",
     "dev": "tsx watch --env-file=../../.env src/http/index.ts",
-    "build": "tsc",
+    "build": "tsc -b",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx --env-file=../../.env src/db/migrate.ts",
     "db:seed": "tsx --env-file=../../.env src/db/seed.ts",
