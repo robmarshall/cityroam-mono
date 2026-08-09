@@ -1,0 +1,133 @@
+{
+  "common": {
+    "loading": "Laden...",
+    "connecting": "Verbinden...",
+    "reconnecting": "Opnieuw verbinden...",
+    "connected": "Verbonden",
+    "unableToReconnect": "Kan niet opnieuw verbinden",
+    "retry": "Opnieuw proberen",
+    "cancel": "Annuleren",
+    "save": "Opslaan",
+    "saving": "Opslaan...",
+    "connectionClosed": "Verbinding gesloten."
+  },
+  "join": {
+    "title": "Doe mee met het team",
+    "nameLabel": "Je naam",
+    "namePlaceholder": "Vul je weergavenaam in",
+    "submitButton": "Doe mee met het team",
+    "submitting": "Deelnemen...",
+    "sessionExpired": "Je sessie is verlopen. Neem opnieuw deel met je naam.",
+    "statusCompleted": "Dit evenement is al afgelopen.",
+    "statusExpired": "Dit evenement is verlopen.",
+    "statusRefunded": "Dit evenement is terugbetaald.",
+    "statusUnavailable": "Dit evenement is niet meer beschikbaar."
+  },
+  "lobby": {
+    "title": "Wachten op spelers",
+    "leadBadge": "Leider",
+    "youBadge": "Jij",
+    "waitingForLead": "Wachten tot {{name}} het spel start...",
+    "waitingForLeadDefault": "Wachten tot de leider het spel start...",
+    "startButton": "Start het spel",
+    "starting": "Starten...",
+    "startFailed": "Het spel starten is mislukt. Probeer het opnieuw.",
+    "fatalEventNotFound": "Evenement niet gevonden.",
+    "fatalEventEnded": "Dit evenement is afgelopen.",
+    "fatalNotActive": "Je bent niet meer actief in dit evenement."
+  },
+  "language": {
+    "selectorLabel": "Speltaal",
+    "confirmTitle": "Taal wijzigen?",
+    "confirmMessage": "Je kunt de taal niet meer wijzigen zodra het spel is begonnen.",
+    "confirmButton": "Wijzigen",
+    "changing": "Wijzigen...",
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "nl": "Nederlands",
+    "bilingualConfirm": {
+      "es": "¿Estás seguro de que quieres cambiar el idioma a español? No podrás cambiarlo una vez que el juego haya comenzado.",
+      "fr": "Êtes-vous sûr de vouloir changer la langue en français ? Vous ne pourrez plus la changer une fois le jeu commencé.",
+      "de": "Möchten Sie die Sprache wirklich auf Deutsch ändern? Sie können die Sprache nicht mehr ändern, sobald das Spiel begonnen hat.",
+      "nl": "Weet je zeker dat je de taal wilt wijzigen naar Nederlands? Je kunt de taal niet meer wijzigen zodra het spel is begonnen."
+    }
+  },
+  "chat": {
+    "headerTitle": "City Roam",
+    "optionsMenu": "Optiemenu",
+    "changeName": "Naam wijzigen",
+    "leaveGame": "Spel verlaten",
+    "inputPlaceholder": "Typ een bericht...",
+    "offlineError": "Je bent offline — bericht niet verzonden.",
+    "guideLabel": "Gids",
+    "typingOne": "{{name}} is aan het typen...",
+    "typingMultiple": "Meerdere mensen zijn aan het typen...",
+    "waitingForLead": "Wachten op {{name}}...",
+    "waitingForLeadDefault": "Wachten op de leider...",
+    "newMessages": "Nieuwe berichten ↓",
+    "viewOnMaps": "Bekijk op Google Maps",
+    "nameChangeError": "Naam wijzigen mislukt. Probeer het opnieuw.",
+    "fatalEventNotFound": "Evenement niet gevonden.",
+    "fatalEventEnded": "Dit evenement is afgelopen.",
+    "fatalNotActive": "Je bent niet meer actief in dit evenement.",
+    "participantJoined": "{{name}} doet mee met het spel",
+    "participantLeft": "{{name}} heeft het spel verlaten",
+    "nameChanged": "{{oldName}} heeft de naam gewijzigd naar {{newName}}",
+    "leaveDialog": {
+      "title": "Spel verlaten?",
+      "message": "Je wordt uit het spel verwijderd. Je kunt later opnieuw deelnemen door de link opnieuw te openen.",
+      "leaveButton": "Verlaten",
+      "leaving": "Verlaten..."
+    },
+    "nameDialog": {
+      "title": "Naam wijzigen",
+      "placeholder": "Vul je naam in"
+    },
+    "sendAriaLabel": "Bericht versturen",
+    "closeAriaLabel": "Sluiten"
+  },
+  "complete": {
+    "title": "Spel voltooid!",
+    "defaultSummary": "Goed gedaan! Je hebt het spel voltooid. We hopen dat je genoten hebt van het verkennen van de stad.",
+    "reviewPrompt": "Was het leuk? Laat een review achter!",
+    "reviewButton": "Laat een Google Review achter",
+    "shareButton": "Deel met vrienden",
+    "shared": "Gedeeld!",
+    "linkCopied": "Link gekopieerd!",
+    "doneButton": "Klaar",
+    "shareTitle": "City Roam - AI Stadsavontuur",
+    "shareText": "Ik heb net een geweldig AI-gestuurd stadsavontuur voltooid! Bekijk het hier:"
+  },
+  "error": {
+    "title": "Er ging iets mis",
+    "description": "De app heeft een onverwachte fout ondervonden. Tik hieronder om het opnieuw te proberen.",
+    "retryButton": "Opnieuw proberen",
+    "eventNotFound": "Dit evenement bestaat niet. Controleer de link en probeer het opnieuw.",
+    "eventFull": "Dit evenement is vol — er zijn geen plekken meer beschikbaar.",
+    "eventExpired": "Dit evenement is verlopen.",
+    "eventCompleted": "Dit evenement is al afgelopen.",
+    "eventRefunded": "Dit evenement is terugbetaald.",
+    "invalidInput": "Dat lijkt geen geldige evenementcode. Controleer de link of code die je hebt ontvangen.",
+    "rateLimited": "Te veel pogingen. Wacht even en probeer het opnieuw.",
+    "unauthorized": "Je sessie is verlopen. Neem opnieuw deel aan het spel.",
+    "networkError": "Kan geen verbinding maken. Controleer je signaal en probeer het opnieuw.",
+    "generic": "Er ging iets mis. Probeer het opnieuw."
+  },
+  "validation": {
+    "DISPLAY_NAME_TOO_SHORT": "Weergavenaam moet minimaal {{min}} tekens zijn",
+    "DISPLAY_NAME_TOO_LONG": "Weergavenaam mag maximaal {{max}} tekens zijn",
+    "DISPLAY_NAME_HTML": "Weergavenaam mag geen HTML-tags bevatten",
+    "DISPLAY_NAME_INVALID_CHARS": "Weergavenaam mag alleen letters, cijfers, spaties, koppeltekens en apostrofs bevatten",
+    "MESSAGE_TOO_SHORT": "Bericht moet minimaal {{min}} tekens zijn",
+    "MESSAGE_TOO_LONG": "Bericht mag maximaal {{max}} tekens zijn",
+    "MESSAGE_EMPTY": "Bericht mag niet leeg zijn",
+    "EVENT_CODE_INVALID": "Ongeldig evenementcode-formaat",
+    "ACTION_LEAD_ONLY": "Alleen de groepsleider kan acties bevestigen",
+    "ACTION_MISSING_BLOCK": "Ontbrekende actiereferentie — probeer het opnieuw",
+    "ACTION_BLOCK_MISMATCH": "Deze actie is niet meer actueel",
+    "INVALID_JSON": "Bericht kon niet worden verzonden — probeer het opnieuw",
+    "UNKNOWN_MESSAGE_TYPE": "Niet-ondersteund berichttype"
+  }
+}

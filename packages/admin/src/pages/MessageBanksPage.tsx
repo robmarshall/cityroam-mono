@@ -2,7 +2,13 @@ import { useCallback, useEffect, useState } from "react";
 import type {
   AdminMessageBankListResponse,
   MessageBankType,
+  SupportedLanguage,
 } from "@cityroam/shared/types";
+import {
+  SUPPORTED_LANGUAGES,
+  DEFAULT_LANGUAGE,
+  LANGUAGE_NAMES,
+} from "@cityroam/shared/constants";
 import { api, ApiError } from "../lib/api";
 import { useAuthFetch } from "../contexts/AuthContext";
 import { formatDate } from "../lib/event-utils";
@@ -11,6 +17,8 @@ const BANK_TYPES: { value: MessageBankType; label: string }[] = [
   { value: "success", label: "Success" },
   { value: "failure", label: "Failure" },
   { value: "hint-exhausted", label: "Hint Exhausted" },
+  { value: "hint-offer", label: "Hint Offer" },
+  { value: "hint-decline", label: "Hint Decline" },
   { value: "clarification", label: "Clarification" },
   { value: "unknown-answer", label: "Unknown Answer" },
   { value: "completion", label: "Completion" },
@@ -31,6 +39,7 @@ type MessageBank = AdminMessageBankListResponse["message_banks"][number];
 
 interface FormState {
   type: MessageBankType;
+  language: SupportedLanguage;
   content: string;
   is_active: boolean;
 }
@@ -42,6 +51,7 @@ export default function MessageBanksPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<MessageBankType>("success");
+  const [activeLanguage, setActiveLanguage] = useState<SupportedLanguage | "all">("all");
   const authFetch = useAuthFetch();
 
   // Modal / form state
@@ -49,6 +59,7 @@ export default function MessageBanksPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>({
     type: "success",
+    language: DEFAULT_LANGUAGE,
     content: "",
     is_active: true,
   });
@@ -82,12 +93,21 @@ export default function MessageBanksPage() {
     fetchBanks();
   }, [fetchBanks]);
 
-  const filtered = banks.filter((b) => b.type === activeTab);
+  const filtered = banks.filter(
+    (b) =>
+      b.type === activeTab &&
+      (activeLanguage === "all" || b.language === activeLanguage),
+  );
   const activeCount = filtered.filter((b) => b.is_active).length;
 
   const openCreateForm = () => {
     setEditingId(null);
-    setForm({ type: activeTab, content: "", is_active: true });
+    setForm({
+      type: activeTab,
+      language: activeLanguage === "all" ? DEFAULT_LANGUAGE : activeLanguage,
+      content: "",
+      is_active: true,
+    });
     setFormError(null);
     setShowForm(true);
   };
@@ -96,6 +116,7 @@ export default function MessageBanksPage() {
     setEditingId(bank.id);
     setForm({
       type: bank.type as MessageBankType,
+      language: (bank.language as SupportedLanguage) || DEFAULT_LANGUAGE,
       content: bank.content,
       is_active: bank.is_active,
     });
@@ -121,6 +142,7 @@ export default function MessageBanksPage() {
         await authFetch(() =>
           api.put(`/admin/message-banks/${editingId}`, {
             type: form.type,
+            language: form.language,
             content: form.content.trim(),
             is_active: form.is_active,
           }),
@@ -129,6 +151,7 @@ export default function MessageBanksPage() {
         await authFetch(() =>
           api.post("/admin/message-banks", {
             type: form.type,
+            language: form.language,
             content: form.content.trim(),
             is_active: form.is_active,
           }),
@@ -170,6 +193,7 @@ export default function MessageBanksPage() {
       await authFetch(() =>
         api.put(`/admin/message-banks/${bank.id}`, {
           type: bank.type,
+          language: bank.language,
           content: bank.content,
           is_active: !bank.is_active,
         }),
@@ -254,6 +278,42 @@ export default function MessageBanksPage() {
         })}
       </div>
 
+      {/* Language filter */}
+      <div className="mb-4 flex items-center gap-2">
+        <span className="text-sm font-medium text-gray-700">Language:</span>
+        <div className="flex gap-1">
+          <button
+            onClick={() => setActiveLanguage("all")}
+            className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+              activeLanguage === "all"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}
+          >
+            All
+          </button>
+          {SUPPORTED_LANGUAGES.map((lang) => {
+            const langCount = banks.filter(
+              (b) => b.type === activeTab && b.language === lang,
+            ).length;
+            return (
+              <button
+                key={lang}
+                onClick={() => setActiveLanguage(lang)}
+                className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                  activeLanguage === lang
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                {lang.toUpperCase()}
+                <span className="ml-1 opacity-60">({langCount})</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Low count warning */}
       {activeCount < MIN_ACTIVE_COUNT && (
         <div className="mb-4 rounded-md bg-yellow-50 border border-yellow-200 p-3 text-sm text-yellow-800">
@@ -298,9 +358,14 @@ export default function MessageBanksPage() {
                   <p className="whitespace-pre-wrap text-sm text-gray-900">
                     {bank.content}
                   </p>
-                  <p className="mt-1 text-xs text-gray-400">
-                    Updated {formatDate(bank.updated_at)}
-                  </p>
+                  <div className="mt-1 flex items-center gap-2">
+                    <span className="rounded bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-600">
+                      {bank.language?.toUpperCase() || "EN"}
+                    </span>
+                    <span className="text-xs text-gray-400">
+                      Updated {formatDate(bank.updated_at)}
+                    </span>
+                  </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
                   {/* Active toggle */}
@@ -393,6 +458,29 @@ export default function MessageBanksPage() {
                 </select>
               </div>
             )}
+
+            {/* Language selector */}
+            <div className="mb-4">
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                Language
+              </label>
+              <select
+                value={form.language}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    language: e.target.value as SupportedLanguage,
+                  }))
+                }
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                {SUPPORTED_LANGUAGES.map((lang) => (
+                  <option key={lang} value={lang}>
+                    {LANGUAGE_NAMES[lang]} ({lang.toUpperCase()})
+                  </option>
+                ))}
+              </select>
+            </div>
 
             {/* Template variable reference in form */}
             {TEMPLATE_VARS[form.type] && (

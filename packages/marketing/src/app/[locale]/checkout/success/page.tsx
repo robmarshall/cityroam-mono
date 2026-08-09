@@ -1,12 +1,16 @@
 "use client";
 
-import { Suspense, useEffect, useState, useCallback } from "react";
+import { Suspense, useEffect, useState, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { POSTHOG_EVENTS } from "@cityroam/shared/analytics";
 import type { CheckoutSuccessResponse } from "@cityroam/shared/types";
 import { trackEvent } from "@/lib/analytics";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
+const POLL_INTERVAL_MS = 2000;
+const MAX_POLL_DURATION_MS = 30000;
 
 type Status = "loading" | "success" | "error";
 
@@ -34,37 +38,54 @@ function CheckoutSuccessContent() {
   const [eventCode, setEventCode] = useState("");
   const [eventUrl, setEventUrl] = useState("");
   const [copied, setCopied] = useState(false);
+  const t = useTranslations("checkout");
 
-  useEffect(() => {
+  const pollTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const startTime = useRef<number>(0);
+
+  const fetchEvent = useCallback(async () => {
     if (!sessionId) {
       setStatus("error");
       return;
     }
 
-    async function fetchEvent() {
-      try {
-        const res = await fetch(
-          `${API_URL}/checkout/success?session_id=${encodeURIComponent(sessionId!)}`,
-        );
+    try {
+      const res = await fetch(
+        `${API_URL}/checkout/success?session_id=${encodeURIComponent(sessionId)}`,
+      );
 
-        if (!res.ok) {
-          throw new Error("Event not found");
-        }
+      if (!res.ok) {
+        throw new Error("Event not found");
+      }
 
-        const data: CheckoutSuccessResponse = await res.json();
-        setEventCode(data.event_code);
-        setEventUrl(data.event_url);
-        setStatus("success");
-        trackEvent(POSTHOG_EVENTS.CHECKOUT_COMPLETED, {
-          event_code: data.event_code,
-        });
-      } catch {
+      const data: CheckoutSuccessResponse = await res.json();
+      setEventCode(data.event_code);
+      setEventUrl(data.event_url);
+      setStatus("success");
+      trackEvent(POSTHOG_EVENTS.CHECKOUT_COMPLETED, {
+        event_code: data.event_code,
+      });
+    } catch {
+      const elapsed = Date.now() - startTime.current;
+      if (elapsed < MAX_POLL_DURATION_MS) {
+        pollTimer.current = setTimeout(fetchEvent, POLL_INTERVAL_MS);
+      } else {
         setStatus("error");
       }
     }
-
-    fetchEvent();
   }, [sessionId]);
+
+  const handleRetry = useCallback(() => {
+    setStatus("loading");
+    startTime.current = Date.now();
+    fetchEvent();
+  }, [fetchEvent]);
+
+  useEffect(() => {
+    startTime.current = Date.now();
+    fetchEvent();
+    return () => clearTimeout(pollTimer.current);
+  }, [fetchEvent]);
 
   const handleCopy = useCallback(async () => {
     try {
@@ -79,7 +100,7 @@ function CheckoutSuccessContent() {
 
   const handleShare = useCallback(async () => {
     const shareData = {
-      title: "Join my City Roam adventure!",
+      title: t("success.shareTitle"),
       url: eventUrl,
     };
 
@@ -106,15 +127,19 @@ function CheckoutSuccessContent() {
       });
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Silent fail
+      // Final fallback: select the URL input so the user can copy manually
+      const input = document.querySelector<HTMLInputElement>("input[readonly]");
+      if (input) {
+        input.select();
+      }
     }
-  }, [eventUrl, eventCode]);
+  }, [eventUrl, eventCode, t]);
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-white px-6 py-24">
       <div className="mx-auto w-full max-w-lg text-center">
         {status === "loading" && <LoadingState />}
-        {status === "error" && <ErrorState />}
+        {status === "error" && <ErrorState onRetry={handleRetry} />}
         {status === "success" && (
           <SuccessState
             eventUrl={eventUrl}
@@ -129,29 +154,35 @@ function CheckoutSuccessContent() {
 }
 
 function LoadingState() {
+  const t = useTranslations("checkout");
   return (
     <>
       <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-brand-500" />
-      <p className="mt-6 text-lg text-gray-600">Setting up your experience...</p>
+      <p className="mt-6 text-lg text-gray-600">{t("loading")}</p>
     </>
   );
 }
 
-function ErrorState() {
+function ErrorState({ onRetry }: { onRetry: () => void }) {
+  const t = useTranslations("checkout");
   return (
     <>
-      <h1 className="text-2xl font-bold text-gray-900">
-        We couldn&apos;t find your booking
-      </h1>
-      <p className="mt-4 text-gray-600 leading-relaxed">
-        Check your email for the event link, or contact us.
-      </p>
-      <a
-        href="/"
-        className="mt-8 inline-block rounded-button bg-brand-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-brand-600"
-      >
-        Back to Home
-      </a>
+      <h1 className="text-2xl font-bold text-gray-900">{t("error.title")}</h1>
+      <p className="mt-4 text-gray-600 leading-relaxed">{t("error.description")}</p>
+      <div className="mt-8 flex items-center justify-center gap-4">
+        <button
+          onClick={onRetry}
+          className="rounded-button bg-brand-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-brand-600"
+        >
+          {t("error.tryAgain")}
+        </button>
+        <Link
+          href="/"
+          className="rounded-button border border-gray-300 px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+        >
+          {t("error.backHome")}
+        </Link>
+      </div>
     </>
   );
 }
@@ -167,13 +198,14 @@ function SuccessState({
   onCopy: () => void;
   onShare: () => void;
 }) {
+  const t = useTranslations("checkout");
   return (
     <>
-      <h1 className="text-3xl font-bold text-gray-900">You&apos;re all set!</h1>
+      <h1 className="text-3xl font-bold text-gray-900">{t("success.title")}</h1>
 
       <div className="mt-8 rounded-card border border-gray-200 bg-gray-50 p-4">
         <label className="block text-sm font-medium text-gray-500">
-          Your event link
+          {t("success.eventLinkLabel")}
         </label>
         <div className="mt-2 flex items-center gap-2">
           <input
@@ -187,7 +219,7 @@ function SuccessState({
             onClick={onCopy}
             className="shrink-0 rounded-button border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
           >
-            {copied ? "Copied!" : "Copy"}
+            {copied ? t("success.copied") : t("success.copy")}
           </button>
         </div>
       </div>
@@ -196,19 +228,18 @@ function SuccessState({
         onClick={onShare}
         className="mt-6 inline-flex items-center justify-center rounded-button bg-brand-500 px-8 py-3 text-lg font-semibold text-white transition-colors hover:bg-brand-600 active:bg-brand-700"
       >
-        Share with Friends
+        {t("success.share")}
       </button>
 
       <div className="mt-8 rounded-card bg-gray-50 p-6 text-left">
-        <p className="font-semibold text-gray-900">What&apos;s next?</p>
+        <p className="font-semibold text-gray-900">{t("success.whatsNext")}</p>
         <p className="mt-2 text-sm text-gray-600 leading-relaxed">
-          Share this link with your group. Everyone opens it, enters their name,
-          and the lead person starts when everyone&apos;s ready.
+          {t("success.whatsNextDescription")}
         </p>
       </div>
 
       <p className="mt-6 text-sm text-gray-500">
-        Not happy? Get a full refund — no questions asked.
+        {t("success.refundNote")}
       </p>
     </>
   );

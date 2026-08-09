@@ -1,5 +1,5 @@
 import { eq, asc } from "drizzle-orm";
-import type { BlockConfig } from "@cityroam/shared/types";
+import type { BlockConfig, SupportedLanguage } from "@cityroam/shared/types";
 import { db, schema } from "../db/index.js";
 import { publishTyping, publishControl } from "../redis/index.js";
 import { writeGuideMessage } from "./pipeline/handlers/answer-attempt.js";
@@ -152,6 +152,7 @@ export async function runGroup(
     columns: {
       route_id: true,
       current_stop: true,
+      language: true,
     },
   });
 
@@ -162,9 +163,11 @@ export async function runGroup(
 
   const blocks = await loadGroupBlocks(groupId);
 
+  const language = (event.language ?? "en") as SupportedLanguage;
+
   if (blocks.length === 0) {
     log.warn("group has no blocks, advancing", { groupId });
-    await advanceToNextGroup(eventId, eventCode, event.route_id, groupId);
+    await advanceToNextGroup(eventId, eventCode, event.route_id, groupId, language);
     return;
   }
 
@@ -180,7 +183,7 @@ export async function runGroup(
 
   // If all blocks sent without blocking, advance to next group
   if (blockingIndex === -1) {
-    await advanceToNextGroup(eventId, eventCode, event.route_id, groupId);
+    await advanceToNextGroup(eventId, eventCode, event.route_id, groupId, language);
   }
 }
 
@@ -210,6 +213,7 @@ export async function advanceAfterBlock(
     columns: {
       route_id: true,
       current_stop: true,
+      language: true,
     },
   });
 
@@ -241,7 +245,8 @@ export async function advanceAfterBlock(
 
   // If all remaining blocks sent, advance to next group
   if (blockingIndex === -1) {
-    await advanceToNextGroup(eventId, eventCode, event.route_id, block.group_id);
+    const language = (event.language ?? "en") as SupportedLanguage;
+    await advanceToNextGroup(eventId, eventCode, event.route_id, block.group_id, language);
   }
 }
 
@@ -254,6 +259,7 @@ async function advanceToNextGroup(
   eventCode: string,
   routeId: string,
   currentGroupId: string,
+  language: SupportedLanguage = "en",
 ): Promise<void> {
   const groups = await loadRouteGroups(routeId);
   const currentIndex = groups.findIndex((g) => g.id === currentGroupId);
@@ -285,6 +291,7 @@ async function advanceToNextGroup(
       eventCode,
       routeId,
       currentStop: currentIndex + 1, // 1-based
+      language,
     });
   }
 }

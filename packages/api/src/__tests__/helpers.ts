@@ -166,10 +166,22 @@ export function mockParticipant(overrides: Record<string, unknown> = {}) {
   };
 }
 
+export function mockRouteFamily(overrides: Record<string, unknown> = {}) {
+  return {
+    id: fakeUUID(),
+    name: "Test Family",
+    city: "Test City",
+    created_at: new Date(),
+    updated_at: new Date(),
+    ...overrides,
+  };
+}
+
 export function mockRoute(overrides: Record<string, unknown> = {}) {
   return {
     id: fakeUUID(),
-    city: "Leeds",
+    language: "en",
+    route_family_id: "",
     name: "Test Route",
     description: "A test route",
     total_stops: 3,

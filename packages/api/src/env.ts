@@ -26,12 +26,19 @@ const HTTP_REQUIRED_VARS = [
   "SESSION_SECRET",
   "COOKIE_DOMAIN",
   "REVIEW_LINK",
+  "RESEND_FROM_EMAIL",
+  "MARKETING_URL",
+  "APP_URL",
+  "APP_PUBLIC_URL",
+  "ADMIN_URL",
 ] as const;
 
 const WS_REQUIRED_VARS = [
   "DATABASE_URL",
   "REDIS_URL",
   "COOKIE_DOMAIN",
+  // Reached from the WS process via group-runner -> template-vars
+  "REVIEW_LINK",
 ] as const;
 
 /** Vars that must be set even in development mode. */
@@ -94,7 +101,10 @@ function buildEnv() {
     COOKIE_DOMAIN: resolve("COOKIE_DOMAIN"),
     REVIEW_LINK: resolve("REVIEW_LINK"),
     MARKETING_URL: resolve("MARKETING_URL"),
+    // Origin only (no path) — compared against the browser Origin header for CORS.
     APP_URL: resolve("APP_URL"),
+    // Full public base of the player app including any path prefix — used to build event links.
+    APP_PUBLIC_URL: resolve("APP_PUBLIC_URL"),
     ADMIN_URL: resolve("ADMIN_URL"),
     BASE_DOMAIN: resolve("BASE_DOMAIN"),
 

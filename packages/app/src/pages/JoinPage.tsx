@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import i18n from "../i18n/index";
 import { displayNameSchema } from "@cityroam/shared/validation";
 import { MIN_DISPLAY_NAME_LENGTH, MAX_DISPLAY_NAME_LENGTH } from "@cityroam/shared/constants";
 import { POSTHOG_EVENTS } from "@cityroam/shared/analytics";
@@ -9,6 +11,7 @@ import type {
   EventStatus,
 } from "@cityroam/shared/types";
 import { api, ApiError } from "../lib/api";
+import { friendlyError, validationMessage } from "../lib/errors";
 import { trackEvent } from "../lib/analytics";
 import { useParticipant } from "../contexts/ParticipantContext";
 import { useEvent } from "../contexts/EventContext";
@@ -31,47 +34,21 @@ function redirectForStatus(
   }
 }
 
-function friendlyError(err: unknown): string {
-  if (err instanceof ApiError) {
-    switch (err.code) {
-      case "EVENT_NOT_FOUND":
-        return "This event doesn't exist. Check the link and try again.";
-      case "EVENT_FULL":
-        return "This event is full — no more spaces available.";
-      case "EVENT_EXPIRED":
-        return "This event has expired.";
-      case "EVENT_COMPLETED":
-        return "This event has already finished.";
-      case "EVENT_REFUNDED":
-        return "This event has been refunded.";
-      case "INVALID_INPUT":
-        return "That doesn't look like a valid event code. Double-check the link or code you were given.";
-      default:
-        if (err.status === 404) {
-          return "This event doesn't exist. Check the link and try again.";
-        }
-        return err.message;
-    }
-  }
-  if (err instanceof TypeError && err.message === "Failed to fetch") {
-    return "Couldn't connect. Check your signal and try again.";
-  }
-  return "Something went wrong. Please try again.";
-}
-
 export default function JoinPage() {
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
   const { setParticipant, setToken } = useParticipant();
-  const { setEvent, setParticipants } = useEvent();
+  const { setEvent, setParticipants, setAvailableLanguages } = useEvent();
 
   const sessionExpired = (location.state as { sessionExpired?: boolean } | null)?.sessionExpired === true;
 
   const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState<string | null>(
-    sessionExpired ? "Your session expired. Please rejoin with your name." : null,
+    sessionExpired ? t("join.sessionExpired") : null,
   );
+  const [blockingError, setBlockingError] = useState(false);
   const [fieldError, setFieldError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
@@ -98,8 +75,11 @@ export default function JoinPage() {
             code: data.event.code,
             status: data.event.status,
             current_stop: data.event.current_stop,
+            language: data.event.language,
           });
           setParticipants(data.participants);
+          setAvailableLanguages(data.available_languages);
+          i18n.changeLanguage(data.event.language);
           redirectForStatus(navigate, code!, data.event.status);
           return;
         }
@@ -111,16 +91,26 @@ export default function JoinPage() {
           data.event.status === "REFUNDED"
         ) {
           const statusMessages: Record<string, string> = {
-            COMPLETED: "This event has already finished.",
-            EXPIRED: "This event has expired.",
-            REFUNDED: "This event has been refunded.",
+            COMPLETED: t("join.statusCompleted"),
+            EXPIRED: t("join.statusExpired"),
+            REFUNDED: t("join.statusRefunded"),
           };
-          setError(statusMessages[data.event.status] || "This event is no longer available.");
+          setError(statusMessages[data.event.status] || t("join.statusUnavailable"));
+          setBlockingError(true);
         }
       } catch (err) {
         if (cancelled) return;
         const msg = friendlyError(err);
         setError(msg);
+        if (
+          err instanceof ApiError &&
+          (err.code === "EVENT_NOT_FOUND" ||
+            err.code === "EVENT_EXPIRED" ||
+            err.code === "EVENT_COMPLETED" ||
+            err.code === "EVENT_REFUNDED")
+        ) {
+          setBlockingError(true);
+        }
       } finally {
         if (!cancelled) setChecking(false);
       }
@@ -130,7 +120,7 @@ export default function JoinPage() {
     return () => {
       cancelled = true;
     };
-  }, [code, navigate, setParticipant, setEvent, setParticipants]);
+  }, [code, navigate, setParticipant, setEvent, setParticipants, setAvailableLanguages]);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -141,7 +131,7 @@ export default function JoinPage() {
       // Validate display name
       const result = displayNameSchema.safeParse(displayName);
       if (!result.success) {
-        setFieldError(result.error.issues[0]?.message ?? "Invalid name");
+        setFieldError(validationMessage(result.error.issues[0]?.message ?? "DISPLAY_NAME_TOO_SHORT"));
         return;
       }
 
@@ -159,8 +149,11 @@ export default function JoinPage() {
           code: data.event.code,
           status: data.event.status,
           current_stop: data.event.current_stop,
+          language: data.event.language,
         });
         setParticipants(data.participants);
+        setAvailableLanguages(data.available_languages);
+        i18n.changeLanguage(data.event.language);
 
         // Track analytics
         trackEvent(POSTHOG_EVENTS.GAME_JOINED, {
@@ -184,29 +177,23 @@ export default function JoinPage() {
       setToken,
       setEvent,
       setParticipants,
+      setAvailableLanguages,
     ],
   );
 
   if (checking) {
     return (
       <div className="flex min-h-svh items-center justify-center bg-white">
-        <p className="text-system-text">Loading...</p>
+        <p className="text-system-text">{t("common.loading")}</p>
       </div>
     );
   }
-
-  const hasBlockingError =
-    error &&
-    (error.includes("doesn't exist") ||
-      error.includes("has expired") ||
-      error.includes("has already finished") ||
-      error.includes("has been refunded"));
 
   return (
     <div className="flex min-h-svh items-center justify-center bg-white px-4">
       <div className="w-full max-w-sm">
         <h1 className="mb-8 text-center text-2xl font-bold text-gray-900">
-          Join the Team
+          {t("join.title")}
         </h1>
 
         {error && (
@@ -215,13 +202,13 @@ export default function JoinPage() {
           </div>
         )}
 
-        {!hasBlockingError && (
+        {!blockingError && (
           <form onSubmit={handleSubmit} noValidate>
             <label
               htmlFor="display-name"
               className="mb-1 block text-sm font-medium text-gray-700"
             >
-              Your name
+              {t("join.nameLabel")}
             </label>
             <input
               id="display-name"
@@ -235,7 +222,7 @@ export default function JoinPage() {
                 setDisplayName(e.target.value);
                 if (fieldError) setFieldError(null);
               }}
-              placeholder="Enter your display name"
+              placeholder={t("join.namePlaceholder")}
               className={`mb-1 block w-full rounded-lg border px-3 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 ${
                 fieldError
                   ? "border-red-300 focus:ring-red-500"
@@ -252,7 +239,7 @@ export default function JoinPage() {
               disabled={loading || !displayName.trim()}
               className="w-full rounded-lg bg-brand-600 px-4 py-2.5 font-medium text-white transition-colors hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loading ? "Joining..." : "Join the Team"}
+              {loading ? t("join.submitting") : t("join.submitButton")}
             </button>
           </form>
         )}

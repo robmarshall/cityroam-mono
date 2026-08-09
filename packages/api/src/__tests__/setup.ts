@@ -23,6 +23,7 @@ vi.mock("../env.js", () => ({
     REVIEW_LINK: "https://review.test.com",
     MARKETING_URL: "https://marketing.test.com",
     APP_URL: "https://app.test.com",
+    APP_PUBLIC_URL: "https://app.test.com/app",
     ADMIN_URL: "https://admin.test.com",
     BASE_DOMAIN: "test.com",
     NODE_ENV: "development",

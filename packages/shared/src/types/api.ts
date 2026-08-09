@@ -1,5 +1,5 @@
-import type { EventStatus } from "./enums.js";
-import type { Event, Message, Participant, Route, RouteBlock, RouteGroup } from "./entities.js";
+import type { EventStatus, SupportedLanguage } from "./enums.js";
+import type { Event, Message, Participant, Route, RouteBlock, RouteFamily, RouteGroup } from "./entities.js";
 import type { ChatMessagePayload } from "./websocket.js";
 
 // Public API responses
@@ -11,7 +11,9 @@ export interface EventDetailResponse {
     current_stop: number;
     started_at: string | null;
     created_at: string;
+    language: SupportedLanguage;
   };
+  available_languages: SupportedLanguage[];
   participants: Array<{
     id: string;
     display_name: string;
@@ -38,7 +40,9 @@ export interface JoinEventResponse {
     code: string;
     status: EventStatus;
     current_stop: number;
+    language: SupportedLanguage;
   };
+  available_languages: SupportedLanguage[];
   messages: ChatMessagePayload[];
   participants: Array<{
     id: string;
@@ -105,6 +109,7 @@ export type AdminRouteGroupResponse = RouteGroup & {
 
 export interface AdminRouteDetailResponse {
   route: Route;
+  route_family: RouteFamily;
   groups: AdminRouteGroupResponse[];
 }
 
@@ -118,6 +123,8 @@ export interface AdminCreateEventResponse {
     code: string;
     status: string;
     route_id: string;
+    route_family_id: string;
+    language: string;
     buyer_email: string | null;
     created_at: string;
     expires_at: string;
@@ -128,9 +135,19 @@ export interface AdminMessageBankListResponse {
   message_banks: Array<{
     id: string;
     type: string;
+    language: string;
     content: string;
     is_active: boolean;
     created_at: string;
     updated_at: string;
   }>;
+}
+
+export interface AdminRouteFamilyListResponse {
+  route_families: Array<RouteFamily & { routes: Array<{ id: string; language: SupportedLanguage; name: string; is_active: boolean }> }>;
+}
+
+export interface AdminRouteFamilyDetailResponse {
+  route_family: RouteFamily;
+  routes: Array<Route & { group_count: number }>;
 }

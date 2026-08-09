@@ -3,6 +3,7 @@ export type {
   SenderType,
   ParticipantLeftReason,
   MessageBankType,
+  SupportedLanguage,
 } from "./enums.js";
 
 export type {
@@ -10,6 +11,7 @@ export type {
   Participant,
   Message,
   Route,
+  RouteFamily,
   MessageBank,
   RouteGroup,
   RouteBlock,
@@ -44,6 +46,7 @@ export type {
   ErrorPayload,
   ActionConfirmPayload,
   ActionWaitingPayload,
+  LanguageChangedPayload,
 } from "./websocket.js";
 
 export type {
@@ -60,9 +63,11 @@ export type {
   AdminCreateEventResponse,
   AdminMessageBankListResponse,
   AdminRouteGroupResponse,
+  AdminRouteFamilyListResponse,
+  AdminRouteFamilyDetailResponse,
 } from "./api.js";
 
-export type { ApiErrorResponse, ApiErrorCode } from "./api-errors.js";
+export type { ApiErrorResponse, ApiErrorCode, ValidationErrorCode } from "./api-errors.js";
 
 export type {
   IntentClassification,

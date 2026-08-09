@@ -6,13 +6,14 @@ import type {
   JoinEventResponse,
   MessageHistoryResponse,
   ChatMessagePayload,
+  SupportedLanguage,
 } from "@cityroam/shared/types";
 import {
   joinEventRequestSchema,
   eventCodeSchema,
   changeNameRequestSchema,
 } from "@cityroam/shared/validation";
-import { MAX_PARTICIPANTS, TERMINAL_STATUSES } from "@cityroam/shared/constants";
+import { MAX_PARTICIPANTS, TERMINAL_STATUSES, SUPPORTED_LANGUAGES } from "@cityroam/shared/constants";
 import { db } from "../db/index.js";
 import {
   events,
@@ -108,6 +109,13 @@ eventRoutes.get("/event/:code", async (c) => {
 
   const isTerminal = TERMINAL_STATUSES.has(event.status);
 
+  // Find available language variants for this route family
+  const familyRoutes = await db
+    .select({ language: routes.language })
+    .from(routes)
+    .where(and(eq(routes.route_family_id, event.route_family_id), eq(routes.is_active, true)));
+  const availableLanguages = familyRoutes.map((r) => r.language) as SupportedLanguage[];
+
   const response: EventDetailResponse = {
     event: {
       code: event.code,
@@ -115,10 +123,12 @@ eventRoutes.get("/event/:code", async (c) => {
       current_stop: event.current_stop,
       started_at: event.started_at ? new Date(event.started_at).toISOString() : null,
       created_at: new Date(event.created_at).toISOString(),
+      language: event.language as EventDetailResponse["event"]["language"],
     },
     participants: isTerminal ? [] : participantRows,
     lead_name: isTerminal ? null : (leadParticipant?.display_name ?? null),
     current_participant: isTerminal ? null : currentParticipant,
+    available_languages: availableLanguages,
   };
 
   return c.json(response, 200);
@@ -246,6 +256,13 @@ eventRoutes.post("/event/:code/join", async (c) => {
     data: { name: display_name, participant_count: participantCount },
   });
 
+  // Find available language variants for this route family
+  const joinFamilyRoutes = await db
+    .select({ language: routes.language })
+    .from(routes)
+    .where(and(eq(routes.route_family_id, eventData.route_family_id), eq(routes.is_active, true)));
+  const joinAvailableLanguages = joinFamilyRoutes.map((r) => r.language) as SupportedLanguage[];
+
   const response: JoinEventResponse = {
     participant: {
       id: newParticipant.id,
@@ -257,9 +274,11 @@ eventRoutes.post("/event/:code/join", async (c) => {
       code,
       status: (isLead ? "WAITING" : eventData.status) as JoinEventResponse["event"]["status"],
       current_stop: eventData.current_stop,
+      language: eventData.language as JoinEventResponse["event"]["language"],
     },
     messages: cachedMessages,
     participants: participantRows,
+    available_languages: joinAvailableLanguages,
   };
 
   return c.json(response, 201);
@@ -501,6 +520,72 @@ eventRoutes.post("/event/:code/name", sessionAuth, async (c) => {
   });
 
   return c.json({ success: true, display_name: name }, 200);
+});
+
+// ---------------------------------------------------------------------------
+// PUT /event/:code/language (requires sessionAuth)
+// ---------------------------------------------------------------------------
+eventRoutes.put("/event/:code/language", sessionAuth, async (c) => {
+  const code = eventCodeSchema.parse(c.req.param("code"));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const session = (c as any).get("session") as SessionContext;
+
+  if (session.event_code !== code || !session.is_lead) {
+    throw new AppError(
+      403,
+      "Only the lead can change the language",
+      "UNAUTHORIZED"
+    );
+  }
+
+  const body = await c.req.json();
+  const { language } = body as { language: string };
+
+  if (!language || !SUPPORTED_LANGUAGES.includes(language as SupportedLanguage)) {
+    throw new AppError(400, "Unsupported language", "INVALID_INPUT");
+  }
+
+  const event = await db.query.events.findFirst({
+    where: eq(events.code, code),
+  });
+
+  if (!event) {
+    throw new AppError(404, "Event not found", "EVENT_NOT_FOUND");
+  }
+
+  if (event.status !== "NOT_STARTED" && event.status !== "WAITING") {
+    throw new AppError(400, "Language cannot be changed after the game has started", "INVALID_INPUT");
+  }
+
+  // Find the route variant for the requested language in this family
+  const variant = await db.query.routes.findFirst({
+    where: and(
+      eq(routes.route_family_id, event.route_family_id),
+      eq(routes.language, language),
+      eq(routes.is_active, true),
+    ),
+  });
+
+  if (!variant) {
+    throw new AppError(404, "No route available in this language", "ROUTE_NOT_FOUND");
+  }
+
+  // Update event with new language and route
+  await db
+    .update(events)
+    .set({
+      language: language,
+      route_id: variant.id,
+    })
+    .where(eq(events.id, event.id));
+
+  // Publish control event so all connected clients update
+  await publishControl(code, {
+    type: "language_changed",
+    data: { language },
+  });
+
+  return c.json({ success: true, language, route_id: variant.id }, 200);
 });
 
 // ---------------------------------------------------------------------------

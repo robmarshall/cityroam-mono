@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { createHash } from "node:crypto";
+import type { SupportedLanguage } from "@cityroam/shared/types";
 import { db, schema } from "../../../db/index.js";
 import { createLogger } from "../../../lib/logger.js";
 import { removeMessage, publishControl } from "../../../redis/index.js";
@@ -16,6 +17,7 @@ export interface SilentHandlerContext {
   currentStop: number;
   /** The DB message ID of the user's message (stored before classification). */
   messageId: string;
+  language: SupportedLanguage;
 }
 
 /**
@@ -123,7 +125,7 @@ export async function handleInappropriate(
 export async function handleClarification(
   ctx: SilentHandlerContext,
 ): Promise<SilentHandlerResult> {
-  const content = await getRandomMessageBank("clarification");
+  const content = await getRandomMessageBank("clarification", ctx.language);
   if (content) {
     await writeGuideMessage(
       ctx.eventId,

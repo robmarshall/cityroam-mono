@@ -26,7 +26,7 @@ export async function buildRouteTemplateVars(
   const route = await db.query.routes.findFirst({
     where: eq(schema.routes.id, routeId),
     columns: {
-      city: true,
+      route_family_id: true,
       total_stops: true,
       estimated_distance_km: true,
     },
@@ -34,8 +34,14 @@ export async function buildRouteTemplateVars(
 
   if (!route) return {};
 
+  // Look up city from route family
+  const family = await db.query.routeFamilies.findFirst({
+    where: eq(schema.routeFamilies.id, route.route_family_id),
+    columns: { city: true },
+  });
+
   return {
-    CITY_NAME: route.city,
+    CITY_NAME: family?.city ?? "",
     TOTAL_STOPS: String(route.total_stops),
     DISTANCE_KM: String(route.estimated_distance_km),
     REVIEW_LINK: env.REVIEW_LINK,

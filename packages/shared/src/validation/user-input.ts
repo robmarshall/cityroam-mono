@@ -14,24 +14,24 @@ const DISPLAY_NAME_CHARS_REGEX = /^[a-zA-Z0-9 '\-]+$/;
 export const displayNameSchema = z
   .string()
   .trim()
-  .min(MIN_DISPLAY_NAME_LENGTH, `Display name must be at least ${MIN_DISPLAY_NAME_LENGTH} characters`)
-  .max(MAX_DISPLAY_NAME_LENGTH, `Display name must be at most ${MAX_DISPLAY_NAME_LENGTH} characters`)
-  .refine((val) => !HTML_TAG_REGEX.test(val), "Display name must not contain HTML tags")
+  .min(MIN_DISPLAY_NAME_LENGTH, "DISPLAY_NAME_TOO_SHORT")
+  .max(MAX_DISPLAY_NAME_LENGTH, "DISPLAY_NAME_TOO_LONG")
+  .refine((val) => !HTML_TAG_REGEX.test(val), "DISPLAY_NAME_HTML")
   .refine(
     (val) => DISPLAY_NAME_CHARS_REGEX.test(val),
-    "Display name may only contain letters, numbers, spaces, hyphens, and apostrophes"
+    "DISPLAY_NAME_INVALID_CHARS"
   );
 
 export const chatMessageSchema = z
   .string()
   .trim()
-  .min(MIN_MESSAGE_LENGTH, `Message must be at least ${MIN_MESSAGE_LENGTH} characters`)
-  .max(MAX_MESSAGE_LENGTH, `Message must be at most ${MAX_MESSAGE_LENGTH} characters`)
-  .refine((val) => val.trim().length > 0, "Message must not be empty");
+  .min(MIN_MESSAGE_LENGTH, "MESSAGE_TOO_SHORT")
+  .max(MAX_MESSAGE_LENGTH, "MESSAGE_TOO_LONG")
+  .refine((val) => val.trim().length > 0, "MESSAGE_EMPTY");
 
 const eventCodeRegex = new RegExp(`^[${EVENT_CODE_ALPHABET}]{6,${EVENT_CODE_LENGTH}}$`);
 
 export const eventCodeSchema = z
   .string()
   .transform((s) => s.toLowerCase())
-  .pipe(z.string().regex(eventCodeRegex, "Invalid event code format"));
+  .pipe(z.string().regex(eventCodeRegex, "EVENT_CODE_INVALID"));

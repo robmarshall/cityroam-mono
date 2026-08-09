@@ -52,7 +52,7 @@ export async function handleClientMessage(
   try {
     message = JSON.parse(data) as WebSocketMessage;
   } catch {
-    sendError(ws, "Invalid JSON");
+    sendError(ws, "Invalid JSON message", "INVALID_JSON");
     return;
   }
 
@@ -63,7 +63,7 @@ export async function handleClientMessage(
       const payload = message.payload as { text?: string };
       const result = chatMessageSchema.safeParse(payload?.text);
       if (!result.success) {
-        sendError(ws, result.error.issues[0].message, "VALIDATION_ERROR");
+        sendError(ws, "Invalid message", result.error.issues[0].message);
         return;
       }
 
@@ -112,12 +112,12 @@ export async function handleClientMessage(
     case "action_confirm": {
       const confirmPayload = message.payload as ActionConfirmPayload;
       if (!confirmPayload?.block_id) {
-        sendError(ws, "Missing block_id", "VALIDATION_ERROR");
+        sendError(ws, "Missing block_id in action confirmation", "ACTION_MISSING_BLOCK");
         return;
       }
 
       if (!session.is_lead) {
-        sendError(ws, "Only the lead can confirm actions", "FORBIDDEN");
+        sendError(ws, "Only the lead can confirm actions", "ACTION_LEAD_ONLY");
         return;
       }
 
@@ -128,7 +128,7 @@ export async function handleClientMessage(
       });
 
       if (!event || event.current_block_id !== confirmPayload.block_id) {
-        sendError(ws, "Block does not match current action", "INVALID_STATE");
+        sendError(ws, "Block does not match current state", "ACTION_BLOCK_MISMATCH");
         return;
       }
 
@@ -146,7 +146,7 @@ export async function handleClientMessage(
     }
 
     default: {
-      sendError(ws, "Unknown message type");
+      sendError(ws, "Unknown message type", "UNKNOWN_MESSAGE_TYPE");
     }
   }
 }

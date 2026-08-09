@@ -13,6 +13,7 @@ vi.mock("../db/index.js", () => {
       messageBanks: { findFirst: vi.fn() },
       routeBlocks: { findFirst: vi.fn() },
       routeGroups: { findFirst: vi.fn() },
+      routeFamilies: { findFirst: vi.fn() },
     },
     select: vi.fn(() => mockDb),
     from: vi.fn(() => mockDb),
@@ -87,6 +88,7 @@ vi.mock("../env.js", () => ({
     REVIEW_LINK: "https://review.test.com",
     MARKETING_URL: "https://marketing.test.com",
     APP_URL: "https://app.test.com",
+    APP_PUBLIC_URL: "https://app.test.com/app",
     ADMIN_URL: "https://admin.test.com",
     BASE_DOMAIN: "test.com",
     NODE_ENV: "development",
@@ -113,7 +115,7 @@ import {
   mockEvent,
   mockParticipant,
   mockRoute,
-
+  mockRouteFamily,
   mockRouteGroup,
   mockRouteBlock,
   mockMessageBank,
@@ -434,6 +436,8 @@ describe("POST /admin/upload", () => {
 describe("Admin Route CRUD", () => {
   const routeData = {
     city: "Leeds",
+    language: "en",
+    route_family_id: "",
     name: "City Centre Tour",
     description: "A nice walk",
     estimated_duration_mins: 60,
@@ -466,23 +470,29 @@ describe("Admin Route CRUD", () => {
   describe("POST /admin/routes", () => {
     it("creates a new route", async () => {
       const route = mockRoute({ ...routeData, total_stops: 0 });
-      (db as any).returning.mockReturnValueOnce([route]);
+      // Family insert runs first (route_family_id is empty → creates new family)
+      (db as any).returning
+        .mockReturnValueOnce([{ id: fakeUUID(), name: "City Centre Tour", city: "Leeds" }])
+        .mockReturnValueOnce([route]);
 
       const res = await adminRequest(app, "POST", "/admin/routes", routeData);
       expect(res.status).toBe(201);
 
       const body = await res.json();
       expect(body.route.name).toBe("City Centre Tour");
-      expect(body.route.city).toBe("Leeds");
+      expect(body.route.language).toBe("en");
     });
   });
 
   describe("GET /admin/routes/:id", () => {
     it("returns route detail with groups", async () => {
       const routeId = fakeUUID();
-      const route = mockRoute({ id: routeId });
+      const familyId = fakeUUID();
+      const route = mockRoute({ id: routeId, route_family_id: familyId });
+      const family = mockRouteFamily({ id: familyId });
 
       (db as any).query.routes.findFirst.mockResolvedValueOnce(route);
+      (db as any).query.routeFamilies.findFirst.mockResolvedValueOnce(family);
       // Groups query (terminal: orderBy)
       (db as any).orderBy.mockResolvedValueOnce([]);
 
@@ -491,6 +501,8 @@ describe("Admin Route CRUD", () => {
 
       const body = await res.json();
       expect(body.route.id).toBe(routeId);
+      expect(body.route_family.id).toBe(familyId);
+      expect(body.route_family.name).toBe("Test Family");
       expect(body.groups).toHaveLength(0);
     });
 
@@ -903,7 +915,7 @@ describe("POST /admin/routes/bulk-groups", () => {
     const groupId = fakeUUID();
     const blockId = fakeUUID();
 
-    const route = mockRoute({ id: routeId, name: "Bulk Route", city: "London" });
+    const route = mockRoute({ id: routeId, name: "Bulk Route", language: "en" });
     const group = mockRouteGroup({ id: groupId, route_id: routeId, position: 0, name: "Intro" });
     const block = mockRouteBlock({
       id: blockId,
@@ -913,8 +925,9 @@ describe("POST /admin/routes/bulk-groups", () => {
       config: { type: "message", content: "Welcome!" },
     });
 
-    // Transaction: insert route returning
+    // Transaction: family insert first (route_family_id is empty → creates new family), then route, group, block
     (db as any).returning
+      .mockReturnValueOnce([{ id: fakeUUID(), name: "Bulk Route", city: "London" }])  // family insert
       .mockReturnValueOnce([route])    // route insert
       .mockReturnValueOnce([group])    // group insert
       .mockReturnValueOnce([block]);   // block insert
@@ -922,6 +935,8 @@ describe("POST /admin/routes/bulk-groups", () => {
     const res = await adminRequest(app, "POST", "/admin/routes/bulk-groups", {
       route: {
         city: "London",
+        language: "en",
+        route_family_id: "",
         name: "Bulk Route",
         description: "A test route",
         estimated_duration_mins: 60,
@@ -947,7 +962,7 @@ describe("POST /admin/routes/bulk-groups", () => {
 
     const body = await res.json();
     expect(body.route.name).toBe("Bulk Route");
-    expect(body.route.city).toBe("London");
+    expect(body.route.language).toBe("en");
     expect(body.groups).toHaveLength(1);
     expect(body.groups[0].name).toBe("Intro");
     expect(body.groups[0].blocks).toHaveLength(1);

@@ -1,0 +1,578 @@
+{
+  "metadata": {
+    "home": {
+      "title": "City Roam — AI-begeleide speurtochten in Leeds",
+      "description": "Ontdek Leeds met een speurtocht op basis van AI. Los aanwijzingen op, vind verborgen plekjes en beleef plezier met vrienden — allemaal begeleid door AI op je telefoon.",
+      "ogImageAlt": "City Roam — AI-begeleide speurtochten in Leeds"
+    },
+    "families": {
+      "title": "Avonturen voor gezinnen — City Roam",
+      "description": "Maak van jullie dagje uit een spannende AI-begeleide speurtocht in Leeds. Geschikt voor alle leeftijden, toegankelijk met kinderwagen en zo opgezet dat niemand zich verveelt."
+    },
+    "henParties": {
+      "title": "Vrijgezellenfeesten — City Roam",
+      "description": "Geef de bruid een onvergetelijke ervaring. Ontdek Leeds samen, los aanwijzingen op als team en maak herinneringen die nog lang na de bruiloft blijven."
+    },
+    "teamBuilding": {
+      "title": "Teambuilding — City Roam",
+      "description": "Haal je team het kantoor uit met een AI-begeleide speurtocht in Leeds. Echte samenwerking, echt problemen oplossen en oprecht plezier — perfect voor teams van 4 tot 10+ personen."
+    }
+  },
+  "common": {
+    "header": {
+      "brand": "City Roam",
+      "families": "Gezinnen",
+      "henParties": "Vrijgezellenfeesten",
+      "teamBuilding": "Teambuilding",
+      "bookNow": "Boek nu",
+      "toggleMenu": "Menu openen",
+      "changeLanguage": "Taal wijzigen",
+      "currentLanguage": "Nederlands"
+    },
+    "footer": {
+      "copyright": "© {year} City Roam. Alle rechten voorbehouden."
+    }
+  },
+  "cta": {
+    "defaultLabel": "Boek je ervaring",
+    "loading": "Je wordt doorgestuurd naar de kassa...",
+    "error": "Er is iets misgegaan. Probeer het opnieuw.",
+    "retry": "Opnieuw proberen"
+  },
+  "faq": {
+    "0": {
+      "question": "Met hoeveel mensen kun je spelen?",
+      "answer": "Tot 10 personen kunnen aan dezelfde ervaring meedoen. Iedereen speelt samen op zijn eigen telefoon, deelt aanwijzingen en lost de puzzels als groep op."
+    },
+    "1": {
+      "question": "Hoe lang duurt het?",
+      "answer": "De meeste groepen zijn in 2 à 3 uur klaar, maar je mag er rustig de tijd voor nemen — er loopt geen klok. Stop voor een koffie, duik een zijstraatje in, wat je maar wilt."
+    },
+    "2": {
+      "question": "Wat heb ik nodig?",
+      "answer": "Alleen een telefoon met internet. Geen app om te downloaden — alles werkt in je browser."
+    },
+    "3": {
+      "question": "Is het toegankelijk?",
+      "answer": "De route loopt over ongeveer 4 km verharde paden door het stadscentrum. Hij is geschikt voor rolstoelen en kinderwagens en vermijdt steile hellingen. Heb je specifieke wensen rond toegankelijkheid? Neem contact op, dan helpen we je."
+    },
+    "4": {
+      "question": "Is het geschikt voor kinderen?",
+      "answer": "Kinderen vanaf 8 jaar vinden het leuk om aanwijzingen op te lossen en op ontdekking te gaan. Jongere kinderen hebben bij de lastigere aanwijzingen misschien wat hulp nodig. De route is ook geschikt voor kinderwagens."
+    },
+    "5": {
+      "question": "En als het regent?",
+      "answer": "Een buitje? Geen probleem — er zijn genoeg gezellige plekjes om even te schuilen. Bij een hoosbui pauzeer je het spel gewoon en pak je het later weer op. Je avontuur is flexibel."
+    },
+    "6": {
+      "question": "Zijn honden welkom?",
+      "answer": "Zeker weten. Veel stops zijn buiten of vlak bij hondvriendelijke pubs. Neem je viervoeter gerust mee op avontuur."
+    },
+    "7": {
+      "question": "Kan ik pauzeren en een andere dag verdergaan?",
+      "answer": "Ja! Wil je halverwege stoppen en morgen verder? Helemaal prima. Je voortgang wordt automatisch opgeslagen."
+    },
+    "8": {
+      "question": "Kan ik alleen gaan?",
+      "answer": "Dat kan! De ervaring is in je eentje net zo leuk. Maar veel mensen doen het samen, met vrienden of als team."
+    },
+    "9": {
+      "question": "Hoe zit het met terugbetaling?",
+      "answer": "Volledige terugbetaling, zonder vragen. Ben je om welke reden dan ook niet tevreden, laat het ons gewoon weten."
+    }
+  },
+  "chatDemo": {
+    "guideLabel": "Gids",
+    "hero": {
+      "initial": "Zoek het gebouw met de gouden klok in de toren 🕰️",
+      "0": "Het oude stadhuis!",
+      "1": "Precies! Goed gedaan 🎉",
+      "2": "Gebouwd in 1858 en een van de bekendste bezienswaardigheden van de stad.",
+      "3": "Op naar de volgende plek...",
+      "4": "Onderweg zit een heerlijke koffiezaak!"
+    },
+    "howItWorks": {
+      "0": "Welkom bij City Roam! 📱",
+      "1": "Ik ben vandaag je gids.",
+      "2": "Ik stuur je onderweg aanwijzingen en routebeschrijvingen.",
+      "3": "Je mag me op elk moment vragen stellen.",
+      "4": "Klaar om op ontdekking te gaan?",
+      "5": "Daar gaan we!"
+    }
+  },
+  "home": {
+    "hero": {
+      "title": "AI-begeleide speurtochten in Leeds",
+      "subtitle": "Los aanwijzingen op, vind verborgen plekjes en ontdek de stad met vrienden — allemaal begeleid door AI op je telefoon."
+    },
+    "problem": {
+      "text1": "<b>Geen schema's. Geen gidsen.</b> Alleen jullie groep, jullie telefoon en een spoor van aanwijzingen.",
+      "text2": "City Roam is een ontdekkingsspel op je telefoon dat je dwars door het hart van Leeds voert. Geen app om te downloaden. Alleen aanwijzingen, ontdekkingen en goede tijden.",
+      "text3": "Los raadsels op, ontdek verborgen verhalen en verken de stad in je eigen tempo. Met familie, vrienden of collega's — het is gemaakt om te delen."
+    },
+    "howItWorks": {
+      "title": "Hoe het werkt",
+      "step1Title": "Start in de stad",
+      "step1Desc": "Kies je startpunt en ga van start wanneer je er klaar voor bent. Begin je avontuur vanaf elke plek in het centrum.",
+      "step2Title": "Los de aanwijzingen samen op",
+      "step2Desc": "Gebruik je telefoon om creatieve aanwijzingen te kraken die je door de stad leiden. Elke puzzel brengt je dichter bij een verborgen pareltje.",
+      "step3Title": "Ontdek verborgen verhalen",
+      "step3Desc": "Leer onderweg over geheime plekken, lokale legendes en fascinerende geschiedenis. Zie Leeds met nieuwe ogen.",
+      "step4Title": "Speel in je eigen tempo",
+      "step4Desc": "Stop voor een drankje, een lunch of pak het gerust een andere dag weer op. Geen tijdslimiet — het is jouw avontuur."
+    },
+    "phone": {
+      "title": "Neem alleen je telefoon mee",
+      "subtitle": "Geen app om te downloaden. Geen spullen om te sjouwen. Open gewoon de browser op je telefoon en ga op pad.",
+      "features": {
+        "0": "Werkt op elke smartphone",
+        "1": "Geen downloads — draait in je browser",
+        "2": "Een AI-gids begeleidt je via de chat",
+        "3": "Pauzeer en ga verder wanneer je wilt"
+      }
+    },
+    "included": {
+      "title": "Wat je krijgt",
+      "subtitle": "Alles voor een geslaagde dag uit — neem alleen je zin in avontuur mee.",
+      "items": {
+        "0": "Een met de hand samengestelde route door Leeds (zo'n 4 km)",
+        "1": "Interactieve aanwijzingen, raadsels en mini-uitdagingen",
+        "2": "Lokale eet- en drinktips tijdens het hele spel",
+        "3": "Geen downloads — gewoon de browser op je telefoon",
+        "4": "Pauzeer en ga verder wanneer je wilt",
+        "5": "Geschikt voor kinderwagens, rolstoelen en honden"
+      }
+    },
+    "whyChoose": {
+      "title": "Waarom City Roam?",
+      "subtitle": "Flexibel, leuk en vol verrassingen. Geen doorsnee stadstour.",
+      "localKnowledge": {
+        "title": "Lokale kennis",
+        "description": "Ontworpen door mensen uit de stad, met de verhalen en verborgen plekken waar we zelf van houden — geen sightseeing van de lopende band."
+      },
+      "justYourPhone": {
+        "title": "Alleen je telefoon",
+        "description": "Werkt direct vanuit je browser. Geen apps. Geen downloads. Geen technisch gedoe."
+      },
+      "playYourWay": {
+        "title": "Speel op jouw manier",
+        "description": "Begin wanneer je wilt. Stop voor koffie. Ga morgen verder. Jij bepaalt."
+      },
+      "builtForGroups": {
+        "title": "Gemaakt voor groepen",
+        "description": "Met vrienden, familie of collega's — in groepsverband is het op zijn leukst."
+      }
+    },
+    "pricing": {
+      "title": "Simpele prijs",
+      "subtitle": "Eén prijs voor de hele groep. Tot 10 personen.",
+      "originalPrice": "£49",
+      "price": "£29",
+      "badge": "Introductieprijs"
+    },
+    "reviews": {
+      "title": "Wat anderen zeggen",
+      "0": {
+        "quote": "Wat een leuke middag! De AI-gids was verrassend gevat.",
+        "name": "Sarah T."
+      },
+      "1": {
+        "quote": "Perfect voor een verjaardagsuitje. Iedereen vond het geweldig om samen de aanwijzingen op te lossen.",
+        "name": "James M."
+      },
+      "2": {
+        "quote": "Veel leuker dan een saaie wandeltour. We ontdekten plekken waarvan we het bestaan niet kenden!",
+        "name": "Priya K."
+      }
+    },
+    "guarantee": {
+      "title": "100 % plezier gegarandeerd",
+      "description": "Toch geen plezier gehad? Dan krijg je je geld terug. Zonder vragen. We willen dat iedereen geniet van ontdekken met City Roam."
+    },
+    "faqTitle": "Veelgestelde vragen"
+  },
+  "families": {
+    "hero": {
+      "title": "Gezinsavonturen zonder gedoe",
+      "subtitle": "Maak van jullie dagje uit een spannende speurtocht. Perfect voor herinneringen die een leven lang meegaan — en om iedereen bezig te houden.",
+      "cta": "Boek gezinsavontuur"
+    },
+    "problem": {
+      "text1": "<b>Klaar met „zijn we er al?”</b> City Roam maakt van jullie wandeling een avontuur waar iedereen in meegaat.",
+      "text2": "Geen tegenstribbelende kinderen meer langs toeristische trekpleisters slepen. In plaats daarvan zie je ze vooruit rennen naar de volgende aanwijzing, terwijl ze bijzondere plekken en verhalen over de stad ontdekken.",
+      "text3": "Gemaakt voor gemengde leeftijden — van nieuwsgierige achtjarigen tot tieners en grootouders. Iedereen draagt bij, iedereen leert iets, iedereen heeft plezier."
+    },
+    "whyLove": {
+      "title": "Waarom gezinnen dol zijn op City Roam",
+      "engaged": {
+        "title": "Iedereen blijft betrokken",
+        "description": "Geen verveelde kinderen of slepende voeten meer. De aanwijzingen en uitdagingen houden hoofden scherp en benen vrijwillig in beweging."
+      },
+      "educational": {
+        "title": "Leerzaam én leuk",
+        "description": "Leer over geschiedenis, architectuur en lokale cultuur zonder dat het als een schoolreisje voelt. Kennis komt vanzelf, al spelend."
+      },
+      "allAges": {
+        "title": "Werkt voor alle leeftijden",
+        "description": "Van 8 tot 80 — iedereen kan bijdragen. De kleintjes lossen visuele aanwijzingen op, tieners helpen met de route, volwassenen vertellen de verhalen."
+      },
+      "bonding": {
+        "title": "Echte tijd samen",
+        "description": "Telefoons weg (behalve die van het spel!) en samen als team aan de slag. Maak herinneringen terwijl jullie samen op ontdekking gaan."
+      }
+    },
+    "perfectFor": {
+      "title": "Perfect voor elk gezin",
+      "subtitle": "Of je nu uit de stad komt en haar eens anders wilt zien, of op bezoek bent en iets nieuws wilt ontdekken.",
+      "grandparents": {
+        "title": "Opa en oma op bezoek",
+        "description": "Laat ze de stad op een leuke, interactieve manier zien. Zij genieten van de verhalen, de kinderen van het avontuur."
+      },
+      "weekend": {
+        "title": "Weekend met het gezin",
+        "description": "Maak van een gewone zaterdag iets bijzonders. Naar buiten, in beweging en delen van je eigen stad ontdekken die je nog niet kende."
+      },
+      "holidays": {
+        "title": "Schoolvakanties",
+        "description": "Verjaag de vakantieverveling met een leerzaam avontuur. Leren vermomd als spel — en ze hebben het niet eens door."
+      }
+    },
+    "howItWorks": {
+      "title": "Zo verloopt jullie gezinsavontuur",
+      "step1Title": "Begin wanneer jullie klaar zijn",
+      "step1Desc": "Geen gehaast om een groep te halen. Start wanneer iedereen gegeten, gedronken en zin heeft om op pad te gaan.",
+      "step2Title": "Werk samen als team",
+      "step2Desc": "Laat bij elke aanwijzing iemand anders het voortouw nemen. Zo is iedereen een keer de held.",
+      "step3Title": "Neem de tijd",
+      "step3Desc": "Stop voor een ijsje, laat de kinderen even rennen of geniet gewoon van het moment. Het avontuur wacht op jullie."
+    },
+    "features": {
+      "title": "Gezinsvriendelijke details",
+      "subtitle": "Alles is bedacht met echte gezinnen in gedachten — want we weten hoe een dagje uit met kinderen echt verloopt.",
+      "items": {
+        "0": "Route toegankelijk met kinderwagen en rolstoel",
+        "1": "Aanwijzingen geschikt vanaf 8 jaar (jonger met hulp)",
+        "2": "Volop plekken om te stoppen voor een snack of het toilet",
+        "3": "Leerzame inhoud die niet als huiswerk voelt",
+        "4": "Hondvriendelijke route voor de gezinshond",
+        "5": "Pauzeren en verdergaan — ideaal voor korte spanningsbogen"
+      }
+    },
+    "safety": {
+      "title": "Veiligheid en praktische informatie",
+      "text1": "We weten dat veiligheid voorop staat als je met het gezin op pad bent. De route blijft in drukke, goed verlichte straten met volop winkels en cafés in de buurt.",
+      "text2": "De routes zijn ongeveer 4 km lang en overwegend vlak — ideaal voor kleine beentjes en kinderwagens. Onderweg zijn er gezinsvriendelijke stops.",
+      "text3": "Slaat het weer om of wordt iemand moe? Dan pauzeer je het spel en pak je het een andere dag weer op. Geen druk, gewoon plezier met het gezin."
+    },
+    "faq": {
+      "title": "Vragen van gezinnen beantwoord",
+      "0": {
+        "question": "Voor welke leeftijden is dit geschikt?",
+        "answer": "Kinderen vanaf 8 jaar kunnen actief meedoen met het oplossen van aanwijzingen. Jongere kinderen (4 tot 7) doen mee met hulp van oudere gezinsleden en vinden het leuk om dingen te spotten en onderdeel te zijn van het avontuur. Het is gemaakt voor groepen met gemengde leeftijden."
+      },
+      "1": {
+        "question": "Is het geschikt voor een kinderwagen?",
+        "answer": "Absoluut! De hele route is toegankelijk met kinderwagen en rolstoel. We hebben bewust paden gekozen die werken voor gezinnen met een buggy, zonder trappen en steile hellingen."
+      },
+      "2": {
+        "question": "Hoe lang duurt het met kinderen?",
+        "answer": "De meeste gezinnen doen er 2,5 tot 3,5 uur over, maar er is geen haast! Reken tijd in voor snackpauzes, toiletstops en die momenten waarop kinderen iets interessants willen bekijken. Je kunt altijd even pauzeren."
+      },
+      "3": {
+        "question": "En als het regent of de kinderen moe worden?",
+        "answer": "Je kunt het avontuur op elk moment pauzeren en later verdergaan — zelfs op een andere dag! Er zijn volop overdekte plekken om te schuilen, en het spel bewaart je voortgang automatisch."
+      },
+      "4": {
+        "question": "Zijn er plekken om te eten?",
+        "answer": "Jazeker! De route komt langs gezinsvriendelijke cafés, pubs met een kindermenu en plekken die perfect zijn voor een picknick. We geven onderweg tips voor de beste stops voor gezinnen."
+      },
+      "5": {
+        "question": "Hebben kinderen een eigen telefoon nodig?",
+        "answer": "Nee, één telefoon per gezin is prima. Sterker nog: het stimuleert samenwerken, omdat iedereen erbij komt staan om de aanwijzingen op te lossen. Veel leuker dan ieder op een eigen scherm!"
+      }
+    },
+    "cta": {
+      "text": "Een avontuur waar het hele gezin van geniet. Leren vermomd als spel. Herinneringen voor altijd.",
+      "label": "Boek gezinsavontuur"
+    }
+  },
+  "henParties": {
+    "hero": {
+      "title": "Het perfecte vrijgezellenfeest",
+      "subtitle": "Geef de bruid een onvergetelijke ervaring. Ontdek de stad samen, los aanwijzingen op als team en maak herinneringen die nog lang na de bruiloft blijven.",
+      "cta": "Boek vrijgezellenfeest"
+    },
+    "problem": {
+      "text1": "<b>Sla de standaard vrijgezellenactiviteiten over.</b> City Roam biedt iets compleet anders — een avontuur dat iedereen samenbrengt terwijl jullie de bruid vieren.",
+      "text2": "Perfect voor groepen die iets unieks, memorabels en Instagram-waardigs zoeken. Geen ongemakkelijke spelletjes of geforceerde pret — alleen oprechte spanning terwijl jullie samen de stad ontdekken en uitdagingen aangaan.",
+      "text3": "Ideaal voor groepen van 6 tot 12 vriendinnen. Iedereen doet mee, de klik ontstaat vanzelf en de bruid krijgt een ervaring die ze nooit vergeet."
+    },
+    "whyLove": {
+      "title": "Waarom vrijgezellenfeesten dol zijn op City Roam",
+      "different": {
+        "title": "Eens iets heel anders",
+        "description": "Onderscheid je van het standaard vrijgezellenprogramma. Geef de bruid een ervaring die ze nog nooit heeft gehad — en waarschijnlijk nooit meer krijgt!"
+      },
+      "group": {
+        "title": "De ideale groepsactiviteit",
+        "description": "Iedereen werkt naar hetzelfde doel toe. Een prima ijsbreker voor vriendinnen die elkaar nauwelijks kennen, en heerlijk voor vriendinnen van het eerste uur."
+      },
+      "instagram": {
+        "title": "Momenten voor op Instagram",
+        "description": "Ontdek verborgen pareltjes en prachtige plekken, perfect voor die onmisbare foto's van het vrijgezellenfeest. Net zo uniek als jullie vriendschap."
+      },
+      "timing": {
+        "title": "Past in elk feestprogramma",
+        "description": "Sluit naadloos aan op de rest van jullie plannen. Doe het overdag vóór het avondprogramma, of als vrolijke start van het weekend."
+      }
+    },
+    "styles": {
+      "title": "Perfect voor elk soort vrijgezellenfeest",
+      "subtitle": "Of jullie nu een rustige viering plannen of een weekend vol programma.",
+      "daytime": {
+        "title": "Avonturen overdag",
+        "description": "De perfecte start van jullie weekend. Breng iedereen samen, breek het ijs en bouw een gezonde honger op voor het avondprogramma."
+      },
+      "alternative": {
+        "title": "Vieren op een andere manier",
+        "description": "Voor bruiden die iets anders willen dan het gebruikelijke vrijgezellencircuit. Uniek, memorabel en helemaal afgestemd op jullie groep."
+      },
+      "mixed": {
+        "title": "Gemengde groepen",
+        "description": "Ideaal als er vriendinnen uit verschillende delen van je leven meedoen die elkaar niet kennen. Samen puzzelen brengt iedereen bij elkaar."
+      }
+    },
+    "organise": {
+      "title": "Makkelijk te organiseren",
+      "perfectSize": {
+        "title": "6 tot 12 personen: de ideale maat",
+        "description": "Iedereen blijft bij elkaar, kan elkaar verstaan en niemand raakt achterop. Ook perfect voor groepsfoto's."
+      },
+      "simple": {
+        "title": "Supersimpel te boeken",
+        "description": "Eén boeking, één betaling, één bevestiging. Deel de gegevens met de groep en je bent klaar. Geen ingewikkeld geregel."
+      },
+      "special": {
+        "title": "Laat de bruid stralen",
+        "description": "Ze zal het geweldig vinden dat jullie iets unieks en doordachts hebben gekozen. Een ervaring die haar viert en al haar favoriete mensen samenbrengt."
+      }
+    },
+    "special": {
+      "title": "Wat het bijzonder maakt",
+      "items": {
+        "0": "Prachtige fotomomenten op verborgen plekjes",
+        "1": "Samenwerking die de groep samensmeedt",
+        "2": "Flexibele tijden rond jullie andere plannen",
+        "3": "Een unieke ervaring die de bruid nooit vergeet",
+        "4": "Fijne pubs en bars die jullie onderweg ontdekken",
+        "5": "Makkelijk te coördineren voor de organisator"
+      }
+    },
+    "safety": {
+      "title": "Veilig vieren",
+      "text1": "De route blijft in drukke, goed verlichte straten met volop pubs, cafés en winkels onderweg.",
+      "text2": "Begin op het moment dat past bij jullie weekend — een avontuur in de ochtend vóór het avondfeest, of een middagprogramma dat overloopt in diner en drankjes.",
+      "text3": "De groep blijft vanzelf bij elkaar terwijl jullie aanwijzingen oplossen, en er is volop gelegenheid voor die onmisbare foto's. Bovendien ontdekken jullie fijne plekken voor de avond."
+    },
+    "testimonials": {
+      "title": "Wat bruiden en hun vriendinnen zeggen",
+      "0": {
+        "quote": "De leukste vrijgezellenactiviteit ooit! Zo anders dan het gebruikelijke, en iedereen vond het geweldig. De bruid straalde — de perfecte start van ons weekend.",
+        "name": "Lucy, getuige",
+        "occasion": "Vrijgezellenweekend"
+      },
+      "1": {
+        "quote": "Een geweldige ijsbreker voor onze gemengde groep. Vriendinnen van de studie, het werk en van vroeger klikten meteen tijdens het puzzelen. Zo'n slimme manier om iedereen samen te brengen.",
+        "name": "Sophie, aanstaande bruid",
+        "occasion": "Viering overdag"
+      },
+      "2": {
+        "quote": "Qua timing perfect voor ons vrijgezellenweekend. We deden het zaterdagmiddag, ontdekten geweldige plekken en gingen 's avonds naar de pubs die we hadden gevonden!",
+        "name": "Emma, bruidsmeisje",
+        "occasion": "Vrijgezellenweekend"
+      },
+      "3": {
+        "quote": "Zo makkelijk te organiseren en iedereen was laaiend enthousiast. De bruid zei dat dit haar favoriete onderdeel van het hele feest was. Meer kun je niet wensen!",
+        "name": "Kate, zus van de bruid",
+        "occasion": "Feestdag"
+      }
+    },
+    "faq": {
+      "title": "Vragen over het plannen van een vrijgezellenfeest",
+      "0": {
+        "question": "Hoe maken we het bijzonder voor de bruid?",
+        "answer": "De bruid komt vanzelf in het middelpunt te staan terwijl de groep samenwerkt. Iedereen is erop gericht haar een geweldige dag te bezorgen, en zij is onderdeel van iets unieks en memorabels."
+      },
+      "1": {
+        "question": "Hoe laat kunnen we het beste beginnen?",
+        "answer": "Helemaal flexibel! Starten in de ochtend werkt prima vóór de lunch en het avondprogramma. Een middagavontuur loopt naadloos over in diner en drankjes. We raden aan te starten tussen 10.00 en 15.00 uur."
+      },
+      "2": {
+        "question": "Mogen we foto's maken tijdens de ervaring?",
+        "answer": "Absoluut! Jullie ontdekken prachtige, verborgen plekjes die perfect zijn voor de foto's. De route komt langs enkele van de mooiste plekken van de stad."
+      },
+      "3": {
+        "question": "Mogen we onderweg wat drinken?",
+        "answer": "Jullie komen langs een hoop gezellige pubs en bars. Veel groepen stoppen halverwege voor een feestelijk drankje!"
+      },
+      "4": {
+        "question": "En als sommigen elkaar niet kennen?",
+        "answer": "Dit is juist een van de beste ijsbrekers die er zijn. Samen aanwijzingen oplossen zorgt ervoor dat iedereen vanzelf praat en lacht. Veel fijner dan ongemakkelijke voorstelrondjes aan tafel."
+      },
+      "5": {
+        "question": "En als het weer tegenzit?",
+        "answer": "Jullie kunnen het avontuur pauzeren en later verdergaan, of zelfs op een andere dag. Er zijn genoeg overdekte plekken om te schuilen. Laat het Britse weer het feest niet verpesten!"
+      }
+    },
+    "cta": {
+      "text": "Geef de bruid iets onvergetelijks. Maak samen herinneringen. Trap haar bruiloftsfeest perfect af.",
+      "label": "Boek vrijgezellenfeest"
+    }
+  },
+  "teamBuilding": {
+    "hero": {
+      "title": "Teambuilding buiten de vergaderzaal",
+      "subtitle": "Haal je team het kantoor uit en laat het samenwerken in een compleet nieuwe omgeving. Echte samenwerking, echt problemen oplossen en oprecht plezier.",
+      "cta": "Boek teamervaring"
+    },
+    "problem": {
+      "text1": "<b>Vergeet ongemakkelijke ijsbrekers en geforceerde vertrouwensoefeningen.</b> City Roam laat samenwerking vanzelf ontstaan terwijl je team echte uitdagingen oplost.",
+      "text2": "Zie hoe collega's die op kantoor nauwelijks contact hebben ineens samen problemen oplossen. Zie de stillere teamleden opbloeien wanneer zij de cruciale aanwijzing kraken. Ervaar echt teamwerk, ver weg van mail en meetings.",
+      "text3": "Perfect voor teams van 4 tot 10 personen. Grotere groepen? Dan raden we aan om ze op te splitsen in meerdere teams voor een vriendschappelijke competitie die iedereen samenbrengt."
+    },
+    "whyChoose": {
+      "title": "Waarom bedrijven voor City Roam kiezen",
+      "collaboration": {
+        "title": "Echte samenwerking",
+        "description": "Teams moeten communiceren, taken verdelen en hun verschillende sterke punten combineren om te slagen. Geen geforceerde oefeningen — gewoon teamwerk dat vanzelf ontstaat."
+      },
+      "perspective": {
+        "title": "Frisse blik",
+        "description": "Haal je team uit de vertrouwde omgeving en zie nieuwe ideeën ontstaan. Andere omgeving, ander denken, betere oplossingen."
+      },
+      "inclusive": {
+        "title": "Voor iedereen toegankelijk",
+        "description": "Geen fysieke uitdagingen of ongemakkelijke oefeningen. Iedereen kan bijdragen, ongeacht conditie, karakter of ervaring."
+      },
+      "energised": {
+        "title": "Teams vol energie",
+        "description": "Teams komen hechter en gemotiveerder terug op kantoor. Een gedeelde ervaring die vanzelf een ijkpunt wordt voor samenwerking."
+      }
+    },
+    "perfectFor": {
+      "title": "Perfect voor jouw team",
+      "subtitle": "Of je nu nieuwe banden opbouwt of bestaande versterkt.",
+      "newTeam": {
+        "title": "Nieuwe teamleden laten landen",
+        "description": "Help nieuwe collega's om in een ontspannen, natuurlijke setting contact te maken met het bestaande team. Drempels verdwijnen snel."
+      },
+      "crossDept": {
+        "title": "Samenwerking tussen afdelingen",
+        "description": "Laat verschillende afdelingen samenwerken. Perfect voor de start van een project of om silo's te doorbreken."
+      },
+      "morale": {
+        "title": "Boost voor het teamgevoel",
+        "description": "Beloon je hardwerkende team met iets dat écht leuk is. Toon waardering en versterk tegelijk de onderlinge band."
+      }
+    },
+    "sizes": {
+      "title": "Flexibele teamgroottes",
+      "sweetSpot": {
+        "title": "4 tot 10 personen: de ideale maat",
+        "description": "Iedereen kan echt bijdragen, de communicatie loopt vanzelf en de teamdynamiek ontstaat organisch."
+      },
+      "multiple": {
+        "title": "11 of meer: meerdere teams",
+        "description": "Split op in kleinere teams voor een vriendschappelijke competitie. Teams kunnen op verschillende tijden starten of het tegen elkaar opnemen."
+      },
+      "competition": {
+        "title": "Competitie tussen teams",
+        "description": "Maak van je teambuilding een bedrijfsbreed evenement. Teams strijden op dezelfde route, met de eer op het spel. Neem contact op voor tarieven voor meerdere teams."
+      }
+    },
+    "benefits": {
+      "title": "Voordelen die je echt merkt",
+      "items": {
+        "0": "Betere communicatie en actiever luisteren",
+        "1": "Meer creativiteit bij het oplossen van problemen",
+        "2": "Sterkere onderlinge banden",
+        "3": "Meer zelfvertrouwen en een beter teamgevoel",
+        "4": "Meer inzicht in ieders sterke punten",
+        "5": "Een gedeelde ervaring en eigen grapjes"
+      }
+    },
+    "practical": {
+      "title": "Praktische informatie",
+      "text1": "We maken zakelijke boekingen eenvoudig. Boek voor je team met een nette factuur, declarabele tarieven en flexibele planning die past bij de bedrijfsagenda.",
+      "text2": "De ervaring duurt 2 tot 3 uur, afhankelijk van het tempo — perfect voor een ochtend- of middagsessie. Teams kunnen tussen 9.00 en 16.00 uur starten en we leveren uitgebreid briefingmateriaal.",
+      "text3": "Deelnemers hebben alleen comfortabele wandelschoenen en een smartphone nodig. De rest regelen wij, inclusief de coördinatie van meerdere teams en aangepaste starttijden."
+    },
+    "testimonials": {
+      "title": "Wat bedrijven zeggen",
+      "0": {
+        "quote": "De beste teambuilding die we ooit hebben gedaan. Natuurlijke samenwerking, iedereen betrokken en echt puzzelen. Het team kwam vol energie en hechter terug.",
+        "name": "Sarah Mitchell, marketingdirecteur",
+        "company": "Tech-start-up"
+      },
+      "1": {
+        "quote": "Perfect voor de kwartaalbijeenkomst van ons remote team. Mensen konden elkaar eindelijk in het echt spreken in een ontspannen setting. Veel beter dan weer een vergaderzaal.",
+        "name": "James Parker, engineeringmanager",
+        "company": "Softwarebedrijf"
+      },
+      "2": {
+        "quote": "We hebben onze afdeling van 16 mensen in twee teams gesplitst. De vriendschappelijke competitie was geweldig en iedereen leerde iets nieuws over zijn collega's.",
+        "name": "Lisa Chen, operations lead",
+        "company": "Financiële dienstverlening"
+      },
+      "3": {
+        "quote": "Makkelijk te boeken, professionele service en echt resultaat op teamgebied. We doen dit zeker weer met nieuwe collega's.",
+        "name": "Mark Thompson, HR-directeur",
+        "company": "Productiebedrijf"
+      }
+    },
+    "faq": {
+      "title": "Vragen over zakelijke boekingen",
+      "0": {
+        "question": "Hoe boeken we voor een zakelijk team?",
+        "answer": "Heel eenvoudig! Neem contact op met je gewenste data en de teamgrootte. Wij regelen de facturatie, sturen boekingsbevestigingen voor je declaratie en stemmen de tijden af op jullie planning."
+      },
+      "1": {
+        "question": "En als we met meer dan 10 personen zijn?",
+        "answer": "We raden aan om op te splitsen in meerdere teams van 4 tot 6 personen. Teams kunnen het tegen elkaar opnemen of op verschillende tijden starten. We helpen bij het coördineren van meerdere boekingen en kunnen een klassement bijhouden voor het competitie-element."
+      },
+      "2": {
+        "question": "Wat is het plan bij slecht weer?",
+        "answer": "Teams kunnen pauzeren en een andere dag verdergaan als het weer roet in het eten gooit. Bij extreem weer verzetten we de boeking volledig, zonder extra kosten."
+      },
+      "3": {
+        "question": "Zijn er zakelijke tarieven?",
+        "answer": "Ja, we bieden scherpe tarieven voor zakelijke boekingen en korting bij meerdere teams. Neem contact op voor een offerte op maat."
+      }
+    },
+    "cta": {
+      "text": "Echt teamwerk. Oprechte samenwerking. Haal je team het kantoor uit.",
+      "label": "Boek teamervaring",
+      "contactLabel": "Contact voor groepstarieven"
+    }
+  },
+  "checkout": {
+    "loading": "We zetten je ervaring klaar...",
+    "error": {
+      "title": "We konden je boeking niet vinden",
+      "description": "Controleer je e-mail voor de eventlink, of neem contact met ons op.",
+      "tryAgain": "Opnieuw proberen",
+      "backHome": "Terug naar home"
+    },
+    "success": {
+      "title": "Alles staat klaar!",
+      "eventLinkLabel": "Jouw eventlink",
+      "copy": "Kopiëren",
+      "copied": "Gekopieerd!",
+      "share": "Deel met vrienden",
+      "shareTitle": "Doe mee met mijn City Roam-avontuur!",
+      "whatsNext": "Wat nu?",
+      "whatsNextDescription": "Deel deze link met je groep. Iedereen opent hem, vult zijn naam in, en degene die het voortouw neemt start het spel zodra iedereen klaar is.",
+      "refundNote": "Niet tevreden? Volledige terugbetaling — zonder vragen."
+    }
+  }
+}

@@ -1,0 +1,578 @@
+{
+  "metadata": {
+    "home": {
+      "title": "City Roam — KI-geführte Schnitzeljagden in Leeds",
+      "description": "Erkunde Leeds bei einer KI-gestützten Schnitzeljagd. Löse Rätsel, entdecke versteckte Ecken und hab Spaß mit Freunden — alles per KI auf deinem Handy.",
+      "ogImageAlt": "City Roam — KI-geführte Schnitzeljagden in Leeds"
+    },
+    "families": {
+      "title": "Abenteuer für Familien — City Roam",
+      "description": "Macht aus eurem Familienausflug eine spannende KI-geführte Schnitzeljagd in Leeds. Für jedes Alter geeignet, kinderwagentauglich und so gestaltet, dass niemandem langweilig wird."
+    },
+    "henParties": {
+      "title": "Junggesellinnenabschied — City Roam",
+      "description": "Schenkt der Braut ein unvergessliches Erlebnis. Erkundet Leeds gemeinsam, löst Rätsel im Team und schafft Erinnerungen, die weit über die Hochzeit hinaus bleiben."
+    },
+    "teamBuilding": {
+      "title": "Teambuilding — City Roam",
+      "description": "Hol dein Team mit einer KI-geführten Schnitzeljagd in Leeds aus dem Büro. Echte Zusammenarbeit, echtes Problemlösen und richtig viel Spaß — perfekt für Teams von 4 bis 10+ Personen."
+    }
+  },
+  "common": {
+    "header": {
+      "brand": "City Roam",
+      "families": "Familien",
+      "henParties": "Junggesellinnenabschied",
+      "teamBuilding": "Teambuilding",
+      "bookNow": "Jetzt buchen",
+      "toggleMenu": "Menü öffnen",
+      "changeLanguage": "Sprache wechseln",
+      "currentLanguage": "Deutsch"
+    },
+    "footer": {
+      "copyright": "© {year} City Roam. Alle Rechte vorbehalten."
+    }
+  },
+  "cta": {
+    "defaultLabel": "Erlebnis buchen",
+    "loading": "Weiterleitung zur Kasse ...",
+    "error": "Da ist etwas schiefgelaufen. Bitte versuch es noch einmal.",
+    "retry": "Erneut versuchen"
+  },
+  "faq": {
+    "0": {
+      "question": "Wie viele Personen können mitspielen?",
+      "answer": "Bis zu 10 Personen können an einem Erlebnis teilnehmen. Alle spielen gemeinsam auf dem eigenen Handy, teilen Hinweise und lösen die Rätsel als Gruppe."
+    },
+    "1": {
+      "question": "Wie lange dauert es?",
+      "answer": "Die meisten Gruppen sind in 2 bis 3 Stunden fertig, aber ihr könnt euch Zeit lassen — es läuft keine Uhr. Trinkt einen Kaffee, biegt in eine Seitenstraße ab, ganz wie ihr wollt."
+    },
+    "2": {
+      "question": "Was brauche ich?",
+      "answer": "Nur ein Handy mit Internetzugang. Keine App zum Herunterladen — alles läuft im Browser."
+    },
+    "3": {
+      "question": "Ist es barrierefrei?",
+      "answer": "Die Route führt über rund 4 km befestigte Wege durch die Innenstadt. Sie ist für Rollstühle und Kinderwagen geeignet und vermeidet steile Anstiege. Wenn du besondere Anforderungen hast, melde dich einfach — wir helfen gern."
+    },
+    "4": {
+      "question": "Ist es für Kinder geeignet?",
+      "answer": "Kinder ab 8 Jahren haben Spaß daran, Rätsel zu lösen und zu entdecken. Jüngere brauchen bei kniffligen Hinweisen vielleicht etwas Hilfe. Die Route ist außerdem kinderwagentauglich."
+    },
+    "5": {
+      "question": "Und wenn es regnet?",
+      "answer": "Nieselregen? Kein Problem — es gibt genug gemütliche Ecken zum Unterstellen. Bei Wolkenbruch könnt ihr das Spiel pausieren und später weitermachen. Euer Abenteuer bleibt flexibel."
+    },
+    "6": {
+      "question": "Sind Hunde erlaubt?",
+      "answer": "Auf jeden Fall. Viele Stationen sind draußen oder in der Nähe hundefreundlicher Pubs. Nimm deinen Vierbeiner einfach mit auf Tour."
+    },
+    "7": {
+      "question": "Kann ich pausieren und an einem anderen Tag weitermachen?",
+      "answer": "Ja! Wenn ihr mittendrin aufhören und morgen weitermachen wollt, ist das völlig in Ordnung. Euer Fortschritt wird automatisch gespeichert."
+    },
+    "8": {
+      "question": "Kann ich alleine losziehen?",
+      "answer": "Klar! Das Erlebnis macht auch solo genauso viel Spaß. Viele machen es aber zu zweit, mit Freunden oder als Team."
+    },
+    "9": {
+      "question": "Wie sieht es mit Rückerstattungen aus?",
+      "answer": "Volle Rückerstattung, ohne Nachfragen. Wenn du aus irgendeinem Grund nicht zufrieden bist, sag uns einfach Bescheid."
+    }
+  },
+  "chatDemo": {
+    "guideLabel": "Guide",
+    "hero": {
+      "initial": "Finde das Gebäude mit der goldenen Uhr am Turm 🕰️",
+      "0": "Das alte Rathaus!",
+      "1": "Genau richtig! Gut gemacht 🎉",
+      "2": "Erbaut 1858 — eines der bekanntesten Wahrzeichen der Stadt.",
+      "3": "Auf zum nächsten Punkt ...",
+      "4": "Unterwegs liegt ein richtig gutes Café!"
+    },
+    "howItWorks": {
+      "0": "Willkommen bei City Roam! 📱",
+      "1": "Ich bin heute dein Guide.",
+      "2": "Ich schicke dir unterwegs Hinweise und Wegbeschreibungen.",
+      "3": "Du kannst mich jederzeit alles fragen.",
+      "4": "Bereit loszulegen?",
+      "5": "Auf geht's!"
+    }
+  },
+  "home": {
+    "hero": {
+      "title": "KI-geführte Schnitzeljagden in Leeds",
+      "subtitle": "Löst Rätsel, entdeckt versteckte Ecken und erkundet die Stadt mit Freunden — alles per KI auf eurem Handy."
+    },
+    "problem": {
+      "text1": "<b>Keine Zeitpläne. Keine Reiseführer.</b> Nur ihr, euer Handy und eine Spur aus Hinweisen.",
+      "text2": "City Roam ist ein Entdeckungsspiel fürs Handy, das euch mitten durch Leeds führt. Keine App zum Herunterladen. Nur Rätsel, Entdeckungen und gute Zeiten.",
+      "text3": "Löst Rätsel, stoßt auf verborgene Geschichten und erkundet in eurem Tempo. Ob mit Familie, Freunden oder Kollegen — es ist zum Teilen gemacht."
+    },
+    "howItWorks": {
+      "title": "So funktioniert's",
+      "step1Title": "Startet in der Stadt",
+      "step1Desc": "Wählt euren Startpunkt und legt los, wenn ihr bereit seid. Beginnt euer Abenteuer von überall in der Innenstadt.",
+      "step2Title": "Löst die Rätsel gemeinsam",
+      "step2Desc": "Knackt mit dem Handy kreative Hinweise, die euch quer durch die Stadt führen. Jedes Rätsel bringt euch einer versteckten Perle näher.",
+      "step3Title": "Entdeckt verborgene Geschichten",
+      "step3Desc": "Erfahrt unterwegs mehr über geheime Orte, lokale Legenden und faszinierende Geschichte. Seht Leeds mit neuen Augen.",
+      "step4Title": "Spielt in eurem Tempo",
+      "step4Desc": "Haltet an für ein Getränk, für Mittagessen oder macht sogar an einem anderen Tag weiter. Kein Zeitlimit — es ist euer Abenteuer."
+    },
+    "phone": {
+      "title": "Nimm einfach dein Handy mit",
+      "subtitle": "Keine App zum Herunterladen. Keine Ausrüstung zum Schleppen. Einfach den Handybrowser öffnen und losziehen.",
+      "features": {
+        "0": "Funktioniert auf jedem Smartphone",
+        "1": "Keine Downloads — läuft im Browser",
+        "2": "Ein KI-Guide begleitet euch im Chat",
+        "3": "Pausiert und macht weiter, wann ihr wollt"
+      }
+    },
+    "included": {
+      "title": "Was drin ist",
+      "subtitle": "Alles für einen richtig guten Tag draußen — bringt einfach Abenteuerlust mit.",
+      "items": {
+        "0": "Eine handgemachte Route durch Leeds (rund 4 km)",
+        "1": "Interaktive Hinweise, Rätsel und Mini-Challenges",
+        "2": "Lokale Essens- und Getränketipps während des Spiels",
+        "3": "Keine Downloads — nur der Browser auf eurem Handy",
+        "4": "Pausiert und macht weiter, wann ihr wollt",
+        "5": "Kinderwagen-, rollstuhl- und hundefreundlich"
+      }
+    },
+    "whyChoose": {
+      "title": "Warum City Roam?",
+      "subtitle": "Flexibel, unterhaltsam und voller Überraschungen. Keine gewöhnliche Stadtführung.",
+      "localKnowledge": {
+        "title": "Lokales Wissen",
+        "description": "Von Einheimischen entwickelt, um die Geschichten und versteckten Orte zu zeigen, die wir lieben — kein Sightseeing von der Stange."
+      },
+      "justYourPhone": {
+        "title": "Nur euer Handy",
+        "description": "Läuft direkt im Browser. Keine Apps. Keine Downloads. Kein Technik-Stress."
+      },
+      "playYourWay": {
+        "title": "Spielt, wie ihr wollt",
+        "description": "Startet, wann ihr mögt. Macht Kaffeepause. Macht morgen weiter. Ihr habt das Sagen."
+      },
+      "builtForGroups": {
+        "title": "Gemacht für Gruppen",
+        "description": "Ob mit Freunden, Familie oder Kollegen — in der Gruppe macht es am meisten Spaß."
+      }
+    },
+    "pricing": {
+      "title": "Einfacher Preis",
+      "subtitle": "Ein Preis für die ganze Gruppe. Bis zu 10 Personen.",
+      "originalPrice": "£49",
+      "price": "£29",
+      "badge": "Einführungspreis"
+    },
+    "reviews": {
+      "title": "Das sagen andere",
+      "0": {
+        "quote": "So ein schöner Nachmittag! Der KI-Guide war überraschend witzig.",
+        "name": "Sarah T."
+      },
+      "1": {
+        "quote": "Perfekt für einen Geburtstagsausflug. Alle haben es geliebt, die Rätsel gemeinsam zu lösen.",
+        "name": "James M."
+      },
+      "2": {
+        "quote": "Viel besser als eine langweilige Stadtführung. Wir haben Orte entdeckt, von denen wir nichts wussten!",
+        "name": "Priya K."
+      }
+    },
+    "guarantee": {
+      "title": "100 % Spaßgarantie",
+      "description": "Kein Spaß gehabt? Dann gibt's das Geld zurück. Ohne Nachfragen. Wir wollen, dass alle das Erkunden mit City Roam genießen."
+    },
+    "faqTitle": "Häufige Fragen"
+  },
+  "families": {
+    "hero": {
+      "title": "Familienabenteuer ganz ohne Aufwand",
+      "subtitle": "Macht aus eurem Familienausflug eine spannende Schnitzeljagd. Perfekt für Erinnerungen fürs Leben — und dafür, dass niemandem langweilig wird.",
+      "cta": "Familienabenteuer buchen"
+    },
+    "problem": {
+      "text1": "<b>Genug von „Sind wir bald da?“</b> City Roam macht aus eurem Familienspaziergang ein Abenteuer, das alle mitreißt.",
+      "text2": "Schluss damit, unwillige Kinder von einer Sehenswürdigkeit zur nächsten zu ziehen. Stattdessen rennen sie voraus, um den nächsten Hinweis zu lösen — und entdecken dabei tolle Orte und Geschichten über die Stadt.",
+      "text3": "Für gemischte Altersgruppen gemacht — von neugierigen Achtjährigen über Teenager bis zu den Großeltern. Alle bringen sich ein, alle lernen etwas, alle haben Spaß."
+    },
+    "whyLove": {
+      "title": "Warum Familien City Roam lieben",
+      "engaged": {
+        "title": "Alle bleiben bei der Sache",
+        "description": "Keine gelangweilten Kinder und kein Trödeln mehr. Die Hinweise und Aufgaben halten die Köpfe wach und die Füße freiwillig in Bewegung."
+      },
+      "educational": {
+        "title": "Lehrreich und unterhaltsam",
+        "description": "Lernt etwas über Geschichte, Architektur und lokale Kultur, ohne dass es sich wie ein Schulausflug anfühlt. Wissen kommt ganz nebenbei beim Spielen."
+      },
+      "allAges": {
+        "title": "Für jedes Alter",
+        "description": "Von 8 bis 80 — alle können beitragen. Die Kleinen lösen Bilderrätsel, die Teenager helfen beim Navigieren, die Erwachsenen erzählen die Geschichten."
+      },
+      "bonding": {
+        "title": "Echte Familienzeit",
+        "description": "Handys weg (außer dem fürs Spiel!) und gemeinsam als Team arbeiten. Erinnerungen schaffen, während ihr zusammen unterwegs seid."
+      }
+    },
+    "perfectFor": {
+      "title": "Perfekt für jede Familie",
+      "subtitle": "Ob ihr Einheimische seid und eure Stadt neu entdecken wollt oder als Gäste etwas Neues erkundet.",
+      "grandparents": {
+        "title": "Besuch von den Großeltern",
+        "description": "Zeigt ihnen die Stadt auf spielerische, interaktive Art. Sie lieben die Geschichten, die Kinder lieben das Abenteuer."
+      },
+      "weekend": {
+        "title": "Familienzeit am Wochenende",
+        "description": "Macht aus einem gewöhnlichen Samstag etwas Besonderes. Raus, bewegen und Ecken der eigenen Stadt entdecken, die ihr noch nicht kanntet."
+      },
+      "holidays": {
+        "title": "Schulferien",
+        "description": "Vertreibt die Ferienlangeweile mit einem lehrreichen Abenteuer. Lernen im Spielgewand — und sie merken es nicht einmal."
+      }
+    },
+    "howItWorks": {
+      "title": "So läuft euer Familienabenteuer ab",
+      "step1Title": "Startet, wenn ihr bereit seid",
+      "step1Desc": "Keine Hetze zu einem Treffpunkt. Legt los, wenn alle gegessen, getrunken und Lust aufs Entdecken haben.",
+      "step2Title": "Arbeitet als Team",
+      "step2Desc": "Lasst bei jedem Hinweis jemand anderen aus der Familie vorangehen. So darf jede und jeder mal glänzen.",
+      "step3Title": "Lasst euch Zeit",
+      "step3Desc": "Haltet an für ein Eis, lasst die Kinder herumtoben oder genießt einfach den Moment. Das Abenteuer wartet auf euch."
+    },
+    "features": {
+      "title": "Familienfreundliche Extras",
+      "subtitle": "Alles ist für echte Familien gedacht — denn wir wissen, wie Familienausflüge wirklich laufen.",
+      "items": {
+        "0": "Route mit Kinderwagen und Rollstuhl befahrbar",
+        "1": "Hinweise ab 8 Jahren geeignet (jünger mit Hilfe)",
+        "2": "Viele Gelegenheiten für Snack- und Toilettenpausen",
+        "3": "Lehrreiche Inhalte, die sich nicht nach Hausaufgaben anfühlen",
+        "4": "Hundefreundliche Route für den Familienhund",
+        "5": "Pausieren und weitermachen — perfekt für kurze Aufmerksamkeitsspannen"
+      }
+    },
+    "safety": {
+      "title": "Sicherheit und Praktisches",
+      "text1": "Wir wissen, dass Sicherheit an erster Stelle steht, wenn ihr mit der Familie unterwegs seid. Die Route bleibt in belebten, gut beleuchteten Gegenden mit vielen Geschäften und Cafés in der Nähe.",
+      "text2": "Die Routen sind rund 4 km lang und weitgehend flach — perfekt für kurze Beine und Kinderwagen. Unterwegs gibt es familienfreundliche Haltepunkte.",
+      "text3": "Wenn das Wetter umschlägt oder jemand müde wird, könnt ihr das Spiel pausieren und an einem anderen Tag weitermachen. Kein Druck, einfach nur Familienspaß."
+    },
+    "faq": {
+      "title": "Antworten für Familien",
+      "0": {
+        "question": "Für welches Alter ist das geeignet?",
+        "answer": "Kinder ab 8 Jahren können beim Rätsellösen aktiv mitmachen. Jüngere Kinder (4 bis 7) machen mit Unterstützung der Älteren mit und haben Freude daran, Dinge zu entdecken und Teil des Abenteuers zu sein. Es ist für gemischte Altersgruppen gemacht."
+      },
+      "1": {
+        "question": "Ist die Route kinderwagentauglich?",
+        "answer": "Absolut! Die gesamte Route ist mit Kinderwagen und Rollstuhl befahrbar. Wir haben gezielt Wege gewählt, die für Familien mit Buggy funktionieren, und Stufen sowie steile Anstiege vermieden."
+      },
+      "2": {
+        "question": "Wie lange dauert es mit Kindern?",
+        "answer": "Die meisten Familien brauchen 2,5 bis 3,5 Stunden, aber es eilt nicht! Plant Zeit für Snackpausen, Toilettengänge und die Momente ein, in denen Kinder etwas Spannendes erkunden wollen. Ihr könnt jederzeit pausieren."
+      },
+      "3": {
+        "question": "Was, wenn es regnet oder die Kinder müde werden?",
+        "answer": "Ihr könnt das Abenteuer jederzeit pausieren und später weitermachen — sogar an einem anderen Tag! Es gibt viele überdachte Orte zum Unterstellen, und das Spiel speichert euren Fortschritt automatisch."
+      },
+      "4": {
+        "question": "Gibt es unterwegs Orte zum Essen?",
+        "answer": "Ja! Die Route führt an familienfreundlichen Cafés, Pubs mit Kindermenüs und tollen Picknickplätzen vorbei. Wir geben euch unterwegs Empfehlungen für die besten Familienstopps."
+      },
+      "5": {
+        "question": "Brauchen die Kinder ein eigenes Handy?",
+        "answer": "Nein, ein Handy pro Familie reicht völlig. Das fördert sogar die Zusammenarbeit, weil alle zusammenkommen, um die Rätsel zu lösen. Viel schöner, als wenn jeder auf einen eigenen Bildschirm starrt!"
+      }
+    },
+    "cta": {
+      "text": "Ein Abenteuer, das die ganze Familie lieben wird. Lernen im Spielgewand. Erinnerungen für immer.",
+      "label": "Familienabenteuer buchen"
+    }
+  },
+  "henParties": {
+    "hero": {
+      "title": "Der perfekte Junggesellinnenabschied",
+      "subtitle": "Schenkt der Braut ein unvergessliches Erlebnis. Erkundet die Stadt gemeinsam, löst Rätsel im Team und schafft Erinnerungen, die weit über die Hochzeit hinaus bleiben.",
+      "cta": "Junggesellinnenabschied buchen"
+    },
+    "problem": {
+      "text1": "<b>Schluss mit den immergleichen JGA-Programmen.</b> City Roam bietet etwas völlig anderes — ein Abenteuer, das alle zusammenbringt und die Braut feiert.",
+      "text2": "Perfekt für Gruppen, die etwas Einzigartiges, Unvergessliches und Instagram-taugliches suchen. Keine peinlichen Spiele, kein erzwungener Spaß — nur echte Begeisterung, während ihr gemeinsam die Stadt erkundet und Aufgaben löst.",
+      "text3": "Ideal für Gruppen von 6 bis 12 Freundinnen. Alle machen mit, die Stimmung entsteht von selbst, und die Braut bekommt ein Erlebnis, das sie nie vergisst."
+    },
+    "whyLove": {
+      "title": "Warum JGA-Gruppen City Roam lieben",
+      "different": {
+        "title": "Mal etwas ganz anderes",
+        "description": "Hebt euch vom typischen JGA-Programm ab. Schenkt der Braut ein Erlebnis, das sie noch nie hatte — und wahrscheinlich nie wieder haben wird!"
+      },
+      "group": {
+        "title": "Die perfekte Gruppenaktivität",
+        "description": "Alle arbeiten auf ein gemeinsames Ziel hin. Ein toller Eisbrecher für Freundinnen, die sich kaum kennen, und ein wunderbares Erlebnis für alte Weggefährtinnen."
+      },
+      "instagram": {
+        "title": "Momente für Instagram",
+        "description": "Entdeckt versteckte Perlen und wunderschöne Ecken, perfekt für die unverzichtbaren JGA-Fotos. Inhalte, so einzigartig wie eure Freundschaft."
+      },
+      "timing": {
+        "title": "Zeitlich perfekt planbar",
+        "description": "Fügt sich mühelos in euren restlichen Plan ein. Macht es als Tagesprogramm vor der Abendfeier oder als schwungvollen Wochenendauftakt."
+      }
+    },
+    "styles": {
+      "title": "Passt zu jedem JGA-Stil",
+      "subtitle": "Ob ihr eine entspannte Feier oder ein ganzes Wochenende mit großem Programm plant.",
+      "daytime": {
+        "title": "Abenteuer am Tag",
+        "description": "Der perfekte Auftakt für euer JGA-Wochenende. Alle zusammenbringen, das Eis brechen und Appetit auf den Abend machen."
+      },
+      "alternative": {
+        "title": "Feiern mal anders",
+        "description": "Für Bräute, die etwas anderes als die übliche JGA-Runde wollen. Einzigartig, unvergesslich und ganz auf eure Gruppe zugeschnitten."
+      },
+      "mixed": {
+        "title": "Bunt gemischte Gruppen",
+        "description": "Ideal, wenn Freundinnen aus ganz verschiedenen Lebensphasen zusammenkommen, die sich nicht kennen. Beim gemeinsamen Rätseln wachsen alle zusammen."
+      }
+    },
+    "organise": {
+      "title": "Einfach zu organisieren",
+      "perfectSize": {
+        "title": "6 bis 12 Personen: die ideale Größe",
+        "description": "Alle bleiben zusammen, können sich verstehen, und niemand bleibt zurück. Auch für Gruppenfotos perfekt."
+      },
+      "simple": {
+        "title": "Kinderleicht zu buchen",
+        "description": "Eine Buchung, eine Zahlung, eine Bestätigung. Details mit der Gruppe teilen und fertig. Keine komplizierte Abstimmung nötig."
+      },
+      "special": {
+        "title": "Lasst die Braut strahlen",
+        "description": "Sie wird es lieben, dass ihr etwas Besonderes und Durchdachtes gewählt habt. Ein Erlebnis, das sie feiert und all ihre Lieblingsmenschen zusammenbringt."
+      }
+    },
+    "special": {
+      "title": "Das macht es besonders",
+      "items": {
+        "0": "Tolle Fotomotive an versteckten Orten",
+        "1": "Teamwork, das die Gruppe zusammenschweißt",
+        "2": "Flexible Zeiten rund um eure übrigen Feierlichkeiten",
+        "3": "Ein einzigartiges Erlebnis, das die Braut nie vergisst",
+        "4": "Großartige Pubs und Bars, die ihr unterwegs entdeckt",
+        "5": "Für die Organisatorin leicht zu koordinieren"
+      }
+    },
+    "safety": {
+      "title": "Sicher feiern",
+      "text1": "Die Route bleibt in belebten, gut beleuchteten Gegenden mit vielen Pubs, Cafés und Geschäften am Weg.",
+      "text2": "Startet zu der Zeit, die zu eurem Wochenende passt — Abenteuer am Vormittag vor der Abendfeier oder Nachmittagsprogramm, das direkt in Abendessen und Drinks übergeht.",
+      "text3": "Beim Rätsellösen bleibt die Gruppe ganz von selbst zusammen, und für die unverzichtbaren JGA-Fotos gibt es reichlich Gelegenheit. Außerdem entdeckt ihr tolle Adressen für den Abend."
+    },
+    "testimonials": {
+      "title": "Das sagen Bräute und ihre Freundinnen",
+      "0": {
+        "quote": "Die beste JGA-Aktivität überhaupt! So anders als das Übliche, und alle waren begeistert. Die Braut hat gestrahlt — der perfekte Auftakt für unser Wochenende.",
+        "name": "Lucy, Trauzeugin",
+        "occasion": "JGA-Wochenende"
+      },
+      "1": {
+        "quote": "Ein toller Eisbrecher für unsere bunt gemischte Gruppe. Freundinnen aus Uni, Arbeit und Heimat sind beim Rätseln zusammengewachsen. So eine clevere Art, alle zusammenzubringen.",
+        "name": "Sophie, zukünftige Braut",
+        "occasion": "Feier am Tag"
+      },
+      "2": {
+        "quote": "Zeitlich perfekt für unser JGA-Wochenende. Wir haben es am Samstagnachmittag gemacht, tolle Orte entdeckt und sind abends in die Pubs gegangen, die wir gefunden hatten!",
+        "name": "Emma, Brautjungfer",
+        "occasion": "JGA-Wochenende"
+      },
+      "3": {
+        "quote": "So einfach zu organisieren, und alle waren begeistert. Die Braut sagte, es war ihr Lieblingsteil des ganzen JGA. Mehr geht nicht!",
+        "name": "Kate, Schwester der Braut",
+        "occasion": "Feiertag"
+      }
+    },
+    "faq": {
+      "title": "Fragen zur JGA-Planung",
+      "0": {
+        "question": "Wie machen wir es für die Braut besonders?",
+        "answer": "Die Braut rückt ganz automatisch in den Mittelpunkt, während die Gruppe zusammenarbeitet. Alle wollen ihr ein tolles Erlebnis bereiten, und sie ist Teil von etwas Einzigartigem und Unvergesslichem."
+      },
+      "1": {
+        "question": "Wann sollten wir starten?",
+        "answer": "Völlig flexibel! Ein Start am Vormittag passt super vor Mittagessen und Abendfeier. Nachmittagsabenteuer gehen perfekt in Abendessen und Drinks über. Wir empfehlen einen Start zwischen 10 und 15 Uhr."
+      },
+      "2": {
+        "question": "Dürfen wir während des Erlebnisses Fotos machen?",
+        "answer": "Unbedingt! Ihr entdeckt wunderschöne, versteckte Ecken, die perfekt für JGA-Fotos sind. Die Route führt zu einigen der fotogensten Orte der Stadt."
+      },
+      "3": {
+        "question": "Können wir unterwegs etwas trinken?",
+        "answer": "Ihr kommt an jeder Menge schöner Pubs und Bars vorbei. Viele Gruppen legen mittendrin eine Pause für einen Drink ein!"
+      },
+      "4": {
+        "question": "Was, wenn sich einige nicht kennen?",
+        "answer": "Genau das ist einer der besten Eisbrecher überhaupt. Beim gemeinsamen Rätseln kommen alle ganz natürlich ins Reden und Lachen. Viel besser als steife Vorstellungsrunden beim Abendessen."
+      },
+      "5": {
+        "question": "Was, wenn das Wetter nicht mitspielt?",
+        "answer": "Ihr könnt das Abenteuer pausieren und später weitermachen oder sogar an einem anderen Tag fortsetzen. Es gibt viele überdachte Bereiche und Orte zum Unterstellen. Lasst euch die Feier nicht vom britischen Wetter verderben!"
+      }
+    },
+    "cta": {
+      "text": "Schenkt der Braut etwas Unvergessliches. Schafft gemeinsame Erinnerungen. Startet ihre Hochzeitsfeierlichkeiten perfekt.",
+      "label": "Junggesellinnenabschied buchen"
+    }
+  },
+  "teamBuilding": {
+    "hero": {
+      "title": "Teambuilding jenseits des Konferenzraums",
+      "subtitle": "Hol dein Team aus dem Büro und lass es in einer völlig neuen Umgebung zusammenarbeiten. Echte Zusammenarbeit, echtes Problemlösen und richtig viel Spaß.",
+      "cta": "Teamerlebnis buchen"
+    },
+    "problem": {
+      "text1": "<b>Vergiss peinliche Eisbrecher und erzwungene Vertrauensübungen.</b> City Roam lässt Zusammenarbeit ganz natürlich entstehen, während euer Team echte Aufgaben löst.",
+      "text2": "Beobachte, wie Kolleginnen und Kollegen, die im Büro kaum miteinander reden, plötzlich zu Problemlöse-Partnern werden. Sieh, wie die Stillen aufblühen, wenn sie den entscheidenden Hinweis knacken. Erlebe echtes Teamwork, weit weg von E-Mails und Meetings.",
+      "text3": "Perfekt für Teams von 4 bis 10 Personen. Größere Gruppen? Dann empfehlen wir, sie in mehrere Teams aufzuteilen — für einen freundschaftlichen Wettstreit, der alle zusammenbringt."
+    },
+    "whyChoose": {
+      "title": "Warum Unternehmen City Roam wählen",
+      "collaboration": {
+        "title": "Echte Zusammenarbeit",
+        "description": "Teams müssen kommunizieren, Aufgaben verteilen und ihre unterschiedlichen Stärken bündeln, um erfolgreich zu sein. Keine gestellten Übungen — nur Teamwork, das von selbst entsteht."
+      },
+      "perspective": {
+        "title": "Frischer Blickwinkel",
+        "description": "Hol dein Team aus der gewohnten Umgebung und sieh zu, wie neue Ideen entstehen. Andere Umgebung, anderes Denken, bessere Lösungen."
+      },
+      "inclusive": {
+        "title": "Für alle geeignet",
+        "description": "Keine sportlichen Herausforderungen, keine unangenehmen Übungen. Alle können sich einbringen, unabhängig von Fitness, Persönlichkeit oder Erfahrung."
+      },
+      "energised": {
+        "title": "Teams mit neuer Energie",
+        "description": "Die Teams kommen verbundener und motivierter ins Büro zurück. Ein gemeinsames Erlebnis, auf das sich alle später wie selbstverständlich beziehen."
+      }
+    },
+    "perfectFor": {
+      "title": "Perfekt für dein Team",
+      "subtitle": "Ob ihr neue Beziehungen aufbaut oder bestehende festigt.",
+      "newTeam": {
+        "title": "Neue Teams zusammenbringen",
+        "description": "Hilf neuen Kolleginnen und Kollegen, in entspannter, natürlicher Atmosphäre Anschluss zu finden. Barrieren fallen schnell."
+      },
+      "crossDept": {
+        "title": "Zusammenarbeit über Abteilungen hinweg",
+        "description": "Bring verschiedene Abteilungen an einen Tisch. Perfekt zum Projektstart oder um Silos aufzubrechen."
+      },
+      "morale": {
+        "title": "Stimmungsschub fürs Team",
+        "description": "Belohne dein Team mit etwas, das wirklich Spaß macht. Zeig Wertschätzung und stärke gleichzeitig den Zusammenhalt."
+      }
+    },
+    "sizes": {
+      "title": "Flexible Teamgrößen",
+      "sweetSpot": {
+        "title": "4 bis 10 Personen: die ideale Größe",
+        "description": "Alle können sich sinnvoll einbringen, die Kommunikation läuft von selbst, und die Teamdynamik entsteht ganz natürlich."
+      },
+      "multiple": {
+        "title": "Ab 11 Personen: mehrere Teams",
+        "description": "Teilt euch in kleinere Teams für einen freundschaftlichen Wettstreit. Die Teams können zu verschiedenen Zeiten starten oder direkt gegeneinander antreten."
+      },
+      "competition": {
+        "title": "Wettstreit mehrerer Teams",
+        "description": "Macht aus eurem Teambuilding ein Event für das ganze Unternehmen. Die Teams treten auf derselben Route an, es geht um die Ehre. Sprecht uns für Preise bei mehreren Teams an."
+      }
+    },
+    "benefits": {
+      "title": "Vorteile, die ihr wirklich merkt",
+      "items": {
+        "0": "Bessere Kommunikation und aktiveres Zuhören",
+        "1": "Mehr Kreativität beim Lösen von Problemen",
+        "2": "Stärkere Beziehungen untereinander",
+        "3": "Mehr Selbstvertrauen und bessere Stimmung im Team",
+        "4": "Ein besseres Gespür für die Stärken jedes Einzelnen",
+        "5": "Ein gemeinsames Erlebnis und Insiderwitze"
+      }
+    },
+    "practical": {
+      "title": "Praktische Informationen",
+      "text1": "Firmenbuchungen machen wir einfach. Bucht für euer Team mit ordentlicher Rechnung, spesenfreundlichen Preisen und flexibler Terminplanung, die zum Geschäftsalltag passt.",
+      "text2": "Das Erlebnis dauert je nach Tempo 2 bis 3 Stunden und passt perfekt in einen Vormittag oder Nachmittag. Teams können zwischen 9 und 16 Uhr starten, und wir stellen ausführliche Briefing-Unterlagen bereit.",
+      "text3": "Die Teilnehmenden brauchen nur bequeme Schuhe und ein Smartphone. Um alles andere kümmern wir uns, inklusive der Koordination mehrerer Teams und individueller Startzeiten."
+    },
+    "testimonials": {
+      "title": "Das sagen Unternehmen",
+      "0": {
+        "quote": "Das beste Teambuilding, das wir je gemacht haben. Natürliche Zusammenarbeit, alle waren dabei, und es wurde wirklich getüftelt. Das Team kam voller Energie und enger verbunden zurück.",
+        "name": "Sarah Mitchell, Marketingleiterin",
+        "company": "Tech-Start-up"
+      },
+      "1": {
+        "quote": "Perfekt für das Quartalstreffen unseres Remote-Teams. Endlich mal von Angesicht zu Angesicht in entspannter Runde. Viel besser als noch ein Konferenzraum.",
+        "name": "James Parker, Engineering Manager",
+        "company": "Softwareunternehmen"
+      },
+      "2": {
+        "quote": "Wir haben unsere 16-köpfige Abteilung in zwei Teams aufgeteilt. Der freundschaftliche Wettstreit war klasse, und alle haben etwas Neues über ihre Kolleginnen und Kollegen erfahren.",
+        "name": "Lisa Chen, Operations Lead",
+        "company": "Finanzdienstleistungen"
+      },
+      "3": {
+        "quote": "Einfach zu buchen, professioneller Service und echte Teambuilding-Ergebnisse. Mit neuen Kolleginnen und Kollegen machen wir das auf jeden Fall wieder.",
+        "name": "Mark Thompson, Personalleiter",
+        "company": "Industrie"
+      }
+    },
+    "faq": {
+      "title": "Fragen zu Firmenbuchungen",
+      "0": {
+        "question": "Wie buchen wir für ein Firmenteam?",
+        "answer": "Ganz einfach! Schreibt uns mit euren Wunschterminen und der Teamgröße. Wir kümmern uns um die Rechnung, stellen Buchungsbestätigungen für die Spesenabrechnung aus und stimmen die Zeiten auf euren Kalender ab."
+      },
+      "1": {
+        "question": "Was, wenn wir mehr als 10 Personen sind?",
+        "answer": "Wir empfehlen, euch in mehrere Teams zu je 4 bis 6 Personen aufzuteilen. Die Teams können gegeneinander antreten oder zu verschiedenen Zeiten starten. Wir helfen bei der Koordination mehrerer Buchungen und können für den Wettkampfgeist eine Rangliste bereitstellen."
+      },
+      "2": {
+        "question": "Was ist der Plan bei schlechtem Wetter?",
+        "answer": "Teams können pausieren und an einem anderen Tag weitermachen, wenn das Wetter zum Problem wird. Bei Unwetter verschieben wir den Termin auch komplett — ohne Zusatzkosten."
+      },
+      "3": {
+        "question": "Gibt es Firmenkonditionen?",
+        "answer": "Ja, wir bieten faire Preise für Firmenbuchungen und Rabatte für mehrere Teams. Sprecht uns an und wir erstellen euch ein individuelles Angebot."
+      }
+    },
+    "cta": {
+      "text": "Echtes Teamwork. Echte Zusammenarbeit. Hol dein Team aus dem Büro.",
+      "label": "Teamerlebnis buchen",
+      "contactLabel": "Gruppenpreise anfragen"
+    }
+  },
+  "checkout": {
+    "loading": "Wir richten dein Erlebnis ein ...",
+    "error": {
+      "title": "Wir konnten deine Buchung nicht finden",
+      "description": "Schau in deinem Postfach nach dem Event-Link oder melde dich bei uns.",
+      "tryAgain": "Erneut versuchen",
+      "backHome": "Zurück zur Startseite"
+    },
+    "success": {
+      "title": "Alles bereit!",
+      "eventLinkLabel": "Dein Event-Link",
+      "copy": "Kopieren",
+      "copied": "Kopiert!",
+      "share": "Mit Freunden teilen",
+      "shareTitle": "Komm mit auf mein City-Roam-Abenteuer!",
+      "whatsNext": "Wie geht's weiter?",
+      "whatsNextDescription": "Teile diesen Link mit deiner Gruppe. Alle öffnen ihn, geben ihren Namen ein, und die Person, die vorangeht, startet das Spiel, sobald alle bereit sind.",
+      "refundNote": "Nicht zufrieden? Volle Rückerstattung — ohne Nachfragen."
+    }
+  }
+}

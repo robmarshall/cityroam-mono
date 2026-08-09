@@ -226,7 +226,7 @@ export default function EventsListPage() {
                       <option value="">Select a route</option>
                       {routes.map((r) => (
                         <option key={r.id} value={r.id}>
-                          {r.name} ({r.city})
+                          {r.name} ({r.language.toUpperCase()})
                         </option>
                       ))}
                     </select>

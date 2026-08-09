@@ -6,6 +6,8 @@ import {
   type KeyboardEvent,
   type ChangeEvent,
 } from "react";
+import { useTranslation } from "react-i18next";
+import i18n from "i18next";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Dialog,
@@ -35,6 +37,7 @@ import type {
   ActionWaitingPayload,
 } from "@cityroam/shared/types";
 import { api, ApiError } from "../lib/api";
+import { validationMessage } from "../lib/errors";
 import { trackEvent } from "../lib/analytics";
 import { useParticipant } from "../contexts/ParticipantContext";
 import { useEvent } from "../contexts/EventContext";
@@ -53,13 +56,15 @@ const MAX_INPUT_HEIGHT = 72;
 // How long to show the "Connected" banner after reconnecting
 const CONNECTED_BANNER_DURATION_MS = 2000;
 
-const FATAL_CLOSE_MESSAGES: Record<number, string> = {
-  4003: "Event not found.",
-  4004: "This event has ended.",
-  4005: "You are no longer active in this event.",
-};
-
 export default function ChatPage() {
+  const { t } = useTranslation();
+
+  const FATAL_CLOSE_MESSAGES: Record<number, string> = {
+    4003: t("chat.fatalEventNotFound"),
+    4004: t("chat.fatalEventEnded"),
+    4005: t("chat.fatalNotActive"),
+  };
+
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
   const { participant, token, setParticipant, clearParticipant } = useParticipant();
@@ -232,7 +237,7 @@ export default function ChatPage() {
           const payload = msg.payload as ParticipantJoinedPayload;
           setMessages((prev) => [
             ...prev,
-            makeSystemMessage(`${payload.name} joined the game`),
+            makeSystemMessage(i18n.t("chat.participantJoined", { name: payload.name })),
           ]);
           break;
         }
@@ -240,7 +245,7 @@ export default function ChatPage() {
           const payload = msg.payload as ParticipantLeftPayload;
           setMessages((prev) => [
             ...prev,
-            makeSystemMessage(`${payload.name} left the game`),
+            makeSystemMessage(i18n.t("chat.participantLeft", { name: payload.name })),
           ]);
           setParticipantsTyping((prev) => {
             const existingTimer = prev.get(payload.name);
@@ -257,7 +262,7 @@ export default function ChatPage() {
           setMessages((prev) => [
             ...prev,
             makeSystemMessage(
-              `${payload.old_name} changed their name to ${payload.new_name}`
+              i18n.t("chat.nameChanged", { oldName: payload.old_name, newName: payload.new_name })
             ),
           ]);
           setParticipantsTyping((prev) => {
@@ -314,7 +319,7 @@ export default function ChatPage() {
         }
         case "error": {
           const payload = msg.payload as ErrorPayload;
-          setErrorToast(payload.message);
+          setErrorToast(validationMessage(payload.code ?? payload.message));
           setTimeout(() => setErrorToast(null), 4000);
           break;
         }
@@ -401,7 +406,7 @@ export default function ChatPage() {
 
     const sent = send({ type: "user_message", payload: { text: trimmed } });
     if (!sent) {
-      setErrorToast("You're offline — message not sent.");
+      setErrorToast(t("chat.offlineError"));
       setTimeout(() => setErrorToast(null), 4000);
       return;
     }
@@ -485,7 +490,7 @@ export default function ChatPage() {
     const trimmed = nameInput.trim();
     const result = displayNameSchema.safeParse(trimmed);
     if (!result.success) {
-      setNameError(result.error.issues[0]?.message ?? "Invalid name");
+      setNameError(validationMessage(result.error.issues[0]?.message ?? "DISPLAY_NAME_TOO_SHORT"));
       return;
     }
     if (participant && trimmed === participant.display_name) {
@@ -507,7 +512,7 @@ export default function ChatPage() {
       if (err instanceof ApiError) {
         setNameError(err.message);
       } else {
-        setNameError("Failed to change name. Please try again.");
+        setNameError(t("chat.nameChangeError"));
       }
     } finally {
       setSavingName(false);
@@ -517,7 +522,7 @@ export default function ChatPage() {
   if (!participant || !event || !code) {
     return (
       <div className="flex min-h-svh items-center justify-center bg-white">
-        <p className="text-system-text">Loading...</p>
+        <p className="text-system-text">{t("common.loading")}</p>
       </div>
     );
   }
@@ -527,16 +532,16 @@ export default function ChatPage() {
   // Determine if we should show a fatal error for close codes
   const fatalMessage =
     closeCode !== null && FATAL_CLOSE_CODES.has(closeCode)
-      ? FATAL_CLOSE_MESSAGES[closeCode] ?? "Connection closed."
+      ? FATAL_CLOSE_MESSAGES[closeCode] ?? t("common.connectionClosed")
       : null;
 
   return (
     <div ref={chatContainerRef} className="flex h-svh flex-col bg-white">
       {/* Header with menu */}
       <div className="flex shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 py-2">
-        <h1 className="text-sm font-semibold text-gray-900">City Roam</h1>
+        <h1 className="text-sm font-semibold text-gray-900">{t("chat.headerTitle")}</h1>
         <Menu as="div" className="relative">
-          <MenuButton className="rounded-full p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700" aria-label="Options menu">
+          <MenuButton className="rounded-full p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700" aria-label={t("chat.optionsMenu")}>
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
               <circle cx="12" cy="5" r="2" />
               <circle cx="12" cy="12" r="2" />
@@ -552,7 +557,7 @@ export default function ChatPage() {
                 onClick={openNameDialog}
                 className="flex w-full items-center px-4 py-2.5 text-sm text-gray-700 data-[focus]:bg-gray-50"
               >
-                Change Name
+                {t("chat.changeName")}
               </button>
             </MenuItem>
             <MenuItem>
@@ -560,7 +565,7 @@ export default function ChatPage() {
                 onClick={() => setShowLeaveDialog(true)}
                 className="flex w-full items-center px-4 py-2.5 text-sm text-red-600 data-[focus]:bg-gray-50"
               >
-                Leave Game
+                {t("chat.leaveGame")}
               </button>
             </MenuItem>
           </MenuItems>
@@ -570,22 +575,22 @@ export default function ChatPage() {
       {/* Connection status banners */}
       {wsStatus === "reconnecting" && (
         <div className="shrink-0 bg-yellow-400 px-4 py-1.5 text-center text-sm font-medium text-yellow-900">
-          Reconnecting...
+          {t("common.reconnecting")}
         </div>
       )}
       {showConnectedBanner && wsStatus === "connected" && (
         <div className="shrink-0 bg-green-500 px-4 py-1.5 text-center text-sm font-medium text-white">
-          Connected
+          {t("common.connected")}
         </div>
       )}
       {maxAttemptsReached && (
         <div className="flex shrink-0 items-center justify-center gap-3 bg-red-500 px-4 py-2 text-center text-sm font-medium text-white">
-          <span>Unable to reconnect</span>
+          <span>{t("common.unableToReconnect")}</span>
           <button
             onClick={manualRetry}
             className="rounded-md bg-white/20 px-3 py-0.5 text-sm font-semibold hover:bg-white/30"
           >
-            Retry
+            {t("common.retry")}
           </button>
         </div>
       )}
@@ -630,7 +635,7 @@ export default function ChatPage() {
                 <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
                 </svg>
-                <span>Guide</span>
+                <span>{t("chat.guideLabel")}</span>
               </div>
               <div className="inline-flex items-center gap-1 rounded-2xl rounded-bl-sm bg-bubble-guide px-4 py-3">
                 <span className="typing-dot inline-block h-2 w-2 rounded-full bg-gray-500" />
@@ -645,8 +650,8 @@ export default function ChatPage() {
         {participantsTyping.size > 0 && (
           <div className="mb-1 px-1 text-xs text-system-text">
             {participantsTyping.size === 1
-              ? `${[...participantsTyping.keys()][0]} is typing...`
-              : "Multiple people are typing..."}
+              ? t("chat.typingOne", { name: [...participantsTyping.keys()][0] })
+              : t("chat.typingMultiple")}
           </div>
         )}
 
@@ -666,7 +671,9 @@ export default function ChatPage() {
                 </button>
               ) : (
                 <div className="rounded-2xl rounded-bl-sm bg-bubble-guide px-4 py-2.5 text-sm text-gray-500 italic">
-                  Waiting for {participants.find(p => p.is_lead)?.display_name ?? "the lead"}...
+                  {participants.find(p => p.is_lead)?.display_name
+                    ? t("chat.waitingForLead", { name: participants.find(p => p.is_lead)!.display_name })
+                    : t("chat.waitingForLeadDefault")}
                 </div>
               )}
             </div>
@@ -683,7 +690,7 @@ export default function ChatPage() {
             onClick={scrollToBottom}
             className="rounded-full bg-brand-600 px-4 py-1.5 text-sm font-medium text-white shadow-lg"
           >
-            New messages &darr;
+            {t("chat.newMessages")}
           </button>
         </div>
       )}
@@ -696,7 +703,7 @@ export default function ChatPage() {
             value={inputText}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            placeholder="Type a message..."
+            placeholder={t("chat.inputPlaceholder")}
             rows={1}
             maxLength={MAX_MESSAGE_LENGTH}
             className="flex-1 resize-none overflow-hidden rounded-2xl border border-gray-300 px-4 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
@@ -706,7 +713,7 @@ export default function ChatPage() {
             onClick={handleSend}
             disabled={!isValidMessage}
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white transition-colors hover:bg-brand-700 disabled:opacity-40"
-            aria-label="Send message"
+            aria-label={t("chat.sendAriaLabel")}
           >
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
               <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
@@ -725,10 +732,10 @@ export default function ChatPage() {
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <DialogPanel className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
             <DialogTitle className="text-lg font-semibold text-gray-900">
-              Leave Game?
+              {t("chat.leaveDialog.title")}
             </DialogTitle>
             <p className="mt-2 text-sm text-gray-600">
-              You'll be removed from the game. You can rejoin later by opening the link again.
+              {t("chat.leaveDialog.message")}
             </p>
             <div className="mt-6 flex gap-3">
               <button
@@ -736,14 +743,14 @@ export default function ChatPage() {
                 disabled={leaving}
                 className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
               >
-                Cancel
+                {t("common.cancel")}
               </button>
               <button
                 onClick={handleLeave}
                 disabled={leaving}
                 className="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
               >
-                {leaving ? "Leaving..." : "Leave"}
+                {leaving ? t("chat.leaveDialog.leaving") : t("chat.leaveDialog.leaveButton")}
               </button>
             </div>
           </DialogPanel>
@@ -760,7 +767,7 @@ export default function ChatPage() {
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <DialogPanel className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
             <DialogTitle className="text-lg font-semibold text-gray-900">
-              Change Name
+              {t("chat.nameDialog.title")}
             </DialogTitle>
             <div className="mt-3">
               <input
@@ -779,7 +786,7 @@ export default function ChatPage() {
                 minLength={MIN_DISPLAY_NAME_LENGTH}
                 maxLength={MAX_DISPLAY_NAME_LENGTH}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-                placeholder="Enter your name"
+                placeholder={t("chat.nameDialog.placeholder")}
                 autoFocus
               />
               {nameError && (
@@ -792,14 +799,14 @@ export default function ChatPage() {
                 disabled={savingName}
                 className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
               >
-                Cancel
+                {t("common.cancel")}
               </button>
               <button
                 onClick={handleChangeName}
                 disabled={savingName}
                 className="flex-1 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
               >
-                {savingName ? "Saving..." : "Save"}
+                {savingName ? t("common.saving") : t("common.save")}
               </button>
             </div>
           </DialogPanel>
@@ -824,7 +831,7 @@ export default function ChatPage() {
             <button
               onClick={() => setFullscreenImage(null)}
               className="absolute -top-10 right-0 text-white hover:text-gray-300"
-              aria-label="Close"
+              aria-label={t("chat.closeAriaLabel")}
             >
               <svg className="h-8 w-8" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
@@ -930,6 +937,7 @@ function GuideBubble({
   showLabel: boolean;
   onImageClick: (url: string) => void;
 }) {
+  const { t } = useTranslation();
   const isMap = message.block_type === "map";
 
   return (
@@ -940,7 +948,7 @@ function GuideBubble({
             <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
             </svg>
-            <span>Guide</span>
+            <span>{t("chat.guideLabel")}</span>
           </div>
         )}
         {isMap ? (
@@ -956,7 +964,7 @@ function GuideBubble({
               </svg>
             </div>
             <div className="min-w-0">
-              <span className="text-sm font-medium">View on Google Maps</span>
+              <span className="text-sm font-medium">{t("chat.viewOnMaps")}</span>
               <span className="block truncate text-xs text-gray-500">{message.content}</span>
             </div>
             <svg className="h-4 w-4 shrink-0 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

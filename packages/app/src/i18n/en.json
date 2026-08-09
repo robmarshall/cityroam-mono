@@ -1,0 +1,133 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "connecting": "Connecting...",
+    "reconnecting": "Reconnecting...",
+    "connected": "Connected",
+    "unableToReconnect": "Unable to reconnect",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving...",
+    "connectionClosed": "Connection closed."
+  },
+  "join": {
+    "title": "Join the Team",
+    "nameLabel": "Your name",
+    "namePlaceholder": "Enter your display name",
+    "submitButton": "Join the Team",
+    "submitting": "Joining...",
+    "sessionExpired": "Your session expired. Please rejoin with your name.",
+    "statusCompleted": "This event has already finished.",
+    "statusExpired": "This event has expired.",
+    "statusRefunded": "This event has been refunded.",
+    "statusUnavailable": "This event is no longer available."
+  },
+  "lobby": {
+    "title": "Waiting for players",
+    "leadBadge": "Lead",
+    "youBadge": "You",
+    "waitingForLead": "Waiting for {{name}} to start the game...",
+    "waitingForLeadDefault": "Waiting for the lead to start the game...",
+    "startButton": "Start the Game",
+    "starting": "Starting...",
+    "startFailed": "Failed to start the game. Please try again.",
+    "fatalEventNotFound": "Event not found.",
+    "fatalEventEnded": "This event has ended.",
+    "fatalNotActive": "You are no longer active in this event."
+  },
+  "language": {
+    "selectorLabel": "Game Language",
+    "confirmTitle": "Change Language?",
+    "confirmMessage": "You cannot change the language once the game has started.",
+    "confirmButton": "Change",
+    "changing": "Changing...",
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "nl": "Nederlands",
+    "bilingualConfirm": {
+      "es": "¿Estás seguro de que quieres cambiar el idioma a español? No podrás cambiarlo una vez que el juego haya comenzado.",
+      "fr": "Êtes-vous sûr de vouloir changer la langue en français ? Vous ne pourrez plus la changer une fois le jeu commencé.",
+      "de": "Möchten Sie die Sprache wirklich auf Deutsch ändern? Sie können die Sprache nicht mehr ändern, sobald das Spiel begonnen hat.",
+      "nl": "Weet je zeker dat je de taal wilt wijzigen naar Nederlands? Je kunt de taal niet meer wijzigen zodra het spel is begonnen."
+    }
+  },
+  "chat": {
+    "headerTitle": "City Roam",
+    "optionsMenu": "Options menu",
+    "changeName": "Change Name",
+    "leaveGame": "Leave Game",
+    "inputPlaceholder": "Type a message...",
+    "offlineError": "You're offline \u2014 message not sent.",
+    "guideLabel": "Guide",
+    "typingOne": "{{name}} is typing...",
+    "typingMultiple": "Multiple people are typing...",
+    "waitingForLead": "Waiting for {{name}}...",
+    "waitingForLeadDefault": "Waiting for the lead...",
+    "newMessages": "New messages \u2193",
+    "viewOnMaps": "View on Google Maps",
+    "nameChangeError": "Failed to change name. Please try again.",
+    "fatalEventNotFound": "Event not found.",
+    "fatalEventEnded": "This event has ended.",
+    "fatalNotActive": "You are no longer active in this event.",
+    "participantJoined": "{{name}} joined the game",
+    "participantLeft": "{{name}} left the game",
+    "nameChanged": "{{oldName}} changed their name to {{newName}}",
+    "leaveDialog": {
+      "title": "Leave Game?",
+      "message": "You'll be removed from the game. You can rejoin later by opening the link again.",
+      "leaveButton": "Leave",
+      "leaving": "Leaving..."
+    },
+    "nameDialog": {
+      "title": "Change Name",
+      "placeholder": "Enter your name"
+    },
+    "sendAriaLabel": "Send message",
+    "closeAriaLabel": "Close"
+  },
+  "complete": {
+    "title": "Game Complete!",
+    "defaultSummary": "Well done! You've completed the game. We hope you enjoyed exploring the city.",
+    "reviewPrompt": "Enjoyed the experience? Leave us a review!",
+    "reviewButton": "Leave a Google Review",
+    "shareButton": "Share with Friends",
+    "shared": "Shared!",
+    "linkCopied": "Link Copied!",
+    "doneButton": "Done",
+    "shareTitle": "City Roam - AI City Adventure",
+    "shareText": "I just completed an amazing AI-guided city adventure! Check it out:"
+  },
+  "error": {
+    "title": "Something went wrong",
+    "description": "The app ran into an unexpected error. Tap below to try again.",
+    "retryButton": "Try Again",
+    "eventNotFound": "This event doesn't exist. Check the link and try again.",
+    "eventFull": "This event is full \u2014 no more spaces available.",
+    "eventExpired": "This event has expired.",
+    "eventCompleted": "This event has already finished.",
+    "eventRefunded": "This event has been refunded.",
+    "invalidInput": "That doesn't look like a valid event code. Double-check the link or code you were given.",
+    "rateLimited": "Too many attempts. Please wait a moment and try again.",
+    "unauthorized": "Your session has expired. Please rejoin the game.",
+    "networkError": "Couldn't connect. Check your signal and try again.",
+    "generic": "Something went wrong. Please try again."
+  },
+  "validation": {
+    "DISPLAY_NAME_TOO_SHORT": "Display name must be at least {{min}} characters",
+    "DISPLAY_NAME_TOO_LONG": "Display name must be at most {{max}} characters",
+    "DISPLAY_NAME_HTML": "Display name must not contain HTML tags",
+    "DISPLAY_NAME_INVALID_CHARS": "Display name may only contain letters, numbers, spaces, hyphens, and apostrophes",
+    "MESSAGE_TOO_SHORT": "Message must be at least {{min}} characters",
+    "MESSAGE_TOO_LONG": "Message must be at most {{max}} characters",
+    "MESSAGE_EMPTY": "Message must not be empty",
+    "EVENT_CODE_INVALID": "Invalid event code format",
+    "ACTION_LEAD_ONLY": "Only the group lead can confirm actions",
+    "ACTION_MISSING_BLOCK": "Missing action reference \u2014 please try again",
+    "ACTION_BLOCK_MISMATCH": "This action is no longer current",
+    "INVALID_JSON": "Message could not be sent \u2014 please try again",
+    "UNKNOWN_MESSAGE_TYPE": "Unsupported message type"
+  }
+}

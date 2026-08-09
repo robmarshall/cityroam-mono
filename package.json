@@ -19,6 +19,7 @@
     "loop:plan": "bash run.sh plan",
     "migrate": "npm -w @cityroam/api run migrate",
     "seed": "npm -w @cityroam/api run seed",
+    "seed:message-banks": "npm -w @cityroam/api run seed:message-banks --",
     "docker:build": "docker compose up -d --build",
     "docker:shell": "docker compose exec dev bash",
     "docker:down": "docker compose down",

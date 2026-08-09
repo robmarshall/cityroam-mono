@@ -17,6 +17,7 @@ vi.mock("../../db/index.js", () => {
       messageBanks: { findFirst: vi.fn() },
       routeBlocks: { findFirst: vi.fn() },
       routeGroups: { findFirst: vi.fn() },
+      routeFamilies: { findFirst: vi.fn() },
     },
     select: vi.fn(() => mockDb),
     from: vi.fn(() => mockDb),
@@ -37,6 +38,7 @@ vi.mock("../../db/index.js", () => {
     routeBlocks: { id: "route_blocks.id", group_id: "route_blocks.group_id" },
     routeGroups: { id: "route_groups.id", route_id: "route_groups.route_id" },
     messageBanks: { content: "mb.content", type: "mb.type", is_active: "mb.is_active" },
+    routeFamilies: { id: "route_families.id", city: "route_families.city" },
   };
   return { db: mockDb, disconnectDb: vi.fn(), schema: mockSchema };
 });
@@ -88,6 +90,7 @@ describe("handleGameCompletion", () => {
     eventCode: "ABCD1234",
     routeId: "route-1",
     currentStop: 5,
+    language: "en" as const,
   };
 
   beforeEach(() => {
@@ -95,8 +98,13 @@ describe("handleGameCompletion", () => {
 
     // Route data for template population
     (db.query.routes.findFirst as any).mockResolvedValue({
+      route_family_id: "family-1",
       total_stops: 5,
       estimated_distance_km: 3.2,
+    });
+
+    // Route family for city lookup
+    (db.query.routeFamilies.findFirst as any).mockResolvedValue({
       city: "Portland",
     });
 

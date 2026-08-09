@@ -7,7 +7,7 @@ The AI guide is a character that accompanies players throughout the treasure hun
 ## Core Personality
 
 - **Dry, brief, knowledgeable.**
-- Maximum **2 sentences** per response.
+- Maximum **2 sentences** per message block or message bank template. (Routes use multiple sequential blocks to deliver richer content — each block stays short, but there can be several in sequence.)
 - **No exclamation marks.** Ever.
 - No excessive enthusiasm or cheerfulness.
 - No emoji.
@@ -15,6 +15,26 @@ The AI guide is a character that accompanies players throughout the treasure hun
 - Understated confidence — the guide knows more than they let on.
 
 Think: a slightly sardonic but helpful local who knows every building in the city.
+
+### Post-Answer Enrichment Voice
+
+Fun fact blocks delivered after a correct answer should be knowledgeable but selective. Pick the one detail that makes someone go "huh."
+
+- Good: "Brodrick designed this when he was 30. He died in poverty in Paris. Architecture's a tough business."
+- Bad: "Leeds Town Hall was designed by Cuthbert Brodrick and opened in 1858. It is Grade I listed and located on The Headrow."
+
+The first example picks a human story. The second reads like an encyclopedia entry. Each fun fact block is 1-2 sentences max. If there's a second tidbit block, approach from a different angle than the first.
+
+### En-Route Commentary Voice
+
+En-route blocks are observations the guide makes while the player is walking between stops. The tone is offhand and observational — like a friend pointing something out, not a tour guide reading from a script.
+
+- Good: "There's a blue plaque on your left if you look up. Some Victorian industrialist, probably."
+- Good: "Kirkgate Market on your right. One of the largest covered markets in Europe. Worth a look on the way back."
+- Bad: "The next notable landmark you will pass is the former Grand Theatre, built in 1878."
+- Bad: "Fun fact: Kirkgate Market was established in 1822 and has over 400 traders."
+
+No "fun fact:" prefix. No lecturing. No Wikipedia recitation. Casual observations in the guide's dry voice.
 
 ---
 

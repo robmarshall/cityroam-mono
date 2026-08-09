@@ -3,14 +3,25 @@ import type {
   MessageBankType,
   ParticipantLeftReason,
   SenderType,
+  SupportedLanguage,
 } from "./enums.js";
 import type { BlockType, BlockConfig } from "./blocks.js";
+
+export interface RouteFamily {
+  id: string;
+  name: string;
+  city: string;
+  created_at: string;
+  updated_at: string;
+}
 
 export interface Event {
   id: string;
   code: string;
   status: EventStatus;
   route_id: string;
+  route_family_id: string;
+  language: SupportedLanguage;
   buyer_email: string;
   current_stop: number;
   hints_given: number;
@@ -54,9 +65,10 @@ export interface Message {
 
 export interface Route {
   id: string;
-  city: string;
   name: string;
   description: string;
+  language: SupportedLanguage;
+  route_family_id: string;
   total_stops: number;
   estimated_duration_mins: number;
   estimated_distance_km: number;
@@ -87,6 +99,7 @@ export interface RouteBlock {
 export interface MessageBank {
   id: string;
   type: MessageBankType;
+  language: SupportedLanguage;
   content: string;
   is_active: boolean;
   created_at: string;

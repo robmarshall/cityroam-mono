@@ -160,6 +160,7 @@ const eventRow = {
   hints_given: 0,
   wrong_attempts: 0,
   guide_response_count: 5,
+  language: "en",
 };
 
 const userMsg = {
@@ -273,7 +274,7 @@ describe("processIncomingMessage", () => {
     expect(handleClarification).not.toHaveBeenCalled();
 
     // Idle timestamp still updated
-    expect(updateIdleTimestamp).toHaveBeenCalledWith("ABCD1234", "event-1");
+    expect(updateIdleTimestamp).toHaveBeenCalledWith("ABCD1234", "event-1", "en");
   });
 
   it("pre-filter respond: writeGuideMessage called", async () => {
@@ -293,7 +294,7 @@ describe("processIncomingMessage", () => {
     expect(handleAnswerAttempt).not.toHaveBeenCalled();
 
     // Idle timestamp updated
-    expect(updateIdleTimestamp).toHaveBeenCalledWith("ABCD1234", "event-1");
+    expect(updateIdleTimestamp).toHaveBeenCalledWith("ABCD1234", "event-1", "en");
   });
 
   it("guide cap reached: sendCapReachedMessage sent, no handler", async () => {
@@ -301,14 +302,14 @@ describe("processIncomingMessage", () => {
 
     await processIncomingMessage(basePayload);
 
-    expect(sendCapReachedMessage).toHaveBeenCalledWith("event-1", "ABCD1234", 1);
+    expect(sendCapReachedMessage).toHaveBeenCalledWith("event-1", "ABCD1234", 1, "en");
 
     // No handler invoked
     expect(handleAnswerAttempt).not.toHaveBeenCalled();
     expect(classifyIntent).not.toHaveBeenCalled();
 
     // Idle timestamp updated
-    expect(updateIdleTimestamp).toHaveBeenCalledWith("ABCD1234", "event-1");
+    expect(updateIdleTimestamp).toHaveBeenCalledWith("ABCD1234", "event-1", "en");
   });
 
   it("LLM failure falls back to clarification", async () => {
@@ -351,7 +352,7 @@ describe("processIncomingMessage", () => {
   it("idle timer updated after processing", async () => {
     await processIncomingMessage(basePayload);
 
-    expect(updateIdleTimestamp).toHaveBeenCalledWith("ABCD1234", "event-1");
+    expect(updateIdleTimestamp).toHaveBeenCalledWith("ABCD1234", "event-1", "en");
   });
 
   it("event not IN_PROGRESS: silently dropped, no message stored", async () => {
@@ -422,7 +423,7 @@ describe("processIncomingMessage", () => {
     expect(handleClarification).not.toHaveBeenCalled();
 
     // Idle timestamp still updated
-    expect(updateIdleTimestamp).toHaveBeenCalledWith("ABCD1234", "event-1");
+    expect(updateIdleTimestamp).toHaveBeenCalledWith("ABCD1234", "event-1", "en");
   });
 
   it("guide typing off fires even when handler throws", async () => {

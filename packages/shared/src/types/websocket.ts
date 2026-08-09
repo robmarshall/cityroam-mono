@@ -1,4 +1,4 @@
-import type { ParticipantLeftReason, SenderType } from "./enums.js";
+import type { ParticipantLeftReason, SenderType, SupportedLanguage } from "./enums.js";
 import type { BlockType } from "./blocks.js";
 
 // Generic wrapper
@@ -82,4 +82,8 @@ export interface MessageDroppedPayload {
 export interface ErrorPayload {
   message: string;
   code?: string;
+}
+
+export interface LanguageChangedPayload {
+  language: SupportedLanguage;
 }

@@ -14,6 +14,8 @@ import type {
   NameChangedPayload,
   MessageDroppedPayload,
   ActionWaitingPayload,
+  LanguageChangedPayload,
+  SupportedLanguage,
 } from "@cityroam/shared/types";
 import { WebSocket as WS } from "ws";
 
@@ -148,6 +150,14 @@ export async function subscribeEvent(
               block_id: payload.data.block_id,
               label: payload.data.label,
             },
+          };
+          broadcast(connections, message);
+          break;
+        }
+        case "language_changed": {
+          const message: WebSocketMessage<LanguageChangedPayload> = {
+            type: "language_changed",
+            payload: { language: payload.data.language as SupportedLanguage },
           };
           broadcast(connections, message);
           break;
