@@ -60,7 +60,7 @@ services:
     build:
       context: .
       dockerfile: packages/api/Dockerfile
-    command: ["node", "dist/http/index.js"]
+    command: ["node", "--import", "tsx", "dist/http/index.js"]
     environment:
       NODE_ENV: production
       PORT: "3001"
@@ -94,7 +94,7 @@ services:
     build:
       context: .
       dockerfile: packages/api/Dockerfile
-    command: ["node", "dist/ws/index.js"]
+    command: ["node", "--import", "tsx", "dist/ws/index.js"]
     environment:
       NODE_ENV: production
       WS_PORT: "3002"

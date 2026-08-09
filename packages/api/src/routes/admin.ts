@@ -423,7 +423,7 @@ adminRoutes.post("/admin/events/:id/resend-email", adminAuth, async (c) => {
     throw new AppError(400, "Event has no buyer email", "NO_BUYER_EMAIL");
   }
 
-  const eventUrl = buildEventUrl(env.APP_URL, event.code);
+  const eventUrl = buildEventUrl(env.APP_PUBLIC_URL, event.code);
   const language = (event.language ?? "en") as SupportedLanguage;
 
   const resend = new Resend(env.RESEND_API_KEY);

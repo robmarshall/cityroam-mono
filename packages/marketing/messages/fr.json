@@ -1,0 +1,578 @@
+{
+  "metadata": {
+    "home": {
+      "title": "City Roam — Chasses au trésor guidées par IA à Leeds",
+      "description": "Explorez Leeds avec une chasse au trésor propulsée par l'IA. Résolvez des énigmes, découvrez des lieux insolites et amusez-vous entre amis, le tout guidé par l'IA depuis votre téléphone.",
+      "ogImageAlt": "City Roam — Chasses au trésor guidées par IA à Leeds"
+    },
+    "families": {
+      "title": "Aventures en famille — City Roam",
+      "description": "Transformez votre sortie en famille en une chasse au trésor passionnante guidée par l'IA à Leeds. Adaptée à tous les âges, accessible en poussette et conçue pour que personne ne s'ennuie."
+    },
+    "henParties": {
+      "title": "Enterrements de vie de jeune fille — City Roam",
+      "description": "Offrez à la future mariée une expérience inoubliable. Explorez Leeds ensemble, résolvez les énigmes en équipe et créez des souvenirs qui dureront bien après le mariage."
+    },
+    "teamBuilding": {
+      "title": "Team building — City Roam",
+      "description": "Sortez votre équipe du bureau avec une chasse au trésor guidée par l'IA à Leeds. Vraie collaboration, résolution de problèmes authentique et plaisir bien réel — parfait pour des équipes de 4 à 10+ personnes."
+    }
+  },
+  "common": {
+    "header": {
+      "brand": "City Roam",
+      "families": "Familles",
+      "henParties": "EVJF",
+      "teamBuilding": "Team building",
+      "bookNow": "Réserver",
+      "toggleMenu": "Ouvrir le menu",
+      "changeLanguage": "Changer de langue",
+      "currentLanguage": "Français"
+    },
+    "footer": {
+      "copyright": "© {year} City Roam. Tous droits réservés."
+    }
+  },
+  "cta": {
+    "defaultLabel": "Réservez votre expérience",
+    "loading": "Redirection vers le paiement...",
+    "error": "Une erreur est survenue. Veuillez réessayer.",
+    "retry": "Réessayer"
+  },
+  "faq": {
+    "0": {
+      "question": "Combien de personnes peuvent jouer ?",
+      "answer": "Jusqu'à 10 personnes peuvent rejoindre une même expérience. Tout le monde joue ensemble depuis son propre téléphone, en partageant les indices et en résolvant les énigmes en groupe."
+    },
+    "1": {
+      "question": "Combien de temps cela dure-t-il ?",
+      "answer": "La plupart des groupes terminent en 2 à 3 heures, mais vous pouvez prendre votre temps : il n'y a pas de chrono. Arrêtez-vous pour un café, explorez une ruelle, comme bon vous semble."
+    },
+    "2": {
+      "question": "De quoi ai-je besoin ?",
+      "answer": "Simplement d'un téléphone avec une connexion internet. Aucune application à télécharger — tout fonctionne dans votre navigateur."
+    },
+    "3": {
+      "question": "Est-ce accessible ?",
+      "answer": "Le parcours couvre environ 4 km de marche en centre-ville sur des surfaces pavées. Il est adapté aux fauteuils roulants et aux poussettes, et évite les fortes pentes. Si vous avez des besoins d'accessibilité particuliers, contactez-nous et nous vous aiderons."
+    },
+    "4": {
+      "question": "Est-ce adapté aux enfants ?",
+      "answer": "Les enfants à partir de 8 ans adorent résoudre les énigmes et explorer. Les plus jeunes auront peut-être besoin d'un coup de main pour les indices les plus corsés. Le parcours est également accessible en poussette."
+    },
+    "5": {
+      "question": "Et s'il pleut ?",
+      "answer": "Une petite pluie ? Aucun souci — les endroits douillets où s'abriter ne manquent pas. S'il pleut des cordes, vous pouvez mettre la partie en pause et la reprendre plus tard. Votre aventure est flexible."
+    },
+    "6": {
+      "question": "Les chiens sont-ils acceptés ?",
+      "answer": "Bien sûr. Beaucoup d'étapes sont en extérieur ou près de pubs qui acceptent les chiens. Emmenez votre compagnon à quatre pattes avec vous."
+    },
+    "7": {
+      "question": "Puis-je faire une pause et reprendre un autre jour ?",
+      "answer": "Oui ! Si vous voulez vous arrêter en cours de route et reprendre demain, aucun problème. Votre progression est enregistrée automatiquement."
+    },
+    "8": {
+      "question": "Puis-je y aller seul ?",
+      "answer": "Tout à fait ! L'expérience est tout aussi amusante en solo. Mais beaucoup préfèrent la vivre en couple, entre amis ou en équipe."
+    },
+    "9": {
+      "question": "Quelle est la politique de remboursement ?",
+      "answer": "Remboursement intégral, sans question. Si vous n'êtes pas satisfait pour quelque raison que ce soit, dites-le-nous, c'est tout."
+    }
+  },
+  "chatDemo": {
+    "guideLabel": "Guide",
+    "hero": {
+      "initial": "Trouvez le bâtiment avec l'horloge dorée sur sa tour 🕰️",
+      "0": "L'ancien hôtel de ville !",
+      "1": "Exactement ! Bien joué 🎉",
+      "2": "Construit en 1858, c'est l'un des monuments les plus emblématiques de la ville.",
+      "3": "Direction le prochain point...",
+      "4": "Il y a un super café sur le chemin !"
+    },
+    "howItWorks": {
+      "0": "Bienvenue sur City Roam ! 📱",
+      "1": "Je serai votre guide aujourd'hui.",
+      "2": "Je vous enverrai des indices et des directions au fil de votre exploration.",
+      "3": "Vous pouvez me poser des questions à tout moment.",
+      "4": "Prêts à explorer ?",
+      "5": "C'est parti !"
+    }
+  },
+  "home": {
+    "hero": {
+      "title": "Chasses au trésor guidées par IA à Leeds",
+      "subtitle": "Résolvez des énigmes, découvrez des lieux insolites et explorez la ville entre amis, le tout guidé par l'IA depuis votre téléphone."
+    },
+    "problem": {
+      "text1": "<b>Pas d'horaires. Pas de guide.</b> Juste votre groupe, votre téléphone et une piste d'indices.",
+      "text2": "City Roam est un jeu d'exploration sur téléphone qui vous emmène au cœur de Leeds. Aucune application à télécharger. Juste des énigmes, des découvertes et de bons moments.",
+      "text3": "Résolvez des devinettes, dénichez des histoires cachées et explorez à votre rythme. En famille, entre amis ou entre collègues — c'est fait pour être partagé."
+    },
+    "howItWorks": {
+      "title": "Comment ça marche",
+      "step1Title": "Commencez en ville",
+      "step1Desc": "Choisissez votre point de départ et lancez-vous quand vous êtes prêts. Démarrez votre aventure depuis n'importe où dans le centre-ville.",
+      "step2Title": "Résolvez les énigmes ensemble",
+      "step2Desc": "Utilisez votre téléphone pour percer des indices astucieux qui vous font traverser la ville. Chaque énigme vous rapproche d'un lieu insolite.",
+      "step3Title": "Découvrez des histoires cachées",
+      "step3Desc": "Apprenez-en plus sur les coins secrets, les légendes locales et l'histoire fascinante de la ville. Voyez Leeds d'un œil neuf.",
+      "step4Title": "Jouez à votre rythme",
+      "step4Desc": "Arrêtez-vous pour boire un verre, déjeuner, ou reprenez même un autre jour. Aucune limite de temps — c'est votre aventure."
+    },
+    "phone": {
+      "title": "Prenez juste votre téléphone",
+      "subtitle": "Aucune application à télécharger. Aucun matériel à porter. Ouvrez simplement le navigateur de votre téléphone et partez explorer.",
+      "features": {
+        "0": "Fonctionne sur n'importe quel smartphone",
+        "1": "Aucun téléchargement — tout se passe dans votre navigateur",
+        "2": "Un guide IA vous accompagne par chat",
+        "3": "Mettez en pause et reprenez quand vous voulez"
+      }
+    },
+    "included": {
+      "title": "Ce qui est inclus",
+      "subtitle": "Tout ce qu'il faut pour une superbe journée — apportez simplement votre envie d'aventure.",
+      "items": {
+        "0": "Un parcours conçu à la main dans Leeds (environ 4 km)",
+        "1": "Indices interactifs, devinettes et mini-défis",
+        "2": "Bonnes adresses locales pour manger et boire tout au long du jeu",
+        "3": "Aucun téléchargement — juste le navigateur de votre téléphone",
+        "4": "Mettez en pause et reprenez quand vous voulez",
+        "5": "Accessible aux poussettes, aux fauteuils roulants et aux chiens"
+      }
+    },
+    "whyChoose": {
+      "title": "Pourquoi choisir City Roam ?",
+      "subtitle": "Flexible, amusant et plein de surprises. Loin de la visite guidée classique.",
+      "localKnowledge": {
+        "title": "Connaissance locale",
+        "description": "Conçu par des habitants pour mettre en avant les histoires et les lieux que nous aimons — rien à voir avec le tourisme standardisé."
+      },
+      "justYourPhone": {
+        "title": "Juste votre téléphone",
+        "description": "Fonctionne directement depuis votre navigateur. Pas d'application. Pas de téléchargement. Pas de casse-tête technique."
+      },
+      "playYourWay": {
+        "title": "Jouez à votre façon",
+        "description": "Commencez quand vous voulez. Faites une pause café. Reprenez demain. C'est vous qui décidez."
+      },
+      "builtForGroups": {
+        "title": "Conçu pour les groupes",
+        "description": "Entre copains, en famille ou entre collègues — c'est idéal à plusieurs."
+      }
+    },
+    "pricing": {
+      "title": "Un tarif tout simple",
+      "subtitle": "Un seul prix pour tout le groupe. Jusqu'à 10 personnes.",
+      "originalPrice": "£49",
+      "price": "£29",
+      "badge": "Tarif de lancement"
+    },
+    "reviews": {
+      "title": "Ce qu'en disent les joueurs",
+      "0": {
+        "quote": "Quel après-midi ! Le guide IA était étonnamment plein d'humour.",
+        "name": "Sarah T."
+      },
+      "1": {
+        "quote": "Parfait pour un anniversaire. Tout le monde a adoré résoudre les énigmes ensemble.",
+        "name": "James M."
+      },
+      "2": {
+        "quote": "Bien mieux qu'une visite à pied ennuyeuse. Nous avons découvert des endroits dont nous ignorions l'existence !",
+        "name": "Priya K."
+      }
+    },
+    "guarantee": {
+      "title": "Plaisir garanti à 100 %",
+      "description": "Vous ne vous êtes pas amusé ? Nous vous remboursons. Sans poser de question. Nous voulons que tout le monde prenne plaisir à explorer avec City Roam."
+    },
+    "faqTitle": "Questions fréquentes"
+  },
+  "families": {
+    "hero": {
+      "title": "Des aventures en famille, tout simplement",
+      "subtitle": "Transformez votre sortie en famille en une chasse au trésor passionnante. Parfait pour créer des souvenirs qui durent toute une vie — et pour que personne ne s'ennuie.",
+      "cta": "Réserver l'aventure en famille"
+    },
+    "problem": {
+      "text1": "<b>Fatigué d'entendre « on est bientôt arrivés ? »</b> City Roam transforme votre balade en famille en une aventure qui captive tout le monde.",
+      "text2": "Fini de traîner des enfants récalcitrants d'un site touristique à l'autre. À la place, regardez-les foncer vers l'indice suivant tout en découvrant des lieux étonnants et des histoires sur la ville.",
+      "text3": "Conçu pour fonctionner avec des âges variés — des curieux de 8 ans aux ados et aux grands-parents. Chacun apporte sa pierre, chacun apprend, chacun s'amuse."
+    },
+    "whyLove": {
+      "title": "Pourquoi les familles adorent City Roam",
+      "engaged": {
+        "title": "Tout le monde reste impliqué",
+        "description": "Fini les enfants qui s'ennuient et qui traînent des pieds. Les indices et les défis gardent les esprits actifs et les jambes en mouvement, de bon cœur."
+      },
+      "educational": {
+        "title": "Instructif et amusant",
+        "description": "Découvrez l'histoire, l'architecture et la culture locale sans avoir l'impression de faire une sortie scolaire. Les connaissances viennent naturellement, par le jeu."
+      },
+      "allAges": {
+        "title": "Fonctionne à tout âge",
+        "description": "De 8 à 80 ans — chacun peut contribuer. Les plus jeunes résolvent les indices visuels, les ados aident à s'orienter, les adultes racontent les histoires."
+      },
+      "bonding": {
+        "title": "De vrais moments en famille",
+        "description": "Rangez les téléphones (sauf celui du jeu !) et jouez en équipe. Créez des souvenirs en explorant ensemble."
+      }
+    },
+    "perfectFor": {
+      "title": "Parfait pour toutes les familles",
+      "subtitle": "Que vous soyez du coin et vouliez redécouvrir votre ville, ou de passage pour explorer un nouvel endroit.",
+      "grandparents": {
+        "title": "Grands-parents en visite",
+        "description": "Faites-leur découvrir la ville de façon ludique et interactive. Ils adoreront les histoires, pendant que les enfants adorent l'aventure."
+      },
+      "weekend": {
+        "title": "Week-end en famille",
+        "description": "Transformez un samedi ordinaire en moment spécial. Sortez, bougez et découvrez des coins de votre propre ville que vous ne soupçonniez pas."
+      },
+      "holidays": {
+        "title": "Vacances scolaires",
+        "description": "Chassez l'ennui des vacances avec une aventure instructive. C'est de l'apprentissage déguisé en jeu — et ils n'y verront que du feu."
+      }
+    },
+    "howItWorks": {
+      "title": "Comment se déroule votre aventure en famille",
+      "step1Title": "Partez quand vous êtes prêts",
+      "step1Desc": "Pas besoin de courir pour rejoindre un groupe. Commencez quand tout le monde a mangé, bu et est prêt à explorer.",
+      "step2Title": "Jouez en équipe",
+      "step2Desc": "Laissez chaque membre de la famille prendre les rênes sur un indice différent. Chacun a son moment de gloire.",
+      "step3Title": "Prenez votre temps",
+      "step3Desc": "Arrêtez-vous pour une glace, laissez les enfants se dégourdir les jambes ou savourez simplement l'instant. L'aventure vous attend."
+    },
+    "features": {
+      "title": "Pensé pour les familles",
+      "subtitle": "Tout est conçu pour de vraies familles — parce que nous savons comment se passent réellement les sorties en famille.",
+      "items": {
+        "0": "Parcours accessible aux poussettes et aux fauteuils roulants",
+        "1": "Indices adaptés dès 8 ans (plus tôt avec de l'aide)",
+        "2": "De nombreux endroits pour un goûter ou une pause toilettes",
+        "3": "Un contenu instructif qui ne ressemble pas à des devoirs",
+        "4": "Parcours accessible aux chiens de la famille",
+        "5": "Pause et reprise — parfait pour les petites capacités d'attention"
+      }
+    },
+    "safety": {
+      "title": "Sécurité et informations pratiques",
+      "text1": "Nous savons que la sécurité passe avant tout quand on sort en famille. Le parcours reste dans des zones animées et bien éclairées, avec de nombreux commerces et cafés à proximité.",
+      "text2": "Les parcours font environ 4 km et sont globalement plats — parfaits pour les petites jambes et les poussettes. Des étapes adaptées aux familles jalonnent le chemin.",
+      "text3": "Si le temps se gâte ou si quelqu'un fatigue, vous pouvez mettre le jeu en pause et le reprendre un autre jour. Aucune pression, juste du plaisir en famille."
+    },
+    "faq": {
+      "title": "Les questions des familles, éclaircies",
+      "0": {
+        "question": "À partir de quel âge est-ce adapté ?",
+        "answer": "Les enfants à partir de 8 ans peuvent participer activement à la résolution des indices. Les plus jeunes (4 à 7 ans) peuvent y prendre part avec l'aide des aînés et adoreront repérer des détails et faire partie de l'aventure. C'est conçu pour les groupes d'âges mélangés."
+      },
+      "1": {
+        "question": "Est-ce accessible en poussette ?",
+        "answer": "Absolument ! L'ensemble du parcours est accessible aux poussettes et aux fauteuils roulants. Nous avons spécifiquement choisi des chemins adaptés aux familles avec poussette, en évitant les marches et les fortes pentes."
+      },
+      "2": {
+        "question": "Combien de temps cela prend-il avec des enfants ?",
+        "answer": "La plupart des familles mettent entre 2h30 et 3h30, mais rien ne presse ! Prévoyez du temps pour les pauses goûter, les passages aux toilettes et ces moments où les enfants veulent explorer quelque chose d'intéressant. Vous pouvez faire une pause dès que nécessaire."
+      },
+      "3": {
+        "question": "Et s'il pleut ou si les enfants fatiguent ?",
+        "answer": "Vous pouvez mettre l'aventure en pause à tout moment et la reprendre plus tard — même un autre jour ! Les endroits couverts où s'abriter ne manquent pas, et le jeu enregistre automatiquement votre progression."
+      },
+      "4": {
+        "question": "Y a-t-il des endroits où s'arrêter pour manger ?",
+        "answer": "Oui ! Le parcours passe devant des cafés familiaux, des pubs avec menus enfants et des coins parfaits pour un pique-nique. Nous vous recommandons les meilleures haltes familiales tout au long du chemin."
+      },
+      "5": {
+        "question": "Les enfants ont-ils besoin de leur propre téléphone ?",
+        "answer": "Non, un téléphone par famille suffit. Cela encourage même le travail d'équipe puisque tout le monde se rassemble pour résoudre les indices. Bien mieux que chacun devant son écran !"
+      }
+    },
+    "cta": {
+      "text": "Une aventure que toute la famille va adorer. Apprendre en jouant. Des souvenirs pour toujours.",
+      "label": "Réserver l'aventure en famille"
+    }
+  },
+  "henParties": {
+    "hero": {
+      "title": "L'EVJF parfait",
+      "subtitle": "Offrez à la future mariée une expérience inoubliable. Explorez la ville ensemble, résolvez les énigmes en équipe et créez des souvenirs qui dureront bien après le mariage.",
+      "cta": "Réserver l'aventure EVJF"
+    },
+    "problem": {
+      "text1": "<b>Oubliez les activités d'EVJF habituelles.</b> City Roam propose quelque chose de complètement différent — une aventure qui rassemble tout le monde tout en célébrant la mariée.",
+      "text2": "Parfait pour les groupes qui veulent quelque chose d'unique, de mémorable et de très instagrammable. Pas de jeux gênants ni d'amusement forcé — juste une vraie excitation pendant que vous explorez la ville et relevez les défis ensemble.",
+      "text3": "Idéal pour des groupes de 6 à 12 amies. Tout le monde participe, les liens se créent naturellement et la mariée repart avec une expérience qu'elle chérira longtemps."
+    },
+    "whyLove": {
+      "title": "Pourquoi les EVJF adorent City Roam",
+      "different": {
+        "title": "Quelque chose de vraiment différent",
+        "description": "Démarquez-vous des EVJF classiques. Offrez à la mariée une expérience qu'elle n'a jamais vécue — et ne revivra probablement jamais !"
+      },
+      "group": {
+        "title": "L'activité de groupe idéale",
+        "description": "Tout le monde travaille vers un objectif commun. Excellent brise-glace pour des amies qui ne se connaissent pas bien, et formidable pour resserrer les liens des amies de longue date."
+      },
+      "instagram": {
+        "title": "Des moments dignes d'Instagram",
+        "description": "Découvrez des lieux insolites et de jolis décors, parfaits pour les photos incontournables de l'EVJF. Un contenu aussi unique que votre amitié."
+      },
+      "timing": {
+        "title": "Des horaires qui s'adaptent à la fête",
+        "description": "S'intègre parfaitement au reste de votre programme. Faites-en une activité de journée avant les festivités du soir, ou un lancement en beauté du week-end."
+      }
+    },
+    "styles": {
+      "title": "Parfait pour tous les styles d'EVJF",
+      "subtitle": "Que vous prépariez une célébration tranquille ou un week-end grandiose.",
+      "daytime": {
+        "title": "Aventures en journée",
+        "description": "Le lancement parfait de votre week-end. Rassemblez tout le monde, brisez la glace et ouvrez l'appétit avant les festivités du soir."
+      },
+      "alternative": {
+        "title": "Célébrations alternatives",
+        "description": "Pour les mariées qui veulent sortir des sentiers battus de l'EVJF classique. Unique, mémorable et entièrement adapté à votre groupe."
+      },
+      "mixed": {
+        "title": "Groupes mélangés",
+        "description": "Génial quand vous réunissez des amies de différentes périodes de votre vie qui ne se connaissent pas. Tout le monde se rapproche en résolvant les énigmes ensemble."
+      }
+    },
+    "organise": {
+      "title": "Facile à organiser",
+      "perfectSize": {
+        "title": "6 à 12 personnes : la taille idéale",
+        "description": "Tout le monde reste ensemble, s'entend parler et personne n'est laissé de côté. Parfait aussi pour les photos de groupe."
+      },
+      "simple": {
+        "title": "Une réservation ultra simple",
+        "description": "Une réservation, un paiement, une confirmation. Partagez les détails avec le groupe et c'est réglé. Aucune coordination compliquée."
+      },
+      "special": {
+        "title": "Faites-la se sentir unique",
+        "description": "Elle adorera que vous ayez choisi quelque chose d'original et d'attentionné. Une expérience qui la célèbre tout en réunissant ses personnes préférées."
+      }
+    },
+    "special": {
+      "title": "Ce qui rend l'expérience unique",
+      "items": {
+        "0": "De superbes occasions de photos dans des lieux insolites",
+        "1": "Un travail d'équipe qui soude le groupe",
+        "2": "Des horaires flexibles autour de vos autres festivités",
+        "3": "Une expérience unique que la mariée n'oubliera jamais",
+        "4": "De très bons pubs et bars découverts en chemin",
+        "5": "Simple à coordonner pour l'organisatrice"
+      }
+    },
+    "safety": {
+      "title": "Faire la fête en toute sérénité",
+      "text1": "Le parcours reste dans des zones animées et bien éclairées, avec de nombreux pubs, cafés et boutiques tout au long du chemin.",
+      "text2": "Commencez à l'heure qui convient à votre week-end — aventure matinale avant les festivités du soir, ou activité d'après-midi qui enchaîne sur le dîner et les verres.",
+      "text3": "Le groupe reste naturellement soudé au fil des énigmes, et les occasions ne manquent pas pour les photos incontournables de l'EVJF. En prime, vous repérerez de super adresses pour la soirée."
+    },
+    "testimonials": {
+      "title": "Ce que disent les mariées et leurs amies",
+      "0": {
+        "quote": "La meilleure activité d'EVJF ! Tellement différente de d'habitude, et tout le monde a adoré. La mariée rayonnait — le lancement parfait de notre week-end.",
+        "name": "Lucy, témoin",
+        "occasion": "EVJF sur un week-end"
+      },
+      "1": {
+        "quote": "Un brise-glace formidable pour notre groupe hétéroclite. Des amies de la fac, du travail et du quartier se sont rapprochées en résolvant les énigmes. Une façon très maligne de rassembler tout le monde.",
+        "name": "Sophie, future mariée",
+        "occasion": "Célébration en journée"
+      },
+      "2": {
+        "quote": "Le timing parfait pour notre week-end EVJF. Nous l'avons fait le samedi après-midi, découvert des endroits incroyables, puis nous sommes allées boire un verre dans les pubs repérés !",
+        "name": "Emma, demoiselle d'honneur",
+        "occasion": "Week-end EVJF"
+      },
+      "3": {
+        "quote": "Tellement simple à organiser et tout le monde en a raffolé. La mariée a dit que c'était son moment préféré de tout l'EVJF. On ne pouvait pas rêver mieux !",
+        "name": "Kate, sœur de la mariée",
+        "occasion": "Journée de célébration"
+      }
+    },
+    "faq": {
+      "title": "Questions sur l'organisation d'un EVJF",
+      "0": {
+        "question": "Comment rendre l'expérience spéciale pour la mariée ?",
+        "answer": "La mariée devient naturellement le centre de l'attention pendant que le groupe joue en équipe. Tout le monde se concentre sur le fait de lui offrir un grand moment, et elle fait partie de quelque chose d'unique et de mémorable."
+      },
+      "1": {
+        "question": "À quelle heure devrions-nous commencer ?",
+        "answer": "Totalement flexible ! Les départs le matin fonctionnent très bien avant le déjeuner et les festivités du soir. Les aventures d'après-midi enchaînent parfaitement sur le dîner et les verres. Nous recommandons de commencer entre 10h et 15h."
+      },
+      "2": {
+        "question": "Pouvons-nous prendre des photos pendant l'expérience ?",
+        "answer": "Absolument ! Vous découvrirez de jolis coins secrets, parfaits pour les photos d'EVJF. Le parcours inclut certains des lieux les plus instagrammables de la ville."
+      },
+      "3": {
+        "question": "Pouvons-nous boire un verre pendant l'aventure ?",
+        "answer": "Vous passerez devant une multitude de pubs et de bars charmants. Beaucoup de groupes s'arrêtent en cours de route pour trinquer !"
+      },
+      "4": {
+        "question": "Et si certaines ne se connaissent pas ?",
+        "answer": "C'est justement l'un des meilleurs brise-glace qui soient. Résoudre les énigmes ensemble fait parler et rire tout le monde naturellement. Bien mieux que des présentations gênantes autour d'un dîner."
+      },
+      "5": {
+        "question": "Et si la météo n'est pas au rendez-vous ?",
+        "answer": "Vous pouvez mettre l'aventure en pause et la reprendre plus tard, voire un autre jour. Les zones couvertes et les endroits où s'abriter ne manquent pas. Ne laissez pas la météo britannique gâcher la fête !"
+      }
+    },
+    "cta": {
+      "text": "Offrez à la mariée un moment inoubliable. Créez des souvenirs ensemble. Lancez ses festivités de mariage comme il se doit.",
+      "label": "Réserver l'aventure EVJF"
+    }
+  },
+  "teamBuilding": {
+    "hero": {
+      "title": "Le team building au-delà de la salle de réunion",
+      "subtitle": "Sortez votre équipe du bureau et faites-la travailler ensemble dans un environnement totalement nouveau. Vraie collaboration, résolution de problèmes authentique et plaisir bien réel.",
+      "cta": "Réserver l'expérience équipe"
+    },
+    "problem": {
+      "text1": "<b>Oubliez les brise-glace gênants et les chutes de confiance forcées.</b> City Roam crée une collaboration naturelle pendant que votre équipe résout de vrais défis.",
+      "text2": "Regardez des collègues qui s'adressent à peine la parole au bureau devenir soudain partenaires de résolution. Voyez les plus discrets briller en perçant l'indice décisif. Vivez un vrai travail d'équipe, loin des e-mails et des réunions.",
+      "text3": "Parfait pour des équipes de 4 à 10 personnes. Groupes plus grands ? Nous recommandons de les diviser en plusieurs équipes pour une compétition amicale qui rassemble tout le monde."
+    },
+    "whyChoose": {
+      "title": "Pourquoi les entreprises choisissent City Roam",
+      "collaboration": {
+        "title": "Une vraie collaboration",
+        "description": "Les équipes doivent communiquer, déléguer et combiner leurs différentes forces pour réussir. Aucune activité imposée — juste un travail d'équipe qui émerge naturellement."
+      },
+      "perspective": {
+        "title": "Un regard neuf",
+        "description": "Sortez votre équipe de son cadre habituel et voyez de nouvelles idées émerger. Autre décor, autre façon de penser, meilleures solutions."
+      },
+      "inclusive": {
+        "title": "Inclusif pour tous",
+        "description": "Aucun défi physique ni activité embarrassante. Chacun peut contribuer, quels que soient sa condition physique, son tempérament ou son expérience."
+      },
+      "energised": {
+        "title": "Des équipes regonflées",
+        "description": "Les équipes reviennent au bureau plus soudées et plus motivées. Une expérience partagée qui devient une référence naturelle pour collaborer."
+      }
+    },
+    "perfectFor": {
+      "title": "Parfait pour votre équipe",
+      "subtitle": "Que vous construisiez de nouvelles relations ou renforciez celles qui existent déjà.",
+      "newTeam": {
+        "title": "Intégration d'une nouvelle équipe",
+        "description": "Aidez les nouvelles recrues à créer du lien avec l'équipe en place dans un cadre détendu et naturel. Faites tomber les barrières rapidement."
+      },
+      "crossDept": {
+        "title": "Collaboration entre services",
+        "description": "Faites travailler différents services ensemble. Parfait pour lancer un projet ou casser les silos internes."
+      },
+      "morale": {
+        "title": "Coup de boost au moral",
+        "description": "Récompensez votre équipe avec quelque chose de vraiment amusant. Montrez votre reconnaissance tout en renforçant les liens."
+      }
+    },
+    "sizes": {
+      "title": "Des tailles d'équipe flexibles",
+      "sweetSpot": {
+        "title": "4 à 10 personnes : le format idéal",
+        "description": "Chacun peut contribuer réellement, la communication circule naturellement et les dynamiques d'équipe apparaissent d'elles-mêmes."
+      },
+      "multiple": {
+        "title": "11 personnes et plus : plusieurs équipes",
+        "description": "Divisez-vous en plus petites équipes pour une compétition amicale. Les équipes peuvent partir à des heures différentes ou s'affronter directement."
+      },
+      "competition": {
+        "title": "Compétition multi-équipes",
+        "description": "Transformez votre team building en événement d'entreprise. Les équipes s'affrontent sur le même parcours, avec la fierté en jeu. Contactez-nous pour un tarif multi-équipes."
+      }
+    },
+    "benefits": {
+      "title": "Des bénéfices que vous verrez vraiment",
+      "items": {
+        "0": "Une communication et une écoute active améliorées",
+        "1": "Une meilleure capacité à résoudre les problèmes avec créativité",
+        "2": "Des relations interpersonnelles renforcées",
+        "3": "Plus de confiance et de moral dans l'équipe",
+        "4": "Une meilleure compréhension des forces de chacun",
+        "5": "Une expérience partagée et des références complices"
+      }
+    },
+    "practical": {
+      "title": "Informations pratiques",
+      "text1": "Nous simplifions les réservations d'entreprise. Réservez pour votre équipe avec une facturation en bonne et due forme, des tarifs faciles à justifier en note de frais et des créneaux flexibles adaptés à vos contraintes.",
+      "text2": "L'expérience dure 2 à 3 heures selon le rythme, parfaite pour une session en matinée ou en après-midi. Les équipes peuvent partir entre 9h et 16h, et nous fournissons un briefing détaillé.",
+      "text3": "Les participants ont seulement besoin de chaussures confortables et d'un smartphone. Nous nous occupons du reste, y compris de la coordination de plusieurs équipes et des heures de départ personnalisées."
+    },
+    "testimonials": {
+      "title": "Ce que disent les entreprises",
+      "0": {
+        "quote": "Le meilleur team building que nous ayons fait. Collaboration naturelle, tout le monde impliqué et de la vraie résolution de problèmes. L'équipe est revenue regonflée et plus soudée.",
+        "name": "Sarah Mitchell, directrice marketing",
+        "company": "Start-up tech"
+      },
+      "1": {
+        "quote": "Parfait pour la réunion trimestrielle de notre équipe à distance. Cela a permis à chacun d'échanger en face à face dans un cadre détendu. Bien mieux qu'une énième salle de réunion.",
+        "name": "James Parker, responsable ingénierie",
+        "company": "Éditeur de logiciels"
+      },
+      "2": {
+        "quote": "Nous avons divisé notre service de 16 personnes en deux équipes. La compétition amicale était géniale, et chacun a appris quelque chose de nouveau sur ses collègues.",
+        "name": "Lisa Chen, responsable des opérations",
+        "company": "Services financiers"
+      },
+      "3": {
+        "quote": "Facile à réserver, service professionnel et de vrais résultats en matière de cohésion. Nous recommencerons sans hésiter avec les nouvelles recrues.",
+        "name": "Mark Thompson, directeur des ressources humaines",
+        "company": "Industrie"
+      }
+    },
+    "faq": {
+      "title": "Questions sur les réservations d'entreprise",
+      "0": {
+        "question": "Comment réserver pour une équipe en entreprise ?",
+        "answer": "C'est simple ! Contactez-nous avec vos dates préférées et la taille de votre équipe. Nous gérons la facturation, fournissons des confirmations de réservation pour vos notes de frais et coordonnons des horaires adaptés à votre planning."
+      },
+      "1": {
+        "question": "Et si nous sommes plus de 10 personnes ?",
+        "answer": "Nous recommandons de vous diviser en plusieurs équipes de 4 à 6 personnes. Les équipes peuvent s'affronter ou partir à des heures différentes. Nous vous aidons à coordonner plusieurs réservations et pouvons fournir un classement pour l'esprit de compétition."
+      },
+      "2": {
+        "question": "Quel est le plan en cas de mauvais temps ?",
+        "answer": "Les équipes peuvent mettre en pause et reprendre un autre jour si la météo pose problème. Nous proposons également un report complet en cas d'intempéries, sans frais supplémentaires."
+      },
+      "3": {
+        "question": "Existe-t-il des tarifs entreprise ?",
+        "answer": "Oui, nous proposons des tarifs compétitifs pour les réservations d'entreprise et des remises pour plusieurs équipes. Contactez-nous pour un devis sur mesure adapté à vos besoins."
+      }
+    },
+    "cta": {
+      "text": "Un vrai travail d'équipe. Une collaboration authentique. Sortez votre équipe du bureau.",
+      "label": "Réserver l'expérience équipe",
+      "contactLabel": "Nous contacter pour un tarif groupe"
+    }
+  },
+  "checkout": {
+    "loading": "Préparation de votre expérience...",
+    "error": {
+      "title": "Nous n'avons pas trouvé votre réservation",
+      "description": "Consultez votre e-mail pour retrouver le lien de l'événement, ou contactez-nous.",
+      "tryAgain": "Réessayer",
+      "backHome": "Retour à l'accueil"
+    },
+    "success": {
+      "title": "Tout est prêt !",
+      "eventLinkLabel": "Le lien de votre événement",
+      "copy": "Copier",
+      "copied": "Copié !",
+      "share": "Partager avec vos amis",
+      "shareTitle": "Rejoignez mon aventure City Roam !",
+      "whatsNext": "Et maintenant ?",
+      "whatsNextDescription": "Partagez ce lien avec votre groupe. Chacun l'ouvre, saisit son prénom, et la personne qui mène la partie lance l'aventure quand tout le monde est prêt.",
+      "refundNote": "Pas convaincu ? Remboursement intégral — sans poser de question."
+    }
+  }
+}

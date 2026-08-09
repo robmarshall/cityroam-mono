@@ -181,7 +181,7 @@ checkoutRoutes.post("/webhook/stripe", async (c) => {
     // Send confirmation email (non-blocking — log errors but don't fail)
     if (buyerEmail) {
       const resend = getResend();
-      const eventUrl = buildEventUrl(env.APP_URL, eventCode);
+      const eventUrl = buildEventUrl(env.APP_PUBLIC_URL, eventCode);
       const emailPayload = {
         from: env.RESEND_FROM_EMAIL,
         to: buyerEmail,
@@ -223,7 +223,7 @@ checkoutRoutes.get("/checkout/success", async (c) => {
     throw new AppError(404, "Event not found for this session", "EVENT_NOT_FOUND");
   }
 
-  const eventUrl = buildEventUrl(env.APP_URL, event.code);
+  const eventUrl = buildEventUrl(env.APP_PUBLIC_URL, event.code);
 
   const response: CheckoutSuccessResponse = {
     event_code: event.code,
