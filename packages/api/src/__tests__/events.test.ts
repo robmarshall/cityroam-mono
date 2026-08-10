@@ -135,6 +135,22 @@ function resetDbChainMocks(): void {
   mockedDb.delete.mockReset().mockImplementation(() => mockedDb);
   mockedDb.execute.mockReset().mockResolvedValue([{ "?column?": 1 }]);
   mockedDb.transaction.mockReset().mockImplementation((fn: any) => fn(mockedDb));
+  mockedDb.query.events.findFirst.mockReset();
+  mockedDb.query.participants.findFirst.mockReset();
+  mockedDb.query.routeBlocks.findFirst.mockReset();
+  mockedDb.query.routeGroups.findFirst.mockReset();
+}
+
+/**
+ * resolveSession's Redis fast path re-reads the participant row to confirm
+ * they're still active, so any test with a session must queue that row first.
+ */
+function mockSessionParticipant(overrides: Record<string, unknown> = {}): void {
+  mockedDb.query.participants.findFirst.mockResolvedValueOnce({
+    is_active: true,
+    is_lead: true,
+    ...overrides,
+  });
 }
 
 // =====================================================================
@@ -189,6 +205,7 @@ describe("GET /event/:code", () => {
 
     // Mock getSession from the session module (used by middleware)
     vi.mocked(getSessionFromRedis).mockResolvedValueOnce(makeSessionData() as any);
+    mockSessionParticipant();
 
     // Participant list
     const participantRows = [
@@ -445,6 +462,7 @@ describe("POST /event/:code/start", () => {
     vi.mocked(getSessionFromRedis).mockResolvedValueOnce(
       makeSessionData({ is_lead: false }) as any
     );
+    mockSessionParticipant({ is_lead: false });
 
     const res = await app.request("/event/abcd2345/start", {
       method: "POST",
@@ -464,6 +482,7 @@ describe("POST /event/:code/start", () => {
     vi.mocked(getSessionFromRedis).mockResolvedValueOnce(
       makeSessionData() as any
     );
+    mockSessionParticipant();
 
     // Event is IN_PROGRESS, not WAITING
     const event = mockEvent({ id: "e-id", code: "abcd2345", status: "IN_PROGRESS", route_id: "r-id" });
@@ -487,6 +506,7 @@ describe("POST /event/:code/start", () => {
     vi.mocked(getSessionFromRedis).mockResolvedValueOnce(
       makeSessionData() as any
     );
+    mockSessionParticipant();
 
     const event = mockEvent({
       id: "e-id",
@@ -555,6 +575,7 @@ describe("POST /event/:code/leave", () => {
     vi.mocked(getSessionFromRedis).mockResolvedValueOnce(
       makeSessionData({ is_lead: false, display_name: "Bob" }) as any
     );
+    mockSessionParticipant({ is_lead: false });
 
     const event = mockEvent({ id: "e-id", code: "abcd2345", status: "IN_PROGRESS" });
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
@@ -609,6 +630,7 @@ describe("POST /event/:code/leave", () => {
     vi.mocked(getSessionFromRedis).mockResolvedValueOnce(
       makeSessionData({ participant_id: "lead-p", is_lead: true, display_name: "Lead" }) as any
     );
+    mockSessionParticipant();
 
     const event = mockEvent({ id: "e-id", code: "abcd2345", status: "WAITING" });
     // Once for the leave handler, once for ensureActiveLead's locked read
@@ -807,6 +829,7 @@ describe("rejoin after inactivity", () => {
     vi.mocked(getSessionFromRedis).mockResolvedValueOnce(
       makeSessionData({ participant_id: "p1", display_name: "Swept" }) as any,
     );
+    mockSessionParticipant({ is_active: false });
 
     mockedDb.where.mockResolvedValueOnce([
       { id: "p1", display_name: "Swept", is_lead: true, is_active: false },
@@ -830,6 +853,7 @@ describe("rejoin after inactivity", () => {
     vi.mocked(getSessionFromRedis).mockResolvedValueOnce(
       makeSessionData({ participant_id: "p1", display_name: "Alice", is_lead: false }) as any,
     );
+    mockSessionParticipant({ is_lead: false });
 
     mockedDb.where.mockResolvedValueOnce([
       { id: "p1", display_name: "Alice", is_lead: true, is_active: true },

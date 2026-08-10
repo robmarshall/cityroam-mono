@@ -5,7 +5,7 @@ import { SESSION_TOKEN_EXPIRY_HOURS, TERMINAL_STATUSES } from "@cityroam/shared/
 import { env } from "../env.js";
 import { db } from "../db/index.js";
 import { events, participants } from "../db/schema/index.js";
-import { getSession, setSession } from "../redis/session.js";
+import { getSession, setSession, deleteSession } from "../redis/session.js";
 import { AppError } from "./error-handler.js";
 
 export const COOKIE_NAME = "cityroam_session";
@@ -60,12 +60,28 @@ export async function resolveSession(c: any): Promise<SessionContext | null> {
   // Redis fast path
   const session = await getSession(token);
   if (session) {
+    // The cached session outlives the participant: leaving or being swept
+    // offline doesn't rewrite it, and it lives for SESSION_TOKEN_EXPIRY_HOURS.
+    // Confirm against the row, otherwise HTTP keeps authenticating someone the
+    // WS server rejects and the join page bounces them in a loop. Reading
+    // is_lead here also keeps a promoted participant from acting on a stale
+    // flag.
+    const row = await db.query.participants.findFirst({
+      where: eq(participants.id, session.participant_id),
+      columns: { is_active: true, is_lead: true },
+    });
+
+    if (!row?.is_active) {
+      await deleteSession(token);
+      return null;
+    }
+
     return {
       participant_id: session.participant_id,
       event_id: session.event_id,
       event_code: session.event_code,
       display_name: session.display_name,
-      is_lead: session.is_lead,
+      is_lead: row.is_lead,
     };
   }
 

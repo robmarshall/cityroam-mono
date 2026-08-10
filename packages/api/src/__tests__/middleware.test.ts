@@ -73,8 +73,7 @@ vi.mock("../redis/client.js", () => ({
 
 // ── Imports (after mocks) ───────────────────────────────────────────
 import { db } from "../db/index.js";
-import { getSession } from "../redis/session.js";
-import { setSession } from "../redis/session.js";
+import { getSession, setSession, deleteSession } from "../redis/session.js";
 import { createTestApp, jsonRequest, getAdminToken } from "./helpers.js";
 import { signAdminToken } from "../middleware/admin.js";
 
@@ -97,6 +96,11 @@ describe("Session auth middleware", () => {
       display_name: "Alice",
       is_lead: true,
     });
+    // The fast path confirms the participant is still active
+    vi.mocked(db.query.participants.findFirst).mockResolvedValueOnce({
+      is_active: true,
+      is_lead: true,
+    } as any);
 
     const res = await app.request("/event/ABCD1234/leave", {
       method: "POST",
@@ -176,6 +180,58 @@ describe("Session auth middleware", () => {
       display_name: "Bob",
       is_lead: false,
     });
+  });
+
+  it("rejects a cached session whose participant has since gone inactive", async () => {
+    vi.mocked(getSession).mockResolvedValueOnce({
+      participant_id: "p-1",
+      event_id: "e-1",
+      event_code: "ABCD1234",
+      display_name: "Alice",
+      is_lead: true,
+    });
+    vi.mocked(db.query.participants.findFirst).mockResolvedValueOnce({
+      is_active: false,
+      is_lead: false,
+    } as any);
+
+    const res = await app.request("/event/ABCD1234/leave", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: "cityroam_session=stale-token",
+      },
+    });
+
+    expect(res.status).toBe(401);
+    // The stale key is dropped so the next request doesn't repeat the lookup
+    expect(deleteSession).toHaveBeenCalledWith("stale-token");
+  });
+
+  it("takes is_lead from the participant row, not the cached session", async () => {
+    vi.mocked(getSession).mockResolvedValueOnce({
+      participant_id: "p-1",
+      event_id: "e-1",
+      event_code: "ABCD1234",
+      display_name: "Alice",
+      is_lead: false,
+    });
+    // Promoted since the session was written
+    vi.mocked(db.query.participants.findFirst).mockResolvedValueOnce({
+      is_active: true,
+      is_lead: true,
+    } as any);
+
+    const res = await app.request("/event/ABCD1234/start", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: "cityroam_session=valid-token",
+      },
+    });
+
+    // A stale is_lead=false would have produced 403 "Only the lead can start"
+    expect(res.status).not.toBe(403);
   });
 
   it("returns 401 for a swept participant once their Redis session is gone", async () => {
