@@ -55,7 +55,7 @@ services:
       - cityroam-network
 
   api-http:
-    image: node:20-alpine
+    image: node:22-alpine
     working_dir: /workspace
     command: sh -c "npm run dev:api:http"
     ports:
@@ -75,7 +75,7 @@ services:
       - cityroam-network
 
   api-ws:
-    image: node:20-alpine
+    image: node:22-alpine
     working_dir: /workspace
     command: sh -c "npm run dev:api:ws"
     ports:
@@ -95,7 +95,7 @@ services:
       - cityroam-network
 
   app:
-    image: node:20-alpine
+    image: node:22-alpine
     working_dir: /workspace
     command: sh -c "npm run dev:app"
     ports:
@@ -107,7 +107,7 @@ services:
       - cityroam-network
 
   marketing:
-    image: node:20-alpine
+    image: node:22-alpine
     working_dir: /workspace
     command: sh -c "npm run dev:marketing"
     ports:
@@ -119,7 +119,7 @@ services:
       - cityroam-network
 
   admin:
-    image: node:20-alpine
+    image: node:22-alpine
     working_dir: /workspace
     command: sh -c "npm run dev:admin"
     ports:

@@ -44,6 +44,7 @@ import {
   AppError,
 } from "../middleware/index.js";
 import type { SessionContext } from "../middleware/index.js";
+import { publicImageUrl } from "../lib/image-url.js";
 
 const log = createLogger("events");
 
@@ -669,7 +670,7 @@ function mapDbMessageToPayload(msg: typeof messages.$inferSelect): ChatMessagePa
     sender_name: msg.sender_name,
     participant_id: msg.participant_id,
     content: msg.content,
-    image_url: msg.image_url ?? null,
+    image_url: publicImageUrl(msg.image_url),
     step_number: msg.step_number,
     created_at: new Date(msg.created_at).toISOString(),
   };

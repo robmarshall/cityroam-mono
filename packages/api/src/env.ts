@@ -21,6 +21,8 @@ const HTTP_REQUIRED_VARS = [
   "AWS_SECRET_ACCESS_KEY",
   "AWS_S3_BUCKET",
   "AWS_REGION",
+  // Without it, uploaded images are served as bare S3 keys and 404 in the browser
+  "AWS_CDN_BASE_URL",
   "ADMIN_USERNAME",
   "ADMIN_PASSWORD",
   "SESSION_SECRET",
@@ -39,6 +41,8 @@ const WS_REQUIRED_VARS = [
   "COOKIE_DOMAIN",
   // Reached from the WS process via group-runner -> template-vars
   "REVIEW_LINK",
+  // Reached from the WS process via group-runner -> writeGuideMessage -> publicImageUrl
+  "AWS_CDN_BASE_URL",
 ] as const;
 
 /** Vars that must be set even in development mode. */

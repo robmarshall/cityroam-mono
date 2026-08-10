@@ -208,6 +208,62 @@ beforeEach(() => {
 });
 
 // =====================================================================
+// writeGuideMessage image URL handling
+// =====================================================================
+
+describe("writeGuideMessage image_url", () => {
+  it("absolutizes a bare S3 key in the payload sent to clients", async () => {
+    (db as any).returning.mockResolvedValueOnce([
+      { ...mockMsg, image_url: "uploads/1699_photo.png" },
+    ]);
+
+    const payload = await writeGuideMessage(
+      "evt-1",
+      "ABC123",
+      1,
+      "",
+      "uploads/1699_photo.png",
+      "image",
+    );
+
+    expect(payload.image_url).toBe("https://cdn.test.com/uploads/1699_photo.png");
+    expect(vi.mocked(appendMessage).mock.calls[0][1].image_url).toBe(
+      "https://cdn.test.com/uploads/1699_photo.png",
+    );
+    expect(vi.mocked(publishMessage).mock.calls[0][1].image_url).toBe(
+      "https://cdn.test.com/uploads/1699_photo.png",
+    );
+  });
+
+  it("stores the value as given rather than the absolutized form", async () => {
+    (db as any).returning.mockResolvedValueOnce([
+      { ...mockMsg, image_url: "uploads/1699_photo.png" },
+    ]);
+
+    await writeGuideMessage("evt-1", "ABC123", 1, "", "uploads/1699_photo.png", "image");
+
+    expect((db as any).values).toHaveBeenCalledWith(
+      expect.objectContaining({ image_url: "uploads/1699_photo.png" }),
+    );
+  });
+
+  it("leaves an already-absolute URL untouched", async () => {
+    const absolute = "https://cdn.test.com/uploads/photo.png";
+    (db as any).returning.mockResolvedValueOnce([{ ...mockMsg, image_url: absolute }]);
+
+    const payload = await writeGuideMessage("evt-1", "ABC123", 1, "", absolute, "image");
+
+    expect(payload.image_url).toBe(absolute);
+  });
+
+  it("keeps image_url null for text messages", async () => {
+    const payload = await writeGuideMessage("evt-1", "ABC123", 1, "Hello");
+
+    expect(payload.image_url).toBeNull();
+  });
+});
+
+// =====================================================================
 // answer-attempt handler
 // =====================================================================
 

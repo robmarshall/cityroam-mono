@@ -3,6 +3,7 @@ import {
   generateEventCode,
   buildEventUrl,
   buildS3Url,
+  resolveImageUrl,
   formatTimestamp,
   isValidEventCode,
 } from "./index.js";
@@ -62,6 +63,49 @@ describe("buildS3Url", () => {
     expect(buildS3Url("https://cdn.example.com", "key")).toBe(
       "https://cdn.example.com/key",
     );
+  });
+});
+
+describe("resolveImageUrl", () => {
+  const CDN = "https://cdn.example.com";
+
+  it("absolutizes a bare S3 key", () => {
+    expect(resolveImageUrl("uploads/1699_photo.png", CDN)).toBe(
+      "https://cdn.example.com/uploads/1699_photo.png",
+    );
+  });
+
+  it("absolutizes a key with a leading slash without doubling it", () => {
+    expect(resolveImageUrl("/uploads/photo.png", CDN)).toBe(
+      "https://cdn.example.com/uploads/photo.png",
+    );
+  });
+
+  it("leaves an already-absolute https URL untouched", () => {
+    expect(resolveImageUrl("https://other.cdn/photo.png", CDN)).toBe(
+      "https://other.cdn/photo.png",
+    );
+  });
+
+  it("leaves http and protocol-relative URLs untouched", () => {
+    expect(resolveImageUrl("http://other.cdn/a.png", CDN)).toBe("http://other.cdn/a.png");
+    expect(resolveImageUrl("//other.cdn/a.png", CDN)).toBe("//other.cdn/a.png");
+  });
+
+  it("leaves data URIs untouched", () => {
+    expect(resolveImageUrl("data:image/png;base64,AAA", CDN)).toBe(
+      "data:image/png;base64,AAA",
+    );
+  });
+
+  it("returns null for null, undefined and empty string", () => {
+    expect(resolveImageUrl(null, CDN)).toBeNull();
+    expect(resolveImageUrl(undefined, CDN)).toBeNull();
+    expect(resolveImageUrl("", CDN)).toBeNull();
+  });
+
+  it("passes the key through unchanged when no CDN base is configured", () => {
+    expect(resolveImageUrl("uploads/photo.png", "")).toBe("uploads/photo.png");
   });
 });
 

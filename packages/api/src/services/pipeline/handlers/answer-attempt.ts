@@ -9,6 +9,7 @@ import { appendMessage, publishMessage } from "../../../redis/index.js";
 import { incrementGuideResponseCount } from "../guide-response-cap.js";
 import { advanceAfterBlock } from "../../group-runner.js";
 import { createLogger } from "../../../lib/logger.js";
+import { publicImageUrl } from "../../../lib/image-url.js";
 import { deterministicAnswerMatch } from "../deterministic-match.js";
 
 const log = createLogger("answer-attempt");
@@ -99,7 +100,7 @@ export async function writeGuideMessage(
     sender_name: msg.sender_name,
     participant_id: msg.participant_id,
     content: msg.content,
-    image_url: msg.image_url ?? null,
+    image_url: publicImageUrl(msg.image_url),
     step_number: msg.step_number,
     created_at: new Date(msg.created_at).toISOString(),
     ...(blockType && { block_type: blockType }),

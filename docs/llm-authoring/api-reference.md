@@ -604,11 +604,12 @@ Response:
 ```json
 {
   "upload_url": "https://s3.amazonaws.com/...",
-  "key": "uploads/1705312200000_leeds-town-hall.jpg"
+  "key": "uploads/1705312200000_leeds-town-hall.jpg",
+  "url": "https://cdn.yourdomain.com/uploads/1705312200000_leeds-town-hall.jpg"
 }
 ```
 
-Then `PUT` the raw image bytes to `upload_url`. The `key` is the S3 object path — use it to construct the public URL for your image block config.
+Then `PUT` the raw image bytes to `upload_url`. Put `url` — the absolute public URL — in the image block's `image_url`; `key` is the raw S3 object path and a browser would resolve it against whatever page it is rendered on.
 
 **Constraints:**
 - Allowed types: `image/jpeg`, `image/png`

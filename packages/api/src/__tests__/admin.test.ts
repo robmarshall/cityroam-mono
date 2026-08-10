@@ -418,6 +418,17 @@ describe("POST /admin/upload", () => {
     );
   });
 
+  it("returns the public CDN URL so the admin never stores a bare key", async () => {
+    const res = await adminRequest(app, "POST", "/admin/upload", {
+      filename: "photo.jpg",
+      content_type: "image/jpeg",
+    });
+
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.url).toBe("https://cdn.test.com/uploads/test-file.jpg");
+  });
+
   it("returns 400 for invalid filename", async () => {
     const res = await adminRequest(app, "POST", "/admin/upload", {
       filename: "///",

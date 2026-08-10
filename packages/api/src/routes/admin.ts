@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { eq, sql, count, desc, and, asc, inArray, type SQL } from "drizzle-orm";
 import Stripe from "stripe";
 import { adminLoginSchema, adminUpdateEventStatusSchema, adminCreateEventSchema, routeSchema, imageUploadRequestSchema, messageBankSchema, routeBlockSchema, groupUpdateSchema, bulkRouteGroupCreateSchema, groupReorderSchema, blockReorderSchema, blockMoveSchema } from "@cityroam/shared/validation";
-import { generateEventCode, buildEventUrl } from "@cityroam/shared/utils";
+import { generateEventCode, buildEventUrl, buildS3Url } from "@cityroam/shared/utils";
 import { EVENT_EXPIRY_DAYS } from "@cityroam/shared/constants";
 import { generatePresignedUploadUrl } from "../services/s3.js";
 import type { AdminDashboardResponse, AdminEventListResponse, AdminEventDetailResponse, AdminRouteDetailResponse, AdminRouteListResponse, AdminMessageBankListResponse, AdminRouteGroupResponse, AdminRouteFamilyListResponse, AdminRouteFamilyDetailResponse, SupportedLanguage } from "@cityroam/shared/types";
@@ -13,6 +13,7 @@ import { AppError } from "../middleware/error-handler.js";
 import { adminAuth, signAdminToken } from "../middleware/admin.js";
 import { deleteSessionsByEventId } from "../redis/index.js";
 import { createLogger } from "../lib/logger.js";
+import { publicImageUrl } from "../lib/image-url.js";
 
 const log = createLogger("admin");
 
@@ -300,7 +301,7 @@ adminRoutes.get("/admin/events/:id", adminAuth, async (c) => {
       sender_name: m.sender_name,
       participant_id: m.participant_id,
       content: m.content,
-      image_url: m.image_url,
+      image_url: publicImageUrl(m.image_url),
       created_at: m.created_at.toISOString(),
     })),
     stripe_payment_id: event.stripe_payment_id,
@@ -457,7 +458,9 @@ adminRoutes.post("/admin/upload", adminAuth, async (c) => {
   const key = `uploads/${uniqueFilename}`;
 
   const result = await generatePresignedUploadUrl(key, content_type);
-  return c.json(result, 200);
+  // `url` is what the admin stores on the block: a bare key would be resolved
+  // against the page the image is later rendered on.
+  return c.json({ ...result, url: buildS3Url(env.AWS_CDN_BASE_URL, result.key) }, 200);
 });
 
 // ── Route CRUD ──────────────────────────────────────────────────────
