@@ -19,6 +19,9 @@ export const events = pgTable("events", {
   current_stop: integer("current_stop").notNull().default(0),
   current_group_id: uuid("current_group_id").references(() => routeGroups.id),
   current_block_id: uuid("current_block_id").references(() => routeBlocks.id),
+  // Position within current_group_id's ordered blocks that the runner should
+  // send next. Lets the startup reconciler resume a group stranded by a restart.
+  current_block_index: integer("current_block_index").notNull().default(0),
   hints_given: integer("hints_given").notNull().default(0),
   wrong_attempts: integer("wrong_attempts").notNull().default(0),
   guide_response_count: integer("guide_response_count").notNull().default(0),

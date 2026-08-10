@@ -83,18 +83,21 @@ async function sendBlocks(
         await showTypingDelay(eventCode, block.delay_ms);
         const content = applyTemplateVars(config.content, templateVars);
         await writeGuideMessage(eventId, eventCode, stepNumber, content, null, "message");
+        await persistBlockIndex(eventId, i + 1);
         break;
       }
 
       case "image": {
         await showTypingDelay(eventCode, block.delay_ms);
         await writeGuideMessage(eventId, eventCode, stepNumber, "", config.image_url, "image");
+        await persistBlockIndex(eventId, i + 1);
         break;
       }
 
       case "map": {
         await showTypingDelay(eventCode, block.delay_ms);
         await writeGuideMessage(eventId, eventCode, stepNumber, config.google_maps_link, null, "map");
+        await persistBlockIndex(eventId, i + 1);
         break;
       }
 
@@ -107,6 +110,7 @@ async function sendBlocks(
           .update(schema.events)
           .set({
             current_block_id: block.id,
+            current_block_index: i,
           })
           .where(eq(schema.events.id, eventId));
         return i;
@@ -118,6 +122,7 @@ async function sendBlocks(
           .update(schema.events)
           .set({
             current_block_id: block.id,
+            current_block_index: i,
           })
           .where(eq(schema.events.id, eventId));
 
@@ -135,8 +140,22 @@ async function sendBlocks(
 }
 
 /**
- * Run a group from the beginning: load blocks, send auto-send blocks
- * until a question/action block is hit or the group is exhausted.
+ * Record how far through the current group the runner has got, so a restart
+ * mid-group can pick up from the next unsent block instead of stranding the
+ * event with nothing scheduled.
+ */
+async function persistBlockIndex(eventId: string, nextIndex: number): Promise<void> {
+  await db
+    .update(schema.events)
+    .set({ current_block_index: nextIndex })
+    .where(eq(schema.events.id, eventId));
+}
+
+/**
+ * Run a group: load blocks, send auto-send blocks from `startIndex` until a
+ * question/action block is hit or the group is exhausted. `startIndex` is
+ * non-zero only when the startup reconciler resumes a group a restart
+ * interrupted.
  *
  * If the group completes without blocking, advances to the next group.
  * If all groups are exhausted, triggers game completion.
@@ -145,6 +164,7 @@ export async function runGroup(
   eventId: string,
   eventCode: string,
   groupId: string,
+  startIndex = 0,
 ): Promise<void> {
   // Load event to get route_id and step_number
   const event = await db.query.events.findFirst({
@@ -178,7 +198,7 @@ export async function runGroup(
     groupId,
     event.current_stop,
     blocks,
-    0,
+    startIndex,
   );
 
   // If all blocks sent without blocking, advance to next group
@@ -264,6 +284,10 @@ export async function advanceAfterBlock(
     return;
   }
 
+  // Record the resume point before the first send, so a restart during the
+  // very first delay doesn't replay the block we just advanced past
+  await persistBlockIndex(eventId, currentIndex + 1);
+
   // Continue sending from the block after the current one
   const blockingIndex = await sendBlocks(
     eventId,
@@ -310,6 +334,7 @@ async function advanceToNextGroup(
       .set({
         current_group_id: nextGroup.id,
         current_block_id: null,
+        current_block_index: 0,
         current_stop: currentIndex + 2, // 1-based step number for messages
       })
       .where(eq(schema.events.id, eventId));

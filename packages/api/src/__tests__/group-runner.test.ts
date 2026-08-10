@@ -293,6 +293,69 @@ describe("runGroup", () => {
     );
   });
 
+  it("persists the next block index after each auto-sent block", async () => {
+    const blocks = [
+      messageBlock("b1", 0, "First"),
+      messageBlock("b2", 1, "Second"),
+      questionBlock("b3", 2),
+    ];
+    (db.query.events.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(defaultEvent);
+    (db as any).orderBy.mockResolvedValueOnce(blocks);
+
+    const promise = runGroup("evt-1", "ABC123", "group-1");
+    await vi.advanceTimersByTimeAsync(10000);
+    await promise;
+
+    expect((db as any).set).toHaveBeenCalledWith({ current_block_index: 1 });
+    expect((db as any).set).toHaveBeenCalledWith({ current_block_index: 2 });
+    // Pausing on the question records where the group is parked
+    expect((db as any).set).toHaveBeenCalledWith({
+      current_block_id: "b3",
+      current_block_index: 2,
+    });
+  });
+
+  it("resumes from a start index without replaying earlier blocks", async () => {
+    const blocks = [
+      messageBlock("b1", 0, "First"),
+      messageBlock("b2", 1, "Second"),
+      questionBlock("b3", 2, "Third"),
+    ];
+    (db.query.events.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(defaultEvent);
+    (db as any).orderBy.mockResolvedValueOnce(blocks);
+
+    const promise = runGroup("evt-1", "ABC123", "group-1", 1);
+    await vi.advanceTimersByTimeAsync(10000);
+    await promise;
+
+    expect(writeGuideMessage).toHaveBeenCalledTimes(2);
+    expect(writeGuideMessage).toHaveBeenNthCalledWith(
+      1, "evt-1", "ABC123", 1, "Second", null, "message",
+    );
+    expect(writeGuideMessage).toHaveBeenNthCalledWith(
+      2, "evt-1", "ABC123", 1, "Third", null, "question",
+    );
+  });
+
+  it("a start index past the end of the group advances to the next group", async () => {
+    const blocks = [messageBlock("b1", 0), messageBlock("b2", 1)];
+    const groups = [makeGroup("group-1", 0), makeGroup("group-2", 1)];
+    setupForRunGroup(blocks, groups);
+    (db as any).orderBy.mockResolvedValueOnce([questionBlock("b3", 0)]);
+
+    const promise = runGroup("evt-1", "ABC123", "group-1", 2);
+    await vi.advanceTimersByTimeAsync(10000);
+    await promise;
+
+    expect((db as any).set).toHaveBeenCalledWith(
+      expect.objectContaining({
+        current_group_id: "group-2",
+        current_block_id: null,
+        current_block_index: 0,
+      }),
+    );
+  });
+
   it("template variables applied to message content via applyTemplateVars", async () => {
     const blocks = [messageBlock("b1", 0, "Welcome to {{CITY}}")];
     const groups = [makeGroup("group-1", 0), makeGroup("group-2", 1)];

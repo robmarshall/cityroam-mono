@@ -395,6 +395,7 @@ eventRoutes.post("/event/:code/start", sessionAuth, async (c) => {
         current_stop: 1,
         current_group_id: group.id,
         current_block_id: null,
+        current_block_index: 0,
       })
       .where(eq(events.id, lockedEvent.id));
 

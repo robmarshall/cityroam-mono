@@ -13,6 +13,7 @@ import { eventRoutes } from "../routes/events.js";
 import { checkoutRoutes } from "../routes/checkout.js";
 import { adminRoutes } from "../routes/admin.js";
 import { startExpirySweep, stopExpirySweep } from "../services/event-expiry.js";
+import { reconcileStrandedGroups } from "../services/group-reconciler.js";
 import {
   startIncomingSubscriber,
   stopIncomingSubscriber,
@@ -75,6 +76,9 @@ const server = serve({ fetch: app.fetch, port }, () => {
   startIdleTimer();
   startIncomingSubscriber().catch((err) =>
     log.error("failed to start incoming subscriber", { error: err instanceof Error ? err.message : String(err) }),
+  );
+  reconcileStrandedGroups().catch((err) =>
+    log.error("failed to reconcile stranded groups", { error: err instanceof Error ? err.message : String(err) }),
   );
 });
 
