@@ -44,7 +44,7 @@ import {
 } from "./handlers/silent.js";
 import type { SilentHandlerContext } from "./handlers/silent.js";
 import { deterministicAnswerMatch } from "./deterministic-match.js";
-import { isAffirmativeResponse, isNegativeResponse } from "./word-match.js";
+import { isAffirmativeResponse, isNegativeResponse, isHintRequest } from "./word-match.js";
 import { getRandomMessageBank } from "./handlers/answer-attempt.js";
 
 const log = createLogger("pipeline");
@@ -72,10 +72,15 @@ interface CappedEventContext {
 /**
  * Handle a message on an event that has spent its guide response budget.
  *
- * The LLM is off limits, but the deterministic matcher still runs so a
- * correct answer advances the hunt. Anything the matcher doesn't recognise
- * gets the cap notice — without classification we can't tell an answer
- * attempt from chatter, so nothing is counted as a wrong attempt.
+ * The LLM is off limits, but both routes out of a block are scripted, so both
+ * stay open: the deterministic matcher accepts a correct answer, and a
+ * keyword-matched hint request serves the next hint — or, once hints run out,
+ * reveals the answer and advances. Without the second route a group that
+ * simply doesn't know the answer would still be stuck for good.
+ *
+ * Anything neither of those recognises gets the cap notice. Without
+ * classification we can't tell an answer attempt from chatter, so nothing is
+ * counted as a wrong attempt.
  */
 async function handleMessageWhileCapped(
   event: CappedEventContext,
@@ -83,22 +88,31 @@ async function handleMessageWhileCapped(
   text: string,
   language: SupportedLanguage,
 ): Promise<void> {
-  const advanced = await handleAnswerAttemptWithoutLLM(
-    {
-      eventId: event.id,
-      eventCode,
-      currentBlockId: event.current_block_id,
-      currentStop: event.current_stop,
-      wrongAttempts: event.wrong_attempts,
-      hintsGiven: event.hints_given,
-      language,
-    },
-    text,
-  );
+  const ctx = {
+    eventId: event.id,
+    eventCode,
+    currentBlockId: event.current_block_id,
+    currentStop: event.current_stop,
+    wrongAttempts: event.wrong_attempts,
+    hintsGiven: event.hints_given,
+    language,
+  };
 
-  if (!advanced) {
-    await sendCapReachedMessage(event.id, eventCode, event.current_stop, language);
+  // Answers win over hint keywords, so "stuck on this — is it the Town Hall?"
+  // is still accepted as the answer it is.
+  if (await handleAnswerAttemptWithoutLLM(ctx, text)) return;
+
+  if (isHintRequest(text, language)) {
+    await handleHintRequest(ctx);
+    return;
   }
+
+  // The notice is the only noisy branch here, so it alone keeps the shared
+  // guide rate limit. The two escape hatches above must never be dropped.
+  const rateLimit = await checkGuideRateLimit(eventCode);
+  if (!rateLimit.allowed) return;
+
+  await sendCapReachedMessage(event.id, eventCode, event.current_stop, language);
 }
 
 /**
@@ -208,14 +222,9 @@ export async function processIncomingMessage(
     return;
   }
 
-  // Step 5: Check guide rate limit
-  const guideRateLimit = await checkGuideRateLimit(eventCode);
-  if (!guideRateLimit.allowed) {
-    updateIdleTimestamp(eventCode, eventId, language);
-    return;
-  }
-
-  // Step 5.5: Check if a hint was offered and this is a confirmation/decline
+  // Step 5: Check if a hint was offered and this is a confirmation/decline.
+  // Deterministic and scripted, so it runs ahead of the rate limit — and it
+  // fires at most once per offer, since the flag is cleared immediately.
   if (event.hint_offered) {
     // Clear the flag regardless of response
     await db
@@ -288,15 +297,25 @@ export async function processIncomingMessage(
     // The player may have ignored the hint offer and sent an answer or other message.
   }
 
-  // Step 6: Guide response cap. No more LLM work, but answers still have to
-  // land — otherwise a capped event could never be finished.
+  // Step 6: Guide response cap. No more LLM work, but answers and hints still
+  // have to land — otherwise a capped event could never be finished. Checked
+  // before the rate limit because those escape hatches do no LLM work, and
+  // dropping one because a teammate typed 4 seconds ago would make the only
+  // way out of a capped hunt intermittent.
   if (await isGuideResponseCapReached(eventId)) {
     await handleMessageWhileCapped(event, eventCode, text, language);
     updateIdleTimestamp(eventCode, eventId, language);
     return;
   }
 
-  // Step 7: Publish guide typing on
+  // Step 7: Check guide rate limit — from here on the work is LLM-backed
+  const guideRateLimit = await checkGuideRateLimit(eventCode);
+  if (!guideRateLimit.allowed) {
+    updateIdleTimestamp(eventCode, eventId, language);
+    return;
+  }
+
+  // Step 8: Publish guide typing on
   await publishTyping(eventCode, {
     type: "guide_typing",
     participant_name: null,
@@ -305,7 +324,7 @@ export async function processIncomingMessage(
   });
 
   try {
-    // Step 8: Load current question block for classification
+    // Step 9: Load current question block for classification
     let currentClue = "";
     let acceptedAnswers: string[] = [];
 
@@ -322,7 +341,7 @@ export async function processIncomingMessage(
       }
     }
 
-    // Step 9: Run Layer 2 intent classification
+    // Step 10: Run Layer 2 intent classification
     const classification = await classifyIntent(llm, currentClue, text, language);
 
     // LLM failure → try deterministic answer match before falling back to clarification
@@ -338,7 +357,7 @@ export async function processIncomingMessage(
       }
     }
 
-    // Step 10: Re-check cap before sending handler response
+    // Step 11: Re-check cap before sending handler response
     if (intent !== "off-topic-chat" && intent !== "contextual-comment") {
       if (await isGuideResponseCapReached(eventId)) {
         await handleMessageWhileCapped(event, eventCode, text, language);
@@ -347,7 +366,7 @@ export async function processIncomingMessage(
       }
     }
 
-    // Step 11: Route to handler
+    // Step 12: Route to handler
     const silentCtx: SilentHandlerContext = {
       eventId,
       eventCode,
@@ -434,13 +453,13 @@ export async function processIncomingMessage(
       }
     }
 
-    // Step 12: Update idle timer
+    // Step 13: Update idle timer
     const wasPaused = updateIdleTimestamp(eventCode, eventId, language);
     if (wasPaused) {
       await handleIdleResume(eventId, eventCode, language);
     }
 
-    // Step 13: Remove from idle tracking if game completed during this pipeline run
+    // Step 14: Remove from idle tracking if game completed during this pipeline run
     const updatedEvent = await db.query.events.findFirst({
       where: eq(schema.events.id, eventId),
       columns: { status: true },
@@ -452,7 +471,7 @@ export async function processIncomingMessage(
     log.error("pipeline error", { messageId: incomingMessageId, eventCode, error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
     throw error;
   } finally {
-    // Step 14: Always turn off guide typing
+    // Step 15: Always turn off guide typing
     await publishTyping(eventCode, {
       type: "guide_typing",
       participant_name: null,

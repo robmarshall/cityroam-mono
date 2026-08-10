@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import {
   matchesWordList,
+  containsPhraseFromList,
+  isHintRequest,
   isAffirmativeResponse,
   isNegativeResponse,
   AFFIRMATIVE_WORDS,
@@ -181,5 +183,68 @@ describe("legacy exports", () => {
   it("NEGATIVE_WORDS is the English negative list", () => {
     expect(NEGATIVE_WORDS).toContain("no");
     expect(NEGATIVE_WORDS).toContain("nope");
+  });
+});
+
+// ── isHintRequest ────────────────────────────────────────────────────
+
+describe("isHintRequest", () => {
+  it("catches the obvious English phrasings", () => {
+    for (const text of [
+      "hint",
+      "can we have a hint?",
+      "we are stuck",
+      "help!",
+      "I give up",
+      "no idea",
+      "just tell us the answer",
+    ]) {
+      expect(isHintRequest(text)).toBe(true);
+    }
+  });
+
+  it("matches whole words only, so ordinary chat doesn't beg for hints", () => {
+    for (const text of [
+      "that was helpful thanks",
+      "the vastness of the square",
+      "we found the clueless cafe",
+    ]) {
+      expect(isHintRequest(text)).toBe(false);
+    }
+  });
+
+  it("ignores accents and punctuation", () => {
+    expect(isHintRequest("On est bloqué !", "fr")).toBe(true);
+    expect(isHintRequest("¿Nos das una pista?", "es")).toBe(true);
+  });
+
+  it("works in each supported language", () => {
+    expect(isHintRequest("wir brauchen einen hinweis", "de")).toBe(true);
+    expect(isHintRequest("geef ons een hint", "nl")).toBe(true);
+    expect(isHintRequest("necesitamos ayuda", "es")).toBe(true);
+  });
+
+  it("falls back to English, since players type it whatever the game language", () => {
+    expect(isHintRequest("we are stuck", "de")).toBe(true);
+  });
+
+  it("does not fire on an ordinary answer attempt", () => {
+    expect(isHintRequest("the town hall")).toBe(false);
+    expect(isHintRequest("Rathaus", "de")).toBe(false);
+  });
+});
+
+describe("containsPhraseFromList", () => {
+  it("matches a multi-word phrase inside a sentence", () => {
+    expect(containsPhraseFromList("ok we give up now", ["give up"])).toBe(true);
+  });
+
+  it("does not match a phrase split across the text", () => {
+    expect(containsPhraseFromList("give me an upgrade", ["give up"])).toBe(false);
+  });
+
+  it("returns false for empty input", () => {
+    expect(containsPhraseFromList("", ["hint"])).toBe(false);
+    expect(containsPhraseFromList("hint", [])).toBe(false);
   });
 });

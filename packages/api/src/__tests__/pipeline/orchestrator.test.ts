@@ -343,6 +343,60 @@ describe("processIncomingMessage", () => {
     expect(classifyIntent).not.toHaveBeenCalled();
   });
 
+  it("guide cap reached: a hint request still serves a hint", async () => {
+    (isGuideResponseCapReached as any).mockResolvedValue(true);
+    (handleAnswerAttemptWithoutLLM as any).mockResolvedValue(false);
+
+    await processIncomingMessage({ ...basePayload, text: "we are stuck, any hint?" });
+
+    // Hints are scripted, so they stay reachable and force-advance the block
+    // once exhausted — the escape hatch for a group that can't answer
+    expect(handleHintRequest).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventId: "event-1",
+        eventCode: "ABCD1234",
+        currentBlockId: "block-1",
+      }),
+    );
+    expect(sendCapReachedMessage).not.toHaveBeenCalled();
+    expect(classifyIntent).not.toHaveBeenCalled();
+  });
+
+  it("guide cap reached: an answer wins over hint keywords in the same message", async () => {
+    (isGuideResponseCapReached as any).mockResolvedValue(true);
+    (handleAnswerAttemptWithoutLLM as any).mockResolvedValue(true);
+
+    await processIncomingMessage({
+      ...basePayload,
+      text: "stuck on this — is it the fountain?",
+    });
+
+    expect(handleHintRequest).not.toHaveBeenCalled();
+    expect(sendCapReachedMessage).not.toHaveBeenCalled();
+  });
+
+  it("guide cap reached: the escape hatches ignore the shared guide rate limit", async () => {
+    (isGuideResponseCapReached as any).mockResolvedValue(true);
+    (handleAnswerAttemptWithoutLLM as any).mockResolvedValue(true);
+    // A teammate typed moments ago
+    (checkGuideRateLimit as any).mockResolvedValue({ allowed: false, current: 2, limit: 1 });
+
+    await processIncomingMessage({ ...basePayload, text: "fountain" });
+
+    // The answer must still land — this is the only way out of a capped hunt
+    expect(handleAnswerAttemptWithoutLLM).toHaveBeenCalled();
+  });
+
+  it("guide cap reached: the cap notice itself is rate limited", async () => {
+    (isGuideResponseCapReached as any).mockResolvedValue(true);
+    (handleAnswerAttemptWithoutLLM as any).mockResolvedValue(false);
+    (checkGuideRateLimit as any).mockResolvedValue({ allowed: false, current: 2, limit: 1 });
+
+    await processIncomingMessage({ ...basePayload, text: "nice weather today" });
+
+    expect(sendCapReachedMessage).not.toHaveBeenCalled();
+  });
+
   it("pre-filter responses are still sent on a capped event", async () => {
     (isGuideResponseCapReached as any).mockResolvedValue(true);
     (preFilter as any).mockResolvedValue({ action: "respond", response: "Too long" });

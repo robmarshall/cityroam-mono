@@ -30,9 +30,66 @@ const WORD_LISTS: Record<SupportedLanguage, { affirmative: readonly string[]; ne
   },
 };
 
+/**
+ * Per-language ways of asking for a hint or admitting defeat. Deliberately
+ * short and unambiguous — this only has to catch the obvious phrasings a
+ * stuck group reaches for when the LLM classifier is unavailable.
+ */
+const HINT_REQUEST_WORDS: Record<SupportedLanguage, readonly string[]> = {
+  en: ["hint", "clue", "stuck", "help", "give up", "no idea", "tell us", "tell me", "the answer"],
+  es: ["pista", "ayuda", "atascado", "atascados", "no sabemos", "ni idea", "rendirse", "la respuesta"],
+  fr: ["indice", "aide", "bloque", "bloques", "aucune idee", "abandonner", "la reponse"],
+  de: ["hinweis", "hilfe", "stecken fest", "keine ahnung", "aufgeben", "die antwort"],
+  nl: ["hint", "aanwijzing", "hulp", "vast", "geen idee", "opgeven", "het antwoord"],
+};
+
 // Legacy exports for backwards compatibility with imports
 export const AFFIRMATIVE_WORDS = WORD_LISTS.en.affirmative;
 export const NEGATIVE_WORDS = WORD_LISTS.en.negative;
+
+/** Combining marks left behind by NFD decomposition. */
+const DIACRITICS = /[̀-ͯ]/g;
+
+/** Lowercase, strip accents and punctuation, collapse whitespace. */
+function normalise(text: string): string {
+  return text
+    .normalize("NFD")
+    .replace(DIACRITICS, "")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * Whether the text contains any of the phrases as whole words, so "help"
+ * doesn't fire on "helpful" and "vast" doesn't fire on "vastgoed".
+ */
+export function containsPhraseFromList(
+  text: string,
+  phrases: readonly string[],
+): boolean {
+  const haystack = normalise(text);
+  if (!haystack) return false;
+
+  return phrases.some((phrase) => {
+    const needle = normalise(phrase);
+    if (!needle) return false;
+    return new RegExp(`(?:^|\\s)${needle}(?:\\s|$)`, "u").test(haystack);
+  });
+}
+
+/**
+ * Check if the player is asking for a hint, without the LLM classifier.
+ * Used when an event has spent its guide response budget — hints are fully
+ * scripted, so they have to stay reachable or a stuck group has no way on.
+ */
+export function isHintRequest(text: string, language: SupportedLanguage = "en"): boolean {
+  if (containsPhraseFromList(text, HINT_REQUEST_WORDS[language])) return true;
+  // Players often fall back to English regardless of the game language
+  if (language !== "en" && containsPhraseFromList(text, HINT_REQUEST_WORDS.en)) return true;
+  return false;
+}
 
 /**
  * Normalise input (lowercase, trim, strip trailing punctuation, strip accents)
