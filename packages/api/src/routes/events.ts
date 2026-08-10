@@ -7,6 +7,7 @@ import type {
   MessageHistoryResponse,
   ChatMessagePayload,
   SupportedLanguage,
+  ActionBlockConfig,
 } from "@cityroam/shared/types";
 import {
   joinEventRequestSchema,
@@ -21,6 +22,7 @@ import {
   messages,
   routes,
   routeGroups,
+  routeBlocks,
 } from "../db/schema/index.js";
 import {
   setSession,
@@ -125,6 +127,22 @@ eventRoutes.get("/event/:code", async (c) => {
     .where(and(eq(routes.route_family_id, event.route_family_id), eq(routes.is_active, true)));
   const availableLanguages = familyRoutes.map((r) => r.language) as SupportedLanguage[];
 
+  // Surface an outstanding action block. action_waiting is only broadcast
+  // once, so a client that reloaded or reconnected late would otherwise never
+  // learn the hunt is waiting on the lead to confirm.
+  let pendingAction: EventDetailResponse["pending_action"] = null;
+  if (!isTerminal && event.current_block_id) {
+    const currentBlock = await db.query.routeBlocks.findFirst({
+      where: eq(routeBlocks.id, event.current_block_id),
+      columns: { id: true, type: true, config: true },
+    });
+
+    if (currentBlock?.type === "action") {
+      const config = currentBlock.config as ActionBlockConfig;
+      pendingAction = { block_id: currentBlock.id, label: config.label };
+    }
+  }
+
   const response: EventDetailResponse = {
     event: {
       code: event.code,
@@ -137,6 +155,7 @@ eventRoutes.get("/event/:code", async (c) => {
     participants: isTerminal ? [] : participantRows,
     lead_name: isTerminal ? null : (leadParticipant?.display_name ?? null),
     current_participant: isTerminal ? null : currentParticipant,
+    pending_action: pendingAction,
     available_languages: availableLanguages,
   };
 

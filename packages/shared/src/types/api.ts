@@ -27,6 +27,15 @@ export interface EventDetailResponse {
     is_lead: boolean;
     token: string;
   } | null;
+  /**
+   * Set while the hunt is parked on an action block waiting for the lead to
+   * confirm. Lets a client that missed (or reloaded past) the action_waiting
+   * broadcast rebuild the confirm prompt.
+   */
+  pending_action: {
+    block_id: string;
+    label: string;
+  } | null;
 }
 
 export interface JoinEventResponse {

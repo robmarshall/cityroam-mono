@@ -34,6 +34,7 @@ import type {
   NameChangedPayload,
   LeadChangedPayload,
   MessageHistoryResponse,
+  EventDetailResponse,
   MessageDroppedPayload,
   ActionWaitingPayload,
 } from "@cityroam/shared/types";
@@ -107,6 +108,8 @@ export default function ChatPage() {
   participantsRef.current = participants;
   const participantRef = useRef(participant);
   participantRef.current = participant;
+  /** Whether the live socket has already decided the pending-action state. */
+  const actionFromStreamRef = useRef(false);
   const wasReconnectingRef = useRef(false);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isTypingRef = useRef(false);
@@ -176,6 +179,34 @@ export default function ChatPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code, token]);
 
+  // Rebuild the pending action prompt on mount. action_waiting is broadcast
+  // once, so a reload while the hunt waits on the lead would otherwise leave
+  // nobody able to confirm.
+  useEffect(() => {
+    if (!code || !token) return;
+    let cancelled = false;
+
+    async function loadPendingAction() {
+      try {
+        const detail = await api.get<EventDetailResponse>(
+          `/event/${encodeURIComponent(code!)}`,
+        );
+        // The live stream is authoritative — if it has already said anything
+        // about the action state, don't overwrite it with this snapshot.
+        if (cancelled || actionFromStreamRef.current) return;
+        if (detail.pending_action) {
+          setPendingAction(detail.pending_action);
+        }
+      } catch {
+        // Non-fatal — action_waiting will arrive over the socket if it fires again
+      }
+    }
+
+    loadPendingAction();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [code, token]);
+
   // Handle close codes — redirect to join on auth failure with explanation
   useEffect(() => {
     if (closeCode === null || !code) return;
@@ -225,6 +256,7 @@ export default function ChatPage() {
           });
 
           if (payload.sender_type === "guide") {
+            actionFromStreamRef.current = true;
             setPendingAction(null);
           }
 
@@ -337,6 +369,7 @@ export default function ChatPage() {
         }
         case "action_waiting": {
           const payload = msg.payload as ActionWaitingPayload;
+          actionFromStreamRef.current = true;
           setPendingAction({ block_id: payload.block_id, label: payload.label });
           break;
         }

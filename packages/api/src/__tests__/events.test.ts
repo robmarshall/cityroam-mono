@@ -985,3 +985,96 @@ describe("rejoin after inactivity", () => {
     );
   });
 });
+
+// =====================================================================
+// Pending action exposure
+// =====================================================================
+describe("GET /event/:code pending_action", () => {
+  let app: Hono;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    resetUUIDs();
+    resetDbChainMocks();
+    app = buildApp();
+  });
+
+  it("reports the outstanding action block so a reloaded client can confirm it", async () => {
+    const event = mockEvent({
+      id: "e-id",
+      code: "abcd2345",
+      status: "IN_PROGRESS",
+      current_block_id: "action-block-1",
+    });
+    mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
+    mockedDb.where.mockResolvedValueOnce([
+      { id: "p1", display_name: "Alice", is_lead: true, is_active: true },
+    ]);
+    mockedDb.query.routeBlocks.findFirst.mockResolvedValueOnce({
+      id: "action-block-1",
+      type: "action",
+      config: { type: "action", label: "Take a photo of the statue" },
+    });
+
+    const res = await app.request("/event/abcd2345");
+    expect(res.status).toBe(200);
+
+    const body = await res.json();
+    expect(body.pending_action).toEqual({
+      block_id: "action-block-1",
+      label: "Take a photo of the statue",
+    });
+  });
+
+  it("reports null while the hunt waits on a question rather than an action", async () => {
+    const event = mockEvent({
+      id: "e-id",
+      code: "abcd2345",
+      status: "IN_PROGRESS",
+      current_block_id: "question-block-1",
+    });
+    mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
+    mockedDb.where.mockResolvedValueOnce([]);
+    mockedDb.query.routeBlocks.findFirst.mockResolvedValueOnce({
+      id: "question-block-1",
+      type: "question",
+      config: { type: "question", clue: "Find it", accepted_answers: ["x"], hints: [] },
+    });
+
+    const res = await app.request("/event/abcd2345");
+    const body = await res.json();
+    expect(body.pending_action).toBeNull();
+  });
+
+  it("reports null mid-advancement when no block is current", async () => {
+    const event = mockEvent({
+      id: "e-id",
+      code: "abcd2345",
+      status: "IN_PROGRESS",
+      current_block_id: null,
+    });
+    mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
+    mockedDb.where.mockResolvedValueOnce([]);
+
+    const res = await app.request("/event/abcd2345");
+    const body = await res.json();
+    expect(body.pending_action).toBeNull();
+    expect(mockedDb.query.routeBlocks.findFirst).not.toHaveBeenCalled();
+  });
+
+  it("reports null for a terminal event", async () => {
+    const event = mockEvent({
+      id: "e-id",
+      code: "abcd2345",
+      status: "COMPLETED",
+      current_block_id: "action-block-1",
+    });
+    mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
+    mockedDb.where.mockResolvedValueOnce([]);
+
+    const res = await app.request("/event/abcd2345");
+    const body = await res.json();
+    expect(body.pending_action).toBeNull();
+    expect(mockedDb.query.routeBlocks.findFirst).not.toHaveBeenCalled();
+  });
+});
