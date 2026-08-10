@@ -12,6 +12,7 @@ import type {
   GameStartedPayload,
   GameCompletePayload,
   NameChangedPayload,
+  LeadChangedPayload,
   MessageDroppedPayload,
   ActionWaitingPayload,
   LanguageChangedPayload,
@@ -130,6 +131,17 @@ export async function subscribeEvent(
               participant_id: payload.data.participant_id,
               old_name: payload.data.old_name,
               new_name: payload.data.new_name,
+            },
+          };
+          broadcast(connections, message);
+          break;
+        }
+        case "lead_changed": {
+          const message: WebSocketMessage<LeadChangedPayload> = {
+            type: "lead_changed",
+            payload: {
+              participant_id: payload.data.participant_id,
+              name: payload.data.name,
             },
           };
           broadcast(connections, message);

@@ -75,6 +75,7 @@
     "participantJoined": "{{name}} ist dem Spiel beigetreten",
     "participantLeft": "{{name}} hat das Spiel verlassen",
     "nameChanged": "{{oldName}} hat den Namen zu {{newName}} geändert",
+    "leadChanged": "{{name}} ist jetzt der Gruppenleiter",
     "leaveDialog": {
       "title": "Spiel verlassen?",
       "message": "Du wirst aus dem Spiel entfernt. Du kannst später erneut beitreten, indem du den Link wieder öffnest.",

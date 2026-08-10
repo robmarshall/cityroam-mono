@@ -4,6 +4,8 @@ import { db } from "../db/index.js";
 import { participants } from "../db/schema/index.js";
 import { eq, and, count } from "drizzle-orm";
 import { publishControl } from "../redis/pubsub.js";
+import { deleteSession } from "../redis/session.js";
+import { ensureActiveLead } from "../services/lead.js";
 import { createLogger } from "../lib/logger.js";
 
 const log = createLogger("presence");
@@ -74,12 +76,13 @@ export function startPresenceSweep(
           // Only timeout if participant has no active WS connection
           if (hasConnectionFn(participantId, code)) continue;
 
-          // Look up participant for event_id and display_name
+          // Look up participant for event_id, display_name and session token
           const [participant] = await db
             .select({
               id: participants.id,
               event_id: participants.event_id,
               display_name: participants.display_name,
+              token: participants.token,
             })
             .from(participants)
             .where(eq(participants.id, participantId))
@@ -87,15 +90,24 @@ export function startPresenceSweep(
 
           if (!participant) continue;
 
-          // Update DB: mark inactive
+          // Update DB: mark inactive and drop the lead flag
           await db
             .update(participants)
             .set({
               is_active: false,
+              is_lead: false,
               left_at: new Date(),
               left_reason: "timeout",
             })
             .where(eq(participants.id, participantId));
+
+          // Drop the Redis session so HTTP stops authenticating a swept
+          // participant off the fast path — the DB fallback already rejects
+          // inactive rows, and rejoining reactivates them.
+          await deleteSession(participant.token);
+
+          // Promote a replacement if the swept participant was the lead
+          await ensureActiveLead(participant.event_id, code);
 
           // Count remaining active participants for this event
           const [result] = await db

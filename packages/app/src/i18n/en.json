@@ -75,6 +75,7 @@
     "participantJoined": "{{name}} joined the game",
     "participantLeft": "{{name}} left the game",
     "nameChanged": "{{oldName}} changed their name to {{newName}}",
+    "leadChanged": "{{name}} is now the group lead",
     "leaveDialog": {
       "title": "Leave Game?",
       "message": "You'll be removed from the game. You can rejoin later by opening the link again.",

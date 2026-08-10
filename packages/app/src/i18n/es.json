@@ -75,6 +75,7 @@
     "participantJoined": "{{name}} se unió al juego",
     "participantLeft": "{{name}} salió del juego",
     "nameChanged": "{{oldName}} cambió su nombre a {{newName}}",
+    "leadChanged": "{{name}} es ahora el líder del grupo",
     "leaveDialog": {
       "title": "¿Salir del juego?",
       "message": "Se te eliminará del juego. Puedes volver a unirte más tarde abriendo el enlace de nuevo.",

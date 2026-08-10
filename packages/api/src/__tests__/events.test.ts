@@ -323,13 +323,14 @@ describe("POST /event/:code/join", () => {
     const event = mockEvent({ id: "e-id", code: "abcd2345", status: "NOT_STARTED" });
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
 
+    // No active lead yet -> the joiner takes it
+    mockedDb.query.participants.findFirst.mockResolvedValueOnce(undefined);
+
     // 1) active count: 0
-    // 2) total count: 0 (first joiner -> isLead = true)
-    // 3) update event set().where() for lead promotion
-    // 4) participant list for response
+    // 2) update event set().where() for lead promotion
+    // 3) participant list for response
     mockedDb.where
       .mockResolvedValueOnce([{ count: 0 }])   // active count
-      .mockResolvedValueOnce([{ count: 0 }])   // total count (first joiner)
       .mockResolvedValueOnce(undefined)         // update event chain
       .mockResolvedValueOnce([                  // participant list for response
         { id: "lead-p", display_name: "FirstUser", is_lead: true, is_active: true },
@@ -610,22 +611,29 @@ describe("POST /event/:code/leave", () => {
     );
 
     const event = mockEvent({ id: "e-id", code: "abcd2345", status: "WAITING" });
-    mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
+    // Once for the leave handler, once for ensureActiveLead's locked read
+    mockedDb.query.events.findFirst
+      .mockResolvedValueOnce(event)
+      .mockResolvedValueOnce(event);
 
-    // Find next lead via db.query.participants.findFirst
+    // ensureActiveLead: no active lead remains, then find the oldest active
     const nextLead = mockParticipant({
       id: "next-lead",
       display_name: "Alice",
       is_active: true,
     });
-    mockedDb.query.participants.findFirst.mockResolvedValueOnce(nextLead);
+    mockedDb.query.participants.findFirst
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce(nextLead);
 
     // 1) update participant to inactive: db.update().set().where()
-    // 2) update new lead is_lead=true: db.update().set().where()
-    // 3) update event lead_participant_id: db.update().set().where()
-    // 4) count remaining active: db.select().from().where()
+    // 2) demote stale leads: db.update().set().where()
+    // 3) update new lead is_lead=true: db.update().set().where()
+    // 4) update event lead_participant_id: db.update().set().where()
+    // 5) count remaining active: db.select().from().where()
     mockedDb.where
       .mockResolvedValueOnce(undefined)       // update participant inactive
+      .mockResolvedValueOnce(undefined)       // demote stale leads
       .mockResolvedValueOnce(undefined)       // update new lead
       .mockResolvedValueOnce(undefined)       // update event lead
       .mockResolvedValueOnce([{ count: 2 }]); // count remaining
@@ -648,6 +656,12 @@ describe("POST /event/:code/leave", () => {
     expect(publishControl).toHaveBeenCalledWith("abcd2345", expect.objectContaining({
       type: "participant_left",
     }));
+
+    // Promotion is announced so clients can re-render lead-only controls
+    expect(publishControl).toHaveBeenCalledWith("abcd2345", {
+      type: "lead_changed",
+      data: { participant_id: "next-lead", name: "Alice" },
+    });
   });
 });
 
@@ -769,6 +783,205 @@ describe("GET /event/:code/messages", () => {
     expect(body.messages[0].image_url).toBe("https://cdn.test.com/uploads/1699_photo.png");
     expect(body.messages[1].image_url).toBe(
       "https://cdn.test.com/uploads/already-absolute.png",
+    );
+  });
+});
+
+// =====================================================================
+// Rejoining after being marked inactive
+// =====================================================================
+describe("rejoin after inactivity", () => {
+  let app: Hono;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    resetUUIDs();
+    resetDbChainMocks();
+    app = buildApp();
+  });
+
+  it("GET omits current_participant when the session's participant is inactive", async () => {
+    const event = mockEvent({ id: "e-id", code: "abcd2345", status: "IN_PROGRESS" });
+    mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
+
+    vi.mocked(getSessionFromRedis).mockResolvedValueOnce(
+      makeSessionData({ participant_id: "p1", display_name: "Swept" }) as any,
+    );
+
+    mockedDb.where.mockResolvedValueOnce([
+      { id: "p1", display_name: "Swept", is_lead: true, is_active: false },
+      { id: "p2", display_name: "Bob", is_lead: false, is_active: true },
+    ]);
+
+    const res = await app.request("/event/abcd2345", {
+      headers: { Cookie: "cityroam_session=fake-token" },
+    });
+
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.current_participant).toBeNull();
+  });
+
+  it("GET reports current_participant using the DB row, not the cached session", async () => {
+    const event = mockEvent({ id: "e-id", code: "abcd2345", status: "IN_PROGRESS" });
+    mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
+
+    // Session still says is_lead=false, but the participant was promoted
+    vi.mocked(getSessionFromRedis).mockResolvedValueOnce(
+      makeSessionData({ participant_id: "p1", display_name: "Alice", is_lead: false }) as any,
+    );
+
+    mockedDb.where.mockResolvedValueOnce([
+      { id: "p1", display_name: "Alice", is_lead: true, is_active: true },
+    ]);
+
+    const res = await app.request("/event/abcd2345", {
+      headers: { Cookie: "cityroam_session=fake-token" },
+    });
+
+    const body = await res.json();
+    expect(body.current_participant.is_lead).toBe(true);
+  });
+
+  it("reactivates an inactive participant instead of inserting a duplicate", async () => {
+    const event = mockEvent({ id: "e-id", code: "abcd2345", status: "IN_PROGRESS" });
+    mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
+
+    mockedDb.query.participants.findFirst
+      .mockResolvedValueOnce({ id: "other-lead" }) // an active lead still exists
+      .mockResolvedValueOnce(
+        mockParticipant({
+          id: "p1",
+          event_id: "e-id",
+          token: "fake-token",
+          is_active: false,
+          display_name: "Swept",
+        }),
+      );
+
+    mockedDb.where
+      .mockResolvedValueOnce([{ count: 1 }]) // active count
+      .mockImplementationOnce(() => mockedDb) // reactivate update -> returning()
+      .mockResolvedValueOnce([
+        { id: "p1", display_name: "Swept", is_lead: false, is_active: true },
+      ]);
+
+    mockedDb.returning.mockResolvedValueOnce([
+      mockParticipant({
+        id: "p1",
+        event_id: "e-id",
+        token: "fake-token",
+        is_active: true,
+        is_lead: false,
+        display_name: "Swept",
+      }),
+    ]);
+
+    const res = await app.request("/event/abcd2345/join", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: "cityroam_session=fake-token",
+      },
+      body: JSON.stringify({ display_name: "Swept" }),
+    });
+
+    expect(res.status).toBe(201);
+    const body = await res.json();
+    expect(body.participant.id).toBe("p1");
+
+    // Reactivated in place — no new participant row
+    expect(mockedDb.insert).not.toHaveBeenCalled();
+    expect(mockedDb.set).toHaveBeenCalledWith(
+      expect.objectContaining({
+        is_active: true,
+        left_at: null,
+        left_reason: null,
+      }),
+    );
+  });
+
+  it("gives the lead back to a solo player who left and rejoined", async () => {
+    const event = mockEvent({ id: "e-id", code: "abcd2345", status: "WAITING" });
+    mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
+
+    mockedDb.query.participants.findFirst
+      .mockResolvedValueOnce(undefined) // no active lead
+      .mockResolvedValueOnce(
+        mockParticipant({
+          id: "p1",
+          event_id: "e-id",
+          token: "fake-token",
+          is_active: false,
+          is_lead: false,
+        }),
+      );
+
+    mockedDb.where
+      .mockResolvedValueOnce([{ count: 0 }]) // active count
+      .mockImplementationOnce(() => mockedDb) // reactivate update -> returning()
+      .mockResolvedValueOnce(undefined) // update event lead_participant_id
+      .mockResolvedValueOnce([
+        { id: "p1", display_name: "Solo", is_lead: true, is_active: true },
+      ]);
+
+    mockedDb.returning.mockResolvedValueOnce([
+      mockParticipant({
+        id: "p1",
+        event_id: "e-id",
+        token: "fake-token",
+        is_active: true,
+        is_lead: true,
+        display_name: "Solo",
+      }),
+    ]);
+
+    const res = await app.request("/event/abcd2345/join", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: "cityroam_session=fake-token",
+      },
+      body: JSON.stringify({ display_name: "Solo" }),
+    });
+
+    expect(res.status).toBe(201);
+    const body = await res.json();
+    expect(body.participant.is_lead).toBe(true);
+    expect(mockedDb.set).toHaveBeenCalledWith(
+      expect.objectContaining({ is_lead: true }),
+    );
+    expect(mockedDb.set).toHaveBeenCalledWith({ lead_participant_id: "p1" });
+  });
+
+  it("keeps an in-progress event IN_PROGRESS when a rejoiner claims the lead", async () => {
+    const event = mockEvent({ id: "e-id", code: "abcd2345", status: "IN_PROGRESS" });
+    mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
+
+    mockedDb.query.participants.findFirst.mockResolvedValueOnce(undefined);
+
+    mockedDb.where
+      .mockResolvedValueOnce([{ count: 0 }])
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce([
+        { id: "new-p", display_name: "Newbie", is_lead: true, is_active: true },
+      ]);
+
+    mockedDb.returning.mockResolvedValueOnce([
+      mockParticipant({ id: "new-p", event_id: "e-id", is_lead: true, display_name: "Newbie" }),
+    ]);
+
+    const res = await app.request("/event/abcd2345/join", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ display_name: "Newbie" }),
+    });
+
+    expect(res.status).toBe(201);
+    const body = await res.json();
+    expect(body.event.status).toBe("IN_PROGRESS");
+    expect(mockedDb.set).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "IN_PROGRESS", lead_participant_id: "new-p" }),
     );
   });
 });

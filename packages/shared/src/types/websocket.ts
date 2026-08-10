@@ -73,6 +73,11 @@ export interface NameChangedPayload {
   new_name: string;
 }
 
+export interface LeadChangedPayload {
+  participant_id: string;
+  name: string;
+}
+
 export type PongPayload = Record<string, never>;
 
 export interface MessageDroppedPayload {

@@ -32,6 +32,7 @@ import type {
   GuideTypingPayload,
   ParticipantTypingPayload,
   NameChangedPayload,
+  LeadChangedPayload,
   MessageHistoryResponse,
   MessageDroppedPayload,
   ActionWaitingPayload,
@@ -68,7 +69,7 @@ export default function ChatPage() {
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
   const { participant, token, setParticipant, clearParticipant } = useParticipant();
-  const { event, participants, clearEvent } = useEvent();
+  const { event, participants, setParticipants, clearEvent } = useEvent();
   const {
     status: wsStatus,
     closeCode,
@@ -102,6 +103,10 @@ export default function ChatPage() {
   isUserScrolledUpRef.current = isUserScrolledUp;
   const participantsTypingRef = useRef(participantsTyping);
   participantsTypingRef.current = participantsTyping;
+  const participantsRef = useRef(participants);
+  participantsRef.current = participants;
+  const participantRef = useRef(participant);
+  participantRef.current = participant;
   const wasReconnectingRef = useRef(false);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isTypingRef = useRef(false);
@@ -275,6 +280,24 @@ export default function ChatPage() {
           });
           break;
         }
+        case "lead_changed": {
+          const payload = msg.payload as LeadChangedPayload;
+          setParticipants(
+            participantsRef.current.map((p) => ({
+              ...p,
+              is_lead: p.id === payload.participant_id,
+            })),
+          );
+          const me = participantRef.current;
+          if (me) {
+            setParticipant({ ...me, is_lead: me.id === payload.participant_id });
+          }
+          setMessages((prev) => [
+            ...prev,
+            makeSystemMessage(i18n.t("chat.leadChanged", { name: payload.name })),
+          ]);
+          break;
+        }
         case "game_complete": {
           const payload = msg.payload as GameCompletePayload;
           navigate(`/event/${code}/complete`, {
@@ -327,7 +350,7 @@ export default function ChatPage() {
     });
 
     return unsubscribe;
-  }, [subscribe, code, navigate]);
+  }, [subscribe, code, navigate, setParticipants, setParticipant]);
 
   // Auto-scroll to bottom on new messages or typing indicators (unless user has scrolled up)
   useEffect(() => {

@@ -39,6 +39,10 @@ export type ControlEventPayload =
       type: "name_changed";
       data: { participant_id: string; old_name: string; new_name: string };
     }
+  | {
+      type: "lead_changed";
+      data: { participant_id: string; name: string };
+    }
   | { type: "message_dropped"; data: { message_id: string } }
   | { type: "action_waiting"; data: { block_id: string; label: string } }
   | { type: "language_changed"; data: { language: string } };

@@ -75,6 +75,7 @@
     "participantJoined": "{{name}} doet mee met het spel",
     "participantLeft": "{{name}} heeft het spel verlaten",
     "nameChanged": "{{oldName}} heeft de naam gewijzigd naar {{newName}}",
+    "leadChanged": "{{name}} is nu de groepsleider",
     "leaveDialog": {
       "title": "Spel verlaten?",
       "message": "Je wordt uit het spel verwijderd. Je kunt later opnieuw deelnemen door de link opnieuw te openen.",

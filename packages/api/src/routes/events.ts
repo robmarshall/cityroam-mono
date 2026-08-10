@@ -34,6 +34,7 @@ import {
   publishControl,
 } from "../redis/index.js";
 import { runGroup } from "../services/group-runner.js";
+import { ensureActiveLead } from "../services/lead.js";
 import { createLogger } from "../lib/logger.js";
 import {
   sessionAuth,
@@ -85,15 +86,6 @@ eventRoutes.get("/event/:code", async (c) => {
   // Optional session resolution
   const token = getCookie(c, COOKIE_NAME);
   const session = await resolveSession(c);
-  let currentParticipant: EventDetailResponse["current_participant"] = null;
-  if (session && session.event_code === code && token) {
-    currentParticipant = {
-      id: session.participant_id,
-      display_name: session.display_name,
-      is_lead: session.is_lead,
-      token,
-    };
-  }
 
   // Build participant list
   const participantRows = await db
@@ -105,6 +97,22 @@ eventRoutes.get("/event/:code", async (c) => {
     })
     .from(participants)
     .where(eq(participants.event_id, event.id));
+
+  // Only report a current participant while they are still active — a swept
+  // player must see the join form rather than be redirected into a session
+  // the WS server will reject.
+  let currentParticipant: EventDetailResponse["current_participant"] = null;
+  if (session && session.event_code === code && token) {
+    const row = participantRows.find((p) => p.id === session.participant_id);
+    if (row?.is_active) {
+      currentParticipant = {
+        id: row.id,
+        display_name: row.display_name,
+        is_lead: row.is_lead,
+        token,
+      };
+    }
+  }
 
   const leadParticipant = participantRows.find((p) => p.is_lead && p.is_active);
 
@@ -149,6 +157,9 @@ eventRoutes.post("/event/:code/join", async (c) => {
     throw new AppError(429, "Too many join attempts", "RATE_LIMITED");
   }
 
+  // An existing cookie lets a swept/departed player reclaim their identity
+  const existingToken = getCookie(c, COOKIE_NAME);
+
   // Transaction for atomic participant creation + lead election
   const { newParticipant, eventData, isLead } = await db.transaction(async (tx) => {
     // Lock the event row to serialize concurrent joins
@@ -187,13 +198,55 @@ eventRoutes.post("/event/:code/join", async (c) => {
       throw new AppError(403, "Event is full", "EVENT_FULL");
     }
 
-    // Check if first joiner
-    const [totalResult] = await tx
-      .select({ count: sql<number>`count(*)::int` })
-      .from(participants)
-      .where(eq(participants.event_id, lockedEvent.id));
+    // The lead is whoever is currently active and flagged — an event whose
+    // lead has left or timed out has none, so the next joiner takes it
+    const activeLead = await tx.query.participants.findFirst({
+      where: and(
+        eq(participants.event_id, lockedEvent.id),
+        eq(participants.is_active, true),
+        eq(participants.is_lead, true),
+      ),
+      columns: { id: true },
+    });
 
-    const firstJoiner = totalResult.count === 0;
+    const takesLead = !activeLead;
+
+    // A returning player who still holds their cookie reclaims their
+    // participant row instead of creating a duplicate
+    const returning = existingToken
+      ? await tx.query.participants.findFirst({
+          where: and(
+            eq(participants.token, existingToken),
+            eq(participants.event_id, lockedEvent.id),
+            eq(participants.is_active, false),
+          ),
+        })
+      : undefined;
+
+    if (returning) {
+      const [reactivated] = await tx
+        .update(participants)
+        .set({
+          display_name,
+          is_active: true,
+          is_lead: takesLead,
+          last_seen_at: new Date(),
+          left_at: null,
+          left_reason: null,
+        })
+        .where(eq(participants.id, returning.id))
+        .returning();
+
+      if (takesLead) {
+        await tx
+          .update(events)
+          .set({ lead_participant_id: reactivated.id })
+          .where(eq(events.id, lockedEvent.id));
+      }
+
+      return { newParticipant: reactivated, eventData: lockedEvent, isLead: takesLead };
+    }
+
     const joinToken = crypto.randomUUID();
 
     // Insert participant
@@ -203,25 +256,30 @@ eventRoutes.post("/event/:code/join", async (c) => {
         event_id: lockedEvent.id,
         display_name,
         token: joinToken,
-        is_lead: firstJoiner,
+        is_lead: takesLead,
       })
       .returning();
 
-    // If lead (first joiner), update event
-    if (firstJoiner) {
+    // If lead, update event
+    if (takesLead) {
       await tx
         .update(events)
         .set({
           lead_participant_id: created.id,
-          status: "WAITING",
+          status: lockedEvent.status === "NOT_STARTED" ? "WAITING" : lockedEvent.status,
         })
         .where(eq(events.id, lockedEvent.id));
     }
 
-    return { newParticipant: created, eventData: lockedEvent, isLead: firstJoiner };
+    return { newParticipant: created, eventData: lockedEvent, isLead: takesLead };
   });
 
   const token = newParticipant.token;
+
+  // Claiming the lead only promotes a fresh event out of NOT_STARTED; an
+  // event mid-hunt keeps the status it already had
+  const resultingStatus =
+    isLead && eventData.status === "NOT_STARTED" ? "WAITING" : eventData.status;
 
   // Store session in Redis
   await setSession(token, {
@@ -273,7 +331,7 @@ eventRoutes.post("/event/:code/join", async (c) => {
     token,
     event: {
       code,
-      status: (isLead ? "WAITING" : eventData.status) as JoinEventResponse["event"]["status"],
+      status: resultingStatus as JoinEventResponse["event"]["status"],
       current_stop: eventData.current_stop,
       language: eventData.language as JoinEventResponse["event"]["language"],
     },
@@ -387,38 +445,21 @@ eventRoutes.post("/event/:code/leave", sessionAuth, async (c) => {
     throw new AppError(410, "Event has ended", "EVENT_COMPLETED");
   }
 
-  // Update participant to inactive
+  // Update participant to inactive. is_lead is cleared too so that
+  // "active lead" is the only meaning is_lead ever carries.
   await db
     .update(participants)
     .set({
       is_active: false,
+      is_lead: false,
       left_at: new Date(),
       left_reason: "voluntary",
     })
     .where(eq(participants.id, session.participant_id));
 
-  // If lead and event is WAITING, reassign lead
-  if (session.is_lead && event.status === "WAITING") {
-    const nextLead = await db.query.participants.findFirst({
-      where: and(
-        eq(participants.event_id, event.id),
-        eq(participants.is_active, true)
-      ),
-      orderBy: asc(participants.joined_at),
-    });
-
-    if (nextLead) {
-      await db
-        .update(participants)
-        .set({ is_lead: true })
-        .where(eq(participants.id, nextLead.id));
-
-      await db
-        .update(events)
-        .set({ lead_participant_id: nextLead.id })
-        .where(eq(events.id, event.id));
-    }
-  }
+  // Promote a replacement lead if this leaver was the lead — in any
+  // non-terminal status, not just WAITING
+  await ensureActiveLead(event.id, code);
 
   // Delete Redis session using cookie token
   const token = getCookie(c, COOKIE_NAME);

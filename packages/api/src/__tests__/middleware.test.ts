@@ -177,6 +177,29 @@ describe("Session auth middleware", () => {
       is_lead: false,
     });
   });
+
+  it("returns 401 for a swept participant once their Redis session is gone", async () => {
+    vi.mocked(getSession).mockResolvedValueOnce(null);
+
+    vi.mocked(db.query.participants.findFirst).mockResolvedValueOnce({
+      id: "p-3",
+      event_id: "e-3",
+      display_name: "Swept",
+      is_lead: true,
+      is_active: false,
+    } as any);
+
+    const res = await app.request("/event/ABCD1234/leave", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: "cityroam_session=swept-token",
+      },
+    });
+
+    expect(res.status).toBe(401);
+    expect(setSession).not.toHaveBeenCalled();
+  });
 });
 
 // ====================================================================

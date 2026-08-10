@@ -8,6 +8,7 @@ import type {
   ParticipantLeftPayload,
   GameStartedPayload,
   LanguageChangedPayload,
+  LeadChangedPayload,
   SupportedLanguage,
 } from "@cityroam/shared/types";
 import { api, ApiError } from "../lib/api";
@@ -24,12 +25,13 @@ export default function LobbyPage() {
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { participant, token } = useParticipant();
+  const { participant, token, setParticipant } = useParticipant();
   const {
     event,
     participants,
     available_languages,
     setEvent,
+    setParticipants,
     addParticipant,
     removeParticipant,
   } = useEvent();
@@ -91,6 +93,8 @@ export default function LobbyPage() {
   participantsRef.current = participants;
   const eventRef = useRef(event);
   eventRef.current = event;
+  const participantContextRef = useRef(participant);
+  participantContextRef.current = participant;
 
   useEffect(() => {
     const unsubscribe = subscribe((msg) => {
@@ -112,6 +116,20 @@ export default function LobbyPage() {
           );
           if (leaving) {
             removeParticipant(leaving.id);
+          }
+          break;
+        }
+        case "lead_changed": {
+          const payload = msg.payload as LeadChangedPayload;
+          setParticipants(
+            participantsRef.current.map((p) => ({
+              ...p,
+              is_lead: p.id === payload.participant_id,
+            })),
+          );
+          const me = participantContextRef.current;
+          if (me) {
+            setParticipant({ ...me, is_lead: me.id === payload.participant_id });
           }
           break;
         }
@@ -139,7 +157,15 @@ export default function LobbyPage() {
     });
 
     return unsubscribe;
-  }, [subscribe, code, addParticipant, removeParticipant, setEvent]);
+  }, [
+    subscribe,
+    code,
+    addParticipant,
+    removeParticipant,
+    setEvent,
+    setParticipants,
+    setParticipant,
+  ]);
 
   const handleStart = useCallback(async () => {
     if (!code || !event || starting) return;

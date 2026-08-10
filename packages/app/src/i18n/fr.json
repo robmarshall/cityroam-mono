@@ -75,6 +75,7 @@
     "participantJoined": "{{name}} a rejoint la partie",
     "participantLeft": "{{name}} a quitté la partie",
     "nameChanged": "{{oldName}} a changé son nom en {{newName}}",
+    "leadChanged": "{{name}} est maintenant le chef du groupe",
     "leaveDialog": {
       "title": "Quitter la partie ?",
       "message": "Tu seras retiré de la partie. Tu pourras revenir plus tard en ouvrant le lien à nouveau.",
