@@ -25,11 +25,12 @@ export type ControlEventPayload =
   | { type: "game_complete"; data: { summary: string } }
   | {
       type: "participant_joined";
-      data: { name: string; participant_count: number };
+      data: { participant_id: string; name: string; participant_count: number };
     }
   | {
       type: "participant_left";
       data: {
+        participant_id: string;
         name: string;
         participant_count: number;
         reason: ParticipantLeftReason;
@@ -45,4 +46,6 @@ export type ControlEventPayload =
     }
   | { type: "message_dropped"; data: { message_id: string } }
   | { type: "action_waiting"; data: { block_id: string; label: string } }
+  /** The event has moved past `block_id` — any prompt for it is now resolved. */
+  | { type: "block_advanced"; data: { block_id: string } }
   | { type: "language_changed"; data: { language: string } };

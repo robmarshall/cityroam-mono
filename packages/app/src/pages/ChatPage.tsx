@@ -37,6 +37,7 @@ import type {
   EventDetailResponse,
   MessageDroppedPayload,
   ActionWaitingPayload,
+  BlockAdvancedPayload,
 } from "@cityroam/shared/types";
 import { api, ApiError } from "../lib/api";
 import { validationMessage } from "../lib/errors";
@@ -94,6 +95,7 @@ export default function ChatPage() {
   const [guideTyping, setGuideTyping] = useState(false);
   const [participantsTyping, setParticipantsTyping] = useState<Map<string, number>>(new Map());
   const [pendingAction, setPendingAction] = useState<{ block_id: string; label: string } | null>(null);
+  const [actionConfirming, setActionConfirming] = useState(false);
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [showNameDialog, setShowNameDialog] = useState(false);
@@ -255,11 +257,6 @@ export default function ChatPage() {
             return [...prev, payload];
           });
 
-          if (payload.sender_type === "guide") {
-            actionFromStreamRef.current = true;
-            setPendingAction(null);
-          }
-
           if (isUserScrolledUpRef.current) {
             setHasNewMessages(true);
           }
@@ -373,8 +370,21 @@ export default function ChatPage() {
           setPendingAction({ block_id: payload.block_id, label: payload.label });
           break;
         }
+        case "block_advanced": {
+          // The only thing that genuinely resolves the prompt. Guide chatter
+          // must not clear it — another player asking a question would
+          // otherwise take the confirm button away from the lead.
+          const payload = msg.payload as BlockAdvancedPayload;
+          actionFromStreamRef.current = true;
+          setPendingAction((prev) =>
+            prev?.block_id === payload.block_id ? null : prev,
+          );
+          setActionConfirming(false);
+          break;
+        }
         case "error": {
           const payload = msg.payload as ErrorPayload;
+          setActionConfirming(false);
           setErrorToast(validationMessage(payload.code ?? payload.message));
           setTimeout(() => setErrorToast(null), 4000);
           break;
@@ -502,15 +512,15 @@ export default function ChatPage() {
     setHasNewMessages(false);
   };
 
-  // Confirm action block
-  const [actionConfirming, setActionConfirming] = useState(false);
+  // Confirm action block. The prompt stays up until the server says the
+  // block actually advanced (block_advanced) — clearing it optimistically
+  // would strand the group if the confirm were refused.
   const handleActionConfirm = useCallback(() => {
     if (!pendingAction || actionConfirming) return;
     setActionConfirming(true);
     send({ type: "action_confirm", payload: { block_id: pendingAction.block_id } });
-    setPendingAction(null);
-    // Reset after a short delay so the button stays disabled until the next action
-    setTimeout(() => setActionConfirming(false), 2000);
+    // Safety net in case neither block_advanced nor an error arrives
+    setTimeout(() => setActionConfirming(false), 5000);
   }, [pendingAction, actionConfirming, send]);
 
   // Leave game

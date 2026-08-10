@@ -484,6 +484,38 @@ describe("advanceAfterBlock", () => {
     expect((db as any).set).toHaveBeenNthCalledWith(1, { current_block_id: null });
   });
 
+  it("announces block_advanced so clients can retire the action prompt", async () => {
+    const blocks = [questionBlock("b1", 0), messageBlock("b2", 1)];
+
+    (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValue({ id: "b1", group_id: "group-1" });
+    (db.query.events.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValue(defaultEvent);
+    (db as any).orderBy
+      .mockResolvedValueOnce(blocks)
+      .mockResolvedValueOnce([makeGroup("group-1", 0)]);
+
+    const promise = advanceAfterBlock("evt-1", "ABC123", "b1");
+    await vi.advanceTimersByTimeAsync(10000);
+    await promise;
+
+    expect(publishControl).toHaveBeenCalledWith("ABC123", {
+      type: "block_advanced",
+      data: { block_id: "b1" },
+    });
+  });
+
+  it("only the caller that wins the claim announces block_advanced", async () => {
+    (db as any).returning.mockReturnValueOnce([]);
+
+    await advanceAfterBlock("evt-1", "ABC123", "b1");
+
+    expect(publishControl).not.toHaveBeenCalledWith(
+      "ABC123",
+      expect.objectContaining({ type: "block_advanced" }),
+    );
+  });
+
   it("a second advance for the same block is ignored", async () => {
     // The compare-and-swap matched nothing — someone already advanced
     (db as any).returning.mockReturnValueOnce([]);

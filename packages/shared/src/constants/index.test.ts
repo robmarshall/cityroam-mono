@@ -6,6 +6,7 @@ import {
   MIN_DISPLAY_NAME_LENGTH,
   MAX_DISPLAY_NAME_LENGTH,
   MAX_GUIDE_RESPONSES_PER_EVENT,
+  MAX_BLOCK_DELAY_MS,
   PARTICIPANT_OFFLINE_TIMEOUT_MS,
   IDLE_PROMPT_TIMEOUT_MS,
   IDLE_PAUSE_TIMEOUT_MS,
@@ -50,6 +51,10 @@ describe("constants", () => {
   describe("timeouts", () => {
     it("PARTICIPANT_OFFLINE_TIMEOUT_MS is 10 minutes", () => {
       expect(PARTICIPANT_OFFLINE_TIMEOUT_MS).toBe(600_000);
+    });
+
+    it("MAX_BLOCK_DELAY_MS is 5 minutes", () => {
+      expect(MAX_BLOCK_DELAY_MS).toBe(300_000);
     });
 
     it("IDLE_PROMPT_TIMEOUT_MS is 60 minutes", () => {

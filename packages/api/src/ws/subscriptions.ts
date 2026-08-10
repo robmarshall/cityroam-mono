@@ -13,6 +13,7 @@ import type {
   GameCompletePayload,
   NameChangedPayload,
   LeadChangedPayload,
+  BlockAdvancedPayload,
   MessageDroppedPayload,
   ActionWaitingPayload,
   LanguageChangedPayload,
@@ -105,6 +106,7 @@ export async function subscribeEvent(
           const message: WebSocketMessage<ParticipantJoinedPayload> = {
             type: "participant_joined",
             payload: {
+              participant_id: payload.data.participant_id,
               name: payload.data.name,
               participant_count: payload.data.participant_count,
             },
@@ -116,6 +118,7 @@ export async function subscribeEvent(
           const message: WebSocketMessage<ParticipantLeftPayload> = {
             type: "participant_left",
             payload: {
+              participant_id: payload.data.participant_id,
               name: payload.data.name,
               participant_count: payload.data.participant_count,
               reason: payload.data.reason,
@@ -132,6 +135,14 @@ export async function subscribeEvent(
               old_name: payload.data.old_name,
               new_name: payload.data.new_name,
             },
+          };
+          broadcast(connections, message);
+          break;
+        }
+        case "block_advanced": {
+          const message: WebSocketMessage<BlockAdvancedPayload> = {
+            type: "block_advanced",
+            payload: { block_id: payload.data.block_id },
           };
           broadcast(connections, message);
           break;

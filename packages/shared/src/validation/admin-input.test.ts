@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { MAX_BLOCK_DELAY_MS } from "../constants/index.js";
 import {
   adminLoginSchema,
   routeSchema,
@@ -561,6 +562,16 @@ describe("blockConfigSchema", () => {
 // routeBlockSchema (with type/config.type refine)
 // ---------------------------------------------------------------------------
 describe("routeBlockSchema", () => {
+  it("bounds a route block's delay at MAX_BLOCK_DELAY_MS", () => {
+    const base = { type: "message" as const, config: { type: "message" as const, content: "hi" } };
+    expect(() =>
+      routeBlockSchema.parse({ ...base, delay_ms: MAX_BLOCK_DELAY_MS }),
+    ).not.toThrow();
+    expect(() =>
+      routeBlockSchema.parse({ ...base, delay_ms: MAX_BLOCK_DELAY_MS + 1 }),
+    ).toThrow();
+  });
+
   it("accepts valid block with matching type and config.type", () => {
     const result = routeBlockSchema.parse({
       type: "message",

@@ -49,11 +49,13 @@ export interface ParticipantTypingPayload {
 }
 
 export interface ParticipantJoinedPayload {
+  participant_id: string;
   name: string;
   participant_count: number;
 }
 
 export interface ParticipantLeftPayload {
+  participant_id: string;
   name: string;
   participant_count: number;
   reason: ParticipantLeftReason;
@@ -71,6 +73,10 @@ export interface NameChangedPayload {
   participant_id: string;
   old_name: string;
   new_name: string;
+}
+
+export interface BlockAdvancedPayload {
+  block_id: string;
 }
 
 export interface LeadChangedPayload {

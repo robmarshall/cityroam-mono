@@ -101,8 +101,13 @@ export default function LobbyPage() {
       switch (msg.type) {
         case "participant_joined": {
           const payload = msg.payload as ParticipantJoinedPayload;
+          // Use the real id — a locally invented one would never match the
+          // participant_id in lead_changed, so the Lead badge would break
+          if (participantsRef.current.some((p) => p.id === payload.participant_id)) {
+            break;
+          }
           addParticipant({
-            id: crypto.randomUUID(),
+            id: payload.participant_id,
             display_name: payload.name,
             is_lead: false,
             is_active: true,
@@ -111,12 +116,7 @@ export default function LobbyPage() {
         }
         case "participant_left": {
           const payload = msg.payload as ParticipantLeftPayload;
-          const leaving = participantsRef.current.find(
-            (p) => p.display_name === payload.name,
-          );
-          if (leaving) {
-            removeParticipant(leaving.id);
-          }
+          removeParticipant(payload.participant_id);
           break;
         }
         case "lead_changed": {

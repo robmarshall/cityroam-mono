@@ -610,10 +610,12 @@ describe("POST /event/:code/leave", () => {
     // Session deleted from Redis
     expect(deleteSession).toHaveBeenCalledWith("fake-token");
 
-    // Control event published
+    // Control event published, carrying the real id so clients can match
+    // the leaver without guessing by display name
     expect(publishControl).toHaveBeenCalledWith("abcd2345", {
       type: "participant_left",
       data: {
+        participant_id: "p-id",
         name: "Bob",
         participant_count: 3,
         reason: "voluntary",

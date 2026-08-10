@@ -249,6 +249,13 @@ export async function advanceAfterBlock(
     return;
   }
 
+  // Tell clients the block they were prompted about is resolved. Only the
+  // caller that won the claim publishes, so it fires exactly once.
+  await publishControl(eventCode, {
+    type: "block_advanced",
+    data: { block_id: blockId },
+  });
+
   // Load the block to find its group
   const block = await db.query.routeBlocks.findFirst({
     where: eq(schema.routeBlocks.id, blockId),

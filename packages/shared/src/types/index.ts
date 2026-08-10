@@ -42,6 +42,7 @@ export type {
   GameCompletePayload,
   NameChangedPayload,
   LeadChangedPayload,
+  BlockAdvancedPayload,
   MessageDroppedPayload,
   PongPayload,
   ErrorPayload,

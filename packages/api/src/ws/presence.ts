@@ -126,6 +126,7 @@ export function startPresenceSweep(
           await publishControl(code, {
             type: "participant_left",
             data: {
+              participant_id: participant.id,
               name: participant.display_name,
               participant_count: participantCount,
               reason: "timeout",

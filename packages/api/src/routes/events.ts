@@ -331,7 +331,11 @@ eventRoutes.post("/event/:code/join", async (c) => {
   // Publish control event
   await publishControl(code, {
     type: "participant_joined",
-    data: { name: display_name, participant_count: participantCount },
+    data: {
+      participant_id: newParticipant.id,
+      name: display_name,
+      participant_count: participantCount,
+    },
   });
 
   // Find available language variants for this route family
@@ -506,6 +510,7 @@ eventRoutes.post("/event/:code/leave", sessionAuth, async (c) => {
   await publishControl(code, {
     type: "participant_left",
     data: {
+      participant_id: session.participant_id,
       name: session.display_name,
       participant_count: participantCount,
       reason: "voluntary",
