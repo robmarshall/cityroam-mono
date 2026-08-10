@@ -1,5 +1,5 @@
 # Stage 1: Build
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 # Ensure devDependencies (typescript, etc.) are installed in this build-only
 # stage. Coolify injects NODE_ENV=production as a build arg which would skip
@@ -30,7 +30,7 @@ COPY packages/api/drizzle.config.ts packages/api/
 RUN npm run build --workspace=packages/api
 
 # Stage 2: Runtime
-FROM node:20-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 

@@ -32,6 +32,27 @@ export function buildS3Url(cdnBaseUrl: string, key: string): string {
 }
 
 /**
+ * Absolutize a stored image reference for sending to a browser.
+ *
+ * Uploads now record the full CDN URL, but rows written before that hold a bare
+ * S3 key ("uploads/1699_photo.png"), which a browser resolves against whatever
+ * page it is rendered on. Values that are already absolute pass through, as does
+ * everything when there is no CDN base configured — degrading to the previous
+ * behaviour is better than emitting a confidently wrong URL.
+ */
+export function resolveImageUrl(
+  imageUrl: string | null | undefined,
+  cdnBaseUrl: string,
+): string | null {
+  if (!imageUrl) return null;
+  if (/^(?:https?:)?\/\//i.test(imageUrl) || imageUrl.startsWith("data:")) {
+    return imageUrl;
+  }
+  if (!cdnBaseUrl) return imageUrl;
+  return buildS3Url(cdnBaseUrl, imageUrl.replace(/^\/+/, ""));
+}
+
+/**
  * Format a Date for chat timestamp separators.
  * Shows time for today, date + time for older messages.
  */

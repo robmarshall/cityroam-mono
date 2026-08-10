@@ -729,4 +729,46 @@ describe("GET /event/:code/messages", () => {
     // Verify getMessagesSince was called with the code and since param
     expect(getMessagesSince).toHaveBeenCalledWith("abcd2345", "2026-01-01T00:02:00.000Z");
   });
+
+  it("absolutizes bare S3 keys stored before uploads returned full URLs", async () => {
+    const event = mockEvent({ id: "e-id", code: "abcd2345" });
+    mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
+
+    // Empty cache forces the DB fallback, which is the path legacy rows take.
+    vi.mocked(getMessages).mockResolvedValueOnce([]);
+    mockedDb.where.mockReturnValueOnce(mockedDb);
+    mockedDb.orderBy.mockResolvedValueOnce([
+      {
+        id: "msg-1",
+        event_id: "e-id",
+        sender_type: "guide",
+        sender_name: "Guide",
+        participant_id: null,
+        content: "",
+        image_url: "uploads/1699_photo.png",
+        step_number: 1,
+        created_at: new Date("2026-01-01T00:00:00.000Z"),
+      },
+      {
+        id: "msg-2",
+        event_id: "e-id",
+        sender_type: "guide",
+        sender_name: "Guide",
+        participant_id: null,
+        content: "",
+        image_url: "https://cdn.test.com/uploads/already-absolute.png",
+        step_number: 1,
+        created_at: new Date("2026-01-01T00:01:00.000Z"),
+      },
+    ]);
+
+    const res = await app.request("/event/abcd2345/messages");
+    expect(res.status).toBe(200);
+
+    const body = await res.json();
+    expect(body.messages[0].image_url).toBe("https://cdn.test.com/uploads/1699_photo.png");
+    expect(body.messages[1].image_url).toBe(
+      "https://cdn.test.com/uploads/already-absolute.png",
+    );
+  });
 });

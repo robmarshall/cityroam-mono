@@ -1730,7 +1730,7 @@ export default function RouteEditorPage() {
     updateEditor(editorKey, { uploadingImage: true });
     try {
       const uploadRes = await authFetch(() =>
-        api.post<{ upload_url: string; key: string }>("/admin/upload", {
+        api.post<{ upload_url: string; key: string; url: string }>("/admin/upload", {
           filename: file.name,
           content_type: file.type,
         }),
@@ -1756,7 +1756,7 @@ export default function RouteEditorPage() {
       const currentEditor = openEditors.get(editorKey);
       if (currentEditor?.form.type === "image") {
         updateEditor(editorKey, {
-          form: { ...currentEditor.form, image_url: uploadRes.key },
+          form: { ...currentEditor.form, image_url: uploadRes.url },
           uploadingImage: false,
         });
       } else {
