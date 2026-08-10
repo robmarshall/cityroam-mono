@@ -1,4 +1,4 @@
-import { eq, asc } from "drizzle-orm";
+import { and, eq, asc } from "drizzle-orm";
 import type { BlockConfig, SupportedLanguage } from "@cityroam/shared/types";
 import { db, schema } from "../db/index.js";
 import { publishTyping, publishControl } from "../redis/index.js";
@@ -188,6 +188,29 @@ export async function runGroup(
 }
 
 /**
+ * Atomically clear current_block_id, but only if it still points at the
+ * block the caller is advancing past. Returns false when someone else got
+ * there first, in which case the caller must not advance.
+ */
+async function claimBlockAdvance(
+  eventId: string,
+  expectedBlockId: string,
+): Promise<boolean> {
+  const claimed = await db
+    .update(schema.events)
+    .set({ current_block_id: null })
+    .where(
+      and(
+        eq(schema.events.id, eventId),
+        eq(schema.events.current_block_id, expectedBlockId),
+      ),
+    )
+    .returning({ id: schema.events.id });
+
+  return claimed.length > 0;
+}
+
+/**
  * Called after a question is answered or an action is confirmed.
  * Continues sending remaining blocks in the current group after the
  * blocking block, then advances to the next group if all blocks are done.
@@ -197,6 +220,15 @@ export async function advanceAfterBlock(
   eventCode: string,
   blockId: string,
 ): Promise<void> {
+  // Claim the advancement. Sending the remaining blocks takes tens of
+  // seconds, so without this a second correct answer or a duplicated
+  // action_confirm (possibly from the other process) would re-enter and
+  // skip a whole group.
+  if (!(await claimBlockAdvance(eventId, blockId))) {
+    log.info("advance already claimed, ignoring", { eventCode, blockId });
+    return;
+  }
+
   // Load the block to find its group
   const block = await db.query.routeBlocks.findFirst({
     where: eq(schema.routeBlocks.id, blockId),

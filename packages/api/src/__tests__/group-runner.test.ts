@@ -22,7 +22,8 @@ vi.mock("../db/index.js", async () => {
     orderBy: vi.fn().mockResolvedValue([]),
     insert: vi.fn(() => mockDb),
     values: vi.fn(() => mockDb),
-    returning: vi.fn(() => []),
+    // Default: the current_block_id compare-and-swap claims the advance
+    returning: vi.fn(() => [{ id: "evt-1" }]),
     update: vi.fn(() => mockDb),
     set: vi.fn(() => mockDb),
     delete: vi.fn(() => mockDb),
@@ -396,6 +397,61 @@ describe("advanceAfterBlock", () => {
     expect((db as any).set).toHaveBeenCalledWith(
       expect.objectContaining({ current_block_id: "b3" }),
     );
+  });
+
+  it("clears current_block_id before walking the remaining blocks", async () => {
+    const blocks = [questionBlock("b1", 0), messageBlock("b2", 1)];
+
+    (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValue({ id: "b1", group_id: "group-1" });
+    (db.query.events.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValue(defaultEvent);
+    (db as any).orderBy
+      .mockResolvedValueOnce(blocks)
+      .mockResolvedValueOnce([makeGroup("group-1", 0)]);
+
+    const promise = advanceAfterBlock("evt-1", "ABC123", "b1");
+    await vi.advanceTimersByTimeAsync(10000);
+    await promise;
+
+    expect((db as any).set).toHaveBeenNthCalledWith(1, { current_block_id: null });
+  });
+
+  it("a second advance for the same block is ignored", async () => {
+    // The compare-and-swap matched nothing — someone already advanced
+    (db as any).returning.mockReturnValueOnce([]);
+
+    await advanceAfterBlock("evt-1", "ABC123", "b1");
+
+    expect(db.query.routeBlocks.findFirst).not.toHaveBeenCalled();
+    expect(writeGuideMessage).not.toHaveBeenCalled();
+    expect(handleGameCompletion).not.toHaveBeenCalled();
+  });
+
+  it("does not advance twice when two correct answers race", async () => {
+    const blocks = [questionBlock("b1", 0), messageBlock("b2", 1, "After")];
+
+    (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValue({ id: "b1", group_id: "group-1" });
+    (db.query.events.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValue(defaultEvent);
+    (db as any).orderBy
+      .mockResolvedValueOnce(blocks)
+      .mockResolvedValueOnce([makeGroup("group-1", 0)]);
+
+    // Only the first caller wins the claim
+    (db as any).returning
+      .mockReturnValueOnce([{ id: "evt-1" }])
+      .mockReturnValueOnce([]);
+
+    const first = advanceAfterBlock("evt-1", "ABC123", "b1");
+    const second = advanceAfterBlock("evt-1", "ABC123", "b1");
+    await vi.advanceTimersByTimeAsync(10000);
+    await Promise.all([first, second]);
+
+    // "After" is sent once, and the group completes once
+    expect(writeGuideMessage).toHaveBeenCalledTimes(1);
+    expect(handleGameCompletion).toHaveBeenCalledTimes(1);
   });
 
   it("block not found: returns safely", async () => {

@@ -375,6 +375,21 @@ describe("handleAnswerAttempt", () => {
     expect(lastInsertValues.content).toContain("You might want to ask for a hint.");
   });
 
+  it("mid-advancement (no current block): does not count a wrong attempt", async () => {
+    // getRandomMessageBank: clarification bank
+    (db as any).where.mockResolvedValueOnce([{ content: "Not sure what you mean." }]);
+
+    const llm = makeLlm({ type: "answer-incorrect" });
+    const ctx = makeAnswerCtx({ currentBlockId: null, wrongAttempts: 0 });
+    const result = await handleAnswerAttempt(llm, ctx, "Town Hall");
+
+    expect(result).toEqual({ handled: true, correct: false });
+    expect((db as any).set).not.toHaveBeenCalledWith(
+      expect.objectContaining({ wrong_attempts: expect.anything() }),
+    );
+    expect(llm.classify).not.toHaveBeenCalled();
+  });
+
   it("LLM failure: uses deterministic fallback for non-matching answer", async () => {
     const questionBlock = makeMockQuestionBlock();
 
