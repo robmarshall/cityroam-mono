@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MAX_BLOCK_DELAY_MS } from "../constants/index.js";
 
 export const adminLoginSchema = z.object({
   username: z.string().trim().min(1, "Username is required"),
@@ -102,7 +103,7 @@ export const routeBlockSchema = z.object({
   position: z.number().int().min(0).optional(),
   type: z.enum(["message", "image", "question", "action", "map"]),
   config: blockConfigSchema,
-  delay_ms: z.number().int().min(0).max(300000).default(0),
+  delay_ms: z.number().int().min(0).max(MAX_BLOCK_DELAY_MS).default(0),
 }).refine((data) => data.type === data.config.type, {
   message: "Block type must match config type",
   path: ["type"],

@@ -1,4 +1,4 @@
-import { vi, describe, it, expect, beforeEach } from "vitest";
+import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 
 // ── Mock db ─────────────────────────────────────────────────────────
 vi.mock("../db/index.js", async () => {
@@ -29,7 +29,16 @@ vi.mock("../services/group-runner.js", () => ({
 import { db } from "../db/index.js";
 import { redis } from "../redis/client.js";
 import { runGroup } from "../services/group-runner.js";
-import { reconcileStrandedGroups } from "../services/group-reconciler.js";
+import {
+  reconcileStrandedGroups,
+  startGroupReconciler,
+  stopGroupReconciler,
+  strandedCandidateFilter,
+  isStranded,
+  STRANDED_AFTER_MS,
+} from "../services/group-reconciler.js";
+import { PgDialect } from "drizzle-orm/pg-core";
+import { MAX_BLOCK_DELAY_MS } from "@cityroam/shared/constants";
 
 const mockedDb = db as any;
 const mockedRedis = redis as any;
@@ -134,5 +143,92 @@ describe("reconcileStrandedGroups", () => {
 
     expect(resumed).toBe(0);
     expect(runGroup).not.toHaveBeenCalled();
+  });
+});
+
+// =====================================================================
+// The real candidate predicate and staleness rule
+// =====================================================================
+
+describe("strandedCandidateFilter", () => {
+  it("renders SQL selecting in-progress events with no block but a group", () => {
+    const { sql, params } = new PgDialect().sqlToQuery(strandedCandidateFilter()!);
+
+    expect(sql).toContain('"status" = ');
+    expect(params).toContain("IN_PROGRESS");
+    expect(sql).toContain('"current_block_id" is null');
+    expect(sql).toContain('"current_group_id" is not null');
+  });
+
+  it("does not match on current_block_index, which is never null", () => {
+    const { sql } = new PgDialect().sqlToQuery(strandedCandidateFilter()!);
+
+    expect(sql).not.toContain("current_block_index");
+  });
+});
+
+describe("isStranded", () => {
+  it("leaves a run that could still be waiting out the longest block delay", () => {
+    const now = Date.now();
+    expect(isStranded(now - MAX_BLOCK_DELAY_MS, now)).toBe(false);
+  });
+
+  it("keeps a full extra block delay of margin past the longest delay", () => {
+    expect(STRANDED_AFTER_MS).toBeGreaterThanOrEqual(MAX_BLOCK_DELAY_MS * 2);
+  });
+
+  it("treats an event quiet past the threshold as stranded", () => {
+    const now = Date.now();
+    expect(isStranded(now - STRANDED_AFTER_MS - 1, now)).toBe(true);
+  });
+
+  it("treats an event with no known activity as stranded", () => {
+    expect(isStranded(null)).toBe(true);
+  });
+});
+
+// =====================================================================
+// Interval scanning
+// =====================================================================
+
+describe("startGroupReconciler", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    stopGroupReconciler();
+    vi.useRealTimers();
+  });
+
+  it("re-scans on an interval so a restart mid-delay is still picked up later", async () => {
+    // Pass 1 — restarted seconds after the last message, so not stranded yet
+    setupScan([strandedEvent()], new Date());
+
+    startGroupReconciler();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(runGroup).not.toHaveBeenCalled();
+
+    // Pass 2 — the same event, now aged past the threshold
+    setupScan(
+      [strandedEvent()],
+      new Date(Date.now() - STRANDED_AFTER_MS - 1000),
+    );
+    await vi.advanceTimersByTimeAsync(60_000);
+
+    expect(runGroup).toHaveBeenCalledWith("evt-1", "ABC123", "group-2", 3);
+  });
+
+  it("stops scanning after stopGroupReconciler", async () => {
+    setupScan([]);
+
+    startGroupReconciler();
+    await vi.advanceTimersByTimeAsync(0);
+    const passesBefore = mockedDb.select.mock.calls.length;
+
+    stopGroupReconciler();
+    await vi.advanceTimersByTimeAsync(300_000);
+
+    expect(mockedDb.select.mock.calls.length).toBe(passesBefore);
   });
 });
