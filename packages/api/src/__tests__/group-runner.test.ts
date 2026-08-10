@@ -44,6 +44,7 @@ vi.mock("../redis/index.js", () => ({
 // ── Mock answer-attempt (writeGuideMessage) ─────────────────────────
 vi.mock("../services/pipeline/handlers/answer-attempt.js", () => ({
   writeGuideMessage: vi.fn().mockResolvedValue({ id: "msg-1" }),
+  SCRIPTED_MESSAGE: { countsTowardCap: false },
 }));
 
 // ── Mock game-completion ────────────────────────────────────────────
@@ -64,6 +65,9 @@ import { writeGuideMessage } from "../services/pipeline/handlers/answer-attempt.
 import { handleGameCompletion } from "../services/pipeline/handlers/game-completion.js";
 import { applyTemplateVars } from "../services/template-vars.js";
 import { runGroup, advanceAfterBlock } from "../services/group-runner.js";
+
+/** Route blocks are scripted content — they never spend the guide cap. */
+const SCRIPTED = { countsTowardCap: false };
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
@@ -158,10 +162,10 @@ describe("runGroup", () => {
 
     expect(writeGuideMessage).toHaveBeenCalledTimes(2);
     expect(writeGuideMessage).toHaveBeenNthCalledWith(
-      1, "evt-1", "ABC123", 1, expect.any(String), null, "message",
+      1, "evt-1", "ABC123", 1, expect.any(String), null, "message", SCRIPTED,
     );
     expect(writeGuideMessage).toHaveBeenNthCalledWith(
-      2, "evt-1", "ABC123", 1, expect.any(String), null, "message",
+      2, "evt-1", "ABC123", 1, expect.any(String), null, "message", SCRIPTED,
     );
   });
 
@@ -175,7 +179,7 @@ describe("runGroup", () => {
     await promise;
 
     expect(writeGuideMessage).toHaveBeenCalledWith(
-      "evt-1", "ABC123", 1, "", "https://img.test/photo.jpg", "image",
+      "evt-1", "ABC123", 1, "", "https://img.test/photo.jpg", "image", SCRIPTED,
     );
   });
 
@@ -189,7 +193,7 @@ describe("runGroup", () => {
     await promise;
 
     expect(writeGuideMessage).toHaveBeenCalledWith(
-      "evt-1", "ABC123", 1, "https://maps.google.com/xyz", null, "map",
+      "evt-1", "ABC123", 1, "https://maps.google.com/xyz", null, "map", SCRIPTED,
     );
   });
 
@@ -208,7 +212,7 @@ describe("runGroup", () => {
 
     // Question clue sent
     expect(writeGuideMessage).toHaveBeenCalledWith(
-      "evt-1", "ABC123", 1, "What is this?", null, "question",
+      "evt-1", "ABC123", 1, "What is this?", null, "question", SCRIPTED,
     );
 
     // current_block_id set
@@ -330,10 +334,10 @@ describe("runGroup", () => {
 
     expect(writeGuideMessage).toHaveBeenCalledTimes(2);
     expect(writeGuideMessage).toHaveBeenNthCalledWith(
-      1, "evt-1", "ABC123", 1, "Second", null, "message",
+      1, "evt-1", "ABC123", 1, "Second", null, "message", SCRIPTED,
     );
     expect(writeGuideMessage).toHaveBeenNthCalledWith(
-      2, "evt-1", "ABC123", 1, "Third", null, "question",
+      2, "evt-1", "ABC123", 1, "Third", null, "question", SCRIPTED,
     );
   });
 
@@ -372,7 +376,7 @@ describe("runGroup", () => {
     expect(applyTemplateVars).toHaveBeenCalledWith("Welcome to {{CITY}}", { CITY: "London" });
     // writeGuideMessage receives the transformed content
     expect(writeGuideMessage).toHaveBeenCalledWith(
-      "evt-1", "ABC123", 1, "Welcome to London", null, "message",
+      "evt-1", "ABC123", 1, "Welcome to London", null, "message", SCRIPTED,
     );
   });
 });
@@ -404,10 +408,10 @@ describe("advanceAfterBlock", () => {
     // writeGuideMessage called for b2 (message) and b3 (question clue)
     expect(writeGuideMessage).toHaveBeenCalledTimes(2);
     expect(writeGuideMessage).toHaveBeenNthCalledWith(
-      1, "evt-1", "ABC123", 1, expect.stringContaining("After question"), null, "message",
+      1, "evt-1", "ABC123", 1, expect.stringContaining("After question"), null, "message", SCRIPTED,
     );
     expect(writeGuideMessage).toHaveBeenNthCalledWith(
-      2, "evt-1", "ABC123", 1, "Next question", null, "question",
+      2, "evt-1", "ABC123", 1, "Next question", null, "question", SCRIPTED,
     );
   });
 

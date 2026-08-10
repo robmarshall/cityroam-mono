@@ -83,8 +83,10 @@ import { sendSequence } from "../../services/send-sequence.js";
 
 import {
   handleAnswerAttempt,
+  handleAnswerAttemptWithoutLLM,
   writeGuideMessage,
   getRandomMessageBank,
+  SCRIPTED_MESSAGE,
   type AnswerAttemptContext,
 } from "../../services/pipeline/handlers/answer-attempt.js";
 
@@ -287,10 +289,11 @@ describe("handleAnswerAttempt", () => {
     // LLM was called
     expect(llm.classify).toHaveBeenCalledOnce();
 
-    // Success guide message written
+    // Success guide message written, but it's message-bank text so it
+    // doesn't spend the guide response budget
     expect(appendMessage).toHaveBeenCalled();
     expect(publishMessage).toHaveBeenCalled();
-    expect(incrementGuideResponseCount).toHaveBeenCalled();
+    expect(incrementGuideResponseCount).not.toHaveBeenCalled();
 
     // Counters reset
     expect((db as any).set).toHaveBeenCalledWith(
@@ -716,5 +719,93 @@ describe("silent handlers", () => {
     const insertCalls = (db as any).values.mock.calls;
     const msgInsert = insertCalls[insertCalls.length - 1][0];
     expect(msgInsert.content).toBe("I didn't quite catch that.");
+  });
+});
+
+// =====================================================================
+// Guide response cap accounting
+// =====================================================================
+
+describe("guide response cap accounting", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (db as any).returning.mockReturnValue([mockMsg]);
+    (db as any).where.mockImplementation(() => db);
+  });
+
+  it("charges the cap for an LLM-generated guide message", async () => {
+    await writeGuideMessage("evt-1", "ABC123", 1, "Something the model wrote");
+
+    expect(incrementGuideResponseCount).toHaveBeenCalledWith("evt-1");
+  });
+
+  it("does not charge the cap for a scripted route block", async () => {
+    await writeGuideMessage(
+      "evt-1", "ABC123", 1, "Walk to the fountain", null, "message", SCRIPTED_MESSAGE,
+    );
+
+    expect(incrementGuideResponseCount).not.toHaveBeenCalled();
+  });
+
+  it("does not charge the cap for message-bank text", async () => {
+    await writeGuideMessage(
+      "evt-1", "ABC123", 1, "Nice one!", null, undefined, SCRIPTED_MESSAGE,
+    );
+
+    expect(incrementGuideResponseCount).not.toHaveBeenCalled();
+  });
+});
+
+// =====================================================================
+// handleAnswerAttemptWithoutLLM — the capped-event answer path
+// =====================================================================
+
+describe("handleAnswerAttemptWithoutLLM", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (db as any).returning.mockReturnValue([mockMsg]);
+    (db as any).where.mockImplementation(() => db);
+  });
+
+  it("accepts a matching answer and advances the hunt", async () => {
+    (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(makeMockQuestionBlock());
+    (db as any).where.mockResolvedValueOnce([{ content: "Correct!" }]);
+
+    const matched = await handleAnswerAttemptWithoutLLM(makeAnswerCtx(), "Town Hall");
+
+    expect(matched).toBe(true);
+    expect(advanceAfterBlock).toHaveBeenCalledWith("evt-1", "ABC123", "block-1");
+  });
+
+  it("rejects a non-matching message without touching wrong_attempts", async () => {
+    (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(makeMockQuestionBlock());
+
+    const matched = await handleAnswerAttemptWithoutLLM(makeAnswerCtx(), "what time is it");
+
+    expect(matched).toBe(false);
+    expect(advanceAfterBlock).not.toHaveBeenCalled();
+    expect((db as any).set).not.toHaveBeenCalled();
+  });
+
+  it("returns false when no block is current", async () => {
+    const matched = await handleAnswerAttemptWithoutLLM(
+      makeAnswerCtx({ currentBlockId: null }),
+      "Town Hall",
+    );
+
+    expect(matched).toBe(false);
+    expect(db.query.routeBlocks.findFirst).not.toHaveBeenCalled();
+  });
+
+  it("returns false when the current block is not a question", async () => {
+    (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({ id: "block-1", type: "action", config: { type: "action", label: "Go" } });
+
+    const matched = await handleAnswerAttemptWithoutLLM(makeAnswerCtx(), "Town Hall");
+
+    expect(matched).toBe(false);
+    expect(advanceAfterBlock).not.toHaveBeenCalled();
   });
 });

@@ -4,7 +4,7 @@ import type { SupportedLanguage } from "@cityroam/shared/types";
 import { LANGUAGE_NAMES } from "@cityroam/shared/constants";
 import type { LLMService } from "../../llm/interface.js";
 import { db, schema } from "../../../db/index.js";
-import { writeGuideMessage, getRandomMessageBank } from "./answer-attempt.js";
+import { writeGuideMessage, getRandomMessageBank, SCRIPTED_MESSAGE } from "./answer-attempt.js";
 import { createLogger } from "../../../lib/logger.js";
 
 const log = createLogger("question");
@@ -74,7 +74,7 @@ export async function handleQuestion(
     log.error("no current block id", { eventId: ctx.eventId });
     const fallback = await getRandomMessageBank("clarification", ctx.language);
     if (fallback) {
-      await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback);
+      await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback, null, undefined, SCRIPTED_MESSAGE);
     }
     return { handled: true };
   }
@@ -92,7 +92,7 @@ export async function handleQuestion(
     });
     const fallback = await getRandomMessageBank("clarification", ctx.language);
     if (fallback) {
-      await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback);
+      await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback, null, undefined, SCRIPTED_MESSAGE);
     }
     return { handled: true };
   }
@@ -109,7 +109,7 @@ export async function handleQuestion(
     log.error("route not found", { routeId: ctx.routeId });
     const fallback = await getRandomMessageBank("clarification", ctx.language);
     if (fallback) {
-      await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback);
+      await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback, null, undefined, SCRIPTED_MESSAGE);
     }
     return { handled: true };
   }
@@ -143,7 +143,7 @@ export async function handleQuestion(
     log.error("LLM returned null", { reason: "timeout or failure" });
     const clarification = await getRandomMessageBank("clarification", ctx.language);
     if (clarification) {
-      await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, clarification);
+      await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, clarification, null, undefined, SCRIPTED_MESSAGE);
     }
     return { handled: true };
   }
@@ -152,7 +152,7 @@ export async function handleQuestion(
   const parsed = result as Record<string, unknown>;
 
   if (parsed.type === "answer" && typeof parsed.text === "string") {
-    // LLM answered the question
+    // LLM answered the question — the one guide message that spends the cap
     await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, parsed.text);
     return { handled: true };
   }
@@ -161,7 +161,7 @@ export async function handleQuestion(
     // LLM cannot answer from provided info → unknown-answer bank
     const unknownMsg = await getRandomMessageBank("unknown-answer", ctx.language);
     if (unknownMsg) {
-      await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, unknownMsg);
+      await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, unknownMsg, null, undefined, SCRIPTED_MESSAGE);
     }
     return { handled: true };
   }
@@ -170,7 +170,7 @@ export async function handleQuestion(
   log.error("invalid LLM result", { result: JSON.stringify(result) });
   const clarification = await getRandomMessageBank("clarification", ctx.language);
   if (clarification) {
-    await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, clarification);
+    await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, clarification, null, undefined, SCRIPTED_MESSAGE);
   }
   return { handled: true };
 }

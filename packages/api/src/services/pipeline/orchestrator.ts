@@ -28,7 +28,9 @@ import {
 } from "./idle-timer.js";
 import {
   handleAnswerAttempt,
+  handleAnswerAttemptWithoutLLM,
   writeGuideMessage,
+  SCRIPTED_MESSAGE,
 } from "./handlers/answer-attempt.js";
 import { handleHintRequest } from "./handlers/hint-request.js";
 import { handleHintNudge } from "./handlers/hint-nudge.js";
@@ -55,6 +57,49 @@ const HINT_DECLINE_FALLBACK: Record<SupportedLanguage, string> = {
   de: "Kein Problem — mach weiter so!",
   nl: "Geen zorgen — ga zo door!",
 };
+
+/**
+ * Everything the capped path needs from the event row.
+ */
+interface CappedEventContext {
+  id: string;
+  current_block_id: string | null;
+  current_stop: number;
+  wrong_attempts: number;
+  hints_given: number;
+}
+
+/**
+ * Handle a message on an event that has spent its guide response budget.
+ *
+ * The LLM is off limits, but the deterministic matcher still runs so a
+ * correct answer advances the hunt. Anything the matcher doesn't recognise
+ * gets the cap notice — without classification we can't tell an answer
+ * attempt from chatter, so nothing is counted as a wrong attempt.
+ */
+async function handleMessageWhileCapped(
+  event: CappedEventContext,
+  eventCode: string,
+  text: string,
+  language: SupportedLanguage,
+): Promise<void> {
+  const advanced = await handleAnswerAttemptWithoutLLM(
+    {
+      eventId: event.id,
+      eventCode,
+      currentBlockId: event.current_block_id,
+      currentStop: event.current_stop,
+      wrongAttempts: event.wrong_attempts,
+      hintsGiven: event.hints_given,
+      language,
+    },
+    text,
+  );
+
+  if (!advanced) {
+    await sendCapReachedMessage(event.id, eventCode, event.current_stop, language);
+  }
+}
 
 /**
  * Main entry point for the AI guide pipeline.
@@ -148,33 +193,29 @@ export async function processIncomingMessage(
   }
 
   if (preFilterResult.action === "respond") {
-    if (!(await isGuideResponseCapReached(eventId))) {
-      await writeGuideMessage(
-        eventId,
-        eventCode,
-        event.current_stop,
-        preFilterResult.response!,
-      );
-    }
+    // Pre-filter responses are message-bank text, so they cost nothing and
+    // stay available even on a capped event
+    await writeGuideMessage(
+      eventId,
+      eventCode,
+      event.current_stop,
+      preFilterResult.response!,
+      null,
+      undefined,
+      SCRIPTED_MESSAGE,
+    );
     updateIdleTimestamp(eventCode, eventId, language);
     return;
   }
 
-  // Step 5: Check guide response cap before LLM work
-  if (await isGuideResponseCapReached(eventId)) {
-    await sendCapReachedMessage(eventId, eventCode, event.current_stop, language);
-    updateIdleTimestamp(eventCode, eventId, language);
-    return;
-  }
-
-  // Step 6: Check guide rate limit
+  // Step 5: Check guide rate limit
   const guideRateLimit = await checkGuideRateLimit(eventCode);
   if (!guideRateLimit.allowed) {
     updateIdleTimestamp(eventCode, eventId, language);
     return;
   }
 
-  // Step 6.5: Check if a hint was offered and this is a confirmation/decline
+  // Step 5.5: Check if a hint was offered and this is a confirmation/decline
   if (event.hint_offered) {
     // Clear the flag regardless of response
     await db
@@ -222,7 +263,15 @@ export async function processIncomingMessage(
       try {
         const declineMsg = await getRandomMessageBank("hint-decline", language);
         const content = declineMsg ?? (HINT_DECLINE_FALLBACK[language] ?? HINT_DECLINE_FALLBACK.en);
-        await writeGuideMessage(eventId, eventCode, event.current_stop, content);
+        await writeGuideMessage(
+          eventId,
+          eventCode,
+          event.current_stop,
+          content,
+          null,
+          undefined,
+          SCRIPTED_MESSAGE,
+        );
       } finally {
         await publishTyping(eventCode, {
           type: "guide_typing",
@@ -237,6 +286,14 @@ export async function processIncomingMessage(
 
     // TODO: Neither affirmative nor negative — fall through to normal classification.
     // The player may have ignored the hint offer and sent an answer or other message.
+  }
+
+  // Step 6: Guide response cap. No more LLM work, but answers still have to
+  // land — otherwise a capped event could never be finished.
+  if (await isGuideResponseCapReached(eventId)) {
+    await handleMessageWhileCapped(event, eventCode, text, language);
+    updateIdleTimestamp(eventCode, eventId, language);
+    return;
   }
 
   // Step 7: Publish guide typing on
@@ -284,7 +341,7 @@ export async function processIncomingMessage(
     // Step 10: Re-check cap before sending handler response
     if (intent !== "off-topic-chat" && intent !== "contextual-comment") {
       if (await isGuideResponseCapReached(eventId)) {
-        await sendCapReachedMessage(eventId, eventCode, event.current_stop, language);
+        await handleMessageWhileCapped(event, eventCode, text, language);
         updateIdleTimestamp(eventCode, eventId, language);
         return;
       }

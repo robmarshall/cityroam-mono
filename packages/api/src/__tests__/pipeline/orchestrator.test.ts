@@ -72,6 +72,8 @@ vi.mock("../../services/pipeline/idle-timer.js", () => ({
 
 vi.mock("../../services/pipeline/handlers/answer-attempt.js", () => ({
   handleAnswerAttempt: vi.fn().mockResolvedValue({ handled: true, correct: false }),
+  handleAnswerAttemptWithoutLLM: vi.fn().mockResolvedValue(false),
+  SCRIPTED_MESSAGE: { countsTowardCap: false },
   writeGuideMessage: vi.fn().mockResolvedValue({
     id: "guide-msg",
     sender_type: "guide",
@@ -127,7 +129,11 @@ import {
   handleIdleResume,
   removeFromIdleTracking,
 } from "../../services/pipeline/idle-timer.js";
-import { handleAnswerAttempt, writeGuideMessage } from "../../services/pipeline/handlers/answer-attempt.js";
+import {
+  handleAnswerAttempt,
+  handleAnswerAttemptWithoutLLM,
+  writeGuideMessage,
+} from "../../services/pipeline/handlers/answer-attempt.js";
 import { handleHintRequest } from "../../services/pipeline/handlers/hint-request.js";
 import { handleQuestion } from "../../services/pipeline/handlers/question.js";
 import {
@@ -198,6 +204,7 @@ describe("processIncomingMessage", () => {
     (updateIdleTimestamp as any).mockReturnValue(false);
     (handleIdleResume as any).mockResolvedValue(undefined);
     (handleAnswerAttempt as any).mockResolvedValue({ handled: true, correct: false });
+    (handleAnswerAttemptWithoutLLM as any).mockResolvedValue(false);
     (writeGuideMessage as any).mockResolvedValue({
       id: "guide-msg", sender_type: "guide", sender_name: "Guide",
       participant_id: null, content: "test", image_url: null,
@@ -287,6 +294,9 @@ describe("processIncomingMessage", () => {
       "ABCD1234",
       1,
       "Too long",
+      null,
+      undefined,
+      { countsTowardCap: false },
     );
 
     // No classification or handler called
@@ -297,19 +307,57 @@ describe("processIncomingMessage", () => {
     expect(updateIdleTimestamp).toHaveBeenCalledWith("ABCD1234", "event-1", "en");
   });
 
-  it("guide cap reached: sendCapReachedMessage sent, no handler", async () => {
+  it("guide cap reached: no LLM work, message that isn't an answer gets the cap notice", async () => {
     (isGuideResponseCapReached as any).mockResolvedValue(true);
+    (handleAnswerAttemptWithoutLLM as any).mockResolvedValue(false);
 
     await processIncomingMessage(basePayload);
 
     expect(sendCapReachedMessage).toHaveBeenCalledWith("event-1", "ABCD1234", 1, "en");
 
-    // No handler invoked
+    // No LLM classification or LLM-backed handler
     expect(handleAnswerAttempt).not.toHaveBeenCalled();
     expect(classifyIntent).not.toHaveBeenCalled();
 
     // Idle timestamp updated
     expect(updateIdleTimestamp).toHaveBeenCalledWith("ABCD1234", "event-1", "en");
+  });
+
+  it("guide cap reached: a correct answer still advances via the deterministic matcher", async () => {
+    (isGuideResponseCapReached as any).mockResolvedValue(true);
+    (handleAnswerAttemptWithoutLLM as any).mockResolvedValue(true);
+
+    await processIncomingMessage({ ...basePayload, text: "fountain" });
+
+    expect(handleAnswerAttemptWithoutLLM).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventId: "event-1",
+        eventCode: "ABCD1234",
+        currentBlockId: "block-1",
+      }),
+      "fountain",
+    );
+
+    // The hunt moved on, so no dead-end notice and still no LLM
+    expect(sendCapReachedMessage).not.toHaveBeenCalled();
+    expect(classifyIntent).not.toHaveBeenCalled();
+  });
+
+  it("pre-filter responses are still sent on a capped event", async () => {
+    (isGuideResponseCapReached as any).mockResolvedValue(true);
+    (preFilter as any).mockResolvedValue({ action: "respond", response: "Too long" });
+
+    await processIncomingMessage(basePayload);
+
+    expect(writeGuideMessage).toHaveBeenCalledWith(
+      "event-1",
+      "ABCD1234",
+      1,
+      "Too long",
+      null,
+      undefined,
+      { countsTowardCap: false },
+    );
   });
 
   it("LLM failure falls back to clarification", async () => {

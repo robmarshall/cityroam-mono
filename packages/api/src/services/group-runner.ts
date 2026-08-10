@@ -2,7 +2,7 @@ import { and, eq, asc } from "drizzle-orm";
 import type { BlockConfig, SupportedLanguage } from "@cityroam/shared/types";
 import { db, schema } from "../db/index.js";
 import { publishTyping, publishControl } from "../redis/index.js";
-import { writeGuideMessage } from "./pipeline/handlers/answer-attempt.js";
+import { writeGuideMessage, SCRIPTED_MESSAGE } from "./pipeline/handlers/answer-attempt.js";
 import { handleGameCompletion } from "./pipeline/handlers/game-completion.js";
 import { applyTemplateVars, buildRouteTemplateVars } from "./template-vars.js";
 import { createLogger } from "../lib/logger.js";
@@ -82,28 +82,28 @@ async function sendBlocks(
       case "message": {
         await showTypingDelay(eventCode, block.delay_ms);
         const content = applyTemplateVars(config.content, templateVars);
-        await writeGuideMessage(eventId, eventCode, stepNumber, content, null, "message");
+        await writeGuideMessage(eventId, eventCode, stepNumber, content, null, "message", SCRIPTED_MESSAGE);
         await persistBlockIndex(eventId, i + 1);
         break;
       }
 
       case "image": {
         await showTypingDelay(eventCode, block.delay_ms);
-        await writeGuideMessage(eventId, eventCode, stepNumber, "", config.image_url, "image");
+        await writeGuideMessage(eventId, eventCode, stepNumber, "", config.image_url, "image", SCRIPTED_MESSAGE);
         await persistBlockIndex(eventId, i + 1);
         break;
       }
 
       case "map": {
         await showTypingDelay(eventCode, block.delay_ms);
-        await writeGuideMessage(eventId, eventCode, stepNumber, config.google_maps_link, null, "map");
+        await writeGuideMessage(eventId, eventCode, stepNumber, config.google_maps_link, null, "map", SCRIPTED_MESSAGE);
         await persistBlockIndex(eventId, i + 1);
         break;
       }
 
       case "question": {
         await showTypingDelay(eventCode, block.delay_ms);
-        await writeGuideMessage(eventId, eventCode, stepNumber, config.clue, null, "question");
+        await writeGuideMessage(eventId, eventCode, stepNumber, config.clue, null, "question", SCRIPTED_MESSAGE);
 
         // Update event to track current block — pauses for user interaction
         await db

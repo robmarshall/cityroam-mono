@@ -69,6 +69,22 @@ No other text. No explanation. No markdown.
 Player message: "${userMessage}"`;
 }
 
+export interface WriteGuideMessageOptions {
+  /**
+   * Whether this message spends part of the event's guide-response budget.
+   * Only LLM-generated text does. Scripted route blocks and message-bank
+   * templates cost nothing to produce, so counting them let a long route
+   * exhaust the cap and lock the guide out of its own hunt.
+   */
+  countsTowardCap?: boolean;
+}
+
+/**
+ * Options for guide messages that are read straight off a route block or a
+ * message bank — no LLM involved, so they don't spend the cap.
+ */
+export const SCRIPTED_MESSAGE: WriteGuideMessageOptions = { countsTowardCap: false };
+
 /**
  * Persist a guide message using the three-step write sequence: DB → cache → pub/sub.
  * Returns the created message payload.
@@ -80,7 +96,9 @@ export async function writeGuideMessage(
   content: string,
   imageUrl: string | null = null,
   blockType?: BlockType,
+  options: WriteGuideMessageOptions = {},
 ): Promise<ChatMessagePayload> {
+  const { countsTowardCap = true } = options;
   const [msg] = await db
     .insert(schema.messages)
     .values({
@@ -109,8 +127,9 @@ export async function writeGuideMessage(
   await appendMessage(eventCode, payload);
   await publishMessage(eventCode, payload);
 
-  // Increment guide response count after each guide message
-  await incrementGuideResponseCount(eventId);
+  if (countsTowardCap) {
+    await incrementGuideResponseCount(eventId);
+  }
 
   return payload;
 }
@@ -158,7 +177,7 @@ export async function handleAnswerAttempt(
     log.error("no current block id", { eventId: ctx.eventId });
     const fallback = await getRandomMessageBank("clarification", ctx.language);
     if (fallback) {
-      await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback);
+      await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback, null, undefined, SCRIPTED_MESSAGE);
     }
     return { handled: true, correct: false };
   }
@@ -176,7 +195,7 @@ export async function handleAnswerAttempt(
     });
     const fallback = await getRandomMessageBank("clarification", ctx.language);
     if (fallback) {
-      await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback);
+      await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback, null, undefined, SCRIPTED_MESSAGE);
     }
     return { handled: true, correct: false };
   }
@@ -218,6 +237,38 @@ export async function handleAnswerAttempt(
 }
 
 /**
+ * Check an answer without the LLM, for events that have spent their guide
+ * response budget. A hit runs the normal correct-answer flow so the hunt can
+ * still be finished; anything else is left to the caller.
+ *
+ * Returns true when the answer matched and the event advanced.
+ */
+export async function handleAnswerAttemptWithoutLLM(
+  ctx: AnswerAttemptContext,
+  userMessage: string,
+): Promise<boolean> {
+  if (!ctx.currentBlockId) return false;
+
+  const currentBlock = await db.query.routeBlocks.findFirst({
+    where: eq(schema.routeBlocks.id, ctx.currentBlockId),
+    columns: { id: true, type: true, config: true },
+  });
+
+  if (!currentBlock || currentBlock.type !== "question") return false;
+
+  const config = currentBlock.config as QuestionBlockConfig;
+  if (!deterministicAnswerMatch(userMessage, config.accepted_answers, ctx.language)) {
+    return false;
+  }
+
+  log.info("answer accepted by deterministic matcher while capped", {
+    eventCode: ctx.eventCode,
+  });
+  await handleCorrectAnswer(ctx);
+  return true;
+}
+
+/**
  * Handle a correct answer:
  * 1. Success bank message
  * 2. Reset hints_given and wrong_attempts
@@ -227,7 +278,7 @@ async function handleCorrectAnswer(ctx: AnswerAttemptContext): Promise<void> {
   // 1. Success message
   const successMsg = await getRandomMessageBank("success", ctx.language);
   const successContent = successMsg ?? (SUCCESS_FALLBACK[ctx.language] ?? SUCCESS_FALLBACK.en);
-  await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, successContent);
+  await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, successContent, null, undefined, SCRIPTED_MESSAGE);
 
   // 2. Reset counters
   await db
@@ -293,7 +344,7 @@ async function handleIncorrectAnswer(
     failureMsg += HINT_NUDGE_SUFFIX[ctx.language] ?? HINT_NUDGE_SUFFIX.en;
   }
 
-  await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, failureMsg);
+  await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, failureMsg, null, undefined, SCRIPTED_MESSAGE);
 }
 
 export { buildAnswerMatchPrompt };

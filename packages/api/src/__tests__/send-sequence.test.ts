@@ -12,12 +12,16 @@ vi.mock("../redis/index.js", () => ({
 // ── Mock answer-attempt (writeGuideMessage) ─────────────────────────
 vi.mock("../services/pipeline/handlers/answer-attempt.js", () => ({
   writeGuideMessage: vi.fn().mockResolvedValue({ id: "msg-1" }),
+  SCRIPTED_MESSAGE: { countsTowardCap: false },
 }));
 
 // ── Imports (after mocks) ───────────────────────────────────────────
 import { publishTyping } from "../redis/index.js";
 import { writeGuideMessage } from "../services/pipeline/handlers/answer-attempt.js";
 import { sendSequence } from "../services/send-sequence.js";
+
+/** Sequence items are route-authored content — they never spend the guide cap. */
+const SCRIPTED = { countsTowardCap: false };
 
 import type { SequenceItem } from "@cityroam/shared/types";
 
@@ -60,9 +64,9 @@ describe("sendSequence", () => {
     await promise;
 
     expect(writeGuideMessage).toHaveBeenCalledTimes(3);
-    expect(writeGuideMessage).toHaveBeenNthCalledWith(1, "evt-1", "ABC123", 1, "First", null);
-    expect(writeGuideMessage).toHaveBeenNthCalledWith(2, "evt-1", "ABC123", 1, "Second", null);
-    expect(writeGuideMessage).toHaveBeenNthCalledWith(3, "evt-1", "ABC123", 1, "Third", null);
+    expect(writeGuideMessage).toHaveBeenNthCalledWith(1, "evt-1", "ABC123", 1, "First", null, undefined, SCRIPTED);
+    expect(writeGuideMessage).toHaveBeenNthCalledWith(2, "evt-1", "ABC123", 1, "Second", null, undefined, SCRIPTED);
+    expect(writeGuideMessage).toHaveBeenNthCalledWith(3, "evt-1", "ABC123", 1, "Third", null, undefined, SCRIPTED);
   });
 
   it("shows typing indicator for delay_ms > 0", async () => {
@@ -104,7 +108,7 @@ describe("sendSequence", () => {
     await promise;
 
     expect(writeGuideMessage).toHaveBeenCalledWith(
-      "evt-1", "ABC123", 1, "Welcome to London, enjoy the hunt", null,
+      "evt-1", "ABC123", 1, "Welcome to London, enjoy the hunt", null, undefined, SCRIPTED,
     );
   });
 
@@ -116,7 +120,7 @@ describe("sendSequence", () => {
     await promise;
 
     expect(writeGuideMessage).toHaveBeenCalledWith(
-      "evt-1", "ABC123", 1, "Look!", "https://img.test/photo.jpg",
+      "evt-1", "ABC123", 1, "Look!", "https://img.test/photo.jpg", undefined, SCRIPTED,
     );
   });
 
@@ -128,7 +132,7 @@ describe("sendSequence", () => {
     await promise;
 
     expect(writeGuideMessage).toHaveBeenCalledWith(
-      "evt-1", "ABC123", 1, "Text only", null,
+      "evt-1", "ABC123", 1, "Text only", null, undefined, SCRIPTED,
     );
   });
 
@@ -157,7 +161,7 @@ describe("sendSequence", () => {
 
     expect(writeGuideMessage).toHaveBeenCalledTimes(2);
     // Second call still happens despite first failure
-    expect(writeGuideMessage).toHaveBeenNthCalledWith(2, "evt-1", "ABC123", 1, "Succeeds", null);
+    expect(writeGuideMessage).toHaveBeenNthCalledWith(2, "evt-1", "ABC123", 1, "Succeeds", null, undefined, SCRIPTED);
   });
 
   it("multiple items sent in correct order with delays", async () => {

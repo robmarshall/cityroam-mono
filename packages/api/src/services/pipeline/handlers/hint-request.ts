@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import type { QuestionBlockConfig, SequenceItem } from "@cityroam/shared/types";
 import type { SupportedLanguage } from "@cityroam/shared/types";
 import { db, schema } from "../../../db/index.js";
-import { writeGuideMessage, getRandomMessageBank } from "./answer-attempt.js";
+import { writeGuideMessage, getRandomMessageBank, SCRIPTED_MESSAGE } from "./answer-attempt.js";
 import { advanceAfterBlock } from "../../group-runner.js";
 import { sendSequence } from "../../send-sequence.js";
 import { buildRouteTemplateVars } from "../../template-vars.js";
@@ -53,7 +53,7 @@ export async function handleHintRequest(
     log.error("no current block id", { eventId: ctx.eventId });
     const fallback = await getRandomMessageBank("clarification", ctx.language);
     if (fallback) {
-      await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback);
+      await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback, null, undefined, SCRIPTED_MESSAGE);
     }
     return { handled: true, exhausted: false };
   }
@@ -71,7 +71,7 @@ export async function handleHintRequest(
     });
     const fallback = await getRandomMessageBank("clarification", ctx.language);
     if (fallback) {
-      await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback);
+      await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, fallback, null, undefined, SCRIPTED_MESSAGE);
     }
     return { handled: true, exhausted: false };
   }
@@ -128,7 +128,7 @@ async function handleHintExhaustion(
   let exhaustedMsg = await getRandomMessageBank("hint-exhausted", ctx.language);
   exhaustedMsg = exhaustedMsg ?? (HINT_EXHAUSTED_FALLBACK[ctx.language] ?? HINT_EXHAUSTED_FALLBACK.en).replace("{{ANSWER}}", answer);
   exhaustedMsg = exhaustedMsg.replace("{{ANSWER}}", answer);
-  await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, exhaustedMsg);
+  await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, exhaustedMsg, null, undefined, SCRIPTED_MESSAGE);
 
   // 2. Reset counters
   await db
