@@ -116,7 +116,17 @@ export async function handleClientMessage(
         return;
       }
 
-      if (!session.is_lead) {
+      // Read lead status from the row, not from `session`. The session is
+      // captured when the socket opens and never changes, so a participant
+      // promoted mid-connection (their lead left or timed out) would be
+      // refused forever — and they're the only one who can confirm.
+      const [me] = await db
+        .select({ is_lead: schema.participants.is_lead })
+        .from(schema.participants)
+        .where(eq(schema.participants.id, participant_id))
+        .limit(1);
+
+      if (!me?.is_lead) {
         sendError(ws, "Only the lead can confirm actions", "ACTION_LEAD_ONLY");
         return;
       }
