@@ -270,6 +270,8 @@ Template variables in message block `content` fields are replaced at runtime, so
 | unknown-answer | 2 | 3 |
 | over-length | 2 | 3 |
 | completion | 2 | 3 |
+| guide-degraded | 2 | 3 |
+| guide-busy | 2 | 3 |
 
 ---
 

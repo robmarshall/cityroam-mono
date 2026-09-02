@@ -1,5 +1,8 @@
 {
   "metadata": {
+    "og": {
+      "tagline": "Chasses au tr\u00e9sor guid\u00e9es par IA \u00e0 Leeds"
+    },
     "home": {
       "title": "City Roam — Chasses au trésor guidées par IA à Leeds",
       "description": "Explorez Leeds avec une chasse au trésor propulsée par l'IA. Résolvez des énigmes, découvrez des lieux insolites et amusez-vous entre amis, le tout guidé par l'IA depuis votre téléphone.",
@@ -573,6 +576,324 @@
       "whatsNext": "Et maintenant ?",
       "whatsNextDescription": "Partagez ce lien avec votre groupe. Chacun l'ouvre, saisit son prénom, et la personne qui mène la partie lance l'aventure quand tout le monde est prêt.",
       "refundNote": "Pas convaincu ? Remboursement intégral — sans poser de question."
+    }
+  },
+  "legal": {
+    "lastUpdated": "Dernière mise à jour : 2 septembre 2026",
+    "backHome": "Retour à l’accueil",
+    "footer": {
+      "navLabel": "Informations légales",
+      "terms": "Conditions",
+      "privacy": "Confidentialité",
+      "refunds": "Remboursements"
+    },
+    "meta": {
+      "terms": {
+        "title": "Conditions générales — City Roam",
+        "description": "Les conditions applicables lorsque vous achetez ou jouez une chasse au trésor autoguidée City Roam."
+      },
+      "privacy": {
+        "title": "Politique de confidentialité — City Roam",
+        "description": "Quelles données personnelles City Roam collecte lors d’un achat ou d’une partie, pourquoi nous les utilisons et quels sont vos droits."
+      },
+      "refunds": {
+        "title": "Politique de remboursement — City Roam",
+        "description": "Comment fonctionnent les remboursements City Roam : remboursement intégral si vous n’êtes pas satisfait, et comment le demander."
+      }
+    },
+    "terms": {
+      "title": "Conditions générales",
+      "intro": "Ces conditions s’appliquent lorsque vous achetez une chasse au trésor City Roam ou que vous en rejoignez une en tant que joueur. Merci de les lire avant d’acheter.",
+      "sections": [
+        {
+          "heading": "Qui nous sommes",
+          "body": [
+            "City Roam vend des chasses au trésor autoguidées auxquelles vous jouez depuis votre téléphone, dans une vraie ville, accompagné d’un guide conversationnel automatisé. Nous sommes établis au Royaume-Uni et notre site est cityroam.co.uk."
+          ],
+          "bullets": [
+            "Nom commercial : City Roam",
+            "Dénomination sociale et adresse du siège : [à compléter avant le lancement]",
+            "E-mail : hello@cityroam.co.uk"
+          ]
+        },
+        {
+          "heading": "Ce que vous achetez",
+          "body": [
+            "À l’achat, vous recevez un code d’événement. Ce code est une licence permettant à un groupe de jouer une chasse au trésor, une seule fois.",
+            "Jusqu’à 10 personnes peuvent jouer avec un même code. Chacune rejoint la partie depuis son propre téléphone et l’une d’elles dirige le groupe.",
+            "Le code appartient à votre groupe. Vous ne pouvez ni le revendre, ni le publier, ni le céder à une autre personne contre rémunération."
+          ]
+        },
+        {
+          "heading": "Durée de validité de votre code",
+          "body": [
+            "Votre code d’événement est valable 90 jours à compter de l’achat. Vous pouvez commencer la partie à tout moment pendant cette période.",
+            "Passé ce délai, le code expire automatiquement et ne permet plus de lancer une partie. Si votre code expire avant que vous ayez pu l’utiliser, écrivez-nous : nous vous en enverrons un nouveau ou nous vous rembourserons.",
+            "Une fois la chasse terminée, le code ne peut plus être réutilisé."
+          ]
+        },
+        {
+          "heading": "Le déroulement de la partie",
+          "body": [
+            "La chasse se déroule en extérieur et à pied, dans une vraie ville. Il vous faut un téléphone avec une connexion de données et assez de batterie pour toute la partie.",
+            "Vous choisissez quand commencer et à quel rythme avancer. Vous pouvez faire une pause et reprendre ensuite."
+          ]
+        },
+        {
+          "heading": "Votre sécurité relève de votre responsabilité",
+          "body": [
+            "City Roam est un jeu qui se déroule dans l’espace public. Vous êtes responsable de votre propre sécurité et de celle de votre groupe. Soyez particulièrement attentif aux points suivants."
+          ],
+          "bullets": [
+            "Faites attention à la circulation et à ce qui vous entoure. Ne consultez pas votre téléphone en traversant la rue.",
+            "Respectez le code de la route, la signalisation et les règles locales.",
+            "Les enfants doivent être surveillés en permanence par un adulte responsable. L’adulte qui achète la partie ou dirige le groupe répond des mineurs qui en font partie.",
+            "Restez sur les voies publiques et dans les lieux accessibles au public. N’entrez jamais dans une propriété privée ou une zone interdite pour trouver une réponse.",
+            "Vérifiez la météo, portez des chaussures adaptées et emportez de l’eau.",
+            "Arrêtez la partie si les conditions deviennent dangereuses, si quelqu’un ne se sent pas bien ou si l’on vous demande de quitter un lieu."
+          ]
+        },
+        {
+          "heading": "Le guide automatisé",
+          "body": [
+            "Votre partie est animée par un guide conversationnel automatisé. Il peut se tromper et il ne sait pas ce qui se passe autour de vous.",
+            "Considérez ses indices, ses indications et ses anecdotes comme des éléments de jeu, et non comme une aide fiable à la navigation ou à la sécurité. Faites appel à votre propre jugement et utilisez une véritable application de cartographie si vous avez besoin d’un itinéraire.",
+            "Les lieux changent. Un monument peut être en travaux, un commerce peut avoir fermé, une zone peut être clôturée. Signalez-nous tout indice qui ne fonctionne plus et nous corrigerons le parcours."
+          ]
+        },
+        {
+          "heading": "L’utilisation du chat",
+          "body": [
+            "Le chat du jeu est partagé avec l’ensemble de votre groupe. Merci d’y rester courtois."
+          ],
+          "bullets": [
+            "N’envoyez pas de contenu injurieux, menaçant, haineux ou à caractère sexuel.",
+            "N’envoyez rien d’illicite ni qui porte atteinte aux droits d’autrui.",
+            "Ne partagez pas les données personnelles d’autres personnes.",
+            "N’essayez pas de détourner, de sonder ou de mésuser le jeu ou le guide."
+          ],
+          "after": [
+            "Nous pouvons mettre fin à une partie sans remboursement si le chat sert à agresser un autre joueur ou notre équipe."
+          ]
+        },
+        {
+          "heading": "Nos contenus",
+          "body": [
+            "Les parcours, indices, aides, textes, illustrations et logiciels qui composent City Roam nous appartiennent ou appartiennent à nos concédants. Vous pouvez les utiliser pour jouer la partie que vous avez achetée, et pour rien d’autre.",
+            "Merci de ne pas copier, publier ni revendre le contenu de nos parcours, y compris en publiant en ligne l’ensemble des réponses."
+          ]
+        },
+        {
+          "heading": "Si quelque chose ne va pas",
+          "body": [
+            "Nous voulons que chaque partie se passe bien. Si le service tombe en panne, si vous ne parvenez pas à démarrer votre chasse ou si vous n’êtes simplement pas satisfait, contactez-nous et nous ferons le nécessaire. Notre politique de remboursement précise ce à quoi vous pouvez vous attendre.",
+            "Nous ne pouvons pas garantir que le service sera toujours disponible ni exempt de défauts. Cela dépend de votre appareil, de votre réseau et de services tiers que nous ne contrôlons pas."
+          ]
+        },
+        {
+          "heading": "Notre responsabilité",
+          "body": [
+            "Rien dans ces conditions ne limite notre responsabilité en cas de décès ou de dommage corporel causé par notre négligence, en cas de fraude, ni dans les autres cas où la loi britannique interdit toute limitation.",
+            "Sous cette réserve, notre responsabilité totale liée à une partie est limitée au montant que vous avez payé pour celle-ci.",
+            "Nous ne répondons pas des préjudices qui n’étaient pas raisonnablement prévisibles au moment de l’achat, des pertes de bénéfices ou d’activité, ni des dommages résultant de vos propres décisions pendant la partie, du comportement des autres membres de votre groupe ou de tiers, ou de l’état des rues et des lieux que vous visitez.",
+            "Nous vendons nos parties à des consommateurs. Si vous achetez à des fins professionnelles, les protections consommateurs prévues par ces conditions ne s’appliquent pas à vous."
+          ]
+        },
+        {
+          "heading": "Annulation et remboursement",
+          "body": [
+            "Vous disposez d’un droit légal de rétractation de 14 jours au titre de la réglementation britannique de 2013 sur les contrats de consommation. Le code d’événement étant délivré immédiatement, vous acceptez lors du paiement que l’exécution commence tout de suite.",
+            "Notre politique de remboursement est volontairement plus généreuse que le minimum légal. Consultez la page dédiée pour le détail et la marche à suivre."
+          ]
+        },
+        {
+          "heading": "Modification des conditions",
+          "body": [
+            "Nous pouvons modifier ces conditions. La version applicable à votre achat est celle publiée le jour de l’achat. Toute modification est publiée sur cette page avec une nouvelle date en haut."
+          ]
+        },
+        {
+          "heading": "Droit applicable et litiges",
+          "body": [
+            "Ces conditions sont régies par le droit d’Angleterre et du pays de Galles, et les tribunaux d’Angleterre et du pays de Galles sont compétents. Si vous résidez en Écosse ou en Irlande du Nord, vous pouvez également saisir les tribunaux de votre territoire.",
+            "Si notre traitement d’une réclamation ne vous satisfait pas, écrivez-nous d’abord : nous chercherons une solution."
+          ]
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Politique de confidentialité",
+      "intro": "Cette notice explique ce que nous faisons des données personnelles lorsque vous achetez ou jouez une chasse au trésor City Roam. Nous sommes responsable du traitement de ces données.",
+      "sections": [
+        {
+          "heading": "Qui nous sommes et comment nous joindre",
+          "body": [
+            "City Roam est responsable du traitement des données décrites ici. Pour toute question sur cette notice ou pour exercer un droit, écrivez-nous."
+          ],
+          "bullets": [
+            "Dénomination sociale et adresse du siège : [à compléter avant le lancement]",
+            "E-mail : hello@cityroam.co.uk"
+          ]
+        },
+        {
+          "heading": "Les données que nous collectons",
+          "bullets": [
+            "Votre adresse e-mail lors de l’achat, pour vous envoyer le reçu et votre code d’événement.",
+            "Les informations de paiement, entièrement gérées par Stripe. Nous ne voyons ni ne conservons vos données bancaires. Nous gardons la référence de paiement fournie par Stripe.",
+            "Le pseudonyme choisi par chaque joueur au moment de rejoindre la partie. Il n’a pas à être un vrai nom.",
+            "Les messages et les photos envoyés par les joueurs dans le chat pendant la partie.",
+            "Les données de progression : l’étape en cours, les indices utilisés, les réponses tentées, les heures de début et de fin, et la langue de jeu.",
+            "Les données techniques : adresse IP, type de navigateur et d’appareil, et journaux serveur.",
+            "Les statistiques d’utilisation du site et de l’application, si vous acceptez les cookies de mesure d’audience."
+          ]
+        },
+        {
+          "heading": "Pourquoi nous les utilisons et sur quelle base légale",
+          "bullets": [
+            "Pour vous vendre et vous livrer la partie, vous envoyer le code et faire tourner le jeu. Base légale : l’exécution de notre contrat avec vous.",
+            "Pour répondre à vos e-mails et traiter les remboursements. Base légale : notre contrat avec vous et notre intérêt légitime à gérer l’entreprise.",
+            "Pour sécuriser le service, prévenir les abus et corriger les pannes. Base légale : notre intérêt légitime.",
+            "Pour améliorer les parcours et les indices à partir des données de jeu. Base légale : notre intérêt légitime.",
+            "Pour mesurer l’utilisation du site avec PostHog. Base légale : notre intérêt légitime à comprendre et améliorer le service.",
+            "Pour conserver les pièces comptables des ventes. Base légale : nos obligations légales."
+          ]
+        },
+        {
+          "heading": "Le guide automatisé",
+          "body": [
+            "Les messages envoyés dans le chat sont transmis à notre prestataire d’intelligence artificielle, DeepSeek, afin que le guide puisse les comprendre et répondre. N’écrivez pas d’informations personnelles sensibles dans le chat."
+          ]
+        },
+        {
+          "heading": "Avec qui nous partageons ces données",
+          "bullets": [
+            "Stripe, pour le traitement des paiements.",
+            "Resend, pour l’envoi de votre e-mail de confirmation.",
+            "PostHog, pour la mesure d’audience, et uniquement si vous l’acceptez.",
+            "DeepSeek, pour générer les réponses du guide.",
+            "Nos prestataires d’hébergement et d’infrastructure."
+          ],
+          "after": [
+            "Nous ne vendons pas vos données personnelles. Certains de ces prestataires sont situés hors du Royaume-Uni. Dans ce cas, nous nous appuyons sur les décisions d’adéquation britanniques ou sur l’avenant britannique de transfert international de données pour protéger vos informations."
+          ]
+        },
+        {
+          "heading": "Durées de conservation",
+          "bullets": [
+            "Données d’événement, de participants et de chat : 12 mois après la fin, le remboursement ou l’expiration de la partie, puis suppression ou anonymisation.",
+            "Pièces d’achat et de comptabilité : 6 ans, comme l’exige la législation fiscale britannique.",
+            "Correspondance par e-mail : 24 mois.",
+            "Données de mesure d’audience : 12 mois au maximum."
+          ]
+        },
+        {
+          "heading": "Cookies et stockage du navigateur",
+          "body": [
+            "Nous utilisons un petit nombre de cookies strictement nécessaires et de données stockées dans le navigateur pour vous maintenir connecté à votre partie et mémoriser votre choix en matière de cookies. Ils ne nécessitent pas de consentement.",
+            "Nous utilisons également des cookies de mesure d’audience PostHog, déposés lors de votre première visite, pour mesurer l’utilisation du site et de l’application. Vous pouvez les bloquer via les paramètres de confidentialité de votre navigateur ou un bloqueur de contenu, et vous pouvez nous écrire pour demander la suppression des données de mesure vous concernant."
+          ]
+        },
+        {
+          "heading": "Les enfants",
+          "body": [
+            "Nos chasses au trésor sont conçues pour les familles et les enfants peuvent y jouer accompagnés d’un adulte. Les seules données que nous collectons sur un enfant sont le pseudonyme qu’il choisit et les messages qu’il envoie pendant la partie.",
+            "Si vous pensez que nous détenons des données concernant un enfant qui devraient être supprimées, écrivez-nous et nous les effacerons."
+          ]
+        },
+        {
+          "heading": "Vos droits",
+          "body": [
+            "La législation britannique sur la protection des données vous donne le droit :"
+          ],
+          "bullets": [
+            "de demander une copie des données que nous détenons sur vous",
+            "de faire rectifier des données inexactes",
+            "de nous demander d’effacer les données dont nous n’avons plus besoin",
+            "de limiter notre utilisation de vos données ou de vous y opposer",
+            "de recevoir vos données dans un format portable",
+            "de vous opposer à tout moment à l’utilisation de vos données à des fins de mesure d’audience"
+          ],
+          "after": [
+            "Écrivez-nous pour exercer l’un de ces droits : nous répondons sous un mois. Si notre réponse ne vous satisfait pas, vous pouvez saisir l’autorité britannique de protection des données sur ico.org.uk."
+          ]
+        },
+        {
+          "heading": "Sécurité et évolution de cette notice",
+          "body": [
+            "Nous utilisons des connexions chiffrées, limitons l’accès aux données que nous détenons et travaillons avec des prestataires établis. Aucun système n’est totalement sûr, mais nous prenons des mesures raisonnables pour protéger vos données.",
+            "Nous pouvons mettre à jour cette notice. Les modifications sont publiées sur cette page avec une nouvelle date en haut."
+          ]
+        }
+      ]
+    },
+    "refunds": {
+      "title": "Politique de remboursement",
+      "intro": "Nous voulons que vous passiez un bon moment. Si ce n’est pas le cas, nous vous remboursons. Cette page explique précisément comment cela fonctionne.",
+      "sections": [
+        {
+          "heading": "Notre engagement",
+          "body": [
+            "Si votre chasse au trésor City Roam ne vous a pas satisfait, nous vous remboursons intégralement. Sans poser de questions.",
+            "Cela vaut que vous n’ayez jamais trouvé le temps de jouer, que quelque chose se soit mal passé le jour même, ou que vous n’ayez tout simplement pas aimé."
+          ]
+        },
+        {
+          "heading": "Avant de commencer",
+          "body": [
+            "Si vous n’avez pas commencé votre partie, vous pouvez demander un remboursement intégral à tout moment tant que votre code est valable. Nous vous remboursons la totalité du montant payé."
+          ]
+        },
+        {
+          "heading": "Après avoir joué",
+          "body": [
+            "Si vous avez commencé ou terminé une partie et que vous n’avez pas été satisfait, écrivez-nous dans les 14 jours suivant la partie et nous vous rembourserons intégralement.",
+            "Nous dire ce qui n’a pas fonctionné nous aide, mais vous n’y êtes pas tenu."
+          ]
+        },
+        {
+          "heading": "Votre droit légal de rétractation",
+          "body": [
+            "Vous disposez également d’un droit légal de rétractation de 14 jours à compter de l’achat, au titre de la réglementation britannique de 2013 sur les contrats de consommation. Le code d’événement étant fourni immédiatement, vous acceptez lors du paiement que l’exécution commence aussitôt, ce qui peut mettre fin à ce droit une fois la partie lancée.",
+            "Notre engagement ci-dessus est volontairement plus généreux : en pratique, vous êtes couvert dans les deux cas. Cette politique ne porte pas atteinte à vos autres droits légaux."
+          ]
+        },
+        {
+          "heading": "Comment demander un remboursement",
+          "body": [
+            "Écrivez à hello@cityroam.co.uk depuis l’adresse utilisée pour l’achat, en indiquant votre code d’événement."
+          ],
+          "bullets": [
+            "Nous répondons sous 2 jours ouvrés.",
+            "Les remboursements portent toujours sur la totalité du montant. Nous ne faisons pas de remboursement partiel.",
+            "L’argent est renvoyé sur la carte ou le moyen de paiement utilisé, via Stripe.",
+            "Il arrive généralement sur votre compte sous 5 à 10 jours ouvrés, selon votre banque."
+          ]
+        },
+        {
+          "heading": "Ce qu’il advient de votre partie",
+          "body": [
+            "Lorsque nous remboursons un achat, le code d’événement cesse immédiatement de fonctionner et les joueurs encore connectés sont déconnectés. Si votre groupe est en pleine partie, assurez-vous que tout le monde a terminé avant de demander le remboursement."
+          ]
+        },
+        {
+          "heading": "Codes expirés sans avoir servi",
+          "body": [
+            "Les codes d’événement sont valables 90 jours. Si le vôtre a expiré avant que vous ayez pu l’utiliser, écrivez-nous dans les 30 jours suivant la date d’expiration : nous vous enverrons un nouveau code ou nous vous rembourserons, à votre choix."
+          ]
+        },
+        {
+          "heading": "Si nous ne pouvons pas assurer le service",
+          "body": [
+            "Si une partie ne peut pas avoir lieu en raison d’un problème de notre côté, ou parce qu’un parcours est indisponible, nous vous proposons un nouveau code ou un remboursement intégral. Le choix vous appartient."
+          ]
+        },
+        {
+          "heading": "Réclamations",
+          "body": [
+            "Si notre traitement d’un remboursement ne vous satisfait pas, écrivez-nous en indiquant « Réclamation » en objet. Nous réexaminerons le dossier et vous répondrons sous 5 jours ouvrés."
+          ]
+        }
+      ]
     }
   }
 }

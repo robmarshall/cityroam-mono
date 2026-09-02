@@ -1,0 +1,2 @@
+ALTER TABLE "message_banks" DROP CONSTRAINT "message_banks_type_check";--> statement-breakpoint
+ALTER TABLE "message_banks" ADD CONSTRAINT "message_banks_type_check" CHECK ("message_banks"."type" IN ('success', 'failure', 'hint-exhausted', 'hint-offer', 'hint-decline', 'clarification', 'unknown-answer', 'completion', 'over-length', 'guide-degraded', 'guide-busy'));

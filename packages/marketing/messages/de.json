@@ -1,5 +1,8 @@
 {
   "metadata": {
+    "og": {
+      "tagline": "KI-gef\u00fchrte Schnitzeljagden in Leeds"
+    },
     "home": {
       "title": "City Roam — KI-geführte Schnitzeljagden in Leeds",
       "description": "Erkunde Leeds bei einer KI-gestützten Schnitzeljagd. Löse Rätsel, entdecke versteckte Ecken und hab Spaß mit Freunden — alles per KI auf deinem Handy.",
@@ -573,6 +576,324 @@
       "whatsNext": "Wie geht's weiter?",
       "whatsNextDescription": "Teile diesen Link mit deiner Gruppe. Alle öffnen ihn, geben ihren Namen ein, und die Person, die vorangeht, startet das Spiel, sobald alle bereit sind.",
       "refundNote": "Nicht zufrieden? Volle Rückerstattung — ohne Nachfragen."
+    }
+  },
+  "legal": {
+    "lastUpdated": "Zuletzt aktualisiert: 2. September 2026",
+    "backHome": "Zurück zur Startseite",
+    "footer": {
+      "navLabel": "Rechtliches",
+      "terms": "AGB",
+      "privacy": "Datenschutz",
+      "refunds": "Erstattungen"
+    },
+    "meta": {
+      "terms": {
+        "title": "Allgemeine Geschäftsbedingungen — City Roam",
+        "description": "Die Bedingungen, die gelten, wenn Sie eine selbstgeführte Schnitzeljagd von City Roam kaufen oder spielen."
+      },
+      "privacy": {
+        "title": "Datenschutzerklärung — City Roam",
+        "description": "Welche personenbezogenen Daten City Roam beim Kauf und beim Spielen erhebt, wofür wir sie nutzen und welche Rechte Sie haben."
+      },
+      "refunds": {
+        "title": "Erstattungsrichtlinie — City Roam",
+        "description": "So funktionieren Erstattungen bei City Roam: volle Rückerstattung, wenn Sie nicht zufrieden sind, und wie Sie sie beantragen."
+      }
+    },
+    "terms": {
+      "title": "Allgemeine Geschäftsbedingungen",
+      "intro": "Diese Bedingungen gelten, wenn Sie eine Schnitzeljagd von City Roam kaufen oder als Mitspielerin oder Mitspieler daran teilnehmen. Bitte lesen Sie sie vor dem Kauf.",
+      "sections": [
+        {
+          "heading": "Wer wir sind",
+          "body": [
+            "City Roam verkauft selbstgeführte Schnitzeljagden, die Sie mit dem Handy in einer echten Stadt spielen, begleitet von einem KI-Chatbot als Guide. Wir sind im Vereinigten Königreich ansässig, unsere Website ist cityroam.co.uk."
+          ],
+          "bullets": [
+            "Handelsname: City Roam",
+            "Firmenname und eingetragene Anschrift: [vor dem Start ergänzen]",
+            "E-Mail: hello@cityroam.co.uk"
+          ]
+        },
+        {
+          "heading": "Was Sie kaufen",
+          "body": [
+            "Mit dem Kauf erhalten Sie einen Event-Code. Dieser Code ist eine Lizenz für eine Gruppe, eine Schnitzeljagd einmal zu spielen.",
+            "Mit einem Code können bis zu 10 Personen spielen. Alle nehmen mit dem eigenen Handy teil, eine Person leitet die Gruppe.",
+            "Der Code gehört Ihrer Gruppe. Sie dürfen ihn nicht weiterverkaufen, veröffentlichen oder gegen Entgelt an Dritte weitergeben."
+          ]
+        },
+        {
+          "heading": "Wie lange Ihr Code gültig ist",
+          "body": [
+            "Ihr Event-Code ist ab dem Kauf 90 Tage lang gültig. Innerhalb dieses Zeitraums können Sie jederzeit starten.",
+            "Nach 90 Tagen verfällt der Code automatisch und lässt sich nicht mehr zum Starten verwenden. Sollte Ihr Code ablaufen, bevor Sie ihn nutzen konnten, schreiben Sie uns: Wir stellen einen neuen aus oder erstatten den Kaufpreis.",
+            "Nach dem Abschluss einer Schnitzeljagd kann der Code nicht erneut verwendet werden."
+          ]
+        },
+        {
+          "heading": "Der Ablauf",
+          "body": [
+            "Eine Schnitzeljagd findet draußen und zu Fuß in einer echten Stadt statt. Sie brauchen ein Handy mit funktionierender Datenverbindung und genügend Akku für die gesamte Runde.",
+            "Sie entscheiden, wann Sie starten und wie schnell Sie vorangehen. Sie können eine Pause machen und später weiterspielen."
+          ]
+        },
+        {
+          "heading": "Für Ihre Sicherheit sind Sie selbst verantwortlich",
+          "body": [
+            "City Roam ist ein Spiel im öffentlichen Raum. Sie sind für Ihre eigene Sicherheit und für alle in Ihrer Gruppe verantwortlich. Bitte achten Sie besonders auf Folgendes."
+          ],
+          "bullets": [
+            "Achten Sie auf den Verkehr und auf Ihre Umgebung. Schauen Sie beim Überqueren einer Straße nicht aufs Handy.",
+            "Halten Sie sich an die Verkehrsregeln, die Beschilderung und die örtlichen Vorschriften.",
+            "Kinder müssen jederzeit von einer verantwortlichen erwachsenen Person beaufsichtigt werden. Wer die Schnitzeljagd kauft oder die Gruppe leitet, ist für Minderjährige in der Gruppe verantwortlich.",
+            "Bleiben Sie auf öffentlichen Wegen und an öffentlich zugänglichen Orten. Betreten Sie niemals Privatgrundstücke oder Sperrbereiche, um eine Antwort zu finden.",
+            "Prüfen Sie das Wetter, tragen Sie passende Schuhe und nehmen Sie Wasser mit.",
+            "Brechen Sie ab, wenn die Bedingungen unsicher werden, wenn jemandem unwohl ist oder wenn Sie aufgefordert werden, einen Ort zu verlassen."
+          ]
+        },
+        {
+          "heading": "Der KI-Guide",
+          "body": [
+            "Ihre Schnitzeljagd wird von einem automatisierten Chatbot begleitet. Er kann Fehler machen und weiß nicht, was um Sie herum passiert.",
+            "Betrachten Sie seine Hinweise, Wegbeschreibungen und Fakten als Teil eines Spiels und nicht als verlässliche Navigations- oder Sicherheitsauskunft. Verlassen Sie sich auf Ihr eigenes Urteil und nutzen Sie eine richtige Karten-App, wenn Sie den Weg suchen.",
+            "Orte verändern sich. Ein Wahrzeichen kann eingerüstet, ein Geschäft geschlossen oder ein Bereich abgesperrt sein. Sagen Sie uns Bescheid, wenn ein Hinweis nicht mehr passt, dann korrigieren wir die Route."
+          ]
+        },
+        {
+          "heading": "Der Chat",
+          "body": [
+            "Den Chat im Spiel sehen alle in Ihrer Gruppe. Bitte bleiben Sie höflich."
+          ],
+          "bullets": [
+            "Senden Sie keine beleidigenden, bedrohlichen, hasserfüllten oder sexuellen Inhalte.",
+            "Senden Sie nichts Rechtswidriges und nichts, was die Rechte anderer verletzt.",
+            "Teilen Sie keine personenbezogenen Daten anderer Personen.",
+            "Versuchen Sie nicht, das Spiel oder den Guide zu manipulieren, auszuforschen oder zu missbrauchen."
+          ],
+          "after": [
+            "Wir können eine Schnitzeljagd ohne Erstattung beenden, wenn der Chat genutzt wird, um andere Mitspielende oder unser Team anzugreifen."
+          ]
+        },
+        {
+          "heading": "Unsere Inhalte",
+          "body": [
+            "Die Routen, Rätsel, Hinweise, Texte, Grafiken und die Software von City Roam gehören uns oder unseren Lizenzgebern. Sie dürfen sie nutzen, um die von Ihnen gekaufte Schnitzeljagd zu spielen, und sonst zu nichts.",
+            "Bitte kopieren, veröffentlichen oder verkaufen Sie unsere Routeninhalte nicht weiter, auch nicht in Form einer vollständigen Lösungsliste im Internet."
+          ]
+        },
+        {
+          "heading": "Wenn etwas schiefgeht",
+          "body": [
+            "Wir möchten, dass jede Schnitzeljagd funktioniert. Wenn der Dienst ausfällt, Sie nicht starten können oder Sie schlicht nicht zufrieden sind, melden Sie sich: Wir bringen das in Ordnung. Was Sie erwarten können, steht in unserer Erstattungsrichtlinie.",
+            "Wir können nicht zusichern, dass der Dienst immer verfügbar oder fehlerfrei ist. Das hängt von Ihrem Gerät, Ihrem Netz und von Diensten Dritter ab, die wir nicht kontrollieren."
+          ]
+        },
+        {
+          "heading": "Unsere Haftung",
+          "body": [
+            "Nichts in diesen Bedingungen beschränkt unsere Haftung für Tod oder Körperverletzung infolge unserer Fahrlässigkeit, für Betrug oder für sonstige Fälle, in denen eine Beschränkung nach britischem Recht unzulässig ist.",
+            "Im Übrigen ist unsere Gesamthaftung im Zusammenhang mit einer Schnitzeljagd auf den dafür gezahlten Betrag begrenzt.",
+            "Wir haften nicht für Schäden, die beim Kauf nicht vernünftigerweise vorhersehbar waren, nicht für entgangenen Gewinn oder Betriebsausfall und nicht für Schäden, die auf Ihren eigenen Entscheidungen während des Spiels, auf dem Verhalten anderer Gruppenmitglieder oder Dritter oder auf dem Zustand der besuchten Straßen und Orte beruhen.",
+            "Wir verkaufen an Verbraucherinnen und Verbraucher. Bei einem Kauf zu gewerblichen Zwecken gelten die verbraucherschützenden Regelungen dieser Bedingungen nicht."
+          ]
+        },
+        {
+          "heading": "Widerruf und Erstattung",
+          "body": [
+            "Nach den britischen Consumer Contracts Regulations 2013 steht Ihnen ein gesetzliches Widerrufsrecht von 14 Tagen zu. Da der Event-Code sofort bereitgestellt wird, stimmen Sie beim Bezahlen dem sofortigen Beginn der Leistung zu.",
+            "Unsere Erstattungsrichtlinie geht bewusst über das gesetzliche Minimum hinaus. Einzelheiten und den Weg zum Antrag finden Sie auf der Erstattungsseite."
+          ]
+        },
+        {
+          "heading": "Änderungen dieser Bedingungen",
+          "body": [
+            "Wir können diese Bedingungen ändern. Für Ihren Kauf gilt die Fassung, die am Tag des Kaufs veröffentlicht war. Änderungen erscheinen auf dieser Seite mit einem neuen Datum oben."
+          ]
+        },
+        {
+          "heading": "Recht und Streitigkeiten",
+          "body": [
+            "Diese Bedingungen unterliegen dem Recht von England und Wales; zuständig sind die Gerichte von England und Wales. Wenn Sie in Schottland oder Nordirland wohnen, können Sie auch die Gerichte an Ihrem Wohnort anrufen.",
+            "Wenn Sie mit der Bearbeitung einer Beschwerde nicht zufrieden sind, schreiben Sie uns bitte zuerst. Wir versuchen, eine Lösung zu finden."
+          ]
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Datenschutzerklärung",
+      "intro": "Diese Erklärung beschreibt, was wir mit personenbezogenen Daten tun, wenn Sie eine Schnitzeljagd von City Roam kaufen oder spielen. Wir sind für diese Daten verantwortlich.",
+      "sections": [
+        {
+          "heading": "Wer wir sind und wie Sie uns erreichen",
+          "body": [
+            "City Roam ist verantwortlich für die hier beschriebenen personenbezogenen Daten. Bei Fragen zu dieser Erklärung oder zur Ausübung eines Rechts schreiben Sie uns."
+          ],
+          "bullets": [
+            "Firmenname und eingetragene Anschrift: [vor dem Start ergänzen]",
+            "E-Mail: hello@cityroam.co.uk"
+          ]
+        },
+        {
+          "heading": "Welche Daten wir erheben",
+          "bullets": [
+            "Ihre E-Mail-Adresse beim Kauf, damit wir Ihnen Beleg und Event-Code senden können.",
+            "Zahlungsdaten, die vollständig von Stripe verarbeitet werden. Wir sehen und speichern keine Kartendaten. Wir bewahren die Zahlungsreferenz von Stripe auf.",
+            "Den Anzeigenamen, den jede Person beim Beitritt wählt. Er muss kein echter Name sein.",
+            "Die Nachrichten und Fotos, die im Spielchat gesendet werden.",
+            "Fortschrittsdaten: aktuelle Station, genutzte Hinweise, versuchte Antworten, Start- und Endzeit sowie die Spielsprache.",
+            "Technische Daten: IP-Adresse, Browser- und Gerätetyp sowie Serverprotokolle.",
+            "Nutzungsstatistiken zu Website und App, sofern Sie Analyse-Cookies akzeptieren."
+          ]
+        },
+        {
+          "heading": "Wozu wir sie nutzen und auf welcher Rechtsgrundlage",
+          "bullets": [
+            "Um Ihnen die Schnitzeljagd zu verkaufen und bereitzustellen, den Code zu senden und das Spiel zu betreiben. Rechtsgrundlage: Erfüllung unseres Vertrags mit Ihnen.",
+            "Um Ihre E-Mails zu beantworten und Erstattungen zu bearbeiten. Rechtsgrundlage: unser Vertrag mit Ihnen und unser berechtigtes Interesse am Betrieb des Unternehmens.",
+            "Um den Dienst sicher zu halten, Missbrauch zu verhindern und Fehler zu beheben. Rechtsgrundlage: unser berechtigtes Interesse.",
+            "Um Routen und Rätsel anhand von Spieldaten zu verbessern. Rechtsgrundlage: unser berechtigtes Interesse.",
+            "Um die Nutzung der Website mit PostHog zu messen. Rechtsgrundlage: unser berechtigtes Interesse daran, den Dienst zu verstehen und zu verbessern.",
+            "Um Buchhaltungsunterlagen zu Verkäufen aufzubewahren. Rechtsgrundlage: unsere gesetzlichen Pflichten."
+          ]
+        },
+        {
+          "heading": "Der KI-Guide",
+          "body": [
+            "Nachrichten aus dem Spielchat werden an unseren KI-Anbieter DeepSeek übermittelt, damit der Guide sie verstehen und antworten kann. Bitte geben Sie keine sensiblen persönlichen Informationen in den Chat ein."
+          ]
+        },
+        {
+          "heading": "An wen wir Daten weitergeben",
+          "bullets": [
+            "Stripe für die Zahlungsabwicklung.",
+            "Resend für den Versand Ihrer Bestätigungs-E-Mail.",
+            "PostHog für Produktanalysen, und nur wenn Sie Analyse-Cookies akzeptieren.",
+            "DeepSeek für die Antworten des Guides.",
+            "Unsere Hosting- und Infrastrukturanbieter."
+          ],
+          "after": [
+            "Wir verkaufen Ihre personenbezogenen Daten nicht. Einige dieser Anbieter sitzen außerhalb des Vereinigten Königreichs. In diesen Fällen stützen wir uns auf britische Angemessenheitsbeschlüsse oder auf das britische International Data Transfer Addendum."
+          ]
+        },
+        {
+          "heading": "Wie lange wir Daten aufbewahren",
+          "bullets": [
+            "Event-, Teilnehmer- und Chatdaten: 12 Monate nach Abschluss, Erstattung oder Ablauf der Schnitzeljagd, danach Löschung oder Anonymisierung.",
+            "Kauf- und Buchhaltungsunterlagen: 6 Jahre, wie es das britische Steuerrecht verlangt.",
+            "E-Mail-Korrespondenz: 24 Monate.",
+            "Analysedaten: höchstens 12 Monate."
+          ]
+        },
+        {
+          "heading": "Cookies und Browser-Speicher",
+          "body": [
+            "Wir verwenden einige unbedingt erforderliche Cookies und Browser-Speicher, um Sie mit Ihrer Schnitzeljagd verbunden zu halten und Ihre Cookie-Auswahl zu merken. Dafür ist keine Einwilligung nötig.",
+            "Außerdem setzen wir beim ersten Besuch Analyse-Cookies von PostHog, um zu messen, wie Website und App genutzt werden. Sie können sie über die Datenschutzeinstellungen Ihres Browsers oder einen Content-Blocker unterbinden, und Sie können uns schreiben, damit wir die über Sie gespeicherten Analysedaten löschen."
+          ]
+        },
+        {
+          "heading": "Kinder",
+          "body": [
+            "Unsere Schnitzeljagden sind für Familien gemacht, und Kinder können gemeinsam mit einem Erwachsenen mitspielen. Die einzigen Daten, die wir zu einem Kind erheben, sind der gewählte Anzeigename und die Nachrichten, die es während des Spiels sendet.",
+            "Wenn Sie glauben, dass wir Daten eines Kindes gespeichert haben, die gelöscht werden sollten, schreiben Sie uns. Wir löschen sie."
+          ]
+        },
+        {
+          "heading": "Ihre Rechte",
+          "body": [
+            "Nach britischem Datenschutzrecht haben Sie das Recht,"
+          ],
+          "bullets": [
+            "eine Kopie der Daten anzufordern, die wir über Sie speichern",
+            "unrichtige Daten berichtigen zu lassen",
+            "die Löschung nicht mehr benötigter Daten zu verlangen",
+            "die Verarbeitung einzuschränken oder ihr zu widersprechen",
+            "Ihre Daten in einem übertragbaren Format zu erhalten",
+            "der Nutzung Ihrer Daten zu Analysezwecken jederzeit zu widersprechen"
+          ],
+          "after": [
+            "Schreiben Sie uns, um eines dieser Rechte auszuüben; wir antworten innerhalb eines Monats. Sind Sie mit unserer Antwort nicht zufrieden, können Sie sich bei der britischen Datenschutzbehörde unter ico.org.uk beschweren."
+          ]
+        },
+        {
+          "heading": "Sicherheit und Änderungen dieser Erklärung",
+          "body": [
+            "Wir nutzen verschlüsselte Verbindungen, beschränken den Zugriff auf gespeicherte Daten und arbeiten mit etablierten Anbietern. Kein System ist völlig sicher, aber wir treffen angemessene Maßnahmen zum Schutz Ihrer Daten.",
+            "Wir können diese Erklärung aktualisieren. Änderungen erscheinen auf dieser Seite mit einem neuen Datum oben."
+          ]
+        }
+      ]
+    },
+    "refunds": {
+      "title": "Erstattungsrichtlinie",
+      "intro": "Wir möchten, dass Ihnen Ihre Schnitzeljagd gefällt. Wenn nicht, erstatten wir Ihnen den Kaufpreis. Diese Seite erklärt genau, wie das abläuft.",
+      "sections": [
+        {
+          "heading": "Unser Versprechen",
+          "body": [
+            "Wenn Sie mit Ihrer City-Roam-Schnitzeljagd nicht zufrieden sind, erstatten wir Ihnen den vollen Betrag. Ohne Nachfragen.",
+            "Das gilt, wenn Sie nie zum Spielen gekommen sind, wenn am Tag selbst etwas schiefgegangen ist oder wenn es Ihnen einfach nicht gefallen hat."
+          ]
+        },
+        {
+          "heading": "Vor dem Start",
+          "body": [
+            "Wenn Sie noch nicht gestartet sind, können Sie jederzeit während der Gültigkeit Ihres Codes die volle Erstattung verlangen. Wir erstatten den gesamten gezahlten Betrag."
+          ]
+        },
+        {
+          "heading": "Nach dem Spielen",
+          "body": [
+            "Wenn Sie eine Schnitzeljagd begonnen oder beendet haben und nicht zufrieden waren, melden Sie sich innerhalb von 14 Tagen nach dem Spiel. Wir erstatten Ihnen den vollen Betrag.",
+            "Es hilft uns, wenn Sie uns sagen, was nicht gepasst hat, aber Sie müssen es nicht."
+          ]
+        },
+        {
+          "heading": "Ihr gesetzliches Widerrufsrecht",
+          "body": [
+            "Zusätzlich haben Sie nach den britischen Consumer Contracts Regulations 2013 ein gesetzliches Widerrufsrecht von 14 Tagen ab Kauf. Da der Event-Code sofort bereitgestellt wird, stimmen Sie beim Bezahlen dem sofortigen Leistungsbeginn zu, wodurch dieses Recht mit dem Start der Schnitzeljagd enden kann.",
+            "Unser Versprechen oben ist bewusst großzügiger, sodass Sie in der Praxis in beiden Fällen abgesichert sind. Ihre übrigen gesetzlichen Rechte bleiben unberührt."
+          ]
+        },
+        {
+          "heading": "So beantragen Sie eine Erstattung",
+          "body": [
+            "Schreiben Sie an hello@cityroam.co.uk von der Adresse aus, mit der Sie gekauft haben, und nennen Sie Ihren Event-Code."
+          ],
+          "bullets": [
+            "Wir antworten innerhalb von 2 Werktagen.",
+            "Erstattungen erfolgen immer in voller Höhe. Teilerstattungen gibt es nicht.",
+            "Das Geld geht über Stripe zurück auf die Karte oder das Zahlungsmittel, mit dem Sie bezahlt haben.",
+            "Je nach Bank ist es üblicherweise innerhalb von 5 bis 10 Werktagen auf Ihrem Konto."
+          ]
+        },
+        {
+          "heading": "Was mit Ihrer Schnitzeljagd passiert",
+          "body": [
+            "Wenn wir einen Kauf erstatten, funktioniert der Event-Code sofort nicht mehr und alle, die noch spielen, werden abgemeldet. Wenn Ihre Gruppe mitten im Spiel ist, warten Sie mit dem Antrag, bis alle fertig sind."
+          ]
+        },
+        {
+          "heading": "Ungenutzt abgelaufene Codes",
+          "body": [
+            "Event-Codes sind 90 Tage gültig. Ist Ihrer abgelaufen, bevor Sie ihn nutzen konnten, schreiben Sie uns innerhalb von 30 Tagen nach Ablauf. Sie erhalten wahlweise einen neuen Code oder Ihr Geld zurück."
+          ]
+        },
+        {
+          "heading": "Wenn wir nicht liefern können",
+          "body": [
+            "Lässt sich eine Schnitzeljagd wegen eines Fehlers auf unserer Seite oder wegen einer nicht verfügbaren Route nicht durchführen, bieten wir Ihnen einen neuen Code oder die volle Erstattung an. Sie entscheiden."
+          ]
+        },
+        {
+          "heading": "Beschwerden",
+          "body": [
+            "Wenn Sie mit der Bearbeitung einer Erstattung nicht zufrieden sind, schreiben Sie uns mit dem Betreff „Beschwerde“. Wir sehen uns den Fall erneut an und antworten innerhalb von 5 Werktagen."
+          ]
+        }
+      ]
     }
   }
 }

@@ -570,7 +570,7 @@ Authorization: Bearer <token>
 }
 ```
 
-Valid types: `success`, `failure`, `hint-exhausted`, `hint-offer`, `hint-decline`, `clarification`, `unknown-answer`, `completion`, `over-length`
+Valid types: `success`, `failure`, `hint-exhausted`, `hint-offer`, `hint-decline`, `clarification`, `unknown-answer`, `completion`, `over-length`, `guide-degraded`, `guide-busy`
 
 > Message banks are filtered by language at runtime so the AI guide uses messages matching the route's language.
 

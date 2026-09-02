@@ -166,7 +166,7 @@ describe("GET /event/:code", () => {
     app = buildApp();
   });
 
-  it("returns event details (200) for valid code", async () => {
+  it("returns event status but withholds the roster from a caller with no session", async () => {
     const event = mockEvent({ code: "abcd2345", status: "NOT_STARTED" });
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
 
@@ -182,11 +182,35 @@ describe("GET /event/:code", () => {
     expect(res.status).toBe(200);
 
     const body = await res.json();
+    // The join page needs the status and languages before anyone has a session
     expect(body.event.code).toBe("abcd2345");
     expect(body.event.status).toBe("NOT_STARTED");
-    expect(body.participants).toHaveLength(2);
-    expect(body.lead_name).toBe("Alice");
     expect(body.current_participant).toBeNull();
+    // ...but knowing the event code must not enumerate the players
+    expect(body.participants).toHaveLength(0);
+    expect(body.lead_name).toBeNull();
+  });
+
+  it("returns the roster to a participant of the event", async () => {
+    const event = mockEvent({ code: "abcd2345", status: "WAITING" });
+    mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
+
+    vi.mocked(getSessionFromRedis).mockResolvedValueOnce(makeSessionData() as any);
+    mockSessionParticipant();
+
+    mockedDb.where.mockResolvedValueOnce([
+      { id: "p-id", display_name: "Lead", is_lead: true, is_active: true },
+      { id: "p2", display_name: "Bob", is_lead: false, is_active: true },
+    ]);
+
+    const res = await app.request("/event/abcd2345", {
+      headers: { Cookie: "cityroam_session=fake-token" },
+    });
+    expect(res.status).toBe(200);
+
+    const body = await res.json();
+    expect(body.participants).toHaveLength(2);
+    expect(body.lead_name).toBe("Lead");
   });
 
   it("returns 404 for missing event", async () => {
@@ -704,6 +728,8 @@ describe("GET /event/:code/messages", () => {
 
   it("returns messages in order (200)", async () => {
     const event = mockEvent({ id: "e-id", code: "abcd2345" });
+    vi.mocked(getSessionFromRedis).mockResolvedValueOnce(makeSessionData() as any);
+    mockSessionParticipant();
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
 
     const cachedMessages = [
@@ -730,7 +756,9 @@ describe("GET /event/:code/messages", () => {
     ];
     vi.mocked(getMessages).mockResolvedValueOnce(cachedMessages as any);
 
-    const res = await app.request("/event/abcd2345/messages");
+    const res = await app.request("/event/abcd2345/messages", {
+      headers: { Cookie: "cityroam_session=fake-token" },
+    });
     expect(res.status).toBe(200);
 
     const body = await res.json();
@@ -741,6 +769,8 @@ describe("GET /event/:code/messages", () => {
 
   it("respects 'since' filter", async () => {
     const event = mockEvent({ id: "e-id", code: "abcd2345" });
+    vi.mocked(getSessionFromRedis).mockResolvedValueOnce(makeSessionData() as any);
+    mockSessionParticipant();
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
 
     const sinceMessages = [
@@ -757,7 +787,9 @@ describe("GET /event/:code/messages", () => {
     ];
     vi.mocked(getMessagesSince).mockResolvedValueOnce(sinceMessages as any);
 
-    const res = await app.request("/event/abcd2345/messages?since=2026-01-01T00:02:00.000Z");
+    const res = await app.request("/event/abcd2345/messages?since=2026-01-01T00:02:00.000Z", {
+      headers: { Cookie: "cityroam_session=fake-token" },
+    });
     expect(res.status).toBe(200);
 
     const body = await res.json();
@@ -770,6 +802,8 @@ describe("GET /event/:code/messages", () => {
 
   it("absolutizes bare S3 keys stored before uploads returned full URLs", async () => {
     const event = mockEvent({ id: "e-id", code: "abcd2345" });
+    vi.mocked(getSessionFromRedis).mockResolvedValueOnce(makeSessionData() as any);
+    mockSessionParticipant();
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
 
     // Empty cache forces the DB fallback, which is the path legacy rows take.
@@ -800,7 +834,9 @@ describe("GET /event/:code/messages", () => {
       },
     ]);
 
-    const res = await app.request("/event/abcd2345/messages");
+    const res = await app.request("/event/abcd2345/messages", {
+      headers: { Cookie: "cityroam_session=fake-token" },
+    });
     expect(res.status).toBe(200);
 
     const body = await res.json();
@@ -874,7 +910,6 @@ describe("rejoin after inactivity", () => {
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
 
     mockedDb.query.participants.findFirst
-      .mockResolvedValueOnce({ id: "other-lead" }) // an active lead still exists
       .mockResolvedValueOnce(
         mockParticipant({
           id: "p1",
@@ -883,7 +918,8 @@ describe("rejoin after inactivity", () => {
           is_active: false,
           display_name: "Swept",
         }),
-      );
+      ) // the cookie's row, resolved first
+      .mockResolvedValueOnce({ id: "other-lead" }); // an active lead still exists
 
     mockedDb.where
       .mockResolvedValueOnce([{ count: 1 }]) // active count
@@ -932,7 +968,6 @@ describe("rejoin after inactivity", () => {
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
 
     mockedDb.query.participants.findFirst
-      .mockResolvedValueOnce(undefined) // no active lead
       .mockResolvedValueOnce(
         mockParticipant({
           id: "p1",
@@ -941,7 +976,8 @@ describe("rejoin after inactivity", () => {
           is_active: false,
           is_lead: false,
         }),
-      );
+      ) // the cookie's row, resolved first
+      .mockResolvedValueOnce(undefined); // no active lead
 
     mockedDb.where
       .mockResolvedValueOnce([{ count: 0 }]) // active count
@@ -977,7 +1013,9 @@ describe("rejoin after inactivity", () => {
     expect(mockedDb.set).toHaveBeenCalledWith(
       expect.objectContaining({ is_lead: true }),
     );
-    expect(mockedDb.set).toHaveBeenCalledWith({ lead_participant_id: "p1" });
+    expect(mockedDb.set).toHaveBeenCalledWith(
+      expect.objectContaining({ lead_participant_id: "p1" }),
+    );
   });
 
   it("keeps an in-progress event IN_PROGRESS when a rejoiner claims the lead", async () => {
@@ -1032,9 +1070,11 @@ describe("GET /event/:code pending_action", () => {
       status: "IN_PROGRESS",
       current_block_id: "action-block-1",
     });
+    vi.mocked(getSessionFromRedis).mockResolvedValueOnce(makeSessionData() as any);
+    mockSessionParticipant();
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
     mockedDb.where.mockResolvedValueOnce([
-      { id: "p1", display_name: "Alice", is_lead: true, is_active: true },
+      { id: "p-id", display_name: "Lead", is_lead: true, is_active: true },
     ]);
     mockedDb.query.routeBlocks.findFirst.mockResolvedValueOnce({
       id: "action-block-1",
@@ -1042,7 +1082,9 @@ describe("GET /event/:code pending_action", () => {
       config: { type: "action", label: "Take a photo of the statue" },
     });
 
-    const res = await app.request("/event/abcd2345");
+    const res = await app.request("/event/abcd2345", {
+      headers: { Cookie: "cityroam_session=fake-token" },
+    });
     expect(res.status).toBe(200);
 
     const body = await res.json();

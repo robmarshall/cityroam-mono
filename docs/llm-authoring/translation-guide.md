@@ -194,6 +194,8 @@ Follow the same recommended counts as for English (see guide-personality.md):
 | unknown-answer | 2 | 3 |
 | over-length | 2 | 3 |
 | completion | 2 | 3 |
+| guide-degraded | 2 | 3 |
+| guide-busy | 2 | 3 |
 
 Message bank entries must maintain the guide's personality in the target language. The same rules apply: brief, dry, no exclamation marks, no emoji. Template variables (`{{ANSWER}}`, `{{TOTAL_STOPS}}`, etc.) stay as-is.
 

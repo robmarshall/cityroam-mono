@@ -1,6 +1,7 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import { eq, and } from "drizzle-orm";
 import postgres from "postgres";
+import { pathToFileURL } from "node:url";
 import { routeFamilies } from "./schema/route-families.js";
 import { routes } from "./schema/routes.js";
 import { routeGroups } from "./schema/route-groups.js";
@@ -1724,7 +1725,7 @@ const nlRoute: RouteData = {
 // All translations indexed by language
 // ---------------------------------------------------------------------------
 
-const routesByLanguage: Record<string, RouteData> = {
+export const routesByLanguage: Record<string, RouteData> = {
   en: enRoute,
   es: esRoute,
   fr: frRoute,
@@ -1750,7 +1751,38 @@ Options:
 `);
 }
 
-async function seedRoute(
+export const DEV_ROUTE_FAMILY = {
+  name: "Leeds City Centre Discovery",
+  city: "Leeds",
+} as const;
+
+/**
+ * Finds the development route family, creating it only if it is missing.
+ * Shared with seed.ts so `npm run seed` and `npm run seed:routes` converge on
+ * one family instead of each making their own.
+ */
+export async function ensureDevRouteFamily(
+  db: ReturnType<typeof drizzle>,
+): Promise<string> {
+  const families = await db
+    .select()
+    .from(routeFamilies)
+    .where(eq(routeFamilies.name, DEV_ROUTE_FAMILY.name));
+
+  if (families.length > 0) {
+    console.log(`Found route family: "${families[0].name}" (${families[0].id})`);
+    return families[0].id;
+  }
+
+  const [family] = await db
+    .insert(routeFamilies)
+    .values({ name: DEV_ROUTE_FAMILY.name, city: DEV_ROUTE_FAMILY.city })
+    .returning();
+  console.log(`Created route family: "${family.name}" (${family.id})`);
+  return family.id;
+}
+
+export async function seedRoute(
   db: ReturnType<typeof drizzle>,
   familyId: string,
   language: string,
@@ -1870,25 +1902,7 @@ async function main(): Promise<void> {
   const db = drizzle(client);
 
   try {
-    // Find the "Leeds City Centre Discovery" route family
-    const families = await db
-      .select()
-      .from(routeFamilies)
-      .where(eq(routeFamilies.name, "Leeds City Centre Discovery"));
-
-    let familyId: string;
-    if (families.length > 0) {
-      familyId = families[0].id;
-      console.log(`Found route family: "${families[0].name}" (${familyId})`);
-    } else {
-      // Create the family if it doesn't exist
-      const [family] = await db
-        .insert(routeFamilies)
-        .values({ name: "Leeds City Centre Discovery", city: "Leeds" })
-        .returning();
-      familyId = family.id;
-      console.log(`Created route family: "${family.name}" (${familyId})`);
-    }
+    const familyId = await ensureDevRouteFamily(db);
 
     console.log(`\nSeeding routes for: ${targetLanguages.join(", ")}`);
     for (const lang of targetLanguages) {
@@ -1901,7 +1915,15 @@ async function main(): Promise<void> {
   }
 }
 
-main().catch((err) => {
-  console.error("Seed failed:", err);
-  process.exit(1);
-});
+// Only run when invoked directly. seed.ts imports the route data and the
+// seeding function from here, and an import must not start a second seed.
+const invokedDirectly =
+  process.argv[1] !== undefined &&
+  import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (invokedDirectly) {
+  main().catch((err) => {
+    console.error("Seed failed:", err);
+    process.exit(1);
+  });
+}

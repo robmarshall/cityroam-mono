@@ -23,7 +23,55 @@ import { WebSocket as WS } from "ws";
 
 type GetConnectionsFn = (eventCode: string) => Map<string, WS> | undefined;
 
+/**
+ * Redis subscription bookkeeping.
+ *
+ * Subscribe and unsubscribe both await a Redis round trip, so they must not be
+ * allowed to interleave: a reconnect landing while an unsubscribe was in
+ * flight used to resubscribe, then have the pending unsubscribe tear the
+ * channels down again while the event still counted as subscribed — no
+ * broadcast reached that hunt again for its lifetime. Every operation for an
+ * event code is therefore appended to a per-code promise chain, and the
+ * subscription is only dropped when the last connection has gone.
+ */
 const subscribedEvents = new Set<string>();
+const refCounts = new Map<string, number>();
+const chains = new Map<string, Promise<void>>();
+
+function enqueue(eventCode: string, op: () => Promise<void>): Promise<void> {
+  const prev = chains.get(eventCode) ?? Promise.resolve();
+  const run = prev.then(op);
+
+  const settled: Promise<void> = run.then(
+    () => undefined,
+    () => undefined,
+  ).then(() => {
+    // Drop the chain once the event is idle so the map doesn't grow forever
+    if (chains.get(eventCode) === settled && !refCounts.has(eventCode)) {
+      chains.delete(eventCode);
+    }
+  });
+
+  chains.set(eventCode, settled);
+  return run;
+}
+
+/** Test seam: current connection refcount for an event. */
+export function subscriptionRefCount(eventCode: string): number {
+  return refCounts.get(eventCode) ?? 0;
+}
+
+/** Test seam: whether the event's Redis channels are currently subscribed. */
+export function isEventSubscribed(eventCode: string): boolean {
+  return subscribedEvents.has(eventCode);
+}
+
+/** Test seam: wipe bookkeeping between tests. */
+export function resetSubscriptionState(): void {
+  subscribedEvents.clear();
+  refCounts.clear();
+  chains.clear();
+}
 
 function broadcast(
   connections: Map<string, WS>,
@@ -44,9 +92,19 @@ export async function subscribeEvent(
   eventCode: string,
   getConnections: GetConnectionsFn,
 ): Promise<void> {
-  if (subscribedEvents.has(eventCode)) return;
-  subscribedEvents.add(eventCode);
+  return enqueue(eventCode, async () => {
+    refCounts.set(eventCode, (refCounts.get(eventCode) ?? 0) + 1);
+    if (subscribedEvents.has(eventCode)) return;
 
+    await subscribeToRedis(eventCode, getConnections);
+    subscribedEvents.add(eventCode);
+  });
+}
+
+async function subscribeToRedis(
+  eventCode: string,
+  getConnections: GetConnectionsFn,
+): Promise<void> {
   await subscribeToEvent(eventCode, {
     onMessage(_code: string, payload: BroadcastMessagePayload) {
       const connections = getConnections(eventCode);
@@ -191,14 +249,41 @@ export async function subscribeEvent(
 }
 
 export async function unsubscribeEvent(eventCode: string): Promise<void> {
-  subscribedEvents.delete(eventCode);
-  await unsubscribeFromEvent(eventCode);
+  return enqueue(eventCode, async () => {
+    const remaining = Math.max(0, (refCounts.get(eventCode) ?? 0) - 1);
+
+    if (remaining > 0) {
+      refCounts.set(eventCode, remaining);
+      return;
+    }
+
+    refCounts.delete(eventCode);
+
+    if (!subscribedEvents.has(eventCode)) return;
+
+    await unsubscribeFromEvent(eventCode);
+
+    // Nothing can have reconnected during the await — a subscribeEvent call is
+    // queued behind this one and will resubscribe after we clear the flag.
+    if ((refCounts.get(eventCode) ?? 0) === 0) {
+      subscribedEvents.delete(eventCode);
+    }
+  });
 }
 
 export async function unsubscribeAll(): Promise<void> {
-  const promises = [...subscribedEvents].map((code) =>
-    unsubscribeFromEvent(code),
+  const codes = [...subscribedEvents];
+  await Promise.all(
+    codes.map((code) =>
+      enqueue(code, async () => {
+        refCounts.delete(code);
+        if (!subscribedEvents.has(code)) return;
+        await unsubscribeFromEvent(code);
+        subscribedEvents.delete(code);
+      }),
+    ),
   );
-  await Promise.all(promises);
   subscribedEvents.clear();
+  refCounts.clear();
+  chains.clear();
 }

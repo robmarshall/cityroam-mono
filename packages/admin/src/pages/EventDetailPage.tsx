@@ -40,7 +40,9 @@ export default function EventDetailPage() {
   const [savingNote, setSavingNote] = useState(false);
   const [noteSaved, setNoteSaved] = useState(false);
   const [noteError, setNoteError] = useState<string | null>(null);
-  const [isEditingRefund, setIsEditingRefund] = useState(false);
+  // True once the user edits the refund form; the poll leaves the form alone
+  // until an explicit Save or Cancel clears it.
+  const [refundDirty, setRefundDirty] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const authFetch = useAuthFetch();
 
@@ -65,19 +67,17 @@ export default function EventDetailPage() {
     fetchEvent();
   }, [fetchEvent]);
 
-  // Sync refund fields when data loads
+  // Sync refund fields from server data, but never on top of unsaved edits.
   useEffect(() => {
-    if (data) {
-      setRefundNote(data.event.refund_note ?? "");
-      setRefundRequested(data.event.refund_requested);
-    }
-  }, [data]);
+    if (!data || refundDirty) return;
+    setRefundNote(data.event.refund_note ?? "");
+    setRefundRequested(data.event.refund_requested);
+  }, [data, refundDirty]);
 
-  // Silent auto-refresh every 5 seconds so new messages appear without manual reload
-  // Pauses when user is editing the refund section to avoid overwriting their changes
+  // Silent auto-refresh every 5 seconds so new messages appear without a manual
+  // reload. It keeps running while the refund form is dirty — the sync effect
+  // above is what protects the unsaved fields.
   useEffect(() => {
-    if (isEditingRefund) return;
-
     const interval = setInterval(async () => {
       try {
         const res = await authFetch(() =>
@@ -94,7 +94,15 @@ export default function EventDetailPage() {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [authFetch, id, isEditingRefund]);
+  }, [authFetch, id]);
+
+  // Warn before a page unload discards unsaved refund edits.
+  useEffect(() => {
+    if (!refundDirty) return;
+    const handler = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [refundDirty]);
 
   const handleCopyPaymentId = async (paymentId: string) => {
     await navigator.clipboard.writeText(paymentId);
@@ -113,6 +121,21 @@ export default function EventDetailPage() {
           refund_note: refundNote,
         }),
       );
+      // Fold the saved values into the loaded data so the sync effect above
+      // does not bounce the form back to the pre-save poll snapshot.
+      setData((prev) =>
+        prev
+          ? {
+              ...prev,
+              event: {
+                ...prev.event,
+                refund_requested: refundRequested,
+                refund_note: refundNote,
+              },
+            }
+          : prev,
+      );
+      setRefundDirty(false);
       setNoteSaved(true);
       setTimeout(() => setNoteSaved(false), 3000);
     } catch (err) {
@@ -122,6 +145,13 @@ export default function EventDetailPage() {
     } finally {
       setSavingNote(false);
     }
+  };
+
+  const handleCancelRefundEdit = () => {
+    setRefundNote(data?.event.refund_note ?? "");
+    setRefundRequested(data?.event.refund_requested ?? false);
+    setRefundDirty(false);
+    setNoteError(null);
   };
 
   const handleRefund = async () => {
@@ -300,7 +330,10 @@ export default function EventDetailPage() {
           <input
             type="checkbox"
             checked={refundRequested}
-            onChange={(e) => setRefundRequested(e.target.checked)}
+            onChange={(e) => {
+              setRefundRequested(e.target.checked);
+              setRefundDirty(true);
+            }}
             className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
           <span className="text-sm font-medium text-gray-700">Refund Requested</span>
@@ -310,9 +343,10 @@ export default function EventDetailPage() {
         </label>
         <textarea
           value={refundNote}
-          onChange={(e) => setRefundNote(e.target.value)}
-          onFocus={() => setIsEditingRefund(true)}
-          onBlur={() => setIsEditingRefund(false)}
+          onChange={(e) => {
+            setRefundNote(e.target.value);
+            setRefundDirty(true);
+          }}
           placeholder="Add notes about the refund..."
           rows={3}
           maxLength={2000}
@@ -326,7 +360,22 @@ export default function EventDetailPage() {
           >
             {savingNote ? "Saving..." : "Save"}
           </button>
-          {noteSaved && (
+          {refundDirty && (
+            <button
+              onClick={handleCancelRefundEdit}
+              disabled={savingNote}
+              className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            >
+              Cancel
+            </button>
+          )}
+          {refundDirty && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500" />
+              Unsaved changes
+            </span>
+          )}
+          {noteSaved && !refundDirty && (
             <span className="text-sm text-green-600">Saved successfully</span>
           )}
           {noteError && (

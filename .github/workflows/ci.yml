@@ -1,0 +1,135 @@
+name: CI
+
+on:
+  push:
+    branches: [main, development]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Typecheck, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      # Frontend builds need their public vars at build time — Vite and Next.js
+      # inline them. These are placeholders; CI only proves the build compiles.
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_URL: https://api.example.com
+          VITE_WS_URL: wss://api.example.com
+          VITE_POSTHOG_KEY: ""
+          VITE_POSTHOG_HOST: ""
+          VITE_REVIEW_LINK: ""
+          NEXT_PUBLIC_API_URL: https://api.example.com
+          NEXT_PUBLIC_SITE_URL: https://example.com
+          NEXT_PUBLIC_POSTHOG_KEY: ""
+
+  docker:
+    name: Docker images
+    runs-on: ubuntu-latest
+    # Slower than `verify` and independent of it, so it runs in parallel rather
+    # than gating the fast feedback.
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build API image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: packages/api/Dockerfile
+          push: false
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
+
+      # Dummy build args only prove the Dockerfile wires them through. Real
+      # values come from the deploy environment — see docker-compose.prod.yml.
+      - name: Build app image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: packages/app/Dockerfile
+          push: false
+          build-args: |
+            VITE_API_URL=https://api.example.com
+            VITE_WS_URL=wss://api.example.com
+          cache-from: type=gha,scope=app
+          cache-to: type=gha,mode=max,scope=app
+
+      - name: Build admin image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: packages/admin/Dockerfile
+          push: false
+          build-args: |
+            VITE_API_URL=https://api.example.com
+          cache-from: type=gha,scope=admin
+          cache-to: type=gha,mode=max,scope=admin
+
+      - name: Build marketing image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: packages/marketing/Dockerfile
+          push: false
+          build-args: |
+            NEXT_PUBLIC_API_URL=https://api.example.com
+            NEXT_PUBLIC_SITE_URL=https://example.com
+          cache-from: type=gha,scope=marketing
+          cache-to: type=gha,mode=max,scope=marketing
+
+  compose:
+    name: Compose config
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Both compose files declare `env_file: .env`, which must exist for
+      # `config` to resolve. On a real deploy Coolify writes it.
+      - name: Create placeholder .env
+        run: touch .env
+
+      # Catches interpolation drift: an unset required var must fail here rather
+      # than deploy an empty Traefik Host() rule that silently 404s.
+      - name: Validate production compose
+        run: docker compose -f docker-compose.prod.yml config --quiet
+        env:
+          DOMAIN: example.com
+          API_DOMAIN: api.example.com
+          ADMIN_DOMAIN: admin.example.com
+          POSTGRES_PASSWORD: ci-placeholder
+          REDIS_PASSWORD: ci-placeholder
+          VITE_API_URL: https://api.example.com
+          VITE_WS_URL: wss://api.example.com
+          NEXT_PUBLIC_API_URL: https://api.example.com
+          NEXT_PUBLIC_SITE_URL: https://example.com
+
+      - name: Validate staging compose
+        run: docker compose -f docker-compose.staging.yml config --quiet
+        env:
+          API_DOMAIN: api-staging.example.com
+          WS_DOMAIN: ws-staging.example.com
+          POSTGRES_PASSWORD: ci-placeholder
+          REDIS_PASSWORD: ci-placeholder

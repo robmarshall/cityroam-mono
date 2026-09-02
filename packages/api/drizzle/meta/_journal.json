@@ -64,6 +64,27 @@
       "when": 1786353753725,
       "tag": "0008_premium_colleen_wing",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1788338620275,
+      "tag": "0009_add_events_stripe_session_unique",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1788339218830,
+      "tag": "0010_add_guide_degraded_busy_bank_types",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1788343063640,
+      "tag": "0011_add_position_uniques_and_email_state",
+      "breakpoints": true
     }
   ]
 }

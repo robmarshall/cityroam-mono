@@ -52,6 +52,13 @@ vi.mock("../services/pipeline/handlers/game-completion.js", () => ({
   handleGameCompletion: vi.fn().mockResolvedValue(undefined),
 }));
 
+// ── Mock the en-route marker ────────────────────────────────────────
+vi.mock("../services/enroute.js", () => ({
+  setEnRoute: vi.fn().mockResolvedValue(undefined),
+  clearEnRoute: vi.fn().mockResolvedValue(undefined),
+  enRouteTtlMs: vi.fn((remaining: number) => remaining + 120_000),
+}));
+
 // ── Mock template-vars ──────────────────────────────────────────────
 vi.mock("../services/template-vars.js", () => ({
   buildRouteTemplateVars: vi.fn().mockResolvedValue({ CITY: "London" }),
@@ -65,6 +72,7 @@ import { writeGuideMessage } from "../services/pipeline/handlers/answer-attempt.
 import { handleGameCompletion } from "../services/pipeline/handlers/game-completion.js";
 import { applyTemplateVars } from "../services/template-vars.js";
 import { runGroup, advanceAfterBlock } from "../services/group-runner.js";
+import { setEnRoute, clearEnRoute } from "../services/enroute.js";
 
 /** Route blocks are scripted content — they never spend the guide cap. */
 const SCRIPTED = { countsTowardCap: false };
@@ -649,5 +657,85 @@ describe("advanceToNextGroup (indirect)", () => {
     expect((db as any).set).not.toHaveBeenCalledWith(
       expect.objectContaining({ current_group_id: expect.any(String) }),
     );
+  });
+});
+
+// =====================================================================
+// The en-route marker
+// =====================================================================
+
+describe("en-route marker", () => {
+  beforeEach(() => {
+    // Each test below queues exactly the orderBy results it consumes, so any
+    // leftovers from an earlier test would be read as the wrong table.
+    (db as any).orderBy.mockReset().mockResolvedValue([]);
+  });
+
+  it("records the walk when the advance is claimed, sized to the delays ahead", async () => {
+    const blocks = [
+      questionBlock("b1", 0),
+      makeBlock("b2", 1, { type: "message", content: "Fun fact" }, 2000),
+      makeBlock("b3", 2, { type: "message", content: "Walk this way" }, 60000),
+    ];
+
+    (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValue({ id: "b1", group_id: "group-1" });
+    (db.query.events.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValue(defaultEvent);
+    (db as any).orderBy
+      .mockResolvedValueOnce(blocks)
+      .mockResolvedValueOnce([makeGroup("group-1", 0)]);
+
+    const promise = advanceAfterBlock("evt-1", "ABC123", "b1");
+    await vi.advanceTimersByTimeAsync(200000);
+    await promise;
+
+    expect(setEnRoute).toHaveBeenCalledWith(
+      "evt-1",
+      { groupId: "group-1", fromBlockId: "b1", stepNumber: 1 },
+      62000 + 120000,
+    );
+  });
+
+  it("does not record a walk when the advance claim was lost", async () => {
+    (db as any).returning.mockReturnValueOnce([]); // compare-and-swap matched nothing
+
+    await advanceAfterBlock("evt-1", "ABC123", "b1");
+
+    expect(setEnRoute).not.toHaveBeenCalled();
+  });
+
+  it("clears the marker as soon as the group parks on a question", async () => {
+    const blocks = [messageBlock("b1", 0), questionBlock("b2", 1)];
+    setupForRunGroup(blocks, [makeGroup("group-1", 0)]);
+
+    const promise = runGroup("evt-1", "ABC123", "group-1");
+    await vi.advanceTimersByTimeAsync(10000);
+    await promise;
+
+    expect(clearEnRoute).toHaveBeenCalledWith("evt-1");
+  });
+
+  it("clears the marker when the group parks on an action block", async () => {
+    const blocks = [actionBlock("b1", 0)];
+    setupForRunGroup(blocks, [makeGroup("group-1", 0)]);
+
+    const promise = runGroup("evt-1", "ABC123", "group-1");
+    await vi.advanceTimersByTimeAsync(10000);
+    await promise;
+
+    expect(clearEnRoute).toHaveBeenCalledWith("evt-1");
+  });
+
+  it("clears the marker when the route finishes", async () => {
+    const blocks = [messageBlock("b1", 0)];
+    setupForRunGroup(blocks, [makeGroup("group-1", 0)]);
+
+    const promise = runGroup("evt-1", "ABC123", "group-1");
+    await vi.advanceTimersByTimeAsync(10000);
+    await promise;
+
+    expect(handleGameCompletion).toHaveBeenCalled();
+    expect(clearEnRoute).toHaveBeenCalledWith("evt-1");
   });
 });

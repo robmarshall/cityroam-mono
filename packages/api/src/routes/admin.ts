@@ -1,5 +1,7 @@
 import { Hono } from "hono";
-import { eq, sql, count, desc, and, asc, inArray, type SQL } from "drizzle-orm";
+import type { Context } from "hono";
+import { createHash, timingSafeEqual } from "node:crypto";
+import { eq, sql, count, desc, and, asc, inArray, or, notInArray, type SQL } from "drizzle-orm";
 import Stripe from "stripe";
 import { adminLoginSchema, adminUpdateEventStatusSchema, adminCreateEventSchema, routeSchema, imageUploadRequestSchema, messageBankSchema, routeBlockSchema, groupUpdateSchema, bulkRouteGroupCreateSchema, groupReorderSchema, blockReorderSchema, blockMoveSchema } from "@cityroam/shared/validation";
 import { generateEventCode, buildEventUrl, buildS3Url } from "@cityroam/shared/utils";
@@ -11,7 +13,12 @@ import { db } from "../db/index.js";
 import { routeFamilies, events, participants, messages, routes, messageBanks, routeGroups, routeBlocks } from "../db/schema/index.js";
 import { AppError } from "../middleware/error-handler.js";
 import { adminAuth, signAdminToken } from "../middleware/admin.js";
-import { deleteSessionsByEventId } from "../redis/index.js";
+import {
+  checkAdminLoginRateLimit,
+  clearAdminLoginRateLimit,
+} from "../redis/rate-limit.js";
+import { markEventRefunded } from "../services/refund.js";
+import { sendEventCodeEmail } from "../services/email.js";
 import { createLogger } from "../lib/logger.js";
 import { publicImageUrl } from "../lib/image-url.js";
 
@@ -19,14 +26,74 @@ const log = createLogger("admin");
 
 export const adminRoutes = new Hono();
 
+/**
+ * Best-guess client IP for rate limiting. The API sits behind Traefik, which
+ * appends to `x-forwarded-for` and sets `x-real-ip`; Cloudflare in front of it
+ * sets `cf-connecting-ip`. Most-trusted header first, and the *first* entry of
+ * `x-forwarded-for` is only reached when neither proxy header is present.
+ *
+ * A caller with direct access to the API port can forge these. That is
+ * acceptable for a login limiter: forging simply hands the attacker a fresh
+ * bucket, which is no worse than the no-limiter status quo, and the API is not
+ * exposed outside the proxy in any deployed environment.
+ */
+function clientIp(c: Context): string {
+  const direct =
+    c.req.header("cf-connecting-ip") ?? c.req.header("x-real-ip") ?? null;
+  if (direct?.trim()) return direct.trim().slice(0, 64);
+
+  const forwarded = c.req.header("x-forwarded-for");
+  const first = forwarded?.split(",")[0]?.trim();
+  if (first) return first.slice(0, 64);
+
+  return "unknown";
+}
+
+/**
+ * Length-independent equality. Hashing first gives timingSafeEqual the
+ * equal-length buffers it requires, so the comparison leaks neither the
+ * secret's content nor its length.
+ */
+function constantTimeEquals(a: string, b: string): boolean {
+  const left = createHash("sha256").update(a, "utf8").digest();
+  const right = createHash("sha256").update(b, "utf8").digest();
+  return timingSafeEqual(left, right);
+}
+
 // POST /admin/login — authenticate admin, return JWT
 adminRoutes.post("/admin/login", async (c) => {
   const body = await c.req.json();
   const { username, password } = adminLoginSchema.parse(body);
 
-  if (username !== env.ADMIN_USERNAME || password !== env.ADMIN_PASSWORD) {
+  const ip = clientIp(c);
+  const limit = await checkAdminLoginRateLimit(ip);
+
+  if (!limit.allowed) {
+    log.warn("admin login rate limited", {
+      ip,
+      attempts: limit.current,
+      limit: limit.limit,
+    });
+    c.header("Retry-After", String(limit.retryAfterSeconds));
+    throw new AppError(
+      429,
+      "Too many login attempts. Try again later.",
+      "RATE_LIMITED",
+    );
+  }
+
+  // `&` not `&&` — both comparisons always run, so a wrong username costs the
+  // same time as a wrong password.
+  const ok =
+    Number(constantTimeEquals(username, env.ADMIN_USERNAME)) &
+    Number(constantTimeEquals(password, env.ADMIN_PASSWORD));
+
+  if (!ok) {
+    log.warn("admin login failed", { ip, attempts: limit.current });
     throw new AppError(401, "Invalid credentials", "INVALID_CREDENTIALS");
   }
+
+  await clearAdminLoginRateLimit(ip);
 
   const token = await signAdminToken(username);
   return c.json({ token }, 200);
@@ -122,6 +189,7 @@ adminRoutes.get("/admin/events", adminAuth, async (c) => {
       status: events.status,
       created_at: events.created_at,
       refund_requested: events.refund_requested,
+      code_email_failed_at: events.code_email_failed_at,
     })
     .from(events)
     .where(whereClause)
@@ -156,6 +224,9 @@ adminRoutes.get("/admin/events", adminAuth, async (c) => {
       created_at: e.created_at.toISOString(),
       participant_count: participantCounts[e.id] ?? 0,
       refund_requested: e.refund_requested,
+      // Set when every send attempt failed, so the list can flag a buyer who
+      // never received their code.
+      code_email_failed_at: e.code_email_failed_at?.toISOString() ?? null,
     })),
     total,
     page,
@@ -374,12 +445,7 @@ adminRoutes.post("/admin/events/:id/refund", adminAuth, async (c) => {
       // Map common Stripe error codes to meaningful messages
       if (err.code === "charge_already_refunded") {
         // Stripe says already refunded — sync our status and return success
-        await db.update(events).set({ status: "REFUNDED" }).where(eq(events.id, id));
-        try {
-          await deleteSessionsByEventId(id);
-        } catch (err) {
-          log.warn("Failed to invalidate sessions after refund", { event_id: id, err });
-        }
+        await markEventRefunded(id, "admin:charge_already_refunded");
         return c.json({ success: true, status: "REFUNDED" }, 200);
       }
 
@@ -390,28 +456,17 @@ adminRoutes.post("/admin/events/:id/refund", adminAuth, async (c) => {
   }
 
   // Update event status to REFUNDED
-  await db
-    .update(events)
-    .set({ status: "REFUNDED" })
-    .where(eq(events.id, id));
-  try {
-    await deleteSessionsByEventId(id);
-  } catch (err) {
-    log.warn("Failed to invalidate sessions after refund", { event_id: id, err });
-  }
-
-  log.info("Event refunded", { event_id: id, stripe_payment_id: event.stripe_payment_id });
+  await markEventRefunded(id, "admin");
 
   return c.json({ success: true, status: "REFUNDED" }, 200);
 });
 
-// POST /admin/events/:id/resend-email — resend confirmation email to buyer
-adminRoutes.post("/admin/events/:id/resend-email", adminAuth, async (c) => {
-  const { Resend } = await import("resend");
-  const { getEmailSubject, buildConfirmationEmail } = await import("./checkout.js");
-
-  const id = c.req.param("id");
-
+/**
+ * Resends the email carrying the event code. Shared by two paths so an
+ * operator clearing a "code email failed" flag gets exactly the retry
+ * behaviour the webhook had, and a success clears the flag.
+ */
+async function resendCodeEmail(c: Context, id: string) {
   const event = await db.query.events.findFirst({
     where: eq(events.id, id),
   });
@@ -424,20 +479,39 @@ adminRoutes.post("/admin/events/:id/resend-email", adminAuth, async (c) => {
     throw new AppError(400, "Event has no buyer email", "NO_BUYER_EMAIL");
   }
 
-  const eventUrl = buildEventUrl(env.APP_PUBLIC_URL, event.code);
-  const language = (event.language ?? "en") as SupportedLanguage;
-
-  const resend = new Resend(env.RESEND_API_KEY);
-  await resend.emails.send({
-    from: env.RESEND_FROM_EMAIL,
-    to: event.buyer_email,
-    subject: getEmailSubject(language),
-    html: buildConfirmationEmail(eventUrl, event.code, language),
+  const outcome = await sendEventCodeEmail({
+    eventId: event.id,
+    code: event.code,
+    buyerEmail: event.buyer_email,
+    language: (event.language ?? "en") as SupportedLanguage,
   });
 
+  if (!outcome.sent) {
+    log.error("admin resend failed", {
+      event_id: id,
+      attempts: outcome.attempts,
+      error: outcome.error,
+    });
+    throw new AppError(
+      502,
+      `Could not send the email after ${outcome.attempts} attempt${outcome.attempts === 1 ? "" : "s"}: ${outcome.error ?? "unknown error"}`,
+      "EMAIL_SEND_FAILED",
+    );
+  }
+
   log.info("Resent confirmation email", { event_id: id, email: event.buyer_email });
-  return c.json({ success: true }, 200);
-});
+  return c.json({ success: true, attempts: outcome.attempts }, 200);
+}
+
+// POST /admin/events/:id/resend-email — resend confirmation email to buyer
+adminRoutes.post("/admin/events/:id/resend-email", adminAuth, (c) =>
+  resendCodeEmail(c, c.req.param("id")),
+);
+
+// POST /admin/events/:id/resend-code — same thing, named for what it carries
+adminRoutes.post("/admin/events/:id/resend-code", adminAuth, (c) =>
+  resendCodeEmail(c, c.req.param("id")),
+);
 
 // ── S3 Upload ───────────────────────────────────────────────────────
 
@@ -462,6 +536,96 @@ adminRoutes.post("/admin/upload", adminAuth, async (c) => {
   // against the page the image is later rendered on.
   return c.json({ ...result, url: buildS3Url(env.AWS_CDN_BASE_URL, result.key) }, 200);
 });
+
+// ── Route integrity helpers ─────────────────────────────────────────
+
+const PG_UNIQUE_VIOLATION = "23505";
+
+/** Walks an error chain for a Postgres unique violation and names it. */
+function uniqueViolationName(err: unknown): string | null {
+  let current: unknown = err;
+  for (let depth = 0; current != null && depth < 5; depth++) {
+    const candidate = current as Record<string, unknown>;
+    if (candidate.code === PG_UNIQUE_VIOLATION) {
+      return String(
+        candidate.constraint_name ??
+          candidate.constraint ??
+          candidate.detail ??
+          candidate.message ??
+          "",
+      );
+    }
+    current = candidate.cause;
+  }
+  return null;
+}
+
+function duplicateVariantError(language: string): AppError {
+  return new AppError(
+    409,
+    `This family already has an active ${language} route. Deactivate it first, or create this one inactive.`,
+    "DUPLICATE_LANGUAGE_VARIANT",
+  );
+}
+
+/**
+ * Turns the race that beats the pre-check into the same 409 the pre-check
+ * would have raised. Anything else is rethrown untouched.
+ */
+function rethrowVariantConflict(err: unknown, language: string): never {
+  const name = uniqueViolationName(err);
+  if (name?.includes("routes_family_language_active_unique")) {
+    throw duplicateVariantError(language);
+  }
+  throw err;
+}
+
+type DbLike = typeof db | Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+/**
+ * A route insert with an unknown `route_family_id` fails on the foreign key
+ * and surfaces as a 500. The caller gets told what is actually wrong instead.
+ */
+async function assertFamilyExists(tx: DbLike, familyId: string): Promise<void> {
+  const rows = await tx
+    .select({ id: routeFamilies.id })
+    .from(routeFamilies)
+    .where(eq(routeFamilies.id, familyId))
+    .limit(1);
+
+  if (rows.length === 0) {
+    throw new AppError(404, "Route family not found", "ROUTE_FAMILY_NOT_FOUND");
+  }
+}
+
+/**
+ * Checkout resolves a purchase with family + language + is_active, so a second
+ * active row for the same pair makes the buyer's hunt arbitrary. Mirrors the
+ * partial unique index `routes_family_language_active_unique`.
+ */
+async function activeVariantExists(
+  tx: DbLike,
+  familyId: string,
+  language: string,
+  excludeRouteId?: string,
+): Promise<boolean> {
+  const conditions: SQL[] = [
+    eq(routes.route_family_id, familyId),
+    eq(routes.language, language),
+    eq(routes.is_active, true),
+  ];
+  if (excludeRouteId) {
+    conditions.push(sql`${routes.id} <> ${excludeRouteId}`);
+  }
+
+  const rows = await tx
+    .select({ id: routes.id })
+    .from(routes)
+    .where(and(...conditions))
+    .limit(1);
+
+  return rows.length > 0;
+}
 
 // ── Route CRUD ──────────────────────────────────────────────────────
 
@@ -515,29 +679,48 @@ adminRoutes.post("/admin/routes", adminAuth, async (c) => {
   const body = await c.req.json();
   const data = routeSchema.parse(body);
 
-  // Resolve or create route family
-  let familyId = data.route_family_id;
-  if (!familyId) {
-    const [family] = await db
-      .insert(routeFamilies)
-      .values({ name: data.name, city: data.city! })
-      .returning();
-    familyId = family.id;
-  }
+  let route: typeof routes.$inferSelect;
+  try {
+    route = await db.transaction(async (tx) => {
+      // Resolve or create route family
+      let familyId = data.route_family_id;
+      if (familyId) {
+        await assertFamilyExists(tx, familyId);
+      } else {
+        const [family] = await tx
+          .insert(routeFamilies)
+          .values({ name: data.name, city: data.city! })
+          .returning();
+        familyId = family.id;
+      }
 
-  const [route] = await db
-    .insert(routes)
-    .values({
-      name: data.name,
-      description: data.description ?? null,
-      language: data.language,
-      route_family_id: familyId,
-      total_stops: 0,
-      estimated_duration_mins: data.estimated_duration_mins,
-      estimated_distance_km: String(data.estimated_distance_km),
-      is_active: data.is_active,
-    })
-    .returning();
+      if (
+        data.is_active &&
+        (await activeVariantExists(tx, familyId, data.language))
+      ) {
+        throw duplicateVariantError(data.language);
+      }
+
+      const [inserted] = await tx
+        .insert(routes)
+        .values({
+          name: data.name,
+          description: data.description ?? null,
+          language: data.language,
+          route_family_id: familyId,
+          total_stops: 0,
+          estimated_duration_mins: data.estimated_duration_mins,
+          estimated_distance_km: String(data.estimated_distance_km),
+          is_active: data.is_active,
+        })
+        .returning();
+
+      return inserted;
+    });
+  } catch (err) {
+    if (err instanceof AppError) throw err;
+    rethrowVariantConflict(err, data.language);
+  }
 
   return c.json({
     route: {
@@ -659,18 +842,50 @@ adminRoutes.put("/admin/routes/:id", adminAuth, async (c) => {
     throw new AppError(404, "Route not found", "ROUTE_NOT_FOUND");
   }
 
-  const [updated] = await db
-    .update(routes)
-    .set({
-      name: data.name,
-      description: data.description ?? null,
-      estimated_duration_mins: data.estimated_duration_mins,
-      estimated_distance_km: String(data.estimated_distance_km),
-      is_active: data.is_active,
-      updated_at: new Date(),
-    })
-    .where(eq(routes.id, id))
-    .returning();
+  // Activating a route with no groups sells a hunt that cannot start: the lead
+  // presses start and `startEvent` fails with "Route has no groups". Checked
+  // only on the inactive -> active transition so an admin can still rename or
+  // re-save a route that is already live.
+  if (data.is_active && !existing.is_active) {
+    const groupRows = await db
+      .select({ id: routeGroups.id })
+      .from(routeGroups)
+      .where(eq(routeGroups.route_id, id))
+      .limit(1);
+
+    if (groupRows.length === 0) {
+      throw new AppError(
+        409,
+        "Cannot activate a route with no groups — a player would be sold a hunt that cannot start. Add at least one group first.",
+        "ROUTE_HAS_NO_GROUPS",
+      );
+    }
+  }
+
+  if (
+    data.is_active &&
+    (await activeVariantExists(db, existing.route_family_id, existing.language, id))
+  ) {
+    throw duplicateVariantError(existing.language);
+  }
+
+  let updated: typeof routes.$inferSelect;
+  try {
+    [updated] = await db
+      .update(routes)
+      .set({
+        name: data.name,
+        description: data.description ?? null,
+        estimated_duration_mins: data.estimated_duration_mins,
+        estimated_distance_km: String(data.estimated_distance_km),
+        is_active: data.is_active,
+        updated_at: new Date(),
+      })
+      .where(eq(routes.id, id))
+      .returning();
+  } catch (err) {
+    rethrowVariantConflict(err, existing.language);
+  }
 
   return c.json({
     route: {
@@ -721,20 +936,96 @@ adminRoutes.delete("/admin/routes/:id", adminAuth, async (c) => {
 
 // ── Group + Block CRUD ───────────────────────────────────────────────
 
+type DbTx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+/**
+ * Statuses an event can never leave. Anything else is still playable, so its
+ * `current_group_id` / `current_block_id` / `current_block_index` must keep
+ * pointing at content that exists and has not shifted underneath it.
+ */
+const TERMINAL_EVENT_STATUSES = ["COMPLETED", "EXPIRED", "REFUNDED"];
+
+/** Counts still-playable events matching a reference condition. */
+async function countLiveEvents(tx: DbTx, reference: SQL): Promise<number> {
+  const rows = await tx
+    .select({ count: count() })
+    .from(events)
+    .where(and(notInArray(events.status, TERMINAL_EVENT_STATUSES), reference));
+  return Number(rows[0]?.count ?? 0);
+}
+
+/**
+ * Drops the group/block pointers held by finished events so the row can be
+ * deleted. `events.current_group_id` and `current_block_id` are NO ACTION
+ * foreign keys, so without this a delete raises a raw FK error and surfaces as
+ * a 500.
+ *
+ * Nulling beats refusing the delete. A completed, expired or refunded event
+ * never resumes, so the pointer is dead bookkeeping — but refusing would mean
+ * the first hunt ever played through a group freezes that group's content
+ * forever, which is not a thing an admin panel can do and stay usable. The
+ * event's history (messages, current_stop, completed_at) is untouched.
+ */
+async function releaseTerminalEventPointers(
+  tx: DbTx,
+  opts: { groupIds?: string[]; blockIds?: string[] },
+): Promise<void> {
+  const { groupIds = [], blockIds = [] } = opts;
+
+  if (groupIds.length > 0) {
+    await tx
+      .update(events)
+      .set({ current_group_id: null, current_block_id: null, current_block_index: 0 })
+      .where(inArray(events.current_group_id, groupIds));
+  }
+
+  if (blockIds.length > 0) {
+    await tx
+      .update(events)
+      .set({ current_block_id: null })
+      .where(inArray(events.current_block_id, blockIds));
+  }
+}
+
+/** Builds the 409 raised when live events still depend on the content. */
+function liveReferenceError(kind: "group" | "block", liveCount: number): AppError {
+  return new AppError(
+    409,
+    `Cannot modify this ${kind}: ${liveCount} in-progress event${liveCount === 1 ? "" : "s"} ${liveCount === 1 ? "is" : "are"} still playing it. Wait for them to finish, expire them, or refund them first.`,
+    kind === "group" ? "GROUP_HAS_LIVE_EVENTS" : "BLOCK_HAS_LIVE_EVENTS",
+  );
+}
+
 // POST /admin/routes/bulk-groups — create a route with groups and blocks in one call
 adminRoutes.post("/admin/routes/bulk-groups", adminAuth, async (c) => {
   const body = await c.req.json();
   const data = bulkRouteGroupCreateSchema.parse(body);
 
-  const result = await db.transaction(async (tx) => {
+  let result: {
+    route: typeof routes.$inferSelect;
+    groups: Array<typeof routeGroups.$inferSelect & { blocks: (typeof routeBlocks.$inferSelect)[] }>;
+  };
+  try {
+  result = await db.transaction(async (tx) => {
     // Resolve or create route family
     let familyId = data.route.route_family_id;
-    if (!familyId) {
+    if (familyId) {
+      // Without this the insert below fails on the foreign key and surfaces
+      // as a 500 that says nothing about the missing family.
+      await assertFamilyExists(tx, familyId);
+    } else {
       const [family] = await tx
         .insert(routeFamilies)
         .values({ name: data.route.name, city: data.route.city! })
         .returning();
       familyId = family.id;
+    }
+
+    if (
+      data.route.is_active &&
+      (await activeVariantExists(tx, familyId, data.route.language))
+    ) {
+      throw duplicateVariantError(data.route.language);
     }
 
     const [route] = await tx
@@ -764,14 +1055,22 @@ adminRoutes.post("/admin/routes/bulk-groups", adminAuth, async (c) => {
         })
         .returning();
 
+      // A caller-supplied `position` is treated as a sort key, not as the
+      // stored value. Taking it literally let a payload write duplicate or
+      // gapped positions, and `events.current_block_index` is a plain offset
+      // into this list — so the stored sequence is always dense 0..n-1.
+      const ordered = g.blocks
+        .map((block, index) => ({ block, sortKey: block.position ?? index, index }))
+        .sort((a, b) => a.sortKey - b.sortKey || a.index - b.index);
+
       const insertedBlocks: (typeof routeBlocks.$inferSelect)[] = [];
-      for (let bi = 0; bi < g.blocks.length; bi++) {
-        const b = g.blocks[bi];
+      for (let bi = 0; bi < ordered.length; bi++) {
+        const b = ordered[bi].block;
         const [block] = await tx
           .insert(routeBlocks)
           .values({
             group_id: group.id,
-            position: b.position ?? bi,
+            position: bi,
             type: b.type,
             config: b.config,
             delay_ms: b.delay_ms ?? 0,
@@ -785,6 +1084,10 @@ adminRoutes.post("/admin/routes/bulk-groups", adminAuth, async (c) => {
 
     return { route, groups: insertedGroups };
   });
+  } catch (err) {
+    if (err instanceof AppError) throw err;
+    rethrowVariantConflict(err, data.route.language);
+  }
 
   return c.json({
     route: {
@@ -978,6 +1281,28 @@ adminRoutes.delete("/admin/routes/:id/groups/:groupId", adminAuth, async (c) => 
   await db.transaction(async (tx) => {
     const now = new Date();
 
+    // Guard inside the transaction so an event cannot start between the check
+    // and the delete, the same shape as the route delete above.
+    const blockRows = await tx
+      .select({ id: routeBlocks.id })
+      .from(routeBlocks)
+      .where(eq(routeBlocks.group_id, groupId));
+    const blockIds = blockRows.map((b) => b.id);
+
+    const references: SQL[] = [eq(events.current_group_id, groupId)];
+    if (blockIds.length > 0) {
+      references.push(inArray(events.current_block_id, blockIds));
+    }
+
+    const liveCount = await countLiveEvents(tx, or(...references)!);
+    if (liveCount > 0) {
+      throw liveReferenceError("group", liveCount);
+    }
+
+    // Only finished events can still point here. Release them so the NO ACTION
+    // FKs do not turn the delete into a 500.
+    await releaseTerminalEventPointers(tx, { groupIds: [groupId], blockIds });
+
     // Blocks cascade-delete via FK
     await tx.delete(routeGroups).where(eq(routeGroups.id, groupId));
 
@@ -1036,11 +1361,52 @@ adminRoutes.post("/admin/groups/:groupId/blocks", adminAuth, async (c) => {
       .where(eq(routeBlocks.group_id, groupId));
     const nextPosition = Number(maxPos[0]?.max ?? -1) + 1;
 
+    // A caller-supplied position past the end would leave a gap; clamping it
+    // keeps the sequence dense.
+    const requested = data.position ?? nextPosition;
+    const position = Math.min(Math.max(requested, 0), nextPosition);
+    const insertsInMiddle = position < nextPosition;
+
+    if (insertsInMiddle) {
+      // Everything at or after this slot shifts up by one, which moves the
+      // blocks a live event's `current_block_index` points at — the same
+      // hazard as a reorder or a delete, so the same guard applies.
+      const liveCount = await countLiveEvents(
+        tx,
+        eq(events.current_group_id, groupId),
+      );
+      if (liveCount > 0) {
+        throw liveReferenceError("group", liveCount);
+      }
+
+      const toShift = await tx
+        .select({ id: routeBlocks.id, position: routeBlocks.position })
+        .from(routeBlocks)
+        .where(
+          and(
+            eq(routeBlocks.group_id, groupId),
+            sql`${routeBlocks.position} >= ${position}`,
+          ),
+        )
+        .orderBy(desc(routeBlocks.position));
+
+      if (toShift.length > 0) {
+        const shiftCases = toShift
+          .map((b) => sql`WHEN ${routeBlocks.id} = ${b.id} THEN ${b.position + 1}`)
+          .reduce((acc, c) => sql`${acc} ${c}`);
+
+        await tx
+          .update(routeBlocks)
+          .set({ position: sql`CASE ${shiftCases} END` })
+          .where(inArray(routeBlocks.id, toShift.map((b) => b.id)));
+      }
+    }
+
     const [inserted] = await tx
       .insert(routeBlocks)
       .values({
         group_id: groupId,
-        position: data.position ?? nextPosition,
+        position,
         type: data.type,
         config: data.config,
         delay_ms: data.delay_ms ?? 0,
@@ -1082,6 +1448,17 @@ adminRoutes.put("/admin/groups/:groupId/blocks/reorder", adminAuth, async (c) =>
   }
 
   await db.transaction(async (tx) => {
+    // Reordering rewrites the positions that a live event's
+    // `current_block_index` is an offset into, so it is as unsafe mid-play as
+    // a delete.
+    const liveCount = await countLiveEvents(
+      tx,
+      eq(events.current_group_id, groupId),
+    );
+    if (liveCount > 0) {
+      throw liveReferenceError("group", liveCount);
+    }
+
     const existingBlocks = await tx
       .select({ id: routeBlocks.id })
       .from(routeBlocks)
@@ -1164,6 +1541,24 @@ adminRoutes.delete("/admin/blocks/:blockId", adminAuth, async (c) => {
   }
 
   await db.transaction(async (tx) => {
+    // Deleting renumbers every surviving block in the group, and a live event
+    // tracks its position with `current_block_index` — a plain offset into the
+    // group's blocks ordered by position. So the guard covers the whole group,
+    // not just events parked on this exact block: shifting the indices under a
+    // live event makes the startup reconciler resume at the wrong block.
+    const liveCount = await countLiveEvents(
+      tx,
+      or(
+        eq(events.current_block_id, blockId),
+        eq(events.current_group_id, existing.group_id),
+      )!,
+    );
+    if (liveCount > 0) {
+      throw liveReferenceError("block", liveCount);
+    }
+
+    await releaseTerminalEventPointers(tx, { blockIds: [blockId] });
+
     await tx.delete(routeBlocks).where(eq(routeBlocks.id, blockId));
 
     // Renumber remaining blocks in this group
@@ -1214,9 +1609,19 @@ adminRoutes.put("/admin/blocks/:blockId/move", adminAuth, async (c) => {
 
   const sourceGroupId = existing.group_id;
   const targetGroupId = data.target_group_id;
-  const targetPosition = data.position;
 
   await db.transaction(async (tx) => {
+    // A move renumbers the source group and shifts the target group, so both
+    // sides can strand a live event's `current_block_index`.
+    const groupIds = [...new Set([sourceGroupId, targetGroupId])];
+    const liveCount = await countLiveEvents(
+      tx,
+      inArray(events.current_group_id, groupIds),
+    );
+    if (liveCount > 0) {
+      throw liveReferenceError("block", liveCount);
+    }
+
     // 1. Remove from source group: delete the block's old position and renumber
     // (We don't delete the block, just need to renumber the remaining blocks in source)
     const remainingInSource = await tx
@@ -1253,6 +1658,10 @@ adminRoutes.put("/admin/blocks/:blockId/move", adminAuth, async (c) => {
       )
       .orderBy(asc(routeBlocks.position));
 
+    // Clamped to the end of the target group: a position past the end would
+    // leave a gap in a sequence that has to stay dense.
+    const targetPosition = Math.min(data.position, blocksInTarget.length);
+
     const toShift = blocksInTarget.filter((b) => b.position >= targetPosition);
     if (toShift.length > 0) {
       const shiftCases = toShift
@@ -1273,6 +1682,10 @@ adminRoutes.put("/admin/blocks/:blockId/move", adminAuth, async (c) => {
         position: targetPosition,
       })
       .where(eq(routeBlocks.id, blockId));
+
+    // The source renumber above ran before the block left the group, so its
+    // old slot is already closed; the target now holds 0..n with no gap.
+
   });
 
   const updated = await db.query.routeBlocks.findFirst({

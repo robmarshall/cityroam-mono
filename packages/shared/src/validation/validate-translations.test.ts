@@ -191,6 +191,8 @@ describe("Message bank seed translations", () => {
     "unknown-answer",
     "completion",
     "over-length",
+    "guide-degraded",
+    "guide-busy",
   ];
 
   const nonEnLanguages = SUPPORTED_LANGUAGES.filter((l) => l !== "en");
@@ -451,11 +453,13 @@ describe("Pipeline per-language fallback maps", () => {
 // ---------------------------------------------------------------------------
 
 describe("Email template translations", () => {
+  // The templates moved out of the checkout route so the admin resend
+  // endpoint could share them with the webhook.
   const checkoutFile = readFileText(
-    "packages/api/src/routes/checkout.ts",
+    "packages/api/src/services/email.ts",
   );
 
-  it("checkout.ts exists", () => {
+  it("the email service exists", () => {
     expect(checkoutFile).not.toBeNull();
   });
 

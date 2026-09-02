@@ -40,6 +40,7 @@ import { ensureActiveLead } from "../services/lead.js";
 import { createLogger } from "../lib/logger.js";
 import {
   sessionAuth,
+  csrfGuard,
   resolveSession,
   setSessionCookie,
   clearSessionCookie,
@@ -120,6 +121,12 @@ eventRoutes.get("/event/:code", async (c) => {
 
   const isTerminal = TERMINAL_STATUSES.has(event.status);
 
+  // The roster is only for people who are actually in the hunt. Knowing an
+  // event code is not membership — anyone could otherwise enumerate the
+  // players' names. The join page needs the event's status and languages
+  // before a session exists, but never the roster.
+  const inEvent = currentParticipant !== null;
+
   // Find available language variants for this route family
   const familyRoutes = await db
     .select({ language: routes.language })
@@ -131,7 +138,7 @@ eventRoutes.get("/event/:code", async (c) => {
   // once, so a client that reloaded or reconnected late would otherwise never
   // learn the hunt is waiting on the lead to confirm.
   let pendingAction: EventDetailResponse["pending_action"] = null;
-  if (!isTerminal && event.current_block_id) {
+  if (inEvent && !isTerminal && event.current_block_id) {
     const currentBlock = await db.query.routeBlocks.findFirst({
       where: eq(routeBlocks.id, event.current_block_id),
       columns: { id: true, type: true, config: true },
@@ -152,8 +159,9 @@ eventRoutes.get("/event/:code", async (c) => {
       created_at: new Date(event.created_at).toISOString(),
       language: event.language as EventDetailResponse["event"]["language"],
     },
-    participants: isTerminal ? [] : participantRows,
-    lead_name: isTerminal ? null : (leadParticipant?.display_name ?? null),
+    participants: isTerminal || !inEvent ? [] : participantRows,
+    lead_name:
+      isTerminal || !inEvent ? null : (leadParticipant?.display_name ?? null),
     current_participant: isTerminal ? null : currentParticipant,
     pending_action: pendingAction,
     available_languages: availableLanguages,
@@ -165,7 +173,7 @@ eventRoutes.get("/event/:code", async (c) => {
 // ---------------------------------------------------------------------------
 // POST /event/:code/join
 // ---------------------------------------------------------------------------
-eventRoutes.post("/event/:code/join", async (c) => {
+eventRoutes.post("/event/:code/join", csrfGuard, async (c) => {
   const code = eventCodeSchema.parse(c.req.param("code"));
   const body = await c.req.json();
   const { display_name } = joinEventRequestSchema.parse(body);
@@ -180,7 +188,7 @@ eventRoutes.post("/event/:code/join", async (c) => {
   const existingToken = getCookie(c, COOKIE_NAME);
 
   // Transaction for atomic participant creation + lead election
-  const { newParticipant, eventData, isLead } = await db.transaction(async (tx) => {
+  const { newParticipant, eventData, isLead, displaced } = await db.transaction(async (tx) => {
     // Lock the event row to serialize concurrent joins
     await tx.execute(sql`SELECT 1 FROM events WHERE code = ${code} FOR UPDATE`);
 
@@ -205,6 +213,18 @@ eventRoutes.post("/event/:code/join", async (c) => {
       );
     }
 
+    // Whatever the caller's cookie already points at, in this event or
+    // another one. Resolved before the seat count so a player who is already
+    // in doesn't get told the event is full by their own row.
+    const cookieRow = existingToken
+      ? await tx.query.participants.findFirst({
+          where: eq(participants.token, existingToken),
+        })
+      : undefined;
+
+    const ownRow =
+      cookieRow && cookieRow.event_id === lockedEvent.id ? cookieRow : undefined;
+
     // Count active participants
     const [countResult] = await tx
       .select({ count: sql<number>`count(*)::int` })
@@ -213,7 +233,9 @@ eventRoutes.post("/event/:code/join", async (c) => {
         and(eq(participants.event_id, lockedEvent.id), eq(participants.is_active, true))
       );
 
-    if (countResult.count >= MAX_PARTICIPANTS) {
+    const seatsTaken = countResult.count - (ownRow?.is_active ? 1 : 0);
+
+    if (seatsTaken >= MAX_PARTICIPANTS) {
       throw new AppError(403, "Event is full", "EVENT_FULL");
     }
 
@@ -228,21 +250,30 @@ eventRoutes.post("/event/:code/join", async (c) => {
       columns: { id: true },
     });
 
-    const takesLead = !activeLead;
+    // A double-tapped join must never leave a second row behind: the
+    // abandoned one would keep is_active and is_lead, and ensureActiveLead
+    // would then see a lead that nobody is holding.
+    const takesLead = !activeLead || activeLead.id === ownRow?.id;
 
-    // A returning player who still holds their cookie reclaims their
-    // participant row instead of creating a duplicate
-    const returning = existingToken
-      ? await tx.query.participants.findFirst({
-          where: and(
-            eq(participants.token, existingToken),
-            eq(participants.event_id, lockedEvent.id),
-            eq(participants.is_active, false),
-          ),
+    let row: typeof participants.$inferSelect;
+    let displacedEventId: string | null = null;
+
+    if (ownRow?.is_active) {
+      // Idempotent re-join — same cookie, same event, still in. Reuse the row
+      // rather than minting a token that orphans the old one.
+      const [refreshed] = await tx
+        .update(participants)
+        .set({
+          display_name,
+          is_lead: takesLead,
+          last_seen_at: new Date(),
         })
-      : undefined;
-
-    if (returning) {
+        .where(eq(participants.id, ownRow.id))
+        .returning();
+      row = refreshed;
+    } else if (ownRow) {
+      // A returning player who still holds their cookie reclaims their
+      // participant row instead of creating a duplicate
       const [reactivated] = await tx
         .update(participants)
         .set({
@@ -253,45 +284,78 @@ eventRoutes.post("/event/:code/join", async (c) => {
           left_at: null,
           left_reason: null,
         })
-        .where(eq(participants.id, returning.id))
+        .where(eq(participants.id, ownRow.id))
         .returning();
-
-      if (takesLead) {
+      row = reactivated;
+    } else {
+      // The cookie is about to be overwritten. If it still held an active row
+      // in a different event, retire that row here — otherwise it lingers as
+      // a ghost participant (and possibly a ghost lead) nobody can reach.
+      if (cookieRow?.is_active) {
         await tx
-          .update(events)
-          .set({ lead_participant_id: reactivated.id })
-          .where(eq(events.id, lockedEvent.id));
+          .update(participants)
+          .set({
+            is_active: false,
+            is_lead: false,
+            left_at: new Date(),
+            left_reason: "voluntary",
+          })
+          .where(eq(participants.id, cookieRow.id));
+        displacedEventId = cookieRow.event_id;
       }
 
-      return { newParticipant: reactivated, eventData: lockedEvent, isLead: takesLead };
+      const joinToken = crypto.randomUUID();
+
+      const [created] = await tx
+        .insert(participants)
+        .values({
+          event_id: lockedEvent.id,
+          display_name,
+          token: joinToken,
+          is_lead: takesLead,
+        })
+        .returning();
+      row = created;
     }
 
-    const joinToken = crypto.randomUUID();
-
-    // Insert participant
-    const [created] = await tx
-      .insert(participants)
-      .values({
-        event_id: lockedEvent.id,
-        display_name,
-        token: joinToken,
-        is_lead: takesLead,
-      })
-      .returning();
-
-    // If lead, update event
     if (takesLead) {
       await tx
         .update(events)
         .set({
-          lead_participant_id: created.id,
+          lead_participant_id: row.id,
           status: lockedEvent.status === "NOT_STARTED" ? "WAITING" : lockedEvent.status,
         })
         .where(eq(events.id, lockedEvent.id));
     }
 
-    return { newParticipant: created, eventData: lockedEvent, isLead: takesLead };
+    let displacedEvent: { id: string; code: string } | null = null;
+    if (displacedEventId) {
+      const other = await tx.query.events.findFirst({
+        where: eq(events.id, displacedEventId),
+        columns: { id: true, code: true },
+      });
+      if (other) displacedEvent = other;
+    }
+
+    return {
+      newParticipant: row,
+      eventData: lockedEvent,
+      isLead: takesLead,
+      displaced: displacedEvent,
+    };
   });
+
+  // The event the cookie was pulled out of may now be leaderless
+  if (displaced) {
+    try {
+      await ensureActiveLead(displaced.id, displaced.code);
+    } catch (err) {
+      log.warn("failed to re-elect lead for displaced event", {
+        eventCode: displaced.code,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
 
   const token = newParticipant.token;
 
@@ -369,7 +433,7 @@ eventRoutes.post("/event/:code/join", async (c) => {
 // ---------------------------------------------------------------------------
 // POST /event/:code/start (requires sessionAuth)
 // ---------------------------------------------------------------------------
-eventRoutes.post("/event/:code/start", sessionAuth, async (c) => {
+eventRoutes.post("/event/:code/start", csrfGuard, sessionAuth, async (c) => {
   const code = eventCodeSchema.parse(c.req.param("code"));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const session = (c as any).get("session") as SessionContext;
@@ -447,7 +511,7 @@ eventRoutes.post("/event/:code/start", sessionAuth, async (c) => {
 // ---------------------------------------------------------------------------
 // POST /event/:code/leave (requires sessionAuth)
 // ---------------------------------------------------------------------------
-eventRoutes.post("/event/:code/leave", sessionAuth, async (c) => {
+eventRoutes.post("/event/:code/leave", csrfGuard, sessionAuth, async (c) => {
   const code = eventCodeSchema.parse(c.req.param("code"));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const session = (c as any).get("session") as SessionContext;
@@ -523,7 +587,7 @@ eventRoutes.post("/event/:code/leave", sessionAuth, async (c) => {
 // ---------------------------------------------------------------------------
 // POST /event/:code/name (requires sessionAuth)
 // ---------------------------------------------------------------------------
-eventRoutes.post("/event/:code/name", sessionAuth, async (c) => {
+eventRoutes.post("/event/:code/name", csrfGuard, sessionAuth, async (c) => {
   const code = eventCodeSchema.parse(c.req.param("code"));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const session = (c as any).get("session") as SessionContext;
@@ -592,7 +656,7 @@ eventRoutes.post("/event/:code/name", sessionAuth, async (c) => {
 // ---------------------------------------------------------------------------
 // PUT /event/:code/language (requires sessionAuth)
 // ---------------------------------------------------------------------------
-eventRoutes.put("/event/:code/language", sessionAuth, async (c) => {
+eventRoutes.put("/event/:code/language", csrfGuard, sessionAuth, async (c) => {
   const code = eventCodeSchema.parse(c.req.param("code"));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const session = (c as any).get("session") as SessionContext;
@@ -658,8 +722,16 @@ eventRoutes.put("/event/:code/language", sessionAuth, async (c) => {
 // ---------------------------------------------------------------------------
 // GET /event/:code/messages
 // ---------------------------------------------------------------------------
-eventRoutes.get("/event/:code/messages", async (c) => {
+eventRoutes.get("/event/:code/messages", sessionAuth, async (c) => {
   const code = eventCodeSchema.parse(c.req.param("code"));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const session = (c as any).get("session") as SessionContext;
+
+  // The transcript is the hunt. Holding the event code is not membership, so
+  // only a participant of this event may read it.
+  if (session.event_code !== code) {
+    throw new AppError(403, "Session does not match event", "UNAUTHORIZED");
+  }
 
   const event = await db.query.events.findFirst({
     where: eq(events.code, code),

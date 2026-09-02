@@ -11,6 +11,17 @@
     "saving": "Opslaan...",
     "connectionClosed": "Verbinding gesloten."
   },
+  "entry": {
+    "title": "Voer je evenementcode in",
+    "subtitle": "Vul de code uit je bevestigingsmail in om je avontuur te starten.",
+    "codeLabel": "Evenementcode",
+    "codePlaceholder": "bijv. k7fq2mtz",
+    "submitButton": "Doorgaan",
+    "emptyCode": "Voer je evenementcode in om door te gaan.",
+    "invalidCode": "Deze code lijkt niet te kloppen. Controleer je bevestigingsmail en probeer het opnieuw.",
+    "help": "Je code staat in de bevestigingsmail die je bij je boeking hebt ontvangen.",
+    "tryAnotherCode": "Andere code invoeren"
+  },
   "join": {
     "title": "Doe mee met het team",
     "nameLabel": "Je naam",
@@ -21,7 +32,12 @@
     "statusCompleted": "Dit evenement is al afgelopen.",
     "statusExpired": "Dit evenement is verlopen.",
     "statusRefunded": "Dit evenement is terugbetaald.",
-    "statusUnavailable": "Dit evenement is niet meer beschikbaar."
+    "statusUnavailable": "Dit evenement is niet meer beschikbaar.",
+    "disconnected": {
+      "eventNotFound": "We konden dat evenement niet vinden.",
+      "eventEnded": "Dit evenement is afgelopen.",
+      "notActive": "Je doet niet meer mee aan dit spel. Neem opnieuw deel met je naam."
+    }
   },
   "lobby": {
     "title": "Wachten op spelers",
@@ -87,7 +103,11 @@
       "placeholder": "Vul je naam in"
     },
     "sendAriaLabel": "Bericht versturen",
-    "closeAriaLabel": "Sluiten"
+    "closeAriaLabel": "Sluiten",
+    "sending": "Versturen...",
+    "sendFailed": "Niet verzonden. Tik om opnieuw te proberen.",
+    "retryAriaLabel": "Bericht opnieuw verzenden",
+    "actionOfflineError": "Je bent offline — bevestigen is niet gelukt. Probeer het opnieuw."
   },
   "complete": {
     "title": "Spel voltooid!",

@@ -898,6 +898,8 @@ describe("messageBankSchema", () => {
       "unknown-answer",
       "completion",
       "over-length",
+      "guide-degraded",
+      "guide-busy",
     ] as const;
     for (const t of types) {
       expect(messageBankSchema.parse({ type: t, content: "msg" }).type).toBe(t);

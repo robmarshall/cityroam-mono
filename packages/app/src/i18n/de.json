@@ -11,6 +11,17 @@
     "saving": "Wird gespeichert...",
     "connectionClosed": "Verbindung geschlossen."
   },
+  "entry": {
+    "title": "Gib deinen Event-Code ein",
+    "subtitle": "Gib den Code aus deiner Bestätigungs-E-Mail ein, um dein Abenteuer zu starten.",
+    "codeLabel": "Event-Code",
+    "codePlaceholder": "z. B. k7fq2mtz",
+    "submitButton": "Weiter",
+    "emptyCode": "Gib deinen Event-Code ein, um fortzufahren.",
+    "invalidCode": "Dieser Code sieht nicht richtig aus. Prüfe deine Bestätigungs-E-Mail und versuche es erneut.",
+    "help": "Deinen Code findest du in der Bestätigungs-E-Mail von deiner Buchung.",
+    "tryAnotherCode": "Anderen Code eingeben"
+  },
   "join": {
     "title": "Tritt dem Team bei",
     "nameLabel": "Dein Name",
@@ -21,7 +32,12 @@
     "statusCompleted": "Dieses Event ist bereits beendet.",
     "statusExpired": "Dieses Event ist abgelaufen.",
     "statusRefunded": "Dieses Event wurde erstattet.",
-    "statusUnavailable": "Dieses Event ist nicht mehr verfügbar."
+    "statusUnavailable": "Dieses Event ist nicht mehr verfügbar.",
+    "disconnected": {
+      "eventNotFound": "Wir konnten dieses Event nicht finden.",
+      "eventEnded": "Dieses Event ist beendet.",
+      "notActive": "Du bist nicht mehr in diesem Spiel. Tritt mit deinem Namen erneut bei."
+    }
   },
   "lobby": {
     "title": "Warten auf Spieler",
@@ -87,7 +103,11 @@
       "placeholder": "Gib deinen Namen ein"
     },
     "sendAriaLabel": "Nachricht senden",
-    "closeAriaLabel": "Schließen"
+    "closeAriaLabel": "Schließen",
+    "sending": "Senden...",
+    "sendFailed": "Nicht gesendet. Zum Wiederholen tippen.",
+    "retryAriaLabel": "Nachricht erneut senden",
+    "actionOfflineError": "Du bist offline — Bestätigung fehlgeschlagen. Versuch es erneut."
   },
   "complete": {
     "title": "Spiel abgeschlossen!",

@@ -12,11 +12,9 @@
     "dev:api:http": "npm -w @cityroam/api run dev:http",
     "dev:api:ws": "npm -w @cityroam/api run dev:ws",
     "dev:admin": "npm -w @cityroam/admin run dev",
-    "build": "npm -ws --if-present run build",
-    "test": "npm -ws --if-present run test",
-    "typecheck": "npm -ws --if-present run typecheck",
-    "loop": "bash run.sh",
-    "loop:plan": "bash run.sh plan",
+    "build": "npm -ws run build",
+    "test": "npm -ws run test",
+    "typecheck": "npm -ws run typecheck",
     "migrate": "npm -w @cityroam/api run migrate",
     "seed": "npm -w @cityroam/api run seed",
     "seed:message-banks": "npm -w @cityroam/api run seed:message-banks --",
@@ -33,5 +31,8 @@
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "^4.60.1",
     "@esbuild/linux-x64": "^0.27.4"
+  },
+  "engines": {
+    "node": ">=22 <25"
   }
 }

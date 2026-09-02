@@ -19,7 +19,7 @@ import {
   MenuItem,
   MenuItems,
 } from "@headlessui/react";
-import { chatMessageSchema, displayNameSchema } from "@cityroam/shared/validation";
+import { chatMessageSchema, displayNameSchema } from "@cityroam/shared/validation/player";
 import { formatTimestamp } from "@cityroam/shared/utils";
 import { TYPING_INDICATOR_DEBOUNCE_MS, MAX_MESSAGE_LENGTH, MIN_DISPLAY_NAME_LENGTH, MAX_DISPLAY_NAME_LENGTH } from "@cityroam/shared/constants";
 import { POSTHOG_EVENTS } from "@cityroam/shared/analytics";
@@ -47,7 +47,7 @@ import { useEvent } from "../contexts/EventContext";
 import {
   useWebSocket,
   REJOIN_CLOSE_CODES,
-  FATAL_CLOSE_CODES,
+  fatalCloseReason,
 } from "../contexts/WebSocketContext";
 
 // 5-minute gap for timestamp separators
@@ -59,23 +59,57 @@ const MAX_INPUT_HEIGHT = 72;
 // How long to show the "Connected" banner after reconnecting
 const CONNECTED_BANNER_DURATION_MS = 2000;
 
+// A visual-viewport shrink of at least this much means the keyboard opened,
+// rather than a URL bar collapsing or an address-bar animation.
+const KEYBOARD_OPEN_DELTA_PX = 100;
+
+// iOS reports the post-keyboard viewport slightly after the focus event.
+const KEYBOARD_SETTLE_MS = 300;
+
+// How long an error toast stays up
+const ERROR_TOAST_DURATION_MS = 4000;
+
+/**
+ * How long to wait for the server to echo a sent message back before showing
+ * it as failed. The server broadcasts every stored user message to the whole
+ * group including the sender, so the echo is the only real delivery receipt —
+ * a socket in `OPEN` on a dead radio will happily swallow a frame.
+ */
+const SEND_ACK_TIMEOUT_MS = 8000;
+
+/**
+ * The server mints its own message id and ignores extra fields on the
+ * `user_message` frame, so an optimistic bubble is matched to its echo by
+ * sender and content. The window keeps an identical message typed much later
+ * from stealing an old failed bubble.
+ */
+const ECHO_MATCH_WINDOW_MS = 60_000;
+
+const LOCAL_ID_PREFIX = "local:";
+
+type PendingState = "sending" | "failed";
+
+/** A message in the transcript, possibly one we optimistically rendered. */
+interface ChatMessageItem extends ChatMessagePayload {
+  /** Present only while the server has not echoed this message back. */
+  pending?: PendingState;
+  /** Client clock ms when the frame was last handed to the socket. */
+  pendingSentAt?: number;
+}
+
 export default function ChatPage() {
   const { t } = useTranslation();
-
-  const FATAL_CLOSE_MESSAGES: Record<number, string> = {
-    4003: t("chat.fatalEventNotFound"),
-    4004: t("chat.fatalEventEnded"),
-    4005: t("chat.fatalNotActive"),
-  };
 
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
   const { participant, token, setParticipant, clearParticipant } = useParticipant();
-  const { event, participants, setParticipants, clearEvent } = useEvent();
+  const { event, participants, setEvent, setParticipants, clearEvent } = useEvent();
   const {
     status: wsStatus,
     closeCode,
     maxAttemptsReached,
+    isRejected,
+    resyncNonce,
     catchUpMessages,
     send,
     subscribe,
@@ -83,9 +117,10 @@ export default function ChatPage() {
     disconnect,
     manualRetry,
     clearCatchUpMessages,
+    setLastMessageTimestamp,
   } = useWebSocket();
 
-  const [messages, setMessages] = useState<ChatMessagePayload[]>([]);
+  const [messages, setMessages] = useState<ChatMessageItem[]>([]);
   const [inputText, setInputText] = useState("");
   const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
   const [hasNewMessages, setHasNewMessages] = useState(false);
@@ -110,11 +145,24 @@ export default function ChatPage() {
   participantsRef.current = participants;
   const participantRef = useRef(participant);
   participantRef.current = participant;
-  /** Whether the live socket has already decided the pending-action state. */
-  const actionFromStreamRef = useRef(false);
+  const eventRef = useRef(event);
+  eventRef.current = event;
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
+  /**
+   * Counts how many times the live socket has spoken about the pending-action
+   * state. A snapshot fetch only applies if this hasn't moved while it was in
+   * flight — the stream is newer than any HTTP response it races.
+   */
+  const actionStreamSeqRef = useRef(0);
   const wasReconnectingRef = useRef(false);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isTypingRef = useRef(false);
+  const errorToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** Assigned below — lets the socket subscription reach the toast helper. */
+  const showErrorRef = useRef<(message: string) => void>(() => {});
+  /** Ack timers for optimistic messages, keyed by their local id. */
+  const pendingTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -146,11 +194,11 @@ export default function ChatPage() {
   const hasConnectedRef = useRef(false);
 
   useEffect(() => {
-    if (code && token && wsStatus === "disconnected" && !hasConnectedRef.current) {
+    if (code && token && wsStatus === "disconnected" && !isRejected && !hasConnectedRef.current) {
       hasConnectedRef.current = true;
       connectRef.current(code, token);
     }
-  }, [code, token, wsStatus]);
+  }, [code, token, wsStatus, isRejected]);
 
   // Load full message history on mount (covers auto-rejoin where no messages are in state)
   useEffect(() => {
@@ -158,11 +206,20 @@ export default function ChatPage() {
     let cancelled = false;
 
     async function loadHistory() {
+      // Fixed before the request so an empty transcript still gives catch-up
+      // a watermark to ask from.
+      const fetchedAt = new Date().toISOString();
       try {
         const response = await api.get<MessageHistoryResponse>(
           `/event/${encodeURIComponent(code!)}/messages`,
         );
-        if (cancelled || response.messages.length === 0) return;
+        if (cancelled) return;
+        // Seed the catch-up watermark. Without this a reconnect after a page
+        // refresh has no `since` value and skips catch-up altogether, so
+        // everything sent during the outage is lost from the transcript.
+        const newest = response.messages[response.messages.length - 1];
+        setLastMessageTimestamp(newest ? newest.created_at : fetchedAt);
+        if (response.messages.length === 0) return;
         setMessages((prev) => {
           if (prev.length > 0) return prev; // Don't overwrite if messages already loaded
           return response.messages;
@@ -187,6 +244,7 @@ export default function ChatPage() {
   useEffect(() => {
     if (!code || !token) return;
     let cancelled = false;
+    const streamSeq = actionStreamSeqRef.current;
 
     async function loadPendingAction() {
       try {
@@ -195,7 +253,7 @@ export default function ChatPage() {
         );
         // The live stream is authoritative — if it has already said anything
         // about the action state, don't overwrite it with this snapshot.
-        if (cancelled || actionFromStreamRef.current) return;
+        if (cancelled || actionStreamSeqRef.current !== streamSeq) return;
         if (detail.pending_action) {
           setPendingAction(detail.pending_action);
         }
@@ -209,13 +267,78 @@ export default function ChatPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code, token]);
 
-  // Handle close codes — redirect to join on auth failure with explanation
+  // Re-read game state after every reconnect.
+  //
+  // action_waiting, block_advanced and game_complete are broadcast once and
+  // never replayed. A group that was offline when one fired would otherwise
+  // sit forever on a screen that no longer matches the server: no confirm
+  // button, or a confirm button for a block that already advanced. Message
+  // catch-up (handled by the socket context) does not cover any of that.
+  useEffect(() => {
+    if (resyncNonce === 0 || !code) return;
+    let cancelled = false;
+    const streamSeq = actionStreamSeqRef.current;
+
+    async function resync() {
+      try {
+        const detail = await api.get<EventDetailResponse>(
+          `/event/${encodeURIComponent(code!)}`,
+        );
+        if (cancelled) return;
+
+        if (detail.event.status === "COMPLETED") {
+          navigate(`/event/${code}/complete`, { replace: true });
+          return;
+        }
+        if (detail.event.status === "EXPIRED" || detail.event.status === "REFUNDED") {
+          navigate(`/event/${code}`, { replace: true });
+          return;
+        }
+
+        setEvent({
+          code: detail.event.code,
+          status: detail.event.status,
+          current_stop: detail.event.current_stop,
+          language: detail.event.language,
+        });
+        setParticipants(detail.participants);
+        if (detail.current_participant) {
+          setParticipant(detail.current_participant);
+        }
+
+        // Skip if the socket has spoken about the action while this was in
+        // flight — the live frame is newer than this snapshot.
+        if (actionStreamSeqRef.current !== streamSeq) return;
+        setPendingAction(detail.pending_action);
+        if (!detail.pending_action) setActionConfirming(false);
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 410) {
+          navigate(`/event/${code}`, { replace: true });
+        }
+        // Otherwise non-fatal — the next reconnect tries again
+      }
+    }
+
+    resync();
+    return () => { cancelled = true; };
+  }, [resyncNonce, code, navigate, setEvent, setParticipants, setParticipant]);
+
+  // Handle close codes — leave the chat with an explanation. Fatal codes are
+  // terminal, so staying here would just show a dead screen with no way back.
   useEffect(() => {
     if (closeCode === null || !code) return;
     if (REJOIN_CLOSE_CODES.has(closeCode)) {
       navigate(`/event/${code}`, {
         replace: true,
         state: { sessionExpired: true },
+      });
+      return;
+    }
+    const reason = fatalCloseReason(closeCode);
+    if (reason) {
+      navigate(`/event/${code}`, {
+        replace: true,
+        state: { disconnectedReason: reason },
       });
     }
   }, [closeCode, code, navigate]);
@@ -240,7 +363,33 @@ export default function ChatPage() {
       const existingIds = new Set(prev.map((m) => m.id));
       const newMessages = catchUpMessages.filter((m) => !existingIds.has(m.id));
       if (newMessages.length === 0) return prev;
-      return [...prev, ...newMessages];
+
+      // A message sent just before the drop did reach the server, so its real
+      // copy comes back through catch-up rather than the live socket. Promote
+      // the optimistic bubble instead of leaving a "not sent" duplicate.
+      const myId = participantRef.current?.id ?? null;
+      const now = Date.now();
+      const next = prev.slice();
+      const appended: ChatMessageItem[] = [];
+
+      for (const incoming of newMessages) {
+        let promoted = false;
+        if (myId && incoming.participant_id === myId) {
+          const index = next.findIndex(
+            (m) =>
+              m.pending !== undefined &&
+              m.content === incoming.content &&
+              now - (m.pendingSentAt ?? 0) < ECHO_MATCH_WINDOW_MS,
+          );
+          if (index !== -1) {
+            next[index] = incoming;
+            promoted = true;
+          }
+        }
+        if (!promoted) appended.push(incoming);
+      }
+
+      return appended.length > 0 ? [...next, ...appended] : next;
     });
 
     clearCatchUpMessages();
@@ -254,6 +403,25 @@ export default function ChatPage() {
           const payload = msg.payload as ChatMessagePayload;
           setMessages((prev) => {
             if (prev.some((m) => m.id === payload.id)) return prev;
+
+            // Our own message coming back is the delivery receipt. Swap the
+            // optimistic bubble for the real one instead of showing both.
+            const myId = participantRef.current?.id ?? null;
+            if (myId && payload.participant_id === myId) {
+              const now = Date.now();
+              const index = prev.findIndex(
+                (m) =>
+                  m.pending !== undefined &&
+                  m.content === payload.content &&
+                  now - (m.pendingSentAt ?? 0) < ECHO_MATCH_WINDOW_MS,
+              );
+              if (index !== -1) {
+                const next = prev.slice();
+                next[index] = payload;
+                return next;
+              }
+            }
+
             return [...prev, payload];
           });
 
@@ -366,7 +534,7 @@ export default function ChatPage() {
         }
         case "action_waiting": {
           const payload = msg.payload as ActionWaitingPayload;
-          actionFromStreamRef.current = true;
+          actionStreamSeqRef.current += 1;
           setPendingAction({ block_id: payload.block_id, label: payload.label });
           break;
         }
@@ -375,7 +543,7 @@ export default function ChatPage() {
           // must not clear it — another player asking a question would
           // otherwise take the confirm button away from the lead.
           const payload = msg.payload as BlockAdvancedPayload;
-          actionFromStreamRef.current = true;
+          actionStreamSeqRef.current += 1;
           setPendingAction((prev) =>
             prev?.block_id === payload.block_id ? null : prev,
           );
@@ -385,8 +553,7 @@ export default function ChatPage() {
         case "error": {
           const payload = msg.payload as ErrorPayload;
           setActionConfirming(false);
-          setErrorToast(validationMessage(payload.code ?? payload.message));
-          setTimeout(() => setErrorToast(null), 4000);
+          showErrorRef.current(validationMessage(payload.code ?? payload.message));
           break;
         }
       }
@@ -416,27 +583,68 @@ export default function ChatPage() {
     }
   }, []);
 
-  // Visual Viewport API for mobile keyboard
+  // Visual Viewport API for mobile keyboard.
+  //
+  // iOS does not shrink the layout viewport when the keyboard opens; it scrolls
+  // the layout viewport instead and reports the shift as `offsetTop`. Sizing the
+  // container from `height` alone therefore leaves it pinned to the top of the
+  // document, which pushes the input under the keyboard. Match both the size and
+  // the offset so the container always covers exactly the visible area.
+  const syncViewportToKeyboard = useCallback(() => {
+    const viewport = window.visualViewport;
+    const container = chatContainerRef.current;
+    if (!viewport || !container) return;
+
+    container.style.height = `${viewport.height}px`;
+    const offsetTop = viewport.offsetTop;
+    container.style.transform =
+      offsetTop > 0 ? `translateY(${offsetTop}px)` : "";
+  }, []);
+
   useEffect(() => {
     const viewport = window.visualViewport;
     if (!viewport) return;
 
-    const handleResize = () => {
-      const container = chatContainerRef.current;
-      if (container) {
-        container.style.height = `${viewport.height}px`;
+    let lastHeight = viewport.height;
+
+    const handleViewportChange = () => {
+      syncViewportToKeyboard();
+
+      const keyboardOpened =
+        viewport.height < lastHeight - KEYBOARD_OPEN_DELTA_PX;
+      lastHeight = viewport.height;
+
+      // Keep the newest message and the input in view as the keyboard appears.
+      if (keyboardOpened && !isUserScrolledUpRef.current) {
+        messagesEndRef.current?.scrollIntoView({ block: "end" });
       }
     };
 
-    viewport.addEventListener("resize", handleResize);
-    viewport.addEventListener("scroll", handleResize);
-    handleResize();
+    viewport.addEventListener("resize", handleViewportChange);
+    viewport.addEventListener("scroll", handleViewportChange);
+    syncViewportToKeyboard();
 
     return () => {
-      viewport.removeEventListener("resize", handleResize);
-      viewport.removeEventListener("scroll", handleResize);
+      viewport.removeEventListener("resize", handleViewportChange);
+      viewport.removeEventListener("scroll", handleViewportChange);
+      const container = chatContainerRef.current;
+      if (container) container.style.transform = "";
     };
-  }, []);
+  }, [syncViewportToKeyboard]);
+
+  // Focusing the textarea is what opens the keyboard, but iOS reports the new
+  // viewport a beat later — re-sync once it has settled so the input stays put.
+  const handleInputFocus = useCallback(() => {
+    if (!window.visualViewport) return;
+    window.setTimeout(() => {
+      syncViewportToKeyboard();
+      if (!isUserScrolledUpRef.current) {
+        messagesEndRef.current?.scrollIntoView({ block: "end" });
+      } else {
+        inputRef.current?.scrollIntoView({ block: "nearest" });
+      }
+    }, KEYBOARD_SETTLE_MS);
+  }, [syncViewportToKeyboard]);
 
   // Send typing_start/typing_stop with debounce
   const sendTypingStop = useCallback(() => {
@@ -456,13 +664,60 @@ export default function ChatPage() {
     typingTimeoutRef.current = setTimeout(sendTypingStop, TYPING_INDICATOR_DEBOUNCE_MS);
   }, [send, sendTypingStop]);
 
-  // Cleanup typing timeout and participant typing timers on unmount
+  // Cleanup timers on unmount
   useEffect(() => {
+    const pendingTimers = pendingTimersRef.current;
     return () => {
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      if (errorToastTimerRef.current) clearTimeout(errorToastTimerRef.current);
       participantsTypingRef.current.forEach((timer) => clearTimeout(timer));
+      pendingTimers.forEach((timer) => clearTimeout(timer));
+      pendingTimers.clear();
     };
   }, []);
+
+  const showError = useCallback((message: string) => {
+    setErrorToast(message);
+    if (errorToastTimerRef.current) clearTimeout(errorToastTimerRef.current);
+    errorToastTimerRef.current = setTimeout(
+      () => setErrorToast(null),
+      ERROR_TOAST_DURATION_MS,
+    );
+  }, []);
+
+  showErrorRef.current = showError;
+
+  /**
+   * Start (or restart) the delivery deadline for an optimistic message. If it
+   * has been promoted by then its local id is gone from the list, so the
+   * update is a harmless no-op.
+   */
+  const armSendTimeout = useCallback((localId: string) => {
+    const timers = pendingTimersRef.current;
+    const existing = timers.get(localId);
+    if (existing) clearTimeout(existing);
+    timers.set(
+      localId,
+      setTimeout(() => {
+        timers.delete(localId);
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === localId && m.pending === "sending" ? { ...m, pending: "failed" } : m,
+          ),
+        );
+      }, SEND_ACK_TIMEOUT_MS),
+    );
+  }, []);
+
+  // A dropped socket is immediate proof that anything still in flight is not
+  // going to be acknowledged — don't make the player wait out the deadline.
+  useEffect(() => {
+    if (wsStatus === "connected" || wsStatus === "connecting") return;
+    setMessages((prev) => {
+      if (!prev.some((m) => m.pending === "sending")) return prev;
+      return prev.map((m) => (m.pending === "sending" ? { ...m, pending: "failed" } : m));
+    });
+  }, [wsStatus]);
 
   // Send message
   const handleSend = useCallback(() => {
@@ -470,12 +725,38 @@ export default function ChatPage() {
     const result = chatMessageSchema.safeParse(trimmed);
     if (!result.success) return;
 
+    const me = participantRef.current;
+    if (!me) return;
+
     const sent = send({ type: "user_message", payload: { text: trimmed } });
     if (!sent) {
-      setErrorToast(t("chat.offlineError"));
-      setTimeout(() => setErrorToast(null), 4000);
+      // The input is deliberately left intact — the player keeps their text
+      // and can send it again once the socket is back.
+      showError(t("chat.offlineError"));
       return;
     }
+
+    // Handed to an OPEN socket, which is not the same as delivered. Render it
+    // as pending until the server echoes it back.
+    const localId = `${LOCAL_ID_PREFIX}${crypto.randomUUID()}`;
+    const sentAt = Date.now();
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: localId,
+        sender_type: "user",
+        sender_name: me.display_name,
+        participant_id: me.id,
+        content: trimmed,
+        image_url: null,
+        step_number: eventRef.current?.current_stop ?? 0,
+        created_at: new Date(sentAt).toISOString(),
+        pending: "sending",
+        pendingSentAt: sentAt,
+      },
+    ]);
+    armSendTimeout(localId);
+
     setInputText("");
     sendTypingStop();
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
@@ -483,7 +764,30 @@ export default function ChatPage() {
     if (inputRef.current) {
       inputRef.current.style.height = "auto";
     }
-  }, [inputText, send, sendTypingStop]);
+  }, [inputText, send, sendTypingStop, showError, armSendTimeout, t]);
+
+  // Retry a message the server never acknowledged
+  const handleRetrySend = useCallback(
+    (localId: string) => {
+      const target = messagesRef.current.find((m) => m.id === localId);
+      if (!target || target.pending !== "failed") return;
+
+      const sent = send({ type: "user_message", payload: { text: target.content } });
+      if (!sent) {
+        showError(t("chat.offlineError"));
+        return;
+      }
+
+      const sentAt = Date.now();
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === localId ? { ...m, pending: "sending", pendingSentAt: sentAt } : m,
+        ),
+      );
+      armSendTimeout(localId);
+    },
+    [send, showError, armSendTimeout, t],
+  );
 
   // Handle keyboard input
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -517,11 +821,19 @@ export default function ChatPage() {
   // would strand the group if the confirm were refused.
   const handleActionConfirm = useCallback(() => {
     if (!pendingAction || actionConfirming) return;
+
+    // Confirm only counts if it actually reached the socket. Failing silently
+    // here leaves the whole group parked on a block nobody can advance.
+    const sent = send({ type: "action_confirm", payload: { block_id: pendingAction.block_id } });
+    if (!sent) {
+      showError(t("chat.actionOfflineError"));
+      return;
+    }
+
     setActionConfirming(true);
-    send({ type: "action_confirm", payload: { block_id: pendingAction.block_id } });
     // Safety net in case neither block_advanced nor an error arrives
     setTimeout(() => setActionConfirming(false), 5000);
-  }, [pendingAction, actionConfirming, send]);
+  }, [pendingAction, actionConfirming, send, showError, t]);
 
   // Leave game
   const handleLeave = useCallback(async () => {
@@ -595,12 +907,6 @@ export default function ChatPage() {
 
   const isValidMessage = chatMessageSchema.safeParse(inputText.trim()).success;
 
-  // Determine if we should show a fatal error for close codes
-  const fatalMessage =
-    closeCode !== null && FATAL_CLOSE_CODES.has(closeCode)
-      ? FATAL_CLOSE_MESSAGES[closeCode] ?? t("common.connectionClosed")
-      : null;
-
   return (
     <div ref={chatContainerRef} className="flex h-svh flex-col bg-white">
       {/* Header with menu */}
@@ -639,7 +945,7 @@ export default function ChatPage() {
       </div>
 
       {/* Connection status banners */}
-      {wsStatus === "reconnecting" && (
+      {wsStatus === "reconnecting" && !maxAttemptsReached && (
         <div className="shrink-0 bg-yellow-400 px-4 py-1.5 text-center text-sm font-medium text-yellow-900">
           {t("common.reconnecting")}
         </div>
@@ -658,11 +964,6 @@ export default function ChatPage() {
           >
             {t("common.retry")}
           </button>
-        </div>
-      )}
-      {fatalMessage && (
-        <div className="shrink-0 bg-red-500 px-4 py-1.5 text-center text-sm font-medium text-white">
-          {fatalMessage}
         </div>
       )}
 
@@ -690,6 +991,7 @@ export default function ChatPage() {
               (i === 0 || messages[i - 1].sender_type !== "guide")
             }
             onImageClick={setFullscreenImage}
+            onRetrySend={handleRetrySend}
           />
         ))}
 
@@ -769,6 +1071,7 @@ export default function ChatPage() {
             value={inputText}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
+            onFocus={handleInputFocus}
             placeholder={t("chat.inputPlaceholder")}
             rows={1}
             maxLength={MAX_MESSAGE_LENGTH}
@@ -922,11 +1225,12 @@ export default function ChatPage() {
 // ---------------------------------------------------------------------------
 
 interface MessageRowProps {
-  message: ChatMessagePayload;
-  prevMessage: ChatMessagePayload | null;
+  message: ChatMessageItem;
+  prevMessage: ChatMessageItem | null;
   isSelf: boolean;
   isFirstInGuideSequence: boolean;
   onImageClick: (url: string) => void;
+  onRetrySend: (localId: string) => void;
 }
 
 function MessageRow({
@@ -935,6 +1239,7 @@ function MessageRow({
   isSelf,
   isFirstInGuideSequence,
   onImageClick,
+  onRetrySend,
 }: MessageRowProps) {
   const showTimestamp =
     !prevMessage ||
@@ -953,7 +1258,11 @@ function MessageRow({
       {message.sender_type === "system" ? (
         <SystemMessage content={message.content} />
       ) : isSelf ? (
-        <SelfBubble message={message} onImageClick={onImageClick} />
+        <SelfBubble
+          message={message}
+          onImageClick={onImageClick}
+          onRetrySend={onRetrySend}
+        />
       ) : message.sender_type === "guide" ? (
         <GuideBubble
           message={message}
@@ -980,16 +1289,44 @@ function SystemMessage({ content }: { content: string }) {
 function SelfBubble({
   message,
   onImageClick,
+  onRetrySend,
 }: {
-  message: ChatMessagePayload;
+  message: ChatMessageItem;
   onImageClick: (url: string) => void;
+  onRetrySend: (localId: string) => void;
 }) {
+  const { t } = useTranslation();
+  const isSending = message.pending === "sending";
+  const hasFailed = message.pending === "failed";
+
   return (
-    <div className="mb-chat-gap flex justify-end">
-      <div className="max-w-[75%] rounded-2xl rounded-br-sm bg-bubble-self px-3 py-2 text-white">
+    <div className="mb-chat-gap flex flex-col items-end">
+      <div
+        className={`max-w-[75%] rounded-2xl rounded-br-sm bg-bubble-self px-3 py-2 text-white ${
+          message.pending ? "opacity-60" : ""
+        }`}
+      >
         <p className="whitespace-pre-wrap break-words"><Linkify text={message.content} /></p>
         <MessageImage url={message.image_url} onClick={onImageClick} />
       </div>
+      {isSending && (
+        <span className="mt-0.5 pr-1 text-xs text-system-text">
+          {t("chat.sending")}
+        </span>
+      )}
+      {hasFailed && (
+        <button
+          onClick={() => onRetrySend(message.id)}
+          aria-label={t("chat.retryAriaLabel")}
+          className="mt-0.5 flex items-center gap-1 pr-1 text-xs font-medium text-red-600 hover:text-red-700"
+        >
+          <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M23 4v6h-6" />
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+          </svg>
+          {t("chat.sendFailed")}
+        </button>
+      )}
     </div>
   );
 }

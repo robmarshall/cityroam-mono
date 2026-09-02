@@ -5,6 +5,7 @@ import {
   RouterProvider,
 } from "react-router-dom";
 
+const EntryPage = lazy(() => import("./pages/EntryPage"));
 const JoinPage = lazy(() => import("./pages/JoinPage"));
 const LobbyPage = lazy(() => import("./pages/LobbyPage"));
 const ChatPage = lazy(() => import("./pages/ChatPage"));
@@ -26,6 +27,14 @@ function SuspenseWrapper({ children }: { children: React.ReactNode }) {
 
 export const router = createBrowserRouter(
   [
+    {
+      path: "/",
+      element: (
+        <SuspenseWrapper>
+          <EntryPage />
+        </SuspenseWrapper>
+      ),
+    },
     {
       path: "event/:code",
       element: (

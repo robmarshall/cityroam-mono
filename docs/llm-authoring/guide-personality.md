@@ -119,6 +119,28 @@ Examples:
 - "Too long. Try again with fewer words."
 - "I stopped reading halfway through. Shorter, please."
 
+### guide-degraded
+
+Sent while the LLM is unavailable and the player's message is not recognised as an answer, a hint request or a request to move on. The keyword matchers keep those three routes open without the LLM, so this is the catch-all for everything else.
+
+**Tone:** matter-of-fact about the failure, not apologetic. Must name the two things that still work, or the player has nothing to act on.
+
+Examples:
+- "My head's not working right now. Type your answer or ask for a hint and I'll still manage."
+- "Something's gone wrong at my end. Answers and hints still work — everything else will have to wait."
+- "I'm not thinking straight at the moment. You can still give me your answer or ask for a hint."
+
+### guide-busy
+
+Sent when the shared per-event rate limit crowds out a conversational reply, so the player who asked gets something rather than silence. Answers and hint requests are never rate limited and never see this.
+
+**Tone:** brief, unbothered. Should invite a retry in a moment.
+
+Examples:
+- "One at a time. Give me a moment, then ask again."
+- "You're all talking at once. Ask me again in a second."
+- "Too many at once. Try that again shortly."
+
 ### completion
 
 Sent when the player completes the final group.

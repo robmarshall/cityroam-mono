@@ -69,12 +69,32 @@ vi.mock("../../services/template-vars.js", () => ({
   applyTemplateVars: vi.fn((content: string) => content),
 }));
 
+// ── Mock the atomic counters ───────────────────────────────────────
+// The real ones are one conditional UPDATE each; event-counters.test.ts
+// covers the SQL. Here they stand in for the row lock so the handler's use of
+// the post-increment value can be driven directly.
+vi.mock("../../services/pipeline/event-counters.js", () => ({
+  claimHint: vi.fn(),
+  recordWrongAttempt: vi.fn(),
+}));
+
+// ── Mock en-route tail lookup ──────────────────────────────────────
+vi.mock("../../services/enroute.js", () => ({
+  loadEnRouteTail: vi.fn().mockResolvedValue({
+    notes: [],
+    mapLink: null,
+    directions: null,
+  }),
+}));
+
 // ── Imports (after mocks) ───────────────────────────────────────────
 import { db } from "../../db/index.js";
 import { appendMessage, publishMessage } from "../../redis/index.js";
 import { advanceAfterBlock } from "../../services/group-runner.js";
 import { sendSequence } from "../../services/send-sequence.js";
 import { buildRouteTemplateVars } from "../../services/template-vars.js";
+import { claimHint } from "../../services/pipeline/event-counters.js";
+import { loadEnRouteTail, type EnRouteContext } from "../../services/enroute.js";
 
 import {
   handleHintRequest,
@@ -128,7 +148,25 @@ function makeCtx(overrides: Partial<HintRequestContext> = {}): HintRequestContex
 beforeEach(() => {
   vi.clearAllMocks();
   (db as any).returning.mockResolvedValue([mockMsg]);
+  // Default: the claim succeeds and this request owns hint 1
+  vi.mocked(claimHint).mockResolvedValue(1);
+  vi.mocked(loadEnRouteTail).mockResolvedValue({
+    notes: [],
+    mapLink: null,
+    directions: null,
+  });
 });
+
+function makeEnRoute(overrides: Partial<EnRouteContext> = {}): EnRouteContext {
+  return {
+    groupId: "group-1",
+    fromBlockId: "block-0",
+    stepNumber: 1,
+    nextQuestionBlockId: "block-next",
+    nextQuestionConfig: null,
+    ...overrides,
+  };
+}
 
 // =====================================================================
 // hint-request handler
@@ -145,6 +183,8 @@ describe("handleHintRequest", () => {
     (db.query.events.findFirst as ReturnType<typeof vi.fn>)
       .mockResolvedValueOnce({ route_id: "route-1" });
 
+    vi.mocked(claimHint).mockResolvedValue(1);
+
     const ctx = makeCtx({ hintsGiven: 0 });
     const result = await handleHintRequest(ctx);
 
@@ -159,10 +199,82 @@ describe("handleHintRequest", () => {
       expect.any(Object),
     );
 
-    // hints_given incremented to 1
-    expect((db as any).set).toHaveBeenCalledWith(
-      expect.objectContaining({ hints_given: 1 }),
+    // The counter moved in SQL, scoped to the block being hinted at
+    expect(claimHint).toHaveBeenCalledWith("evt-1", "block-1", 2);
+  });
+
+  it("serves the hint the claim returned, not the one the stale context implies", async () => {
+    const questionBlock = makeMockQuestionBlock();
+
+    (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(questionBlock);
+    (db.query.events.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({ route_id: "route-1" });
+
+    // A teammate's request landed first, so this one owns hint 2 even though
+    // the context it was built from still said 0 hints had been given.
+    vi.mocked(claimHint).mockResolvedValue(2);
+
+    await handleHintRequest(makeCtx({ hintsGiven: 0 }));
+
+    expect(sendSequence).toHaveBeenCalledWith(
+      "evt-1",
+      "ABC123",
+      1,
+      [{ content: "It faces the main square.", image_url: null, delay_ms: 0 }],
+      expect.any(Object),
     );
+  });
+
+  it("stays quiet when the claim is lost to another request", async () => {
+    const questionBlock = makeMockQuestionBlock();
+
+    (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(questionBlock);
+
+    vi.mocked(claimHint).mockResolvedValue(null);
+
+    const result = await handleHintRequest(makeCtx());
+
+    expect(result).toEqual({ handled: true, exhausted: false });
+    expect(sendSequence).not.toHaveBeenCalled();
+    expect(advanceAfterBlock).not.toHaveBeenCalled();
+    expect(appendMessage).not.toHaveBeenCalled();
+  });
+
+  it("two concurrent requests get hint 1 then hint 2, never the same one", async () => {
+    const questionBlock = makeMockQuestionBlock();
+
+    (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValue(questionBlock);
+    (db.query.events.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValue({ route_id: "route-1" });
+
+    // Stand in for the row lock: each claim reads and writes under it, so
+    // concurrent callers come out with consecutive values.
+    let hintsGiven = 0;
+    vi.mocked(claimHint).mockImplementation(async (_e, _b, maxHints) => {
+      if (hintsGiven > maxHints) return null;
+      hintsGiven += 1;
+      return hintsGiven;
+    });
+
+    await Promise.all([
+      handleHintRequest(makeCtx({ hintsGiven: 0 })),
+      handleHintRequest(makeCtx({ hintsGiven: 0 })),
+    ]);
+
+    const served = vi.mocked(sendSequence).mock.calls.map((c) => c[3]);
+    expect(served).toHaveLength(2);
+    expect(served[0]).not.toEqual(served[1]);
+    expect(served).toContainEqual([
+      { content: "It has a clock tower.", image_url: null, delay_ms: 0 },
+    ]);
+    expect(served).toContainEqual([
+      { content: "It faces the main square.", image_url: null, delay_ms: 0 },
+    ]);
+    // Both requests counted — the old read-modify-write left this at 1
+    expect(hintsGiven).toBe(2);
   });
 
   it("serves second hint when hintsGiven=1", async () => {
@@ -173,6 +285,8 @@ describe("handleHintRequest", () => {
 
     (db.query.events.findFirst as ReturnType<typeof vi.fn>)
       .mockResolvedValueOnce({ route_id: "route-1" });
+
+    vi.mocked(claimHint).mockResolvedValue(2);
 
     const ctx = makeCtx({ hintsGiven: 1 });
     const result = await handleHintRequest(ctx);
@@ -186,11 +300,6 @@ describe("handleHintRequest", () => {
       1,
       [{ content: "It faces the main square.", image_url: null, delay_ms: 0 }],
       expect.any(Object),
-    );
-
-    // hints_given incremented to 2
-    expect((db as any).set).toHaveBeenCalledWith(
-      expect.objectContaining({ hints_given: 2 }),
     );
   });
 
@@ -212,6 +321,9 @@ describe("handleHintRequest", () => {
     // getRandomMessageBank for hint-exhausted bank
     (db as any).where
       .mockResolvedValueOnce([{ content: "The answer was {{ANSWER}}. Moving on!" }]);
+
+    // The exhaustion claim: one caller past the last hint reveals the answer
+    vi.mocked(claimHint).mockResolvedValue(2);
 
     const ctx = makeCtx({ hintsGiven: 1 });
     const result = await handleHintRequest(ctx);
@@ -241,6 +353,9 @@ describe("handleHintRequest", () => {
     // getRandomMessageBank for hint-exhausted bank
     (db as any).where
       .mockResolvedValueOnce([{ content: "Answer: {{ANSWER}}" }]);
+
+    // The exhaustion claim: one caller past the last hint reveals the answer
+    vi.mocked(claimHint).mockResolvedValue(1);
 
     const ctx = makeCtx({ hintsGiven: 0 }); // 0 hints available, so exhausted immediately
     const result = await handleHintRequest(ctx);
@@ -272,6 +387,9 @@ describe("handleHintRequest", () => {
     (db as any).where
       .mockResolvedValueOnce([{ content: "Answer: {{ANSWER}}" }]);
 
+    // The exhaustion claim: one caller past the last hint reveals the answer
+    vi.mocked(claimHint).mockResolvedValue(1);
+
     const ctx = makeCtx({ hintsGiven: 0 });
     await handleHintRequest(ctx);
 
@@ -295,6 +413,9 @@ describe("handleHintRequest", () => {
     (db as any).where
       .mockResolvedValueOnce([])  // no messages for "en"
       .mockResolvedValueOnce([]); // getRandomMessageBank returns null (language === "en", no fallback)
+
+    // The exhaustion claim: one caller past the last hint reveals the answer
+    vi.mocked(claimHint).mockResolvedValue(1);
 
     const ctx = makeCtx({ hintsGiven: 0 });
     await handleHintRequest(ctx);
@@ -438,5 +559,71 @@ describe("handleHintRequest", () => {
       ],
       expect.any(Object),
     );
+  });
+});
+
+// =====================================================================
+// hint requests during the walk between blocks
+// =====================================================================
+
+describe("handleHintRequest while the group is walking", () => {
+  it("repeats the directions and map instead of spending a hint", async () => {
+    vi.mocked(loadEnRouteTail).mockResolvedValue({
+      notes: ["The bridge was rebuilt in 1874.", "Cross the bridge and turn left."],
+      mapLink: "https://maps.google.com/?q=bridge",
+      directions: "Cross the bridge and turn left.",
+    });
+
+    (db.query.events.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({ route_id: "route-1" });
+
+    // getRandomMessageBank for the en-route lead-in: no bank entry seeded
+    (db as any).where.mockResolvedValueOnce([]);
+
+    const result = await handleHintRequest(
+      makeCtx({ currentBlockId: null, enRoute: makeEnRoute() }),
+    );
+
+    expect(result).toEqual({ handled: true, exhausted: false });
+
+    // No hint consumed — hints belong to a question they have not been asked
+    expect(claimHint).not.toHaveBeenCalled();
+    expect(sendSequence).not.toHaveBeenCalled();
+    expect(advanceAfterBlock).not.toHaveBeenCalled();
+
+    const sent = (db as any).values.mock.calls.map((c: any[]) => c[0].content);
+    expect(sent).toContain("Cross the bridge and turn left.");
+    expect(sent).toContain("https://maps.google.com/?q=bridge");
+    // The next clue is never part of en-route help
+    expect(sent.join(" ")).not.toContain("clock tower");
+  });
+
+  it("says they are between stops when the leg has no directions", async () => {
+    vi.mocked(loadEnRouteTail).mockResolvedValue({
+      notes: [],
+      mapLink: null,
+      directions: null,
+    });
+
+    (db.query.events.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({ route_id: "route-1" });
+    (db as any).where.mockResolvedValueOnce([]);
+
+    await handleHintRequest(makeCtx({ currentBlockId: null, enRoute: makeEnRoute() }));
+
+    expect(claimHint).not.toHaveBeenCalled();
+    const sent = (db as any).values.mock.calls.map((c: any[]) => c[0].content);
+    expect(sent[0]).toContain("between stops");
+  });
+
+  it("falls back to clarification when there is no walk in progress either", async () => {
+    (db as any).where.mockResolvedValueOnce([{ content: "I didn't catch that." }]);
+
+    await handleHintRequest(makeCtx({ currentBlockId: null, enRoute: null }));
+
+    expect(claimHint).not.toHaveBeenCalled();
+    expect(loadEnRouteTail).not.toHaveBeenCalled();
+    const sent = (db as any).values.mock.calls.map((c: any[]) => c[0].content);
+    expect(sent).toContain("I didn't catch that.");
   });
 });

@@ -11,6 +11,17 @@
     "saving": "Guardando...",
     "connectionClosed": "Conexión cerrada."
   },
+  "entry": {
+    "title": "Introduce tu código de evento",
+    "subtitle": "Escribe el código de tu email de confirmación para empezar tu aventura.",
+    "codeLabel": "Código del evento",
+    "codePlaceholder": "ej. k7fq2mtz",
+    "submitButton": "Continuar",
+    "emptyCode": "Introduce tu código de evento para continuar.",
+    "invalidCode": "Ese código no parece correcto. Revisa tu email de confirmación e inténtalo de nuevo.",
+    "help": "Tu código está en el email de confirmación que recibiste al reservar.",
+    "tryAnotherCode": "Introducir otro código"
+  },
   "join": {
     "title": "Unirse al equipo",
     "nameLabel": "Tu nombre",
@@ -21,7 +32,12 @@
     "statusCompleted": "Este evento ya ha terminado.",
     "statusExpired": "Este evento ha expirado.",
     "statusRefunded": "Este evento ha sido reembolsado.",
-    "statusUnavailable": "Este evento ya no está disponible."
+    "statusUnavailable": "Este evento ya no está disponible.",
+    "disconnected": {
+      "eventNotFound": "No hemos encontrado ese evento.",
+      "eventEnded": "Este evento ha terminado.",
+      "notActive": "Ya no estás en esta partida. Vuelve a unirte con tu nombre."
+    }
   },
   "lobby": {
     "title": "Esperando jugadores",
@@ -87,7 +103,11 @@
       "placeholder": "Escribe tu nombre"
     },
     "sendAriaLabel": "Enviar mensaje",
-    "closeAriaLabel": "Cerrar"
+    "closeAriaLabel": "Cerrar",
+    "sending": "Enviando...",
+    "sendFailed": "No enviado. Toca para reintentar.",
+    "retryAriaLabel": "Reintentar enviar el mensaje",
+    "actionOfflineError": "Estás sin conexión: no se pudo confirmar. Inténtalo de nuevo."
   },
   "complete": {
     "title": "¡Juego completado!",

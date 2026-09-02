@@ -14,7 +14,7 @@ Self-guided treasure hunt web app. Customers purchase a hunt via Stripe, receive
 
 ## Prerequisites
 
-- Node.js 20 (see `.nvmrc`)
+- Node.js 22 LTS (see `.nvmrc`); `engines` allows 22-24
 - Docker and Docker Compose (for Postgres, Redis, and optional full-stack containers)
 
 ## Getting Started
@@ -87,12 +87,34 @@ npm run seed:message-banks  # Seed message bank templates only
 
 ## Testing
 
+All five packages define `test`, `build` and `typecheck`, so the workspace-wide
+scripts no longer use `--if-present` — a package that loses a script fails loudly
+instead of being silently skipped.
+
 ```bash
-npm test                          # All packages
-npm -w @cityroam/api run test     # API tests only
-npm -w @cityroam/shared run test  # Shared package tests only
-npm run typecheck                 # TypeScript checks across all packages
+npm test                             # All five packages
+npm -w @cityroam/api run test        # API tests only
+npm -w @cityroam/shared run test     # Shared package tests only
+npm -w @cityroam/app run test        # Player app smoke tests
+npm -w @cityroam/admin run test      # Admin smoke tests
+npm -w @cityroam/marketing run test  # Marketing i18n smoke tests
+npm run typecheck                    # TypeScript checks across all packages
 ```
+
+## Continuous Integration
+
+`.github/workflows/ci.yml` runs on every push to `main`/`development` and on
+every pull request, in three parallel jobs:
+
+| Job | What it does |
+|---|---|
+| `verify` | Node from `.nvmrc`, `npm ci`, `npm run typecheck`, `npm test`, `npm run build` |
+| `docker` | Builds the API, app, admin and marketing images with placeholder build args |
+| `compose` | `docker compose config` on the prod and staging files, to catch interpolation drift |
+
+The build and docker jobs pass placeholder public URLs. They prove the build
+compiles and that the Dockerfiles wire their build args through; they are not
+deployment values.
 
 ## Docker (Full Stack)
 
@@ -112,6 +134,54 @@ This starts Postgres, Redis, API (HTTP + WS), App, Admin, and Marketing in conta
 | `npm run docker:migrate` | Run migrations inside container |
 | `npm run docker:seed` | Seed database inside container |
 
+## Deployment
+
+Production runs the frontends on Vercel and the API, Postgres and Redis on
+Coolify. `docker-compose.prod.yml` is the full-stack fallback and
+`docker-compose.staging.yml` is backend-only.
+
+### Build-time vs runtime variables
+
+Vite (`VITE_*`) and Next.js (`NEXT_PUBLIC_*`) **inline** their public values into
+the JS bundle when it is built. Setting them only at runtime does nothing — the
+bundle already carries whatever was baked in. This is what made the compose path
+ship an app that dialled `ws://localhost:3002` in production.
+
+`docker-compose.prod.yml` therefore passes them as `build.args`, and each
+frontend Dockerfile fails the build when a required one is empty:
+
+| Image | Required build args | Optional |
+|---|---|---|
+| `packages/app` | `VITE_API_URL`, `VITE_WS_URL` | `VITE_POSTHOG_KEY`, `VITE_POSTHOG_HOST`, `VITE_REVIEW_LINK` |
+| `packages/admin` | `VITE_API_URL` | — |
+| `packages/marketing` | `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SITE_URL` | `NEXT_PUBLIC_POSTHOG_KEY` |
+
+On Vercel the same names are set as project environment variables instead.
+
+### Routing variables
+
+Every domain used in a Traefik `Host()` rule is interpolated with `${VAR:?...}`,
+so an unset value aborts the deploy. Previously an unset variable produced an
+empty rule and a silent 404.
+
+| File | Required |
+|---|---|
+| `docker-compose.prod.yml` | `DOMAIN`, `API_DOMAIN`, `ADMIN_DOMAIN`, `POSTGRES_PASSWORD` |
+| `docker-compose.staging.yml` | `API_DOMAIN`, `WS_DOMAIN`, `POSTGRES_PASSWORD`, `REDIS_PASSWORD` |
+
+In production the WebSocket server is reached on the API domain: Traefik routes
+`PathPrefix(/ws/)` to the `api-ws` container on port 3002, so `VITE_WS_URL` is
+`wss://<API_DOMAIN>` with no port. Staging gives it a separate `WS_DOMAIN`.
+
+Migrations run as a one-shot `migrate` service; `api-http` and `api-ws` both wait
+on `service_completed_successfully` before starting.
+
+### Node version
+
+`.nvmrc` and every Docker base image are on Node 22 LTS. Vercel ends Node 20
+support on 2026-10-01 — **the Node version in the Vercel project settings must be
+changed there manually**, it is not driven by `.nvmrc`.
+
 ## Automated Development Loop
 
 AI-driven development loop powered by Claude Code running inside Docker. Cycles through stages automatically: **implement** → **test** → **review** → **commit**.
@@ -119,14 +189,6 @@ AI-driven development loop powered by Claude Code running inside Docker. Cycles 
 ### Prerequisites
 
 - Claude Code account (for authentication)
-
-### Quick Start
-
-```bash
-npm run start
-```
-
-This builds the Docker image, starts the container, and launches the build loop inside it.
 
 ### Setup
 
@@ -176,11 +238,11 @@ From inside the container:
 
 ### npm Scripts
 
+The `loop` and `loop:plan` scripts were removed: they ran `run.sh`, which is no
+longer in the repository. Run `./loop.sh` from inside the container instead.
+
 | Script | Description |
 |---|---|
-| `npm run loop` | Build, start container, and run the build loop |
-| `npm run loop:plan` | Build, start container, and run the plan loop |
-| `npm run loop:plan -- 5` | Plan loop, max 5 iterations |
 | `npm run docker:build` | Build and start the container in the background |
 | `npm run docker:shell` | Open a shell inside the running container |
 | `npm run docker:down` | Stop and remove the container |

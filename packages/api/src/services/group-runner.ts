@@ -5,6 +5,7 @@ import { publishTyping, publishControl } from "../redis/index.js";
 import { writeGuideMessage, SCRIPTED_MESSAGE } from "./pipeline/handlers/answer-attempt.js";
 import { handleGameCompletion } from "./pipeline/handlers/game-completion.js";
 import { applyTemplateVars, buildRouteTemplateVars } from "./template-vars.js";
+import { clearEnRoute, enRouteTtlMs, setEnRoute } from "./enroute.js";
 import { createLogger } from "../lib/logger.js";
 
 const log = createLogger("group-runner");
@@ -113,6 +114,10 @@ async function sendBlocks(
             current_block_index: i,
           })
           .where(eq(schema.events.id, eventId));
+
+        // The walk is over: the group is parked on a real block again, so the
+        // handlers go back to reading their context from current_block_id.
+        await clearEnRoute(eventId);
         return i;
       }
 
@@ -125,6 +130,8 @@ async function sendBlocks(
             current_block_index: i,
           })
           .where(eq(schema.events.id, eventId));
+
+        await clearEnRoute(eventId);
 
         // Publish action_waiting control event
         await publishControl(eventCode, {
@@ -295,6 +302,24 @@ export async function advanceAfterBlock(
   // very first delay doesn't replay the block we just advanced past
   await persistBlockIndex(eventId, currentIndex + 1);
 
+  // The group is now walking. current_block_id has to stay null — the claim
+  // above, the stranded-run reconciler and the pending-action prompt all read
+  // it — so the walk is recorded beside it instead, and the guide keeps this
+  // group's directions and fun facts in context until the next block lands.
+  const remainingDelaysMs = blocks
+    .slice(currentIndex + 1)
+    .reduce((total, b) => total + (b.delay_ms ?? 0), 0);
+
+  await setEnRoute(
+    eventId,
+    {
+      groupId: block.group_id,
+      fromBlockId: blockId,
+      stepNumber: event.current_stop,
+    },
+    enRouteTtlMs(remainingDelaysMs),
+  );
+
   // Continue sending from the block after the current one
   const blockingIndex = await sendBlocks(
     eventId,
@@ -349,7 +374,10 @@ async function advanceToNextGroup(
     // Run the next group
     await runGroup(eventId, eventCode, nextGroup.id);
   } else {
-    // All groups complete — trigger game completion
+    // All groups complete — nothing left to walk to
+    await clearEnRoute(eventId);
+
+    // Trigger game completion
     await handleGameCompletion({
       eventId,
       eventCode,

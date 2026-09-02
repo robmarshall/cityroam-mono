@@ -51,6 +51,17 @@ vi.mock("../../redis/index.js", () => ({
   checkParticipantRateLimit: vi.fn().mockResolvedValue({ allowed: true, current: 1, limit: 10 }),
 }));
 
+// The busy-notice limit is imported straight from the module, since
+// redis/index.js does not re-export it.
+vi.mock("../../redis/rate-limit.js", () => ({
+  checkGuideBusyNoticeRateLimit: vi
+    .fn()
+    .mockResolvedValue({ allowed: true, current: 1, limit: 1 }),
+  checkParticipantRateLimit: vi
+    .fn()
+    .mockResolvedValue({ allowed: true, current: 1, limit: 10 }),
+}));
+
 vi.mock("../../services/pipeline/pre-filter.js", () => ({
   preFilter: vi.fn().mockResolvedValue({ action: "pass" }),
 }));
@@ -91,6 +102,10 @@ vi.mock("../../services/pipeline/handlers/hint-request.js", () => ({
   handleHintRequest: vi.fn().mockResolvedValue({ handled: true, exhausted: false }),
 }));
 
+vi.mock("../../services/pipeline/handlers/hint-nudge.js", () => ({
+  handleHintNudge: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock("../../services/pipeline/handlers/question.js", () => ({
   handleQuestion: vi.fn().mockResolvedValue({ handled: true }),
 }));
@@ -101,6 +116,12 @@ vi.mock("../../services/pipeline/handlers/silent.js", () => ({
   handlePromptInjection: vi.fn().mockResolvedValue({ handled: true, deleted: true }),
   handleInappropriate: vi.fn().mockResolvedValue({ handled: true, deleted: true }),
   handleClarification: vi.fn().mockResolvedValue({ handled: true, deleted: false }),
+}));
+
+// The en-route marker lives in Redis; mocked so tests can put the group
+// mid-walk without standing up a fake key-value store.
+vi.mock("../../services/enroute.js", () => ({
+  buildEnRouteContext: vi.fn().mockResolvedValue(null),
 }));
 
 // DeepSeekService is instantiated at module scope (`const llm = new DeepSeekService()`)
@@ -133,6 +154,7 @@ import {
   handleAnswerAttempt,
   handleAnswerAttemptWithoutLLM,
   writeGuideMessage,
+  getRandomMessageBank,
 } from "../../services/pipeline/handlers/answer-attempt.js";
 import { handleHintRequest } from "../../services/pipeline/handlers/hint-request.js";
 import { handleQuestion } from "../../services/pipeline/handlers/question.js";
@@ -142,6 +164,9 @@ import {
   handleInappropriate,
 } from "../../services/pipeline/handlers/silent.js";
 import { checkGuideRateLimit } from "../../redis/index.js";
+import { checkGuideBusyNoticeRateLimit } from "../../redis/rate-limit.js";
+import { handleHintNudge } from "../../services/pipeline/handlers/hint-nudge.js";
+import { buildEnRouteContext } from "../../services/enroute.js";
 import { processIncomingMessage } from "../../services/pipeline/orchestrator.js";
 
 // ── Helpers ─────────────────────────────────────────────────────────
@@ -197,6 +222,7 @@ describe("processIncomingMessage", () => {
     });
 
     // Reset pipeline mocks to defaults (clearAllMocks does not reset implementations)
+    (buildEnRouteContext as any).mockResolvedValue(null);
     (preFilter as any).mockResolvedValue({ action: "pass" });
     (classifyIntent as any).mockResolvedValue({ type: "answer-attempt" });
     (isGuideResponseCapReached as any).mockResolvedValue(false);
@@ -211,7 +237,11 @@ describe("processIncomingMessage", () => {
       step_number: 1, created_at: new Date().toISOString(),
     });
     (handleClarification as any).mockResolvedValue({ handled: true, deleted: false });
+    (handleHintNudge as any).mockResolvedValue(undefined);
     (checkGuideRateLimit as any).mockResolvedValue({ allowed: true, current: 1, limit: 1 });
+    (checkGuideBusyNoticeRateLimit as any).mockResolvedValue({ allowed: true, current: 1, limit: 1 });
+    // getRandomMessageBank is used by the degraded/busy notices
+    (getRandomMessageBank as any).mockResolvedValue("Bank message");
   });
 
   it("broadcasts user message immediately before any handler", async () => {
@@ -414,19 +444,106 @@ describe("processIncomingMessage", () => {
     );
   });
 
-  it("LLM failure falls back to clarification", async () => {
-    (classifyIntent as any).mockResolvedValue(null);
+  // ── Degraded mode: the classifier is unavailable ──────────────────
+  //
+  // A provider outage must not dead-end a hunt. Both scripted routes out of a
+  // question block stay open on keyword matching alone, and anything else is
+  // told so rather than being fed the same clarification line forever.
 
-    await processIncomingMessage(basePayload);
+  describe("classifier unavailable", () => {
+    beforeEach(() => {
+      (classifyIntent as any).mockResolvedValue(null);
+    });
 
-    expect(handleClarification).toHaveBeenCalledWith(
-      expect.objectContaining({
-        eventId: "event-1",
-        eventCode: "ABCD1234",
-        currentStop: 1,
-        messageId: "user-msg-1",
-      }),
-    );
+    it("serves a hint when the message reads as a hint request", async () => {
+      await processIncomingMessage({
+        ...basePayload,
+        text: "we are completely stuck, any hint?",
+      });
+
+      expect(handleHintRequest).toHaveBeenCalledWith(
+        expect.objectContaining({
+          eventId: "event-1",
+          eventCode: "ABCD1234",
+          currentBlockId: "block-1",
+          hintsGiven: 0,
+        }),
+      );
+      expect(handleClarification).not.toHaveBeenCalled();
+    });
+
+    it("serves a hint when the message asks to move on", async () => {
+      await processIncomingMessage({ ...basePayload, text: "can we skip this one" });
+
+      // Hints are the only scripted route that force-advances a block once
+      // they run out, so a skip request is routed there.
+      expect(handleHintRequest).toHaveBeenCalled();
+      expect(handleClarification).not.toHaveBeenCalled();
+    });
+
+    it("accepts a correct answer via the deterministic matcher", async () => {
+      await processIncomingMessage({ ...basePayload, text: "it is the fountain" });
+
+      expect(handleAnswerAttempt).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ eventId: "event-1", currentBlockId: "block-1" }),
+        "it is the fountain",
+      );
+      expect(handleHintRequest).not.toHaveBeenCalled();
+    });
+
+    it("an answer wins over hint keywords in the same message", async () => {
+      await processIncomingMessage({
+        ...basePayload,
+        text: "stuck on this — is it the fountain?",
+      });
+
+      expect(handleAnswerAttempt).toHaveBeenCalled();
+      expect(handleHintRequest).not.toHaveBeenCalled();
+    });
+
+    it("unrecognised text gets the degraded bank message, not a clarification", async () => {
+      await processIncomingMessage({ ...basePayload, text: "what a lovely day" });
+
+      expect(handleClarification).not.toHaveBeenCalled();
+      expect(writeGuideMessage).toHaveBeenCalledWith(
+        "event-1",
+        "ABCD1234",
+        1,
+        "Bank message",
+        null,
+        undefined,
+        { countsTowardCap: false },
+      );
+      expect(getRandomMessageBank).toHaveBeenCalledWith("guide-degraded", "en");
+    });
+
+    it("falls back to built-in wording when the bank has no degraded entry", async () => {
+      (getRandomMessageBank as any).mockResolvedValue(null);
+
+      await processIncomingMessage({ ...basePayload, text: "what a lovely day" });
+
+      const content = (writeGuideMessage as any).mock.calls[0][3];
+      expect(content).toContain("hint");
+    });
+
+    it("the degraded notice is rate limited, and stays silent rather than nagging", async () => {
+      (checkGuideRateLimit as any).mockResolvedValue({ allowed: false, current: 2, limit: 1 });
+
+      await processIncomingMessage({ ...basePayload, text: "what a lovely day" });
+
+      expect(writeGuideMessage).not.toHaveBeenCalled();
+      // A busy notice would just restate the degraded line a teammate triggered
+      expect(checkGuideBusyNoticeRateLimit).not.toHaveBeenCalled();
+    });
+
+    it("a hint request still lands while the rate limit is blocking", async () => {
+      (checkGuideRateLimit as any).mockResolvedValue({ allowed: false, current: 2, limit: 1 });
+
+      await processIncomingMessage({ ...basePayload, text: "no idea, give us a hint" });
+
+      expect(handleHintRequest).toHaveBeenCalled();
+    });
   });
 
   it("guide typing on/off always fired", async () => {
@@ -509,22 +626,124 @@ describe("processIncomingMessage", () => {
     expect(handleAnswerAttempt).not.toHaveBeenCalled();
   });
 
-  it("guide rate limit rejected: no handler invoked", async () => {
+  // ── Shared guide rate limit ────────────────────────────────────────
+  //
+  // The limit is one guide response per 5s across the whole group. It exists
+  // to stop the guide answering five people at once, so it applies to
+  // conversational replies only. Anything that moves the hunt along has to
+  // get through, or a correct answer typed moments after a teammate's chatter
+  // disappears with no reply and no error.
+
+  describe("shared guide rate limit", () => {
+    beforeEach(() => {
+      (checkGuideRateLimit as any).mockResolvedValue({ allowed: false, current: 2, limit: 1 });
+    });
+
+    it("a correct answer within the window still advances", async () => {
+      (classifyIntent as any).mockResolvedValue({ type: "answer-attempt" });
+
+      await processIncomingMessage({ ...basePayload, text: "fountain" });
+
+      expect(handleAnswerAttempt).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ eventId: "event-1", currentBlockId: "block-1" }),
+        "fountain",
+      );
+      // Answers never consume the conversational budget
+      expect(checkGuideRateLimit).not.toHaveBeenCalled();
+    });
+
+    it("a hint request within the window is still served", async () => {
+      (classifyIntent as any).mockResolvedValue({ type: "hint-request" });
+
+      await processIncomingMessage({ ...basePayload, text: "give us a hint" });
+
+      expect(handleHintRequest).toHaveBeenCalled();
+      expect(checkGuideRateLimit).not.toHaveBeenCalled();
+    });
+
+    it("a hint nudge within the window is still answered", async () => {
+      (classifyIntent as any).mockResolvedValue({ type: "hint-nudge" });
+
+      await processIncomingMessage({ ...basePayload, text: "this is impossible" });
+
+      expect(handleHintNudge).toHaveBeenCalled();
+    });
+
+    it("moderation still runs within the window", async () => {
+      (classifyIntent as any).mockResolvedValue({ type: "prompt-injection" });
+
+      await processIncomingMessage(basePayload);
+
+      expect(handlePromptInjection).toHaveBeenCalled();
+    });
+
+    it("a question within the window skips the LLM reply but still says something", async () => {
+      (classifyIntent as any).mockResolvedValue({ type: "question" });
+
+      await processIncomingMessage({ ...basePayload, text: "how far is the next stop?" });
+
+      // No second LLM call for the reply
+      expect(handleQuestion).not.toHaveBeenCalled();
+
+      // But the player is not left with nothing
+      expect(getRandomMessageBank).toHaveBeenCalledWith("guide-busy", "en");
+      expect(writeGuideMessage).toHaveBeenCalledWith(
+        "event-1",
+        "ABCD1234",
+        1,
+        "Bank message",
+        null,
+        undefined,
+        { countsTowardCap: false },
+      );
+      expect(updateIdleTimestamp).toHaveBeenCalledWith("ABCD1234", "event-1", "en");
+    });
+
+    it("the busy notice is itself limited, so a chatty group is not spammed", async () => {
+      (classifyIntent as any).mockResolvedValue({ type: "question" });
+      (checkGuideBusyNoticeRateLimit as any).mockResolvedValue({
+        allowed: false,
+        current: 2,
+        limit: 1,
+      });
+
+      await processIncomingMessage({ ...basePayload, text: "how far is the next stop?" });
+
+      expect(handleQuestion).not.toHaveBeenCalled();
+      expect(writeGuideMessage).not.toHaveBeenCalled();
+    });
+
+    it("chitchat within the window makes no LLM reply call and stays silent", async () => {
+      (classifyIntent as any).mockResolvedValue({ type: "off-topic-chat" });
+
+      await processIncomingMessage({ ...basePayload, text: "who wants a coffee after" });
+
+      // Off-topic chat has no guide reply by design, limited or not, so there
+      // is nothing to hold back and no notice to send.
+      expect(handleQuestion).not.toHaveBeenCalled();
+      expect(writeGuideMessage).not.toHaveBeenCalled();
+      expect(checkGuideRateLimit).not.toHaveBeenCalled();
+    });
+
+    it("a clarification within the window is replaced by the busy notice", async () => {
+      (classifyIntent as any).mockResolvedValue({ type: "clarification" });
+
+      await processIncomingMessage({ ...basePayload, text: "asdkjh" });
+
+      expect(handleClarification).not.toHaveBeenCalled();
+      expect(getRandomMessageBank).toHaveBeenCalledWith("guide-busy", "en");
+    });
+  });
+
+  it("a conversational reply inside the window still updates the idle timer", async () => {
     (checkGuideRateLimit as any).mockResolvedValue({ allowed: false, current: 10, limit: 10 });
+    (classifyIntent as any).mockResolvedValue({ type: "question" });
 
     await processIncomingMessage(basePayload);
 
     // User message is still stored and broadcast
     expect(appendMessage).toHaveBeenCalled();
-
-    // But no classification or handler is invoked
-    expect(classifyIntent).not.toHaveBeenCalled();
-    expect(handleAnswerAttempt).not.toHaveBeenCalled();
-    expect(handleQuestion).not.toHaveBeenCalled();
-    expect(handleHintRequest).not.toHaveBeenCalled();
-    expect(handleClarification).not.toHaveBeenCalled();
-
-    // Idle timestamp still updated
     expect(updateIdleTimestamp).toHaveBeenCalledWith("ABCD1234", "event-1", "en");
   });
 
@@ -538,5 +757,93 @@ describe("processIncomingMessage", () => {
       type: "guide_typing",
       is_typing: false,
     }));
+  });
+});
+
+// =====================================================================
+// The walk between blocks
+// =====================================================================
+
+describe("processIncomingMessage while the group is walking", () => {
+  const walkingEvent = { ...eventRow, current_block_id: null };
+
+  const enRoute = {
+    groupId: "group-1",
+    fromBlockId: "block-1",
+    stepNumber: 1,
+    nextQuestionBlockId: "block-2",
+    nextQuestionConfig: {
+      type: "question",
+      clue: "Find the lion statue",
+      accepted_answers: ["lion"],
+      hints: [],
+    },
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (db.query.events.findFirst as any).mockResolvedValue(walkingEvent);
+    (db as any).returning.mockResolvedValue([userMsg]);
+    (preFilter as any).mockResolvedValue({ action: "pass" });
+    (isGuideResponseCapReached as any).mockResolvedValue(false);
+    (updateIdleTimestamp as any).mockReturnValue(false);
+    (buildEnRouteContext as any).mockResolvedValue(enRoute);
+    (checkGuideRateLimit as any).mockResolvedValue({ allowed: true, current: 1, limit: 1 });
+    // clearAllMocks leaves implementations in place, including a rejection an
+    // earlier test installed
+    (handleAnswerAttempt as any).mockResolvedValue({ handled: true, correct: false });
+    (handleHintRequest as any).mockResolvedValue({ handled: true, exhausted: false });
+    (handleQuestion as any).mockResolvedValue({ handled: true });
+  });
+
+  it("hands the question handler the walk context instead of nothing", async () => {
+    (classifyIntent as any).mockResolvedValue({ type: "question" });
+
+    await processIncomingMessage({ ...basePayload, text: "which way at the bridge?" });
+
+    expect(handleQuestion).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ currentBlockId: null, enRoute }),
+      "which way at the bridge?",
+    );
+    expect(handleClarification).not.toHaveBeenCalled();
+  });
+
+  it("classifies against the clue they are walking towards", async () => {
+    (classifyIntent as any).mockResolvedValue({ type: "answer-attempt" });
+
+    await processIncomingMessage({ ...basePayload, text: "the lion?" });
+
+    expect(classifyIntent).toHaveBeenCalledWith(
+      expect.anything(),
+      "Find the lion statue",
+      "the lion?",
+      "en",
+    );
+    // No block to load: the clue came from the resolved next question
+    expect(db.query.routeBlocks.findFirst).not.toHaveBeenCalled();
+  });
+
+  it("passes the walk context to the answer and hint handlers", async () => {
+    (classifyIntent as any).mockResolvedValue({ type: "answer-attempt" });
+    await processIncomingMessage({ ...basePayload, text: "the lion" });
+    expect(handleAnswerAttempt).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ enRoute }),
+      "the lion",
+    );
+
+    (classifyIntent as any).mockResolvedValue({ type: "hint-request" });
+    await processIncomingMessage({ ...basePayload, text: "any hints?" });
+    expect(handleHintRequest).toHaveBeenCalledWith(expect.objectContaining({ enRoute }));
+  });
+
+  it("does not look for a walk while the group is parked on a block", async () => {
+    (db.query.events.findFirst as any).mockResolvedValue(eventRow);
+    (classifyIntent as any).mockResolvedValue({ type: "question" });
+
+    await processIncomingMessage({ ...basePayload, text: "how far?" });
+
+    expect(buildEnRouteContext).not.toHaveBeenCalled();
   });
 });

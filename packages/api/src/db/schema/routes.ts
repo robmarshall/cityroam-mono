@@ -1,4 +1,5 @@
-import { pgTable, uuid, varchar, text, integer, decimal, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, uuid, varchar, text, integer, decimal, boolean, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { routeFamilies } from "./route-families.js";
 
 export const routes = pgTable("routes", {
@@ -13,4 +14,14 @@ export const routes = pgTable("routes", {
   is_active: boolean("is_active").notNull().default(true),
   created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updated_at: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-});
+}, (table) => [
+  // Checkout picks the route for a purchase with
+  //   family + language + is_active -> findFirst
+  // (see resolveRouteInFamily in routes/checkout.ts). Two active rows for one
+  // family and language make that pick arbitrary, so the uniqueness is scoped
+  // to active rows only. Inactive duplicates are legitimate: old versions and
+  // drafts of a translation are kept, they just cannot be sold.
+  uniqueIndex("routes_family_language_active_unique")
+    .on(table.route_family_id, table.language)
+    .where(sql`is_active`),
+]);

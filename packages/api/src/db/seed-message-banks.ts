@@ -79,6 +79,16 @@ const translations: Record<
     { type: "completion", content: "Esa fue la última. Bien hecho — has completado las {{TOTAL_STOPS}} paradas y recorrido unos {{DISTANCE_KM}}km de {{CITY_NAME}}.\n\nSi te ha gustado, una reseña en Google ayuda mucho: {{REVIEW_LINK}}\n\nAhora ve a buscarte algo de beber. Te lo has ganado." },
     { type: "completion", content: "Y eso es todo. {{TOTAL_STOPS}} paradas, {{DISTANCE_KM}}km, y no te rendiste ni una vez.\n\nSi te has divertido, agradeceríamos una reseña: {{REVIEW_LINK}}\n\nDisfruta el resto del día." },
     { type: "completion", content: "Hecho. Las {{TOTAL_STOPS}} paradas completadas.\n\nHas recorrido unos {{DISTANCE_KM}}km de {{CITY_NAME}} y esperamos que hayas aprendido algo nuevo.\n\nDéjanos una reseña si te apetece: {{REVIEW_LINK}}" },
+
+    // Guide degraded (LLM unavailable)
+    { type: "guide-degraded", content: "Ahora mismo no me funciona la cabeza. Escribe tu respuesta o pide una pista y me las apañaré." },
+    { type: "guide-degraded", content: "Algo va mal por mi parte. Las respuestas y las pistas siguen funcionando; lo demás tendrá que esperar." },
+    { type: "guide-degraded", content: "No estoy pensando con claridad. Aún puedes darme tu respuesta o pedir una pista." },
+
+    // Guide busy (shared rate limit)
+    { type: "guide-busy", content: "De uno en uno. Dame un momento y vuelve a preguntar." },
+    { type: "guide-busy", content: "Estáis hablando todos a la vez. Pregúntame otra vez en un segundo." },
+    { type: "guide-busy", content: "Demasiados a la vez. Inténtalo de nuevo en un momento." },
   ],
 
   // -------------------------------------------------------------------------
@@ -139,6 +149,16 @@ const translations: Record<
     { type: "completion", content: "C'était la dernière. Bravo — tu as fait les {{TOTAL_STOPS}} étapes et parcouru environ {{DISTANCE_KM}}km dans {{CITY_NAME}}.\n\nSi tu as aimé, un avis Google nous aide beaucoup : {{REVIEW_LINK}}\n\nMaintenant va te trouver un verre. Tu l'as mérité." },
     { type: "completion", content: "Et voilà, c'est fini. {{TOTAL_STOPS}} étapes, {{DISTANCE_KM}}km, et tu n'as pas abandonné une seule fois.\n\nSi tu t'es bien amusé, on apprécierait un avis : {{REVIEW_LINK}}\n\nProfite du reste de ta journée." },
     { type: "completion", content: "Terminé. Les {{TOTAL_STOPS}} étapes sont complètes.\n\nTu as parcouru environ {{DISTANCE_KM}}km dans {{CITY_NAME}} et tu as sûrement appris une chose ou deux.\n\nLaisse un avis si le cœur t'en dit : {{REVIEW_LINK}}" },
+
+    // Guide degraded (LLM unavailable)
+    { type: "guide-degraded", content: "Ma tête ne suit plus. Écrivez votre réponse ou demandez un indice, je m'en sortirai." },
+    { type: "guide-degraded", content: "Quelque chose ne va pas de mon côté. Les réponses et les indices marchent toujours, le reste devra attendre." },
+    { type: "guide-degraded", content: "Je ne réfléchis pas bien en ce moment. Vous pouvez toujours me donner votre réponse ou demander un indice." },
+
+    // Guide busy (shared rate limit)
+    { type: "guide-busy", content: "Un à la fois. Laissez-moi un instant, puis redemandez." },
+    { type: "guide-busy", content: "Vous parlez tous en même temps. Redemandez-moi dans une seconde." },
+    { type: "guide-busy", content: "Trop de monde à la fois. Réessayez dans un moment." },
   ],
 
   // -------------------------------------------------------------------------
@@ -199,6 +219,16 @@ const translations: Record<
     { type: "completion", content: "Das war die letzte. Gut gemacht — du hast alle {{TOTAL_STOPS}} Stationen geschafft und etwa {{DISTANCE_KM}}km durch {{CITY_NAME}} zurückgelegt.\n\nWenn es dir gefallen hat, hilft uns eine Google-Bewertung sehr: {{REVIEW_LINK}}\n\nJetzt gönn dir was zu trinken. Du hast es dir verdient." },
     { type: "completion", content: "Und das war's. {{TOTAL_STOPS}} Stationen, {{DISTANCE_KM}}km, und du hast nicht einmal aufgegeben.\n\nWenn es Spaß gemacht hat, würden wir uns über eine Bewertung freuen: {{REVIEW_LINK}}\n\nGenieß den Rest des Tages." },
     { type: "completion", content: "Fertig. Alle {{TOTAL_STOPS}} Stationen geschafft.\n\nDu hast etwa {{DISTANCE_KM}}km durch {{CITY_NAME}} zurückgelegt und hoffentlich einiges gelernt.\n\nHinterlass eine Bewertung, wenn du magst: {{REVIEW_LINK}}" },
+
+    // Guide degraded (LLM unavailable)
+    { type: "guide-degraded", content: "Mein Kopf macht gerade nicht mit. Tipp deine Antwort oder frag nach einem Hinweis, das kriege ich noch hin." },
+    { type: "guide-degraded", content: "Bei mir läuft etwas schief. Antworten und Hinweise gehen weiterhin, der Rest muss warten." },
+    { type: "guide-degraded", content: "Ich denke gerade nicht klar. Du kannst mir trotzdem deine Antwort geben oder nach einem Hinweis fragen." },
+
+    // Guide busy (shared rate limit)
+    { type: "guide-busy", content: "Einer nach dem anderen. Gib mir einen Moment und frag noch mal." },
+    { type: "guide-busy", content: "Ihr redet alle gleichzeitig. Frag mich gleich noch einmal." },
+    { type: "guide-busy", content: "Zu viele auf einmal. Versuch es in einem Moment noch mal." },
   ],
 
   // -------------------------------------------------------------------------
@@ -259,6 +289,16 @@ const translations: Record<
     { type: "completion", content: "Dat was de laatste. Goed gedaan — je hebt alle {{TOTAL_STOPS}} stops gehaald en ongeveer {{DISTANCE_KM}}km door {{CITY_NAME}} afgelegd.\n\nAls je het leuk vond, helpt een Google-review enorm: {{REVIEW_LINK}}\n\nGa nu iets te drinken halen. Je hebt het verdiend." },
     { type: "completion", content: "En dat was het. {{TOTAL_STOPS}} stops, {{DISTANCE_KM}}km, en je hebt niet één keer opgegeven.\n\nAls je het leuk vond, zouden we een review waarderen: {{REVIEW_LINK}}\n\nGeniet van de rest van je dag." },
     { type: "completion", content: "Klaar. Alle {{TOTAL_STOPS}} stops voltooid.\n\nJe hebt ongeveer {{DISTANCE_KM}}km door {{CITY_NAME}} afgelegd en hopelijk iets nieuws geleerd.\n\nLaat een review achter als je daar zin in hebt: {{REVIEW_LINK}}" },
+
+    // Guide degraded (LLM unavailable)
+    { type: "guide-degraded", content: "Mijn hoofd doet het even niet. Typ je antwoord of vraag om een hint, dat lukt me nog." },
+    { type: "guide-degraded", content: "Er gaat iets mis aan mijn kant. Antwoorden en hints werken nog, de rest moet wachten." },
+    { type: "guide-degraded", content: "Ik denk even niet helder. Je kunt me nog steeds je antwoord geven of om een hint vragen." },
+
+    // Guide busy (shared rate limit)
+    { type: "guide-busy", content: "Een tegelijk. Geef me even, vraag het dan opnieuw." },
+    { type: "guide-busy", content: "Jullie praten allemaal tegelijk. Vraag het zo nog eens." },
+    { type: "guide-busy", content: "Te veel tegelijk. Probeer het zo nog eens." },
   ],
 };
 
@@ -336,31 +376,44 @@ async function main(): Promise<void> {
           .where(eq(messageBanks.language, lang));
       }
 
-      // Check for existing entries to avoid duplicates
+      // Skip entries that are already present rather than the whole language.
+      // Skipping wholesale meant a newly added bank type could never reach a
+      // database that had been seeded before, short of --clear wiping the
+      // admin's own edits along with it.
       const existing = await db
-        .select({ id: messageBanks.id })
+        .select({ type: messageBanks.type, content: messageBanks.content })
         .from(messageBanks)
         .where(eq(messageBanks.language, lang));
 
-      if (existing.length > 0 && !clear) {
+      const seen = new Set(existing.map((e) => `${e.type} ${e.content}`));
+      const missing = entries.filter(
+        (e) => !seen.has(`${e.type} ${e.content}`)
+      );
+
+      if (missing.length === 0) {
         console.log(
-          `Warning: ${existing.length} ${lang} entries already exist. Use --clear to replace them, or they will be added alongside existing ones.`
+          `All ${entries.length} ${LANGUAGE_NAMES[lang]} (${lang}) entries already present. Nothing to do.`
         );
-        console.log("Skipping. Use --clear to overwrite.");
         continue;
       }
 
+      if (existing.length > 0) {
+        console.log(
+          `${existing.length} ${lang} entries already exist; adding the ${missing.length} that are missing.`
+        );
+      }
+
       console.log(
-        `Seeding ${entries.length} message bank entries for ${LANGUAGE_NAMES[lang]} (${lang})...`
+        `Seeding ${missing.length} message bank entries for ${LANGUAGE_NAMES[lang]} (${lang})...`
       );
       await db.insert(messageBanks).values(
-        entries.map((e) => ({
+        missing.map((e) => ({
           type: e.type,
           language: lang,
           content: e.content,
         }))
       );
-      console.log(`Inserted ${entries.length} entries for ${lang}.`);
+      console.log(`Inserted ${missing.length} entries for ${lang}.`);
     }
 
     console.log("Done.");

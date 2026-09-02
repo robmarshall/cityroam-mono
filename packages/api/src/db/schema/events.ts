@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, integer, timestamp, index, check, boolean, text } from "drizzle-orm/pg-core";
+import { pgTable, uuid, varchar, integer, timestamp, index, uniqueIndex, check, boolean, text } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { routeFamilies } from "./route-families.js";
 import { routes } from "./routes.js";
@@ -32,8 +32,18 @@ export const events = pgTable("events", {
   expires_at: timestamp("expires_at", { withTimezone: true }).notNull(),
   refund_requested: boolean("refund_requested").notNull().default(false),
   refund_note: text("refund_note"),
+  // Delivery state for the confirmation email that carries the event code.
+  // The buyer has no other copy of the code once they close the success tab,
+  // so a send that never lands has to be visible to an admin rather than only
+  // present in a log line.
+  code_email_sent_at: timestamp("code_email_sent_at", { withTimezone: true }),
+  code_email_failed_at: timestamp("code_email_failed_at", { withTimezone: true }),
+  code_email_error: text("code_email_error"),
 }, (table) => [
   index("events_code_idx").on(table.code),
   index("events_status_idx").on(table.status),
+  // One event per Stripe checkout session. NULLs stay distinct in Postgres, so
+  // events created outside Stripe are unaffected.
+  uniqueIndex("events_stripe_session_id_unique").on(table.stripe_session_id),
   check("events_status_check", sql`${table.status} IN ('NOT_STARTED', 'WAITING', 'IN_PROGRESS', 'COMPLETED', 'EXPIRED', 'REFUNDED')`),
 ]);

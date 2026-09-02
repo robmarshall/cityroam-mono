@@ -147,6 +147,8 @@ export const messageBankSchema = z.object({
     "unknown-answer",
     "completion",
     "over-length",
+    "guide-degraded",
+    "guide-busy",
   ]),
   language: z.string().trim().min(2).max(5).optional().default("en"),
   content: z.string().trim().min(1, "Content is required"),

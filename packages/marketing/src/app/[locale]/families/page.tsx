@@ -1,22 +1,15 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { CTAButton } from "@/components/CTAButton";
-import { locales } from "@/i18n/config";
+import { buildMetadata } from "@/lib/metadata";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://cityroam.co.uk";
-
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("metadata");
-  return {
-    title: t("families.title"),
-    description: t("families.description"),
-    alternates: {
-      languages: Object.fromEntries([
-        ["x-default", `${siteUrl}/families`],
-        ...locales.map((l) => [l, `${siteUrl}/${l}/families`]),
-      ]),
-    },
-  };
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return buildMetadata(locale, "families");
 }
 
 const FEATURE_ITEMS = [
@@ -28,9 +21,15 @@ const FEATURE_ITEMS = [
   { icon: "\u23f8\ufe0f", key: "5" },
 ];
 
-export default async function Families() {
+export default async function Families({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
   const t = await getTranslations("families");
-  const tc = await getTranslations("common");
 
   return (
     <main className="min-h-screen bg-white">
@@ -44,7 +43,7 @@ export default async function Families() {
             {t("hero.subtitle")}
           </p>
           <div className="mt-10">
-            <CTAButton location="families-hero" label={t("hero.cta")} />
+            <CTAButton location="families-hero" segment="families" label={t("hero.cta")} />
           </div>
         </div>
       </section>
@@ -213,25 +212,10 @@ export default async function Families() {
             {t("cta.text")}
           </p>
           <div className="mt-10">
-            <CTAButton location="families-cta" label={t("cta.label")} />
+            <CTAButton location="families-cta" segment="families" label={t("cta.label")} />
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="border-t border-gray-100 px-6 py-12">
-        <div className="mx-auto max-w-5xl text-center text-sm text-gray-500">
-          <p>
-            <a
-              href="mailto:hello@cityroam.com"
-              className="text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              hello@cityroam.com
-            </a>
-          </p>
-          <p className="mt-2">{tc("footer.copyright", { year: new Date().getFullYear() })}</p>
-        </div>
-      </footer>
     </main>
   );
 }

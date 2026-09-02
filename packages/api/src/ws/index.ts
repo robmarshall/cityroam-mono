@@ -36,7 +36,13 @@ validateEnv("ws");
 
 const app = new Hono();
 
-const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app });
+const { injectWebSocket, upgradeWebSocket, wss } = createNodeWebSocket({ app });
+
+// Cap inbound frames. Clients only ever send short JSON (chat is capped at 200
+// characters), so the ws default of 100MB is a free memory-exhaustion lever.
+// ws reads this at upgrade time, so setting it on the existing server is enough.
+const MAX_WS_PAYLOAD_BYTES = 16 * 1024;
+wss.options.maxPayload = MAX_WS_PAYLOAD_BYTES;
 
 // Global middleware
 app.use("*", requestLogger);
@@ -64,6 +70,11 @@ app.get(
   "/ws/:code",
   upgradeWebSocket(async (c) => {
     const eventCode = c.req.param("code") ?? "";
+    // The session token rides in the query string because browsers can't set
+    // headers on a WebSocket handshake and the cookie is unavailable across
+    // origins. The trade-off is that the token can land in proxy and access
+    // logs; it is a random UUID scoped to one event and expires with the
+    // session, and moving it into a subprotocol would break existing clients.
     const token = new URL(c.req.url).searchParams.get("token");
 
     const authResult = await authenticateConnection(eventCode, token);

@@ -48,6 +48,13 @@ const WS_REQUIRED_VARS = [
 /** Vars that must be set even in development mode. */
 const DEV_REQUIRED_VARS = ["DATABASE_URL", "REDIS_URL"] as const;
 
+/**
+ * SESSION_SECRET signs the admin JWT. A short one is brute-forceable offline
+ * from a single captured token, so outside development it has to be long
+ * enough to be worth signing with.
+ */
+const MIN_SESSION_SECRET_LENGTH = 32;
+
 function getEnvValue(key: string): string | undefined {
   return process.env[key] ?? DEFAULTS[key];
 }
@@ -68,6 +75,18 @@ export function validateEnv(target: "http" | "ws"): void {
       `Missing required environment variables:\n${missing.map((k) => `  - ${k}`).join("\n")}`,
     );
     process.exit(1);
+  }
+
+  if (!isDev && (fullList as readonly string[]).includes("SESSION_SECRET")) {
+    const secret = process.env.SESSION_SECRET ?? "";
+    if (secret.length < MIN_SESSION_SECRET_LENGTH) {
+      console.error(
+        `SESSION_SECRET must be at least ${MIN_SESSION_SECRET_LENGTH} characters ` +
+          `outside development (got ${secret.length}). Generate one with ` +
+          `\`openssl rand -base64 48\`.`,
+      );
+      process.exit(1);
+    }
   }
 }
 
@@ -113,6 +132,10 @@ function buildEnv() {
     BASE_DOMAIN: resolve("BASE_DOMAIN"),
 
     // Optional (always have defaults)
+    // Maps marketing segments to route family UUIDs. Either a bare UUID (used
+    // for every segment) or a JSON object keyed by segment with an optional
+    // "default". Empty means "use the only active family, else reject".
+    CHECKOUT_ROUTE_FAMILY_IDS: process.env.CHECKOUT_ROUTE_FAMILY_IDS ?? "",
     NODE_ENV: process.env.NODE_ENV ?? DEFAULTS.NODE_ENV,
     PORT: process.env.PORT ?? DEFAULTS.PORT,
     WS_PORT: process.env.WS_PORT ?? DEFAULTS.WS_PORT,

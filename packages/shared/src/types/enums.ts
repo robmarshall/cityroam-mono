@@ -19,6 +19,8 @@ export type MessageBankType =
   | "clarification"
   | "unknown-answer"
   | "completion"
-  | "over-length";
+  | "over-length"
+  | "guide-degraded"
+  | "guide-busy";
 
 export type SupportedLanguage = "en" | "es" | "fr" | "de" | "nl";

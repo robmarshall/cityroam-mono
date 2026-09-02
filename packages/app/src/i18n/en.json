@@ -11,6 +11,17 @@
     "saving": "Saving...",
     "connectionClosed": "Connection closed."
   },
+  "entry": {
+    "title": "Enter your event code",
+    "subtitle": "Pop in the code from your confirmation email to start your adventure.",
+    "codeLabel": "Event code",
+    "codePlaceholder": "e.g. k7fq2mtz",
+    "submitButton": "Continue",
+    "emptyCode": "Enter your event code to continue.",
+    "invalidCode": "That code doesn't look right. Check your confirmation email and try again.",
+    "help": "Your code is in the confirmation email sent when you booked.",
+    "tryAnotherCode": "Enter a different code"
+  },
   "join": {
     "title": "Join the Team",
     "nameLabel": "Your name",
@@ -21,7 +32,12 @@
     "statusCompleted": "This event has already finished.",
     "statusExpired": "This event has expired.",
     "statusRefunded": "This event has been refunded.",
-    "statusUnavailable": "This event is no longer available."
+    "statusUnavailable": "This event is no longer available.",
+    "disconnected": {
+      "eventNotFound": "We couldn't find that event.",
+      "eventEnded": "This event has ended.",
+      "notActive": "You're no longer in this game. Rejoin with your name."
+    }
   },
   "lobby": {
     "title": "Waiting for players",
@@ -60,13 +76,13 @@
     "changeName": "Change Name",
     "leaveGame": "Leave Game",
     "inputPlaceholder": "Type a message...",
-    "offlineError": "You're offline \u2014 message not sent.",
+    "offlineError": "You're offline — message not sent.",
     "guideLabel": "Guide",
     "typingOne": "{{name}} is typing...",
     "typingMultiple": "Multiple people are typing...",
     "waitingForLead": "Waiting for {{name}}...",
     "waitingForLeadDefault": "Waiting for the lead...",
-    "newMessages": "New messages \u2193",
+    "newMessages": "New messages ↓",
     "viewOnMaps": "View on Google Maps",
     "nameChangeError": "Failed to change name. Please try again.",
     "fatalEventNotFound": "Event not found.",
@@ -87,7 +103,11 @@
       "placeholder": "Enter your name"
     },
     "sendAriaLabel": "Send message",
-    "closeAriaLabel": "Close"
+    "closeAriaLabel": "Close",
+    "sending": "Sending...",
+    "sendFailed": "Not sent. Tap to retry.",
+    "retryAriaLabel": "Retry sending message",
+    "actionOfflineError": "You're offline — we couldn't confirm. Try again."
   },
   "complete": {
     "title": "Game Complete!",
@@ -106,7 +126,7 @@
     "description": "The app ran into an unexpected error. Tap below to try again.",
     "retryButton": "Try Again",
     "eventNotFound": "This event doesn't exist. Check the link and try again.",
-    "eventFull": "This event is full \u2014 no more spaces available.",
+    "eventFull": "This event is full — no more spaces available.",
     "eventExpired": "This event has expired.",
     "eventCompleted": "This event has already finished.",
     "eventRefunded": "This event has been refunded.",
@@ -126,9 +146,9 @@
     "MESSAGE_EMPTY": "Message must not be empty",
     "EVENT_CODE_INVALID": "Invalid event code format",
     "ACTION_LEAD_ONLY": "Only the group lead can confirm actions",
-    "ACTION_MISSING_BLOCK": "Missing action reference \u2014 please try again",
+    "ACTION_MISSING_BLOCK": "Missing action reference — please try again",
     "ACTION_BLOCK_MISMATCH": "This action is no longer current",
-    "INVALID_JSON": "Message could not be sent \u2014 please try again",
+    "INVALID_JSON": "Message could not be sent — please try again",
     "UNKNOWN_MESSAGE_TYPE": "Unsupported message type"
   }
 }

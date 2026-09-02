@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useBlocker, useNavigate, useParams } from "react-router-dom";
 import type {
   AdminRouteDetailResponse,
   AdminRouteGroupResponse,
@@ -47,6 +47,7 @@ import { useAuthFetch } from "../contexts/AuthContext";
 interface RouteForm {
   name: string;
   description: string;
+  city: string;
   estimated_duration_mins: string;
   estimated_distance_km: string;
   is_active: boolean;
@@ -140,6 +141,7 @@ function zodFieldErrors(err: {
 const EMPTY_ROUTE_FORM: RouteForm = {
   name: "",
   description: "",
+  city: "",
   estimated_duration_mins: "",
   estimated_distance_km: "",
   is_active: true,
@@ -149,6 +151,9 @@ function routeToForm(r: Route): RouteForm {
   return {
     name: r.name,
     description: r.description ?? "",
+    // City lives on the route family, not the route — only used when creating
+    // a route without a family (see the Create Route path).
+    city: "",
     estimated_duration_mins: String(r.estimated_duration_mins),
     estimated_distance_km: String(r.estimated_distance_km),
     is_active: r.is_active,
@@ -287,7 +292,11 @@ function DragHandle(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
       type="button"
-      className="mr-3 cursor-grab touch-none text-gray-400 hover:text-gray-600"
+      className={`mr-3 touch-none ${
+        props.disabled
+          ? "cursor-not-allowed text-gray-200"
+          : "cursor-grab text-gray-400 hover:text-gray-600"
+      }`}
       {...props}
     >
       <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
@@ -454,7 +463,12 @@ function SortableBlock({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: block.id });
+  } = useSortable({
+    id: block.id,
+    // Dragging a block while its editor is open would throw away the unsaved
+    // edits, so the handle stays disabled until the editor is closed or saved.
+    disabled: isExpanded,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -475,7 +489,16 @@ function SortableBlock({
       {/* Collapsed header row */}
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex flex-1 items-center min-w-0">
-          <DragHandle {...attributes} {...listeners} />
+          <DragHandle
+            {...attributes}
+            {...listeners}
+            disabled={isExpanded}
+            title={
+              isExpanded
+                ? "Close or save this block editor before moving the block"
+                : "Drag to reorder or move to another group"
+            }
+          />
           <span className="mr-2 text-xs text-gray-400">{index + 1}.</span>
           <span
             className={`mr-2 inline-flex h-6 w-6 items-center justify-center rounded text-xs font-bold ${meta.color}`}
@@ -1132,21 +1155,71 @@ export default function RouteEditorPage() {
   const [deletingBlockId, setDeletingBlockId] = useState<string | null>(null);
   const [pickingBlockType, setPickingBlockType] = useState<string | null>(null); // groupId or null
 
-  // Block reorder (per group)
+  // Block layout (reorders within a group + moves between groups).
+  // savedBlockIdsMap holds the last layout the server confirmed; the pending
+  // layout is whatever `groups` currently holds. Nothing is persisted until
+  // "Save Block Layout" is pressed.
   const savedBlockIdsMap = useRef<Record<string, string[]>>({});
-  const [pendingBlockReorders, setPendingBlockReorders] = useState<
-    Record<string, string[]>
-  >({});
-  const [savingBlockOrderGroupId, setSavingBlockOrderGroupId] = useState<
-    string | null
-  >(null);
+  const [savingBlockLayout, setSavingBlockLayout] = useState(false);
 
   // Block DnD cross-group state
   const [activeBlockId, setActiveBlockId] = useState<string | null>(null);
-  const [movingBlockId, setMovingBlockId] = useState<string | null>(null);
   const [activeItemType, setActiveItemType] = useState<
     "group" | "block" | null
   >(null);
+
+  // Diff the on-screen layout against the last saved layout.
+  const blockLayout = useMemo(() => {
+    const saved = savedBlockIdsMap.current;
+    const savedGroupOfBlock = new Map<string, string>();
+    for (const [gid, ids] of Object.entries(saved)) {
+      for (const bid of ids) savedGroupOfBlock.set(bid, gid);
+    }
+
+    const moves: {
+      blockId: string;
+      fromGroupId: string;
+      toGroupId: string;
+      position: number;
+    }[] = [];
+    const changedGroupIds: string[] = [];
+    const orderByGroupId: Record<string, string[]> = {};
+
+    for (const g of groups) {
+      const currentIds = g.blocks.map((b) => b.id);
+      orderByGroupId[g.id] = currentIds;
+
+      currentIds.forEach((bid, i) => {
+        const from = savedGroupOfBlock.get(bid);
+        if (from && from !== g.id) {
+          moves.push({
+            blockId: bid,
+            fromGroupId: from,
+            toGroupId: g.id,
+            position: i,
+          });
+        }
+      });
+
+      const savedIds = saved[g.id] ?? [];
+      const unchanged =
+        savedIds.length === currentIds.length &&
+        savedIds.every((bid, i) => bid === currentIds[i]);
+      if (!unchanged) changedGroupIds.push(g.id);
+    }
+
+    return {
+      moves,
+      changedGroupIds,
+      orderByGroupId,
+      hasChanges: changedGroupIds.length > 0,
+    };
+  }, [groups]);
+
+  const changedGroupIdSet = useMemo(
+    () => new Set(blockLayout.changedGroupIds),
+    [blockLayout],
+  );
 
   // ------- Dirty state tracking -------
   const savedRouteForm = useRef<RouteForm>(EMPTY_ROUTE_FORM);
@@ -1164,9 +1237,13 @@ export default function RouteEditorPage() {
     const hasOpenEditors = openEditors.size > 0;
     // Pending reorders?
     const hasPendingGroupReorder = reorderedGroupIds !== null;
-    const hasPendingBlockReorder = Object.keys(pendingBlockReorders).length > 0;
-    return routeChanged || hasOpenEditors || hasPendingGroupReorder || hasPendingBlockReorder;
-  }, [routeForm, openEditors, reorderedGroupIds, pendingBlockReorders]);
+    return (
+      routeChanged ||
+      hasOpenEditors ||
+      hasPendingGroupReorder ||
+      blockLayout.hasChanges
+    );
+  }, [routeForm, openEditors, reorderedGroupIds, blockLayout]);
 
   useEffect(() => {
     if (!isDirty) return;
@@ -1176,6 +1253,27 @@ export default function RouteEditorPage() {
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, [isDirty]);
+
+  // In-app navigation guard (data router — react-router v6 useBlocker).
+  // Navigation we trigger ourselves after a successful save or delete sets
+  // skipBlockerRef so the user is not asked about changes that just landed.
+  const skipBlockerRef = useRef(false);
+  const blocker = useBlocker(({ currentLocation, nextLocation }) => {
+    if (skipBlockerRef.current) {
+      skipBlockerRef.current = false;
+      return false;
+    }
+    return isDirty && currentLocation.pathname !== nextLocation.pathname;
+  });
+
+  useEffect(() => {
+    if (blocker.state !== "blocked") return;
+    const leave = window.confirm(
+      "You have unsaved changes. Leave this page and discard them?",
+    );
+    if (leave) blocker.proceed();
+    else blocker.reset();
+  }, [blocker]);
 
   // ------- Editor helpers -------
   function updateEditor(key: string, patch: Partial<BlockEditorState>) {
@@ -1218,7 +1316,6 @@ export default function RouteEditorPage() {
       }
       savedBlockIdsMap.current = blockMap;
       setReorderedGroupIds(null);
-      setPendingBlockReorders({});
       setRouteForm(routeToForm(res.route));
     } catch (err) {
       if (err instanceof ApiError && err.status === 404) {
@@ -1269,9 +1366,13 @@ export default function RouteEditorPage() {
   }
 
   async function handleSaveRoute() {
+    if (isEdit && !confirmLosingBlockLayout("Saving the route")) return;
+    // The API needs either a route_family_id or a city. In edit mode the city
+    // comes from the loaded family; when creating a standalone route there is
+    // no family yet, so the user supplies the city on the form.
     const payload = {
       name: routeForm.name,
-      city: routeFamily?.city ?? "",
+      city: routeFamily?.city ?? routeForm.city.trim(),
       description: routeForm.description || undefined,
       estimated_duration_mins: Number(routeForm.estimated_duration_mins) || 0,
       estimated_distance_km: Number(routeForm.estimated_distance_km) || 0,
@@ -1280,7 +1381,14 @@ export default function RouteEditorPage() {
 
     const result = routeSchema.safeParse(payload);
     if (!result.success) {
-      setRouteErrors(zodFieldErrors(result.error));
+      const errors = zodFieldErrors(result.error);
+      // The "family or city" rule reports under route_family_id, which has no
+      // input on this page — show it on the City field instead.
+      if (errors.route_family_id && !isEdit) {
+        errors.city = "City is required to create a route family.";
+        delete errors.route_family_id;
+      }
+      setRouteErrors(errors);
       return;
     }
 
@@ -1293,6 +1401,7 @@ export default function RouteEditorPage() {
         const created = await authFetch(() =>
           api.post<{ route: Route }>("/admin/routes", result.data),
         );
+        skipBlockerRef.current = true;
         navigate(`/routes/${created.route.id}`);
       }
     } catch (err) {
@@ -1313,6 +1422,7 @@ export default function RouteEditorPage() {
     setDeleting(true);
     try {
       await authFetch(() => api.delete(`/admin/routes/${id}`));
+      skipBlockerRef.current = true;
       navigate(routeFamily ? `/routes/families/${routeFamily.id}` : "/routes");
     } catch (err) {
       if (err instanceof ApiError) {
@@ -1334,6 +1444,7 @@ export default function RouteEditorPage() {
   // ------- Group handlers -------
   async function handleAddGroup() {
     if (!id) return;
+    if (!confirmLosingBlockLayout("Adding a group")) return;
     const trimmed = newGroupName.trim();
     if (!trimmed) return;
 
@@ -1363,6 +1474,7 @@ export default function RouteEditorPage() {
 
   async function handleSaveGroupName() {
     if (!id || !editingGroupNameId) return;
+    if (!confirmLosingBlockLayout("Renaming a group")) return;
     const trimmed = groupNameForm.trim();
     if (!trimmed) return;
 
@@ -1397,6 +1509,7 @@ export default function RouteEditorPage() {
       )
     )
       return;
+    if (!confirmLosingBlockLayout("Deleting a group")) return;
 
     setDeletingGroupId(groupId);
     try {
@@ -1460,6 +1573,7 @@ export default function RouteEditorPage() {
 
   async function handleSaveGroupOrder() {
     if (!id || !reorderedGroupIds) return;
+    if (!confirmLosingBlockLayout("Saving the group order")) return;
     setSavingGroupOrder(true);
     try {
       await authFetch(() =>
@@ -1502,10 +1616,8 @@ export default function RouteEditorPage() {
     } else {
       setActiveItemType("block");
       setActiveBlockId(id);
-      // Close accordion for dragged block (discard unsaved edits)
-      if (openEditors.has(id)) {
-        removeEditor(id);
-      }
+      // A block with an open editor cannot be dragged (its handle is
+      // disabled), so no unsaved edits can be discarded here.
     }
   }
 
@@ -1550,79 +1662,37 @@ export default function RouteEditorPage() {
     });
   }
 
-  async function handleBlockDragEnd(event: DragEndEvent) {
+  function handleBlockDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     setActiveBlockId(null);
 
-    if (!over) return;
-
     const activeId = String(active.id);
+
+    // handleDragOver has already placed the block in its target group in local
+    // state, so the group it sits in now is the drop target. Nothing here talks
+    // to the API — the result is pending until "Save Block Layout".
+    const currentGroupId = findGroupForBlock(activeId);
+    if (!currentGroupId || !over) return;
+
     const overId = String(over.id);
+    const group = groups.find((g) => g.id === currentGroupId);
+    if (!group) return;
 
-    const sourceGroupId = findGroupForBlock(activeId);
-    const targetGroupId = findGroupForDroppable(overId);
+    const oldIndex = group.blocks.findIndex((b) => b.id === activeId);
+    const newIndex = group.blocks.findIndex((b) => b.id === overId);
+    // Dropping on an empty group's zone has no "over" block: the position set
+    // by handleDragOver is already final.
+    if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) return;
 
-    if (!sourceGroupId) return;
+    const reordered = arrayMove(group.blocks, oldIndex, newIndex).map(
+      (b, i) => ({ ...b, position: i }),
+    );
 
-    if (!targetGroupId || sourceGroupId === targetGroupId) {
-      // Same-group reorder
-      const group = groups.find((g) => g.id === sourceGroupId);
-      if (!group) return;
-
-      const oldIndex = group.blocks.findIndex((b) => b.id === activeId);
-      const newIndex = group.blocks.findIndex((b) => b.id === overId);
-      if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) return;
-
-      const reordered = arrayMove(group.blocks, oldIndex, newIndex).map(
-        (b, i) => ({ ...b, position: i }),
-      );
-
-      setGroups((prev) =>
-        prev.map((g) => (g.id === sourceGroupId ? { ...g, blocks: reordered } : g)),
-      );
-
-      const newIds = reordered.map((b) => b.id);
-      const savedIds = savedBlockIdsMap.current[sourceGroupId] ?? [];
-      const changed = savedIds.some((bid, i) => bid !== newIds[i]);
-
-      setPendingBlockReorders((prev) => {
-        if (changed) {
-          return { ...prev, [sourceGroupId]: newIds };
-        } else {
-          const next = { ...prev };
-          delete next[sourceGroupId];
-          return next;
-        }
-      });
-    } else {
-      // Cross-group move — find the position in the target group
-      const targetGroup = groups.find((g) => g.id === targetGroupId);
-      if (!targetGroup) return;
-
-      const position = targetGroup.blocks.findIndex((b) => b.id === activeId);
-      const finalPosition = position >= 0 ? position : targetGroup.blocks.length - 1;
-
-      // Call the move API immediately
-      setMovingBlockId(activeId);
-      try {
-        await authFetch(() =>
-          api.put(`/admin/blocks/${activeId}/move`, {
-            target_group_id: targetGroupId,
-            position: Math.max(0, finalPosition),
-          }),
-        );
-        await fetchRoute();
-      } catch (err) {
-        if (err instanceof ApiError && err.status !== 401) {
-          alert("Failed to move block.");
-        } else if (!(err instanceof ApiError)) {
-          alert("An unexpected error occurred.");
-        }
-        await fetchRoute();
-      } finally {
-        setMovingBlockId(null);
-      }
-    }
+    setGroups((prev) =>
+      prev.map((g) =>
+        g.id === currentGroupId ? { ...g, blocks: reordered } : g,
+      ),
+    );
   }
 
   function handleDragEnd(event: DragEndEvent) {
@@ -1636,33 +1706,63 @@ export default function RouteEditorPage() {
     }
   }
 
-  async function handleSaveBlockOrder(groupId: string) {
-    const blockIds = pendingBlockReorders[groupId];
-    if (!blockIds) return;
+  // Persist the pending block layout: cross-group moves first (so every group's
+  // membership matches what is on screen), then a reorder per changed group to
+  // pin the exact order. A group left empty by a move needs no reorder call —
+  // the move endpoint renumbers the source group itself.
+  async function handleSaveBlockLayout() {
+    if (!blockLayout.hasChanges) return;
+    const { moves, changedGroupIds, orderByGroupId } = blockLayout;
 
-    setSavingBlockOrderGroupId(groupId);
+    setSavingBlockLayout(true);
     try {
-      await authFetch(() =>
-        api.put(`/admin/groups/${groupId}/blocks/reorder`, {
-          block_ids: blockIds,
-        }),
-      );
-      setPendingBlockReorders((prev) => {
-        const next = { ...prev };
-        delete next[groupId];
-        return next;
-      });
+      for (const move of moves) {
+        await authFetch(() =>
+          api.put(`/admin/blocks/${move.blockId}/move`, {
+            target_group_id: move.toGroupId,
+            position: move.position,
+          }),
+        );
+      }
+
+      for (const groupId of changedGroupIds) {
+        const blockIds = orderByGroupId[groupId];
+        if (!blockIds || blockIds.length === 0) continue;
+        await authFetch(() =>
+          api.put(`/admin/groups/${groupId}/blocks/reorder`, {
+            block_ids: blockIds,
+          }),
+        );
+      }
+
       await fetchRoute();
     } catch (err) {
       if (err instanceof ApiError && err.status !== 401) {
-        alert("Failed to save block order.");
+        alert(`Failed to save block layout: ${err.message}`);
       } else if (!(err instanceof ApiError)) {
-        alert("An unexpected error occurred while reordering.");
+        alert("An unexpected error occurred while saving the block layout.");
       }
       await fetchRoute();
     } finally {
-      setSavingBlockOrderGroupId(null);
+      setSavingBlockLayout(false);
     }
+  }
+
+  // Any action that refetches the route replaces the on-screen layout with the
+  // server's, so warn before one throws away pending block moves/reordering.
+  function confirmLosingBlockLayout(action: string): boolean {
+    if (!blockLayout.hasChanges) return true;
+    return window.confirm(
+      `You have unsaved block layout changes. ${action} reloads the route and discards them. Continue?`,
+    );
+  }
+
+  async function handleDiscardBlockLayout() {
+    if (!blockLayout.hasChanges) return;
+    if (!window.confirm("Discard the unsaved block moves and reordering?")) {
+      return;
+    }
+    await fetchRoute();
   }
 
   // ------- Block handlers (accordion editors) -------
@@ -1776,6 +1876,7 @@ export default function RouteEditorPage() {
   async function handleSaveBlock(editorKey: string) {
     const editor = openEditors.get(editorKey);
     if (!editor) return;
+    if (!confirmLosingBlockLayout("Saving this block")) return;
 
     const payload = formToBlockPayload(editor.form);
 
@@ -1817,6 +1918,7 @@ export default function RouteEditorPage() {
 
   async function handleDeleteBlock(blockId: string) {
     if (!window.confirm("Are you sure you want to delete this block?")) return;
+    if (!confirmLosingBlockLayout("Deleting a block")) return;
 
     setDeletingBlockId(blockId);
     try {
@@ -1864,44 +1966,18 @@ export default function RouteEditorPage() {
     <div>
       {/* Breadcrumb */}
       <nav className="mb-4 flex items-center gap-1 text-sm text-gray-500">
-        {isDirty ? (
-          <button
-            onClick={() => {
-              if (window.confirm("You have unsaved changes. Are you sure you want to leave?")) {
-                navigate("/routes");
-              }
-            }}
-            className="text-blue-600 hover:text-blue-800"
-          >
-            Routes
-          </button>
-        ) : (
-          <Link to="/routes" className="text-blue-600 hover:text-blue-800">
-            Routes
-          </Link>
-        )}
+        <Link to="/routes" className="text-blue-600 hover:text-blue-800">
+          Routes
+        </Link>
         {isEdit && routeFamily && (
           <>
             <span>/</span>
-            {isDirty ? (
-              <button
-                onClick={() => {
-                  if (window.confirm("You have unsaved changes. Are you sure you want to leave?")) {
-                    navigate(`/routes/families/${routeFamily.id}`);
-                  }
-                }}
-                className="text-blue-600 hover:text-blue-800"
-              >
-                {routeFamily.name}
-              </button>
-            ) : (
-              <Link
-                to={`/routes/families/${routeFamily.id}`}
-                className="text-blue-600 hover:text-blue-800"
-              >
-                {routeFamily.name}
-              </Link>
-            )}
+            <Link
+              to={`/routes/families/${routeFamily.id}`}
+              className="text-blue-600 hover:text-blue-800"
+            >
+              {routeFamily.name}
+            </Link>
             <span>/</span>
             <span className="text-gray-700">
               {LANGUAGE_NAMES[route?.language as SupportedLanguage] ?? route?.language}
@@ -1968,6 +2044,28 @@ export default function RouteEditorPage() {
               </p>
             )}
           </div>
+
+          {/* City (create only — an existing route takes it from its family) */}
+          {!isEdit && (
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                City *
+              </label>
+              <input
+                type="text"
+                value={routeForm.city}
+                onChange={(e) => updateRouteField("city", e.target.value)}
+                className={INPUT_CLS}
+                placeholder="e.g. Edinburgh"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                A new route family is created for this city.
+              </p>
+              {routeErrors.city && (
+                <p className="mt-1 text-sm text-red-600">{routeErrors.city}</p>
+              )}
+            </div>
+          )}
 
           {/* Duration & Distance */}
           <div className="grid grid-cols-2 gap-4">
@@ -2058,6 +2156,39 @@ export default function RouteEditorPage() {
             Groups ({groups.length})
           </h2>
 
+          {/* Unsaved block layout banner (moves + reordering) */}
+          {blockLayout.hasChanges && (
+            <div className="mb-4 flex flex-wrap items-center gap-3 rounded-md border border-amber-300 bg-amber-50 p-3">
+              <span className="text-sm text-amber-900">
+                <span className="font-medium">Unsaved block changes</span> in{" "}
+                {blockLayout.changedGroupIds.length} group
+                {blockLayout.changedGroupIds.length !== 1 ? "s" : ""}
+                {blockLayout.moves.length > 0
+                  ? ` (${blockLayout.moves.length} block${
+                      blockLayout.moves.length !== 1 ? "s" : ""
+                    } moved between groups)`
+                  : ""}
+                . Nothing is saved until you press Save.
+              </span>
+              <div className="ml-auto flex items-center gap-2">
+                <button
+                  onClick={handleSaveBlockLayout}
+                  disabled={savingBlockLayout}
+                  className={BTN_PRIMARY}
+                >
+                  {savingBlockLayout ? "Saving..." : "Save Block Layout"}
+                </button>
+                <button
+                  onClick={handleDiscardBlockLayout}
+                  disabled={savingBlockLayout}
+                  className={BTN_SECONDARY}
+                >
+                  Discard
+                </button>
+              </div>
+            </div>
+          )}
+
           {groups.length === 0 ? (
             <p className="mb-4 text-sm text-gray-500">
               No groups yet. Add your first group below.
@@ -2128,7 +2259,15 @@ export default function RouteEditorPage() {
 
                         {/* Blocks list */}
                         {group.blocks.length === 0 ? (
-                          <DroppableGroupZone groupId={group.id} />
+                          <>
+                            <DroppableGroupZone groupId={group.id} />
+                            {changedGroupIdSet.has(group.id) && (
+                              <div className="mb-3 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+                                <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500" />
+                                Unsaved block layout
+                              </div>
+                            )}
+                          </>
                         ) : (
                           <div className="mb-3 space-y-2">
                             <SortableContext
@@ -2165,44 +2304,26 @@ export default function RouteEditorPage() {
                               ))}
                             </SortableContext>
 
-                            {/* Moving indicator */}
-                            {movingBlockId && findGroupForBlock(movingBlockId) === group.id && (
-                              <div className="text-center text-xs text-blue-500">
-                                Moving block...
-                              </div>
-                            )}
-
-                            {/* Save block order */}
-                            {pendingBlockReorders[group.id] && (
+                            {/* Pending layout indicator for this group */}
+                            {changedGroupIdSet.has(group.id) && (
                               <div className="flex items-center gap-2 pt-1">
+                                <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+                                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500" />
+                                  Unsaved block layout
+                                </span>
                                 <button
-                                  onClick={() =>
-                                    handleSaveBlockOrder(group.id)
-                                  }
-                                  disabled={
-                                    savingBlockOrderGroupId === group.id
-                                  }
-                                  className={BTN_PRIMARY}
+                                  onClick={handleSaveBlockLayout}
+                                  disabled={savingBlockLayout}
+                                  className="text-xs font-medium text-blue-600 hover:text-blue-800 disabled:opacity-50"
                                 >
-                                  {savingBlockOrderGroupId === group.id
-                                    ? "Saving..."
-                                    : "Save Block Order"}
+                                  {savingBlockLayout ? "Saving..." : "Save"}
                                 </button>
                                 <button
-                                  onClick={() => {
-                                    setPendingBlockReorders((prev) => {
-                                      const next = { ...prev };
-                                      delete next[group.id];
-                                      return next;
-                                    });
-                                    fetchRoute();
-                                  }}
-                                  disabled={
-                                    savingBlockOrderGroupId === group.id
-                                  }
-                                  className={BTN_SECONDARY}
+                                  onClick={handleDiscardBlockLayout}
+                                  disabled={savingBlockLayout}
+                                  className="text-xs text-gray-500 hover:text-gray-700 disabled:opacity-50"
                                 >
-                                  Cancel
+                                  Discard
                                 </button>
                               </div>
                             )}

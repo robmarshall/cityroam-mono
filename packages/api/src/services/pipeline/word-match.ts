@@ -43,6 +43,20 @@ const HINT_REQUEST_WORDS: Record<SupportedLanguage, readonly string[]> = {
   nl: ["hint", "aanwijzing", "hulp", "vast", "geen idee", "opgeven", "het antwoord"],
 };
 
+/**
+ * Per-language ways of asking to move on. Kept separate from the hint words
+ * because the wording is different even though, without a classifier, both
+ * land on the same scripted escape: hints are served until they run out, at
+ * which point the answer is revealed and the block is left behind.
+ */
+const SKIP_REQUEST_WORDS: Record<SupportedLanguage, readonly string[]> = {
+  en: ["skip", "skip this", "next", "next one", "next clue", "next stop", "move on", "pass"],
+  es: ["saltar", "saltamos", "siguiente", "pasar", "pasamos"],
+  fr: ["passer", "on passe", "suivant", "suivante"],
+  de: ["überspringen", "weiter", "nächste", "nächster", "nächstes"],
+  nl: ["overslaan", "volgende", "verder"],
+};
+
 // Legacy exports for backwards compatibility with imports
 export const AFFIRMATIVE_WORDS = WORD_LISTS.en.affirmative;
 export const NEGATIVE_WORDS = WORD_LISTS.en.negative;
@@ -88,6 +102,18 @@ export function isHintRequest(text: string, language: SupportedLanguage = "en"):
   if (containsPhraseFromList(text, HINT_REQUEST_WORDS[language])) return true;
   // Players often fall back to English regardless of the game language
   if (language !== "en" && containsPhraseFromList(text, HINT_REQUEST_WORDS.en)) return true;
+  return false;
+}
+
+/**
+ * Check if the player is asking to move on, without the LLM classifier.
+ * Same purpose as isHintRequest: a stuck group must keep a scripted route out
+ * of a block when the classifier is unavailable or the guide budget is spent.
+ */
+export function isSkipRequest(text: string, language: SupportedLanguage = "en"): boolean {
+  if (containsPhraseFromList(text, SKIP_REQUEST_WORDS[language])) return true;
+  // Players often fall back to English regardless of the game language
+  if (language !== "en" && containsPhraseFromList(text, SKIP_REQUEST_WORDS.en)) return true;
   return false;
 }
 

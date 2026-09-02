@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { CTAButton } from "@/components/CTAButton";
 import { FAQ } from "@/components/FAQ";
 import IphoneDemo from "@/components/IphoneDemo/IphoneDemo";
-import { locales } from "@/i18n/config";
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://cityroam.co.uk";
+import { buildMetadata } from "@/lib/metadata";
 
 const PHONE_FEATURES = [
   { icon: "📱", key: "0" },
@@ -23,23 +21,24 @@ const INCLUDED_ITEMS = [
   { icon: "♿", key: "5" },
 ];
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("metadata");
-  return {
-    title: t("home.title"),
-    description: t("home.description"),
-    alternates: {
-      languages: Object.fromEntries([
-        ["x-default", siteUrl],
-        ...locales.map((l) => [l, `${siteUrl}/${l}`]),
-      ]),
-    },
-  };
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return buildMetadata(locale, "home");
 }
 
-export default async function Home() {
+export default async function Home({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
   const t = await getTranslations("home");
-  const tc = await getTranslations("common");
 
   return (
     <main className="min-h-screen bg-white">
@@ -262,21 +261,6 @@ export default async function Home() {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="border-t border-gray-100 px-6 py-12">
-        <div className="mx-auto max-w-5xl text-center text-sm text-gray-500">
-          <p>
-            <a
-              href="mailto:hello@cityroam.com"
-              className="text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              hello@cityroam.com
-            </a>
-          </p>
-          <p className="mt-2">{tc("footer.copyright", { year: new Date().getFullYear() })}</p>
-        </div>
-      </footer>
     </main>
   );
 }

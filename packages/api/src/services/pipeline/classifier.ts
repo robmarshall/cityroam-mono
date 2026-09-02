@@ -2,6 +2,7 @@ import type { IntentClassification, SupportedLanguage } from "@cityroam/shared/t
 import { LANGUAGE_NAMES } from "@cityroam/shared/constants";
 import type { LLMService } from "../llm/interface.js";
 import { createLogger } from "../../lib/logger.js";
+import { wrapPlayerInput } from "./untrusted-input.js";
 
 const log = createLogger("classifier");
 
@@ -17,12 +18,20 @@ const VALID_INTENTS: ReadonlySet<IntentClassification["type"]> = new Set([
   "clarification",
 ]);
 
+/**
+ * Keys the classifier may return alongside `type`. Anything else means the
+ * model was answering some other question than the one we asked — most likely
+ * one the player smuggled in — so the result is discarded rather than trusted.
+ */
+const ALLOWED_RESULT_KEYS: ReadonlySet<string> = new Set(["type", "reason", "confidence"]);
+
 function buildClassificationPrompt(
   currentClue: string,
   userMessage: string,
   language: SupportedLanguage = "en",
 ): string {
   const langName = LANGUAGE_NAMES[language] ?? "English";
+  const player = wrapPlayerInput(userMessage);
   return `You are a message classifier for a city exploration game. Your ONLY job is to classify the intent of a player's message. Respond with ONLY a valid JSON object and nothing else — no explanation, no preamble, no markdown, no backticks.
 
 The current clue is: "${currentClue}"
@@ -52,7 +61,10 @@ Rules:
 - Examples of hint-request in other languages: "danos una pista" (Spanish), "donnez-nous un indice" (French), "gib uns einen Hinweis" (German).
 - Examples of hint-nudge in other languages: "estoy atascado" (Spanish), "je suis bloqué" (French), "ich stecke fest" (German).
 
-Player message: "${userMessage}"`;
+${player.instructions}
+
+Player message:
+${player.block}`;
 }
 
 /**
@@ -80,15 +92,22 @@ export async function classifyIntent(
 
   const parsed = result as Record<string, unknown>;
 
+  // Strict: the reply is one enum value and nothing else. A classifier that
+  // has been talked into narrating, or into returning a guide reply, must not
+  // be treated as a classification — null lands in degraded mode, where the
+  // scripted routes out of a block still work.
+  const unexpectedKey = Object.keys(parsed).find((k) => !ALLOWED_RESULT_KEYS.has(k));
+
   if (
     typeof parsed.type !== "string" ||
-    !VALID_INTENTS.has(parsed.type as IntentClassification["type"])
+    unexpectedKey !== undefined ||
+    !VALID_INTENTS.has(parsed.type.trim() as IntentClassification["type"])
   ) {
     log.error("invalid classification result", { result: JSON.stringify(result) });
     return null;
   }
 
-  return { type: parsed.type as IntentClassification["type"] };
+  return { type: parsed.type.trim() as IntentClassification["type"] };
 }
 
 export { buildClassificationPrompt };

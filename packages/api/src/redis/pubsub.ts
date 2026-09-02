@@ -61,11 +61,64 @@ export async function publishControl(
 // Subscribe helpers
 export type MessageHandler<T> = (code: string, payload: T) => void;
 
-// Track per-event message listeners so they can be removed on unsubscribe
-const eventMessageHandlers = new Map<
-  string,
-  (channel: string, message: string) => void
->();
+/**
+ * Per-event handler sets, plus one process-wide "message" listener that fans
+ * out to them.
+ *
+ * A listener per event code both leaked (a resubscribe overwrote the map entry
+ * and left the old listener attached to redisSub) and would trip ioredis's
+ * default max-listeners warning once a dozen hunts ran at the same time.
+ */
+type EventHandlers = {
+  onMessage?: MessageHandler<BroadcastMessagePayload>;
+  onTyping?: MessageHandler<TypingPayload>;
+  onControl?: MessageHandler<ControlEventPayload>;
+};
+
+const eventHandlers = new Map<string, Set<EventHandlers>>();
+
+let fanoutAttached = false;
+
+function dispatch(channel: string, message: string): void {
+  const code = extractEventCode(channel);
+  if (!code) return;
+
+  const handlers = eventHandlers.get(code);
+  if (!handlers || handlers.size === 0) return;
+
+  let payload: unknown;
+  try {
+    payload = JSON.parse(message);
+  } catch {
+    // Skip corrupted messages
+    return;
+  }
+
+  for (const handler of handlers) {
+    try {
+      if (channel.endsWith(":messages")) {
+        handler.onMessage?.(code, payload as BroadcastMessagePayload);
+      } else if (channel.endsWith(":typing")) {
+        handler.onTyping?.(code, payload as TypingPayload);
+      } else if (channel.endsWith(":control")) {
+        handler.onControl?.(code, payload as ControlEventPayload);
+      }
+    } catch {
+      // One throwing handler must not starve the rest
+    }
+  }
+}
+
+function ensureFanout(): void {
+  if (fanoutAttached) return;
+  fanoutAttached = true;
+  redisSub.on("message", dispatch);
+}
+
+/** Test seam: how many handler sets are currently registered. */
+export function eventHandlerCount(code: string): number {
+  return eventHandlers.get(code)?.size ?? 0;
+}
 
 export async function subscribeToIncomingPattern(
   handler: MessageHandler<IncomingMessagePayload>,
@@ -92,11 +145,7 @@ export async function subscribeToIncomingPattern(
 
 export async function subscribeToEvent(
   code: string,
-  handlers: {
-    onMessage?: MessageHandler<BroadcastMessagePayload>;
-    onTyping?: MessageHandler<TypingPayload>;
-    onControl?: MessageHandler<ControlEventPayload>;
-  },
+  handlers: EventHandlers,
 ): Promise<void> {
   const channels: string[] = [];
   if (handlers.onMessage) channels.push(messagesChannel(code));
@@ -104,35 +153,29 @@ export async function subscribeToEvent(
   if (handlers.onControl) channels.push(controlChannel(code));
 
   if (channels.length === 0) return;
-  await redisSub.subscribe(...channels);
 
-  const messageHandler = (channel: string, message: string) => {
-    const msgCode = extractEventCode(channel);
-    if (msgCode !== code) return;
+  ensureFanout();
 
-    try {
-      if (channel.endsWith(":messages") && handlers.onMessage) {
-        handlers.onMessage(code, JSON.parse(message) as BroadcastMessagePayload);
-      } else if (channel.endsWith(":typing") && handlers.onTyping) {
-        handlers.onTyping(code, JSON.parse(message) as TypingPayload);
-      } else if (channel.endsWith(":control") && handlers.onControl) {
-        handlers.onControl(code, JSON.parse(message) as ControlEventPayload);
-      }
-    } catch {
-      // Skip corrupted messages
-    }
-  };
+  // Register before awaiting so a message that lands during the subscribe
+  // round trip still finds a handler.
+  let set = eventHandlers.get(code);
+  if (!set) {
+    set = new Set<EventHandlers>();
+    eventHandlers.set(code, set);
+  }
+  set.add(handlers);
 
-  eventMessageHandlers.set(code, messageHandler);
-  redisSub.on("message", messageHandler);
+  try {
+    await redisSub.subscribe(...channels);
+  } catch (err) {
+    set.delete(handlers);
+    if (set.size === 0) eventHandlers.delete(code);
+    throw err;
+  }
 }
 
 export async function unsubscribeFromEvent(code: string): Promise<void> {
-  const handler = eventMessageHandlers.get(code);
-  if (handler) {
-    redisSub.off("message", handler);
-    eventMessageHandlers.delete(code);
-  }
+  eventHandlers.delete(code);
 
   await redisSub.unsubscribe(
     messagesChannel(code),

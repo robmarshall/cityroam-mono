@@ -2,7 +2,10 @@ export {
   displayNameSchema,
   chatMessageSchema,
   eventCodeSchema,
-} from "./user-input.js";
+  joinEventRequestSchema,
+  startEventRequestSchema,
+  changeNameRequestSchema,
+} from "./player.js";
 
 export {
   adminLoginSchema,
@@ -27,9 +30,3 @@ export {
   blockReorderSchema,
   blockMoveSchema,
 } from "./admin-input.js";
-
-export {
-  joinEventRequestSchema,
-  startEventRequestSchema,
-  changeNameRequestSchema,
-} from "./api-requests.js";

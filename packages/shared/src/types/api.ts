@@ -97,6 +97,11 @@ export interface AdminEventListResponse {
     created_at: string;
     participant_count: number;
     refund_requested: boolean;
+    /**
+     * Set when every attempt to email the event code failed. The buyer has no
+     * other lasting copy of the code, so the list flags it for a resend.
+     */
+    code_email_failed_at?: string | null;
   }>;
   total: number;
   page: number;

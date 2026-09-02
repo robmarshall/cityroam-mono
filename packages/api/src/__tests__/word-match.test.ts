@@ -3,6 +3,7 @@ import {
   matchesWordList,
   containsPhraseFromList,
   isHintRequest,
+  isSkipRequest,
   isAffirmativeResponse,
   isNegativeResponse,
   AFFIRMATIVE_WORDS,
@@ -231,6 +232,35 @@ describe("isHintRequest", () => {
   it("does not fire on an ordinary answer attempt", () => {
     expect(isHintRequest("the town hall")).toBe(false);
     expect(isHintRequest("Rathaus", "de")).toBe(false);
+  });
+});
+
+describe("isSkipRequest", () => {
+  it("matches the common English phrasings", () => {
+    expect(isSkipRequest("can we skip this one")).toBe(true);
+    expect(isSkipRequest("next clue please")).toBe(true);
+    expect(isSkipRequest("let's move on")).toBe(true);
+  });
+
+  it("matches other game languages", () => {
+    expect(isSkipRequest("podemos saltar esta", "es")).toBe(true);
+    expect(isSkipRequest("on passe à la suivante", "fr")).toBe(true);
+    expect(isSkipRequest("können wir das überspringen", "de")).toBe(true);
+    expect(isSkipRequest("kunnen we dit overslaan", "nl")).toBe(true);
+  });
+
+  it("falls back to English on a non-English game", () => {
+    expect(isSkipRequest("skip", "de")).toBe(true);
+  });
+
+  it("matches whole words only", () => {
+    expect(isSkipRequest("we passed the church already")).toBe(false);
+    expect(isSkipRequest("skipping stones by the canal")).toBe(false);
+  });
+
+  it("does not fire on an ordinary answer attempt", () => {
+    expect(isSkipRequest("the town hall")).toBe(false);
+    expect(isSkipRequest("Rathaus", "de")).toBe(false);
   });
 });
 
