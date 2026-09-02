@@ -61,15 +61,6 @@ Documentation for programmatically creating and editing treasure hunt routes liv
 
 Use `POST /admin/routes/bulk-groups` to create a complete route with all groups and blocks in one call. Use the individual CRUD endpoints for edits.
 
-## Automation Loop
-
-- `loop.sh` drives automated development inside the Docker dev container
-- **Build mode** (default): cycles implement → test → review → commit, reading stage from `IN_PROGRESS.md`
-- **Plan mode**: runs `PROMPT_plan.md` for planning/research
-- Usage: `./loop.sh [plan] [max_iterations]`
-- `AUTOMATION_LOCK` prevents concurrent agent execution
-- `PROMPT_*.md` files contain stage-specific instructions
-
 # Preferences
 
 - Never autosave. Save should always be an intentional user action via an explicit "Save" button. This applies to all admin UI: forms, reorder actions, inline edits, etc.
