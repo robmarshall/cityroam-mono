@@ -1,14 +1,21 @@
 # Staging docker-compose for Coolify deployment
 # Backend services only. All frontends (app, admin, marketing) are on Vercel.
 #
+# Domains come from Coolify's Domains setting on each service, not from this
+# file: api-http = https://api-staging.cityroam.co.uk (API_DOMAIN),
+# api-ws = https://ws-staging.cityroam.co.uk (WS_DOMAIN, separate subdomain for
+# WebSocket). Coolify generates the Traefik routers and certificates from those.
+# Compose-defined router labels are not used: Coolify writes them without
+# interpolating ${...}, which produced invalid Host rules and failed ACME
+# requests on every deploy. `traefik.docker.network=coolify` pins Traefik to
+# the network coolify-proxy shares; without it Traefik sometimes picked the
+# container's cityroam-network IP, which it cannot reach (503).
+#
 # Required env vars in Coolify:
-#   API_DOMAIN          - e.g. api-staging.cityroam.co.uk
-#   WS_DOMAIN           - e.g. ws-staging.cityroam.co.uk (separate subdomain for WebSocket)
 #   POSTGRES_PASSWORD   - strong random password
 #   REDIS_PASSWORD      - strong random password
 #
-# All four are interpolated with `:?` — an unset value aborts the deploy rather
-# than producing an empty Traefik Host() rule that silently 404s.
+# Both are interpolated with `:?`, so an unset value aborts the deploy.
 #
 # Optional:
 #   SENTRY_DSN          - error reporting for api-http and api-ws; empty disables it
@@ -95,10 +102,7 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.api-http.rule=Host(`${API_DOMAIN:?API_DOMAIN must be set (e.g. api-staging.cityroam.co.uk)}`)"
-      - "traefik.http.routers.api-http.entrypoints=https"
-      - "traefik.http.routers.api-http.tls=true"
-      - "traefik.http.routers.api-http.tls.certresolver=letsencrypt"
+      - "traefik.docker.network=coolify"
       - "traefik.http.services.api-http.loadbalancer.server.port=3001"
       - "traefik.http.services.api-http.loadbalancer.healthcheck.path=/health"
       - "traefik.http.services.api-http.loadbalancer.healthcheck.interval=30s"
@@ -132,10 +136,7 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.api-ws.rule=Host(`${WS_DOMAIN:?WS_DOMAIN must be set (e.g. ws-staging.cityroam.co.uk)}`)"
-      - "traefik.http.routers.api-ws.entrypoints=https"
-      - "traefik.http.routers.api-ws.tls=true"
-      - "traefik.http.routers.api-ws.tls.certresolver=letsencrypt"
+      - "traefik.docker.network=coolify"
       - "traefik.http.services.api-ws.loadbalancer.server.port=3002"
       - "traefik.http.services.api-ws.loadbalancer.healthcheck.path=/health"
       - "traefik.http.services.api-ws.loadbalancer.healthcheck.interval=30s"

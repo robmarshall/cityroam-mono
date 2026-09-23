@@ -4,14 +4,21 @@
 # <DOMAIN>/app/* to the player-app project and everything else to marketing.
 # This file mirrors docker-compose.staging.yml; keep the two in step.
 #
+# Domains come from Coolify's Domains setting on each service, not from this
+# file: api-http = https://api.cityroam.co.uk (API_DOMAIN), api-ws =
+# https://ws.cityroam.co.uk (WS_DOMAIN, separate subdomain for WebSocket).
+# Coolify generates the Traefik routers and certificates from those.
+# Compose-defined router labels are not used: Coolify writes them without
+# interpolating ${...}, which produced invalid Host rules and failed ACME
+# requests on every deploy. `traefik.docker.network=coolify` pins Traefik to
+# the network coolify-proxy shares; without it Traefik sometimes picked the
+# container's cityroam-network IP, which it cannot reach (503).
+#
 # Required env vars in Coolify:
-#   API_DOMAIN          - e.g. api.cityroam.co.uk
-#   WS_DOMAIN           - e.g. ws.cityroam.co.uk (separate subdomain for WebSocket)
 #   POSTGRES_PASSWORD   - strong random password
 #   REDIS_PASSWORD      - strong random password
 #
-# All four are interpolated with `:?` — an unset value aborts the deploy rather
-# than producing an empty Traefik Host() rule that silently 404s.
+# Both are interpolated with `:?`, so an unset value aborts the deploy.
 #
 # Optional:
 #   SENTRY_DSN          - error reporting for api-http and api-ws; empty disables it
@@ -25,9 +32,9 @@
 #   VITE_WS_URL         = wss://<WS_DOMAIN>   (no path, no port — the app appends
 #                         /ws/<code>, see packages/app/src/contexts/WebSocketContext.tsx)
 #
-# Traefik router and service names are prefixed `cityroam-prod-` so they cannot
-# collide with the staging stack's `api-http` / `api-ws` routers when both run
-# behind the same Coolify Traefik instance.
+# Traefik service names are prefixed `cityroam-prod-` so they cannot merge with
+# the staging stack's `api-http` / `api-ws` services when both run behind the
+# same Coolify Traefik instance.
 #
 # All other env vars should be set in Coolify per .env.example.
 
@@ -107,11 +114,7 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.cityroam-prod-api-http.rule=Host(`${API_DOMAIN:?API_DOMAIN must be set (e.g. api.cityroam.co.uk)}`)"
-      - "traefik.http.routers.cityroam-prod-api-http.entrypoints=https"
-      - "traefik.http.routers.cityroam-prod-api-http.tls=true"
-      - "traefik.http.routers.cityroam-prod-api-http.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.cityroam-prod-api-http.service=cityroam-prod-api-http"
+      - "traefik.docker.network=coolify"
       - "traefik.http.services.cityroam-prod-api-http.loadbalancer.server.port=3001"
       - "traefik.http.services.cityroam-prod-api-http.loadbalancer.healthcheck.path=/health"
       - "traefik.http.services.cityroam-prod-api-http.loadbalancer.healthcheck.interval=30s"
@@ -145,11 +148,7 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.cityroam-prod-api-ws.rule=Host(`${WS_DOMAIN:?WS_DOMAIN must be set (e.g. ws.cityroam.co.uk)}`)"
-      - "traefik.http.routers.cityroam-prod-api-ws.entrypoints=https"
-      - "traefik.http.routers.cityroam-prod-api-ws.tls=true"
-      - "traefik.http.routers.cityroam-prod-api-ws.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.cityroam-prod-api-ws.service=cityroam-prod-api-ws"
+      - "traefik.docker.network=coolify"
       - "traefik.http.services.cityroam-prod-api-ws.loadbalancer.server.port=3002"
       - "traefik.http.services.cityroam-prod-api-ws.loadbalancer.healthcheck.path=/health"
       - "traefik.http.services.cityroam-prod-api-ws.loadbalancer.healthcheck.interval=30s"
