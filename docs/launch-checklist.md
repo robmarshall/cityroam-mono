@@ -54,7 +54,8 @@ done.
 - [ ] `SESSION_SECRET` must now be at least 32 characters outside development
       or the API refuses to boot.
 - [ ] Both compose files are now backend-only and fail loudly on unset
-      `API_DOMAIN`, `WS_DOMAIN`, `POSTGRES_PASSWORD`, `REDIS_PASSWORD`.
+      `POSTGRES_PASSWORD`, `REDIS_PASSWORD`. Domains come from Coolify's
+      Domains setting per service.
       `DOMAIN` and `ADMIN_DOMAIN` are no longer used by compose.
 - [ ] `SENTRY_DSN`, `SENTRY_ENVIRONMENT` and `SENTRY_RELEASE` are passed
       through to `api-http` and `api-ws` in both compose files. Set them in
@@ -68,11 +69,10 @@ done.
 
 - [ ] **Coolify production.** Create the production resource from
       `docker-compose.prod.yml` (backend only: postgres, redis, migrate,
-      api-http, api-ws). Set `API_DOMAIN` (e.g. `api.cityroam.co.uk`),
-      `WS_DOMAIN` (e.g. `ws.cityroam.co.uk`), `POSTGRES_PASSWORD`,
+      api-http, api-ws). Set the Domains of api-http to
+      `https://api.cityroam.co.uk` and api-ws to `https://ws.cityroam.co.uk`
+      in Coolify (compose no longer defines routers). Set `POSTGRES_PASSWORD`,
       `REDIS_PASSWORD`, optional `SENTRY_DSN`, and the rest of `.env.example`.
-      Traefik routers are prefixed `cityroam-prod-` so they cannot clash with
-      staging on the same Traefik.
 - [ ] **DNS for the backend.** `api` and `ws` records point at the Coolify
       server, DNS-only (grey cloud) until Let's Encrypt has issued, or proxied
       with SSL mode Full (strict).

@@ -111,8 +111,7 @@ jobs:
       - name: Create placeholder .env
         run: touch .env
 
-      # Catches interpolation drift: an unset required var must fail here rather
-      # than deploy an empty Traefik Host() rule that silently 404s.
+      # Catches interpolation drift: an unset required var must fail here.
       - name: Validate production compose
         run: docker compose -f docker-compose.prod.yml config --quiet
         env:

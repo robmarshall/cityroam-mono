@@ -169,14 +169,19 @@ On Vercel the same names are set as project environment variables instead.
 
 ### Routing variables
 
-Every domain used in a Traefik `Host()` rule is interpolated with `${VAR:?...}`,
-so an unset value aborts the deploy. Previously an unset variable produced an
-empty rule and a silent 404.
+The compose files define no Traefik routers. Domains are set in Coolify's
+Domains setting on each service (`API_DOMAIN` on api-http, `WS_DOMAIN` on
+api-ws), and Coolify generates the routers and certificates. Compose-defined
+router labels were dropped because Coolify wrote them without interpolating
+`${...}`, producing invalid rules and failed ACME requests on every deploy. Both
+services carry `traefik.docker.network=coolify` so Traefik always uses the
+network coolify-proxy shares; without it Traefik sometimes picked the
+unreachable `cityroam-network` IP and answered 503.
 
 | File | Required |
 |---|---|
-| `docker-compose.prod.yml` | `API_DOMAIN`, `WS_DOMAIN`, `POSTGRES_PASSWORD`, `REDIS_PASSWORD` |
-| `docker-compose.staging.yml` | `API_DOMAIN`, `WS_DOMAIN`, `POSTGRES_PASSWORD`, `REDIS_PASSWORD` |
+| `docker-compose.prod.yml` | `POSTGRES_PASSWORD`, `REDIS_PASSWORD` |
+| `docker-compose.staging.yml` | `POSTGRES_PASSWORD`, `REDIS_PASSWORD` |
 
 Both environments give the WebSocket server its own `WS_DOMAIN`, routed by
 Traefik to `api-ws` on port 3002. The player app appends `/ws/<code>` itself, so
@@ -189,9 +194,9 @@ files and passed to `api-http` and `api-ws`. Set `SENTRY_ENVIRONMENT` explicitly
 (`staging` / `production`): empty falls back to `NODE_ENV`, which is
 `production` in both. See the Sentry section of `docs/launch-checklist.md`.
 
-Production Traefik routers and services are named `cityroam-prod-api-http` and
-`cityroam-prod-api-ws`, so they do not collide with staging's `api-http` and
-`api-ws` routers when both stacks share one Coolify Traefik.
+Production Traefik services are named `cityroam-prod-api-http` and
+`cityroam-prod-api-ws`, so they do not merge with staging's `api-http` and
+`api-ws` services when both stacks share one Coolify Traefik.
 
 Migrations run as a one-shot `migrate` service; `api-http` and `api-ws` both wait
 on `service_completed_successfully` before starting.
