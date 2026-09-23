@@ -17,11 +17,13 @@ import {
   routeBlockSchema,
   routeGroupSchema,
   groupUpdateSchema,
+  groupCreateSchema,
   bulkRouteGroupCreateSchema,
   groupReorderSchema,
   blockReorderSchema,
   blockMoveSchema,
   messageBankSchema,
+  messageBankListQuerySchema,
   adminApiKeyCreateSchema,
 } from "./admin-input.js";
 
@@ -1095,5 +1097,66 @@ describe("adminApiKeyCreateSchema", () => {
 
   it("refuses a lifetime that is not offered", () => {
     expect(adminApiKeyCreateSchema.safeParse({ name: "k", scopes: ["routes:read"], expires_in_days: 7 }).success).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// groupCreateSchema
+// ---------------------------------------------------------------------------
+describe("groupCreateSchema", () => {
+  const block = { type: "message" as const, config: { type: "message" as const, content: "Hi" } };
+
+  it("accepts a name-only body (the original contract)", () => {
+    expect(groupCreateSchema.parse({ name: "  Intro " })).toEqual({ name: "Intro" });
+  });
+
+  it("accepts blocks and a position", () => {
+    const result = groupCreateSchema.parse({ name: "Intro", position: 2, blocks: [block] });
+    expect(result.position).toBe(2);
+    expect(result.blocks).toHaveLength(1);
+    expect(result.blocks![0].delay_ms).toBe(0);
+  });
+
+  it("accepts an empty blocks array", () => {
+    expect(groupCreateSchema.parse({ name: "Intro", blocks: [] }).blocks).toEqual([]);
+  });
+
+  it("rejects more than 50 blocks", () => {
+    expect(() =>
+      groupCreateSchema.parse({ name: "Intro", blocks: Array.from({ length: 51 }, () => block) }),
+    ).toThrow("Maximum 50 blocks per group");
+  });
+
+  it("validates each block with routeBlockSchema", () => {
+    expect(() =>
+      groupCreateSchema.parse({ name: "Intro", blocks: [{ ...block, type: "question" }] }),
+    ).toThrow("Block type must match config type");
+  });
+
+  it("rejects a negative or fractional position", () => {
+    expect(() => groupCreateSchema.parse({ name: "Intro", position: -1 })).toThrow();
+    expect(() => groupCreateSchema.parse({ name: "Intro", position: 1.5 })).toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// messageBankListQuerySchema
+// ---------------------------------------------------------------------------
+describe("messageBankListQuerySchema", () => {
+  it("accepts every supported language", () => {
+    for (const language of ["en", "es", "fr", "de", "nl"]) {
+      expect(messageBankListQuerySchema.parse({ language }).language).toBe(language);
+    }
+  });
+
+  it("rejects an unsupported language", () => {
+    expect(() => messageBankListQuerySchema.parse({ language: "it" })).toThrow(
+      "Language must be one of: en, es, fr, de, nl",
+    );
+  });
+
+  it("leaves both filters optional and type free-form", () => {
+    expect(messageBankListQuerySchema.parse({})).toEqual({});
+    expect(messageBankListQuerySchema.parse({ type: "anything" }).type).toBe("anything");
   });
 });

@@ -58,10 +58,13 @@ vi.mock("../redis/client.js", () => ({
 
 // ── Mock S3 service ─────────────────────────────────────────────────
 vi.mock("../services/s3.js", () => ({
+  MAX_LISTED_OBJECTS: 5000,
   generatePresignedUploadUrl: vi.fn().mockResolvedValue({
     upload_url: "https://s3.test.com/presigned-url",
     key: "uploads/test-file.jpg",
   }),
+  headObject: vi.fn().mockResolvedValue(null),
+  listObjects: vi.fn().mockResolvedValue({ objects: [], truncated: false }),
 }));
 
 // ── Mock event-expiry service ───────────────────────────────────────

@@ -36,6 +36,12 @@ export interface AdminContext {
 declare module "hono" {
   interface ContextVariableMap {
     admin: AdminContext;
+    /**
+     * Set by a handler running a dry run (bulk-groups `?dry_run=true`) so its
+     * audit row is tagged `params.dry_run = "true"`: the request is still a
+     * POST and still audited, but it changed nothing.
+     */
+    auditDryRun: boolean;
   }
 }
 

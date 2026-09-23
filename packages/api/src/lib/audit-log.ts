@@ -80,13 +80,19 @@ export async function writeAdminAuditLog(
 ): Promise<void> {
   try {
     const isKey = admin.kind === "api_key";
+    let scrubbedParams = scrubAuditParams(params);
+    // The stored path has no query string, so a dry run would otherwise be
+    // indistinguishable from the mutation it only rehearsed.
+    if (c.get("auditDryRun")) {
+      scrubbedParams = { ...(scrubbedParams ?? {}), dry_run: "true" };
+    }
     await db.insert(adminAuditLog).values({
       actor_type: admin.kind,
       actor_id: ((isKey ? admin.keyId : admin.username) ?? "unknown").slice(0, 100),
       actor_name: ((isKey ? admin.keyName : admin.username) ?? null)?.slice(0, 100) ?? null,
       method: c.req.method.toUpperCase().slice(0, 10),
       path: scrubAuditPath(c.req.path),
-      params: scrubAuditParams(params),
+      params: scrubbedParams,
       status,
       ip: clientIp(c),
       request_id: requestId(c),

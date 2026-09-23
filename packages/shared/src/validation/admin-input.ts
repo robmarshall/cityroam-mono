@@ -4,6 +4,7 @@ import {
   ADMIN_API_KEY_SCOPES,
   ADMIN_API_KEY_UNGRANTABLE_SCOPES,
   ADMIN_API_KEY_EXPIRY_DAYS,
+  SUPPORTED_LANGUAGES,
 } from "../constants/index.js";
 import {
   isValidRouteImageRef,
@@ -166,6 +167,19 @@ export const groupUpdateSchema = z.object({
   name: z.string().trim().min(1).max(100),
 });
 
+/**
+ * Body of POST /admin/routes/:id/groups. `name` alone appends an empty group
+ * (the original contract). `blocks` creates the group's blocks in the same
+ * transaction, with the same per-group limit as bulk create; `position`
+ * inserts the group at that index and shifts later groups up (clamped to the
+ * end, so it can never leave a gap).
+ */
+export const groupCreateSchema = z.object({
+  name: z.string().trim().min(1).max(100),
+  blocks: z.array(routeBlockSchema).max(50, "Maximum 50 blocks per group").optional(),
+  position: z.number().int().min(0).optional(),
+});
+
 export const bulkRouteGroupCreateSchema = z.object({
   route: routeSchema,
   groups: z.array(routeGroupSchema).min(1, "At least one group is required").max(30, "Maximum 30 groups per route"),
@@ -201,6 +215,22 @@ export const messageBankSchema = z.object({
   language: z.string().trim().min(2).max(5).optional().default("en"),
   content: z.string().trim().min(1, "Content is required"),
   is_active: z.boolean().optional().default(true),
+});
+
+/**
+ * Query of GET /admin/message-banks. `type` stays free-form (an unknown type
+ * simply matches nothing, as before); `language` must be one of the languages
+ * the app supports, so a typo fails loudly instead of returning an empty list.
+ */
+export const messageBankListQuerySchema = z.object({
+  type: z.string().trim().min(1).optional(),
+  language: z
+    .string()
+    .trim()
+    .refine((val) => (SUPPORTED_LANGUAGES as readonly string[]).includes(val), {
+      message: `Language must be one of: ${SUPPORTED_LANGUAGES.join(", ")}`,
+    })
+    .optional(),
 });
 
 // --- Admin API keys ---

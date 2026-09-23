@@ -2,11 +2,11 @@ import { Hono } from "hono";
 import type { Context } from "hono";
 import { eq, sql, count, desc, and, asc, inArray, or, notInArray, type SQL } from "drizzle-orm";
 import Stripe from "stripe";
-import { adminLoginSchema, adminUpdateEventStatusSchema, adminCreateEventSchema, routeSchema, imageUploadRequestSchema, routeImageSlugSchema, messageBankSchema, routeBlockSchema, groupUpdateSchema, bulkRouteGroupCreateSchema, groupReorderSchema, blockReorderSchema, blockMoveSchema } from "@cityroam/shared/validation";
-import { generateEventCode, buildEventUrl, buildS3Url, routeImageKey } from "@cityroam/shared/utils";
+import { adminLoginSchema, adminUpdateEventStatusSchema, adminCreateEventSchema, routeSchema, imageUploadRequestSchema, routeImageSlugSchema, messageBankSchema, routeBlockSchema, groupUpdateSchema, groupCreateSchema, messageBankListQuerySchema, bulkRouteGroupCreateSchema, groupReorderSchema, blockReorderSchema, blockMoveSchema } from "@cityroam/shared/validation";
+import { generateEventCode, buildEventUrl, buildS3Url, routeImageKey, ROUTE_IMAGE_KEY_PREFIX, ROUTE_IMAGE_EXTENSION, IMAGE_SLUG_PATTERN, IMAGE_SLUG_MAX_LENGTH } from "@cityroam/shared/utils";
 import { EVENT_EXPIRY_DAYS } from "@cityroam/shared/constants";
-import { generatePresignedUploadUrl } from "../services/s3.js";
-import type { AdminDashboardResponse, AdminEventListResponse, AdminEventDetailResponse, AdminRouteDetailResponse, AdminRouteListResponse, AdminMessageBankListResponse, AdminRouteGroupResponse, AdminRouteFamilyListResponse, AdminRouteFamilyDetailResponse, AdminImageUploadResponse, AdminRouteImageResponse, SupportedLanguage } from "@cityroam/shared/types";
+import { generatePresignedUploadUrl, headObject, listObjects, MAX_LISTED_OBJECTS } from "../services/s3.js";
+import type { AdminDashboardResponse, AdminEventListResponse, AdminEventDetailResponse, AdminRouteDetailResponse, AdminRouteListResponse, AdminMessageBankListResponse, AdminRouteGroupResponse, AdminRouteFamilyListResponse, AdminRouteFamilyDetailResponse, AdminImageUploadResponse, AdminRouteImageResponse, AdminRouteImageListResponse, AdminRouteImageListItem, AdminGroupCreateResponse, AdminBulkRouteCreateResponse, AdminBulkRouteDryRunResponse, SupportedLanguage } from "@cityroam/shared/types";
 import { env } from "../env.js";
 import { db } from "../db/index.js";
 import { routeFamilies, events, participants, messages, routes, messageBanks, routeGroups, routeBlocks } from "../db/schema/index.js";
@@ -501,7 +501,9 @@ adminRoutes.post("/admin/upload", requireAdmin("images:write"), async (c) => {
     const result = await generatePresignedUploadUrl(routeImageKey(slug), content_type);
     const response: AdminImageUploadResponse = {
       ...result,
-      url: buildS3Url(env.AWS_CDN_BASE_URL, result.key),
+      // Same rule as GET /admin/route-images/:slug: no CDN, no URL. A bare
+      // "/route-images/…" path would resolve against whatever page shows it.
+      url: routeImageCdnUrl(result.key),
       slug,
       placeholder: `{{IMAGE:${slug}}}`,
     };
@@ -529,16 +531,75 @@ adminRoutes.post("/admin/upload", requireAdmin("images:write"), async (c) => {
   return c.json(response, 200);
 });
 
+/** CDN URL for a stored key, or null when this environment has no CDN base. */
+function routeImageCdnUrl(key: string): string | null {
+  return env.AWS_CDN_BASE_URL ? buildS3Url(env.AWS_CDN_BASE_URL, key) : null;
+}
+
+/** The slug a `route-images/<slug>.jpg` key was uploaded for, else null. */
+function slugFromRouteImageKey(key: string): string | null {
+  if (!key.startsWith(ROUTE_IMAGE_KEY_PREFIX) || !key.endsWith(ROUTE_IMAGE_EXTENSION)) {
+    return null;
+  }
+  const slug = key.slice(ROUTE_IMAGE_KEY_PREFIX.length, key.length - ROUTE_IMAGE_EXTENSION.length);
+  if (slug.length > IMAGE_SLUG_MAX_LENGTH || !IMAGE_SLUG_PATTERN.test(slug)) return null;
+  return slug;
+}
+
+// GET /admin/route-images — every slug photo uploaded to this environment's
+// bucket (ListObjectsV2 on route-images/, needs s3:ListBucket). Objects that
+// are not `<slug>.jpg` with a valid slug are skipped: no placeholder can
+// reach them.
+adminRoutes.get("/admin/route-images", requireAdmin("images:read"), async (c) => {
+  const { objects, truncated } = await listObjects(ROUTE_IMAGE_KEY_PREFIX, MAX_LISTED_OBJECTS);
+
+  const images: AdminRouteImageListItem[] = [];
+  for (const obj of objects) {
+    const slug = slugFromRouteImageKey(obj.key);
+    if (!slug) continue;
+    images.push({
+      slug,
+      key: obj.key,
+      size: obj.size,
+      last_modified: obj.last_modified?.toISOString() ?? null,
+      url: routeImageCdnUrl(obj.key),
+    });
+  }
+  images.sort((a, b) => (a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0));
+
+  const response: AdminRouteImageListResponse = { images, truncated };
+  return c.json(response, 200);
+});
+
 // GET /admin/route-images/:slug — where a `{{IMAGE:slug}}` placeholder resolves,
-// so the admin can preview it without knowing this environment's CDN base.
-adminRoutes.get("/admin/route-images/:slug", requireAdmin("images:read"), (c) => {
+// so the admin can preview it without knowing this environment's CDN base, and
+// whether a photo is already there (HeadObject) so an upload can refuse to
+// overwrite one by accident.
+adminRoutes.get("/admin/route-images/:slug", requireAdmin("images:read"), async (c) => {
   const slug = routeImageSlugSchema.parse(c.req.param("slug"));
   const key = routeImageKey(slug);
+
+  // A failed check reports `exists: null` rather than failing the request:
+  // the admin preview only needs the URL and must keep working without S3
+  // read access. Callers doing overwrite protection treat null as "may exist".
+  let head: Awaited<ReturnType<typeof headObject>> | undefined;
+  try {
+    head = await headObject(key);
+  } catch (err) {
+    log.warn("route image existence check failed", {
+      key,
+      error: err instanceof Error ? err.message : String(err),
+    });
+  }
+
   const response: AdminRouteImageResponse = {
     slug,
     key,
     placeholder: `{{IMAGE:${slug}}}`,
-    url: env.AWS_CDN_BASE_URL ? buildS3Url(env.AWS_CDN_BASE_URL, key) : null,
+    url: routeImageCdnUrl(key),
+    exists: head === undefined ? null : head !== null,
+    size: head?.size ?? null,
+    last_modified: head?.last_modified?.toISOString() ?? null,
   };
   return c.json(response, 200);
 });
@@ -1020,104 +1081,40 @@ async function flagLiveEvents(c: Context, routeId: string | SQL): Promise<void> 
   }
 }
 
-// POST /admin/routes/bulk-groups — create a route with groups and blocks in one call
-adminRoutes.post("/admin/routes/bulk-groups", requireAdmin("routes:write"), async (c) => {
-  const body = await c.req.json();
-  const data = bulkRouteGroupCreateSchema.parse(body);
-  assertCanActivate(c, false, data.route.is_active);
+type RouteRow = typeof routes.$inferSelect;
+type GroupRow = typeof routeGroups.$inferSelect;
+type BlockRow = typeof routeBlocks.$inferSelect;
+type GroupWithBlocks = GroupRow & { blocks: BlockRow[] };
 
-  let result: {
-    route: typeof routes.$inferSelect;
-    groups: Array<typeof routeGroups.$inferSelect & { blocks: (typeof routeBlocks.$inferSelect)[] }>;
+function serializeBlock(b: BlockRow) {
+  return {
+    id: b.id,
+    group_id: b.group_id,
+    position: b.position,
+    type: b.type,
+    config: b.config,
+    delay_ms: b.delay_ms,
+    created_at: b.created_at.toISOString(),
   };
-  try {
-  result = await db.transaction(async (tx) => {
-    // Resolve or create route family
-    let familyId = data.route.route_family_id;
-    if (familyId) {
-      // Without this the insert below fails on the foreign key and surfaces
-      // as a 500 that says nothing about the missing family.
-      await assertFamilyExists(tx, familyId);
-    } else {
-      const [family] = await tx
-        .insert(routeFamilies)
-        .values({ name: data.route.name, city: data.route.city! })
-        .returning();
-      familyId = family.id;
-    }
+}
 
-    if (
-      data.route.is_active &&
-      (await activeVariantExists(tx, familyId, data.route.language))
-    ) {
-      throw duplicateVariantError(data.route.language);
-    }
+function serializeGroupWithBlocks(g: GroupWithBlocks): AdminGroupCreateResponse["group"] {
+  return {
+    id: g.id,
+    route_id: g.route_id,
+    position: g.position,
+    name: g.name,
+    created_at: g.created_at.toISOString(),
+    updated_at: g.updated_at.toISOString(),
+    blocks: g.blocks.map(serializeBlock) as AdminGroupCreateResponse["group"]["blocks"],
+  };
+}
 
-    const [route] = await tx
-      .insert(routes)
-      .values({
-        name: data.route.name,
-        description: data.route.description ?? null,
-        language: data.route.language,
-        route_family_id: familyId,
-        total_stops: data.groups.length,
-        estimated_duration_mins: data.route.estimated_duration_mins,
-        estimated_distance_km: String(data.route.estimated_distance_km),
-        is_active: data.route.is_active,
-      })
-      .returning();
-
-    const insertedGroups: Array<typeof routeGroups.$inferSelect & { blocks: (typeof routeBlocks.$inferSelect)[] }> = [];
-
-    for (let gi = 0; gi < data.groups.length; gi++) {
-      const g = data.groups[gi];
-      const [group] = await tx
-        .insert(routeGroups)
-        .values({
-          route_id: route.id,
-          position: gi,
-          name: g.name,
-        })
-        .returning();
-
-      // A caller-supplied `position` is treated as a sort key, not as the
-      // stored value. Taking it literally let a payload write duplicate or
-      // gapped positions, and `events.current_block_index` is a plain offset
-      // into this list — so the stored sequence is always dense 0..n-1.
-      const ordered = g.blocks
-        .map((block, index) => ({ block, sortKey: block.position ?? index, index }))
-        .sort((a, b) => a.sortKey - b.sortKey || a.index - b.index);
-
-      const insertedBlocks: (typeof routeBlocks.$inferSelect)[] = [];
-      for (let bi = 0; bi < ordered.length; bi++) {
-        const b = ordered[bi].block;
-        const [block] = await tx
-          .insert(routeBlocks)
-          .values({
-            group_id: group.id,
-            position: bi,
-            type: b.type,
-            config: b.config,
-            delay_ms: b.delay_ms ?? 0,
-          })
-          .returning();
-        insertedBlocks.push(block);
-      }
-
-      insertedGroups.push({ ...group, blocks: insertedBlocks });
-    }
-
-    return { route, groups: insertedGroups };
-  });
-  } catch (err) {
-    if (err instanceof AppError) throw err;
-    rethrowVariantConflict(err, data.route.language);
-  }
-
-  return c.json({
+function serializeBulkResult(result: { route: RouteRow; groups: GroupWithBlocks[] }): AdminBulkRouteCreateResponse {
+  return {
     route: {
       id: result.route.id,
-      language: result.route.language,
+      language: result.route.language as SupportedLanguage,
       route_family_id: result.route.route_family_id,
       name: result.route.name,
       description: result.route.description ?? "",
@@ -1128,31 +1125,180 @@ adminRoutes.post("/admin/routes/bulk-groups", requireAdmin("routes:write"), asyn
       created_at: result.route.created_at.toISOString(),
       updated_at: result.route.updated_at.toISOString(),
     },
-    groups: result.groups.map((g) => ({
-      id: g.id,
-      route_id: g.route_id,
-      position: g.position,
-      name: g.name,
-      created_at: g.created_at.toISOString(),
-      updated_at: g.updated_at.toISOString(),
-      blocks: g.blocks.map((b) => ({
-        id: b.id,
-        group_id: b.group_id,
-        position: b.position,
-        type: b.type,
-        config: b.config,
-        delay_ms: b.delay_ms,
-        created_at: b.created_at.toISOString(),
-      })),
-    })),
-  }, 201);
+    groups: result.groups.map(serializeGroupWithBlocks),
+  };
+}
+
+/**
+ * Sorts caller blocks into their stored order. A caller-supplied `position` is
+ * treated as a sort key, not as the stored value: taking it literally let a
+ * payload write duplicate or gapped positions, and `events.current_block_index`
+ * is a plain offset into this list — so the stored sequence is always dense
+ * 0..n-1.
+ */
+function orderBlocks<T extends { position?: number }>(blocks: T[]): T[] {
+  return blocks
+    .map((block, index) => ({ block, sortKey: block.position ?? index, index }))
+    .sort((a, b) => a.sortKey - b.sortKey || a.index - b.index)
+    .map(({ block }) => block);
+}
+
+/**
+ * `?dry_run` on bulk-groups. Absent, "false" or "0" is a real run; "true", "1"
+ * or a bare `?dry_run` is a dry run. Anything else is refused rather than
+ * guessed at, because guessing wrong in one direction writes a route.
+ */
+function parseDryRun(value: string | undefined): boolean {
+  if (value === undefined || value === "false" || value === "0") return false;
+  if (value === "" || value === "true" || value === "1") return true;
+  throw new AppError(400, "dry_run must be true or false", "INVALID_INPUT");
+}
+
+/**
+ * Thrown as the last statement of a dry-run transaction so the driver rolls
+ * everything back. It carries what the transaction built, and never escapes
+ * the handler.
+ */
+class DryRunRollback extends Error {
+  constructor(public readonly result: { route: RouteRow; groups: GroupWithBlocks[] }) {
+    super("dry run: rolled back");
+    this.name = "DryRunRollback";
+  }
+}
+
+// POST /admin/routes/bulk-groups — create a route with groups and blocks in one call.
+//
+// With `?dry_run=true` the identical transaction runs — family lookup or
+// creation, the active-variant check, every insert — and is then rolled back,
+// so the answer (the created tree, or the same error a real run would give) is
+// exactly what a real run would do right now. The audit row is still written
+// (it is a POST), tagged `params.dry_run = "true"`.
+adminRoutes.post("/admin/routes/bulk-groups", requireAdmin("routes:write"), async (c) => {
+  const dryRun = parseDryRun(c.req.query("dry_run"));
+  if (dryRun) c.set("auditDryRun", true);
+
+  const body = await c.req.json();
+  const data = bulkRouteGroupCreateSchema.parse(body);
+  assertCanActivate(c, false, data.route.is_active);
+
+  let result: { route: RouteRow; groups: GroupWithBlocks[] };
+  try {
+    result = await db.transaction(async (tx) => {
+      // Resolve or create route family
+      let familyId = data.route.route_family_id;
+      if (familyId) {
+        // Without this the insert below fails on the foreign key and surfaces
+        // as a 500 that says nothing about the missing family.
+        await assertFamilyExists(tx, familyId);
+      } else {
+        const [family] = await tx
+          .insert(routeFamilies)
+          .values({ name: data.route.name, city: data.route.city! })
+          .returning();
+        familyId = family.id;
+      }
+
+      if (
+        data.route.is_active &&
+        (await activeVariantExists(tx, familyId, data.route.language))
+      ) {
+        throw duplicateVariantError(data.route.language);
+      }
+
+      const [route] = await tx
+        .insert(routes)
+        .values({
+          name: data.route.name,
+          description: data.route.description ?? null,
+          language: data.route.language,
+          route_family_id: familyId,
+          total_stops: data.groups.length,
+          estimated_duration_mins: data.route.estimated_duration_mins,
+          estimated_distance_km: String(data.route.estimated_distance_km),
+          is_active: data.route.is_active,
+        })
+        .returning();
+
+      const insertedGroups: GroupWithBlocks[] = [];
+
+      for (let gi = 0; gi < data.groups.length; gi++) {
+        const g = data.groups[gi];
+        const [group] = await tx
+          .insert(routeGroups)
+          .values({
+            route_id: route.id,
+            position: gi,
+            name: g.name,
+          })
+          .returning();
+
+        const ordered = orderBlocks(g.blocks);
+        const insertedBlocks: BlockRow[] = [];
+        for (let bi = 0; bi < ordered.length; bi++) {
+          const b = ordered[bi];
+          const [block] = await tx
+            .insert(routeBlocks)
+            .values({
+              group_id: group.id,
+              position: bi,
+              type: b.type,
+              config: b.config,
+              delay_ms: b.delay_ms ?? 0,
+            })
+            .returning();
+          insertedBlocks.push(block);
+        }
+
+        insertedGroups.push({ ...group, blocks: insertedBlocks });
+      }
+
+      const built = { route, groups: insertedGroups };
+
+      if (dryRun) {
+        // The position uniques are DEFERRABLE INITIALLY DEFERRED, so they are
+        // only checked at commit — which a dry run never reaches. Checking them
+        // now makes the dry run fail wherever the real commit would.
+        await tx.execute(sql`SET CONSTRAINTS ALL IMMEDIATE`);
+        throw new DryRunRollback(built);
+      }
+
+      return built;
+    });
+  } catch (err) {
+    if (err instanceof DryRunRollback) {
+      const wouldCreate = serializeBulkResult(err.result);
+      const response: AdminBulkRouteDryRunResponse = {
+        dry_run: true,
+        valid: true,
+        summary: {
+          groups: wouldCreate.groups.length,
+          blocks: wouldCreate.groups.reduce((n, g) => n + g.blocks.length, 0),
+          creates_route_family: !data.route.route_family_id,
+        },
+        ids_provisional: true,
+        would_create: wouldCreate,
+      };
+      return c.json(response, 200);
+    }
+    if (err instanceof AppError) throw err;
+    rethrowVariantConflict(err, data.route.language);
+  }
+
+  return c.json(serializeBulkResult(result), 201);
 });
 
-// POST /admin/routes/:id/groups — create a group for a route
+// POST /admin/routes/:id/groups — create a group for a route.
+//
+// `{ name }` appends an empty group, as it always has. `blocks` creates the
+// group's blocks in the same transaction (all or nothing), and `position`
+// inserts the group at that index, shifting later groups up. A mid-route
+// insert moves groups that live events are walking, so like every other
+// positional change it is refused (409) while any event on the route is still
+// playable; an append only warns via X-Live-Events.
 adminRoutes.post("/admin/routes/:id/groups", requireAdmin("routes:write"), async (c) => {
   const routeId = c.req.param("id");
   const body = await c.req.json();
-  const data = groupUpdateSchema.parse(body);
+  const data = groupCreateSchema.parse(body);
 
   const route = await db.query.routes.findFirst({
     where: eq(routes.id, routeId),
@@ -1162,43 +1308,99 @@ adminRoutes.post("/admin/routes/:id/groups", requireAdmin("routes:write"), async
     throw new AppError(404, "Route not found", "ROUTE_NOT_FOUND");
   }
 
-  const [group] = await db.transaction(async (tx) => {
-    // Determine next position
+  const { created, appended } = await db.transaction(async (tx) => {
+    const now = new Date();
+
     const maxPos = await tx
       .select({ max: sql<number>`COALESCE(MAX(${routeGroups.position}), -1)` })
       .from(routeGroups)
       .where(eq(routeGroups.route_id, routeId));
     const nextPosition = Number(maxPos[0]?.max ?? -1) + 1;
 
-    const [inserted] = await tx
+    // Past the end is clamped so the sequence stays dense.
+    const requested = data.position ?? nextPosition;
+    const position = Math.min(Math.max(requested, 0), nextPosition);
+    const insertsInMiddle = position < nextPosition;
+
+    if (insertsInMiddle) {
+      // Guard inside the transaction so an event cannot start between the
+      // check and the shift.
+      const liveCount = await countLiveEvents(tx, eq(events.route_id, routeId));
+      if (liveCount > 0) {
+        throw new AppError(
+          409,
+          `Cannot insert a group mid-route: ${liveCount} in-progress event${liveCount === 1 ? "" : "s"} ${liveCount === 1 ? "is" : "are"} still playing this route. Append it at the end instead, or wait for them to finish.`,
+          "GROUP_HAS_LIVE_EVENTS",
+        );
+      }
+
+      const toShift = await tx
+        .select({ id: routeGroups.id, position: routeGroups.position })
+        .from(routeGroups)
+        .where(
+          and(
+            eq(routeGroups.route_id, routeId),
+            sql`${routeGroups.position} >= ${position}`,
+          ),
+        )
+        .orderBy(desc(routeGroups.position));
+
+      if (toShift.length > 0) {
+        // One CASE update: the intermediate collisions are fine because the
+        // (route_id, position) unique is deferred to commit.
+        const shiftCases = toShift
+          .map((g) => sql`WHEN ${routeGroups.id} = ${g.id} THEN ${g.position + 1}`)
+          .reduce((acc, c) => sql`${acc} ${c}`);
+
+        await tx
+          .update(routeGroups)
+          .set({ position: sql`CASE ${shiftCases} END`, updated_at: now })
+          .where(inArray(routeGroups.id, toShift.map((g) => g.id)));
+      }
+    }
+
+    const [group] = await tx
       .insert(routeGroups)
       .values({
         route_id: routeId,
-        position: nextPosition,
+        position,
         name: data.name,
       })
       .returning();
 
-    // Update total_stops to reflect group count
+    let blocks: BlockRow[] = [];
+    const ordered = orderBlocks(data.blocks ?? []);
+    if (ordered.length > 0) {
+      const inserted = await tx
+        .insert(routeBlocks)
+        .values(
+          ordered.map((b, bi) => ({
+            group_id: group.id,
+            position: bi,
+            type: b.type,
+            config: b.config,
+            delay_ms: b.delay_ms ?? 0,
+          })),
+        )
+        .returning();
+      blocks = [...inserted].sort((a, b) => a.position - b.position);
+    }
+
+    // total_stops mirrors the group count
     await tx
       .update(routes)
-      .set({ total_stops: nextPosition + 1, updated_at: new Date() })
+      .set({ total_stops: nextPosition + 1, updated_at: now })
       .where(eq(routes.id, routeId));
 
-    return [inserted];
+    return { created: { ...group, blocks }, appended: !insertsInMiddle };
   });
 
-  return c.json({
-    group: {
-      id: group.id,
-      route_id: group.route_id,
-      position: group.position,
-      name: group.name,
-      created_at: group.created_at.toISOString(),
-      updated_at: group.updated_at.toISOString(),
-      blocks: [],
-    },
-  }, 201);
+  if (appended) {
+    await flagLiveEvents(c, routeId);
+  }
+
+  const response: AdminGroupCreateResponse = { group: serializeGroupWithBlocks(created) };
+  return c.json(response, 201);
 });
 
 // PUT /admin/routes/:id/groups/reorder — reorder groups (must be before :groupId route)
@@ -1745,13 +1947,18 @@ adminRoutes.put("/admin/blocks/:blockId/move", requireAdmin("routes:write"), asy
 
 // ── Message Bank CRUD ────────────────────────────────────────────────
 
-// GET /admin/message-banks — list all, filterable by type
+// GET /admin/message-banks — list all, filterable by type and language
 adminRoutes.get("/admin/message-banks", requireAdmin("message-banks:read"), async (c) => {
-  const typeFilter = c.req.query("type");
+  // Empty parameters mean "no filter", as they always have.
+  const { type, language } = messageBankListQuerySchema.parse({
+    type: c.req.query("type") || undefined,
+    language: c.req.query("language") || undefined,
+  });
 
-  const whereClause = typeFilter
-    ? eq(messageBanks.type, typeFilter)
-    : undefined;
+  const conditions: SQL[] = [];
+  if (type) conditions.push(eq(messageBanks.type, type));
+  if (language) conditions.push(eq(messageBanks.language, language));
+  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
   const rows = await db
     .select()

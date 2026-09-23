@@ -132,6 +132,36 @@ export type AdminRouteGroupResponse = RouteGroup & {
   blocks: RouteBlock[];
 };
 
+/** POST /admin/routes/:id/groups — the created group with any blocks sent with it. */
+export interface AdminGroupCreateResponse {
+  group: AdminRouteGroupResponse;
+}
+
+/** POST /admin/routes/bulk-groups — the created route and its full tree. */
+export interface AdminBulkRouteCreateResponse {
+  route: Route;
+  groups: AdminRouteGroupResponse[];
+}
+
+/**
+ * POST /admin/routes/bulk-groups?dry_run=true — the whole create ran in a
+ * transaction that was then rolled back. `would_create` has the real
+ * response's shape, but its ids (and timestamps) come from the rolled-back
+ * inserts: they were never committed and a real run assigns new ones.
+ */
+export interface AdminBulkRouteDryRunResponse {
+  dry_run: true;
+  valid: true;
+  summary: {
+    groups: number;
+    blocks: number;
+    /** True when the payload had no route_family_id, so a real run creates a family. */
+    creates_route_family: boolean;
+  };
+  ids_provisional: true;
+  would_create: AdminBulkRouteCreateResponse;
+}
+
 export interface AdminRouteDetailResponse {
   route: Route;
   route_family: RouteFamily;
@@ -162,8 +192,13 @@ export interface AdminImageUploadResponse {
   upload_url: string;
   /** S3 object key the PUT writes to. */
   key: string;
-  /** Public CDN URL of the object once uploaded. */
-  url: string;
+  /**
+   * Public CDN URL of the object once uploaded. For slug uploads this is null
+   * when no CDN base is configured, matching GET /admin/route-images/:slug.
+   * One-off uploads always carry a string because the admin stores it on the
+   * block.
+   */
+  url: string | null;
   /** Present for slug uploads: the `{{IMAGE:slug}}` placeholder that resolves to `url`. */
   slug?: string;
   placeholder?: string;
@@ -176,6 +211,33 @@ export interface AdminRouteImageResponse {
   placeholder: string;
   /** CDN URL the placeholder resolves to, or null when no CDN base is configured. */
   url: string | null;
+  /**
+   * Whether a photo exists at `key` in this environment's bucket (S3
+   * HeadObject). null when the check itself failed (bucket unreachable,
+   * missing permission) — treat that as "may exist", never as "free".
+   */
+  exists: boolean | null;
+  /** Object size in bytes, when it exists. */
+  size: number | null;
+  /** ISO timestamp of the last upload, when it exists. */
+  last_modified: string | null;
+}
+
+/** One uploaded slug photo, as listed by GET /admin/route-images. */
+export interface AdminRouteImageListItem {
+  slug: string;
+  key: string;
+  size: number;
+  last_modified: string | null;
+  /** CDN URL, or null when no CDN base is configured. */
+  url: string | null;
+}
+
+/** GET /admin/route-images — every uploaded `route-images/<slug>.jpg`, sorted by slug. */
+export interface AdminRouteImageListResponse {
+  images: AdminRouteImageListItem[];
+  /** True when the listing stopped at the cap before reaching the end of the prefix. */
+  truncated: boolean;
 }
 
 export interface AdminMessageBankListResponse {
