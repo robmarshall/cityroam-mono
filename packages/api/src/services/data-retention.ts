@@ -1,6 +1,6 @@
-import { and, inArray, isNotNull, lt, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, inArray, isNotNull, lt, or, sql, type SQL } from "drizzle-orm";
 import { db } from "../db/index.js";
-import { events, messages, participants } from "../db/schema/index.js";
+import { adminAuditLog, events, messages, participants } from "../db/schema/index.js";
 import { redis } from "../redis/client.js";
 import { createLogger } from "../lib/logger.js";
 
@@ -19,6 +19,10 @@ import { createLogger } from "../lib/logger.js";
  *      then those are nulled too. The anonymised row (code, route, status,
  *      timings, counters) stays as non-personal gameplay data.
  *
+ * It also prunes the admin audit log (admin_audit_log) after
+ * ADMIN_AUDIT_RETENTION_DAYS: the rows name admin sessions and API keys and
+ * carry client IPs, and six months is enough to investigate a misused key.
+ *
  * Every step is keyed on "still has the data", so re-running is a no-op, and
  * each pass works in bounded batches. Runs in the HTTP process only, beside the
  * expiry sweep, and a Redis lock stops two HTTP replicas running it together.
@@ -28,6 +32,7 @@ const log = createLogger("data-retention");
 
 export const EVENT_RETENTION_MONTHS = 12;
 export const ACCOUNTING_RETENTION_YEARS = 6;
+export const ADMIN_AUDIT_RETENTION_DAYS = 180;
 
 /** Events processed per transaction. */
 export const RETENTION_BATCH_SIZE = 200;
@@ -49,6 +54,7 @@ export interface RetentionResult {
   deletedMessages: number;
   deletedParticipants: number;
   strippedPaymentRefs: number;
+  prunedAuditRows: number;
 }
 
 /** Subtract calendar months (UTC), e.g. for "12 months after". */
@@ -82,6 +88,10 @@ export function retentionAnchor(): SQL {
     WHEN 'EXPIRED' THEN ${events.expires_at}
     ELSE GREATEST(${events.created_at}, ${events.expires_at}, COALESCE(${events.completed_at}, ${events.created_at}))
   END)`;
+}
+
+export function adminAuditRetentionCutoff(now = new Date()): Date {
+  return new Date(now.getTime() - ADMIN_AUDIT_RETENTION_DAYS * DAY_MS);
 }
 
 /**
@@ -180,6 +190,25 @@ export async function stripPaymentRefBatch(now = new Date()): Promise<number> {
   return updated.length;
 }
 
+/** Delete one batch of admin audit rows older than the retention window. */
+export async function pruneAdminAuditLogBatch(now = new Date()): Promise<number> {
+  const candidates = await db
+    .select({ id: adminAuditLog.id })
+    .from(adminAuditLog)
+    .where(lt(adminAuditLog.created_at, adminAuditRetentionCutoff(now)))
+    .orderBy(asc(adminAuditLog.created_at))
+    .limit(RETENTION_BATCH_SIZE);
+
+  if (candidates.length === 0) return 0;
+
+  const deleted = await db
+    .delete(adminAuditLog)
+    .where(inArray(adminAuditLog.id, candidates.map((c) => c.id)))
+    .returning({ id: adminAuditLog.id });
+
+  return deleted.length;
+}
+
 /**
  * Run a full retention pass. Loops each step in batches until a batch comes
  * back short or the per-run cap is hit (the next pass picks up the rest).
@@ -190,6 +219,7 @@ export async function runRetentionSweep(now = new Date()): Promise<RetentionResu
     deletedMessages: 0,
     deletedParticipants: 0,
     strippedPaymentRefs: 0,
+    prunedAuditRows: 0,
   };
 
   for (let i = 0; i < MAX_BATCHES_PER_RUN; i++) {
@@ -206,9 +236,16 @@ export async function runRetentionSweep(now = new Date()): Promise<RetentionResu
     if (stripped < RETENTION_BATCH_SIZE) break;
   }
 
+  for (let i = 0; i < MAX_BATCHES_PER_RUN; i++) {
+    const pruned = await pruneAdminAuditLogBatch(now);
+    result.prunedAuditRows += pruned;
+    if (pruned < RETENTION_BATCH_SIZE) break;
+  }
+
   const touched =
     result.anonymisedEvents + result.deletedMessages +
-    result.deletedParticipants + result.strippedPaymentRefs;
+    result.deletedParticipants + result.strippedPaymentRefs +
+    result.prunedAuditRows;
   if (touched > 0) {
     log.info("retention sweep applied", { ...result });
   }
@@ -253,6 +290,7 @@ export function startRetentionSweep(): void {
     interval_hours: SWEEP_INTERVAL_MS / (60 * 60 * 1000),
     event_retention_months: EVENT_RETENTION_MONTHS,
     accounting_retention_years: ACCOUNTING_RETENTION_YEARS,
+    admin_audit_retention_days: ADMIN_AUDIT_RETENTION_DAYS,
   });
 }
 

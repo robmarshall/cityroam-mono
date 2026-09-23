@@ -37,3 +37,38 @@ export const LANGUAGE_NAMES: Record<SupportedLanguage, string> = {
   de: "German",
   nl: "Dutch",
 };
+
+// Admin API keys
+/**
+ * Scopes an admin API key can carry. A session JWT implicitly holds all of
+ * them plus access to session-only routes.
+ *
+ * `routes:publish` (activating a route so it can be sold) exists for the
+ * server-side check only: activation is human-only, so the key-creation
+ * schema refuses to grant it and no key ever holds it.
+ */
+export const ADMIN_API_KEY_SCOPES = [
+  "routes:read",
+  "routes:write",
+  "routes:publish",
+  "images:read",
+  "images:write",
+  "message-banks:read",
+  "message-banks:write",
+] as const;
+export type AdminApiKeyScope = (typeof ADMIN_API_KEY_SCOPES)[number];
+
+/** Scopes that can never be granted to an API key. */
+export const ADMIN_API_KEY_UNGRANTABLE_SCOPES: readonly AdminApiKeyScope[] = ["routes:publish"];
+
+/** Scopes the key-creation form may offer. */
+export const ADMIN_API_KEY_GRANTABLE_SCOPES: readonly AdminApiKeyScope[] = ADMIN_API_KEY_SCOPES.filter(
+  (s) => !ADMIN_API_KEY_UNGRANTABLE_SCOPES.includes(s),
+);
+
+/** Lifetimes offered when creating a key; null means it never expires. */
+export const ADMIN_API_KEY_EXPIRY_DAYS = [30, 90, 365] as const;
+
+/** Deployment environments encoded in a key's prefix (`crk_<env>_…`). */
+export const ADMIN_API_KEY_ENVS = ["dev", "stg", "prd"] as const;
+export type AdminApiKeyEnv = (typeof ADMIN_API_KEY_ENVS)[number];

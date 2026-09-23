@@ -17,6 +17,7 @@ const RouteFamilyDetailPage = lazy(
 );
 const RouteEditorPage = lazy(() => import("./pages/RouteEditorPage"));
 const MessageBanksPage = lazy(() => import("./pages/MessageBanksPage"));
+const ApiKeysPage = lazy(() => import("./pages/ApiKeysPage"));
 
 function SuspenseWrapper({ children }: { children: React.ReactNode }) {
   return (
@@ -118,6 +119,14 @@ export const router = createBrowserRouter(
           element: (
             <SuspenseWrapper>
               <MessageBanksPage />
+            </SuspenseWrapper>
+          ),
+        },
+        {
+          path: "settings/api-keys",
+          element: (
+            <SuspenseWrapper>
+              <ApiKeysPage />
             </SuspenseWrapper>
           ),
         },

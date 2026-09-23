@@ -8,7 +8,10 @@ import {
 import { eventRoutes } from "../routes/events.js";
 import { checkoutRoutes } from "../routes/checkout.js";
 import { adminRoutes } from "../routes/admin.js";
+import { adminApiKeyRoutes } from "../routes/admin-api-keys.js";
 import { signAdminToken } from "../middleware/admin.js";
+import { generateApiKey } from "../lib/api-keys.js";
+import type { AdminApiKeyEnv, AdminApiKeyScope } from "@cityroam/shared/constants";
 import { db } from "../db/index.js";
 import { redis } from "../redis/client.js";
 import { sql } from "drizzle-orm";
@@ -49,6 +52,7 @@ export function createTestApp(): Hono {
   app.route("/", eventRoutes);
   app.route("/", checkoutRoutes);
   app.route("/", adminRoutes);
+  app.route("/", adminApiKeyRoutes);
 
   return app;
 }
@@ -95,6 +99,86 @@ export async function adminRequest(
   const token = await getAdminToken();
   return jsonRequest(app, method, path, body, {
     Authorization: `Bearer ${token}`,
+  });
+}
+
+// ── Admin API key helpers ───────────────────────────────────────────
+
+export interface TestApiKey {
+  /** Full bearer token, `crk_<env>_<keyId>_<secret>`. */
+  token: string;
+  /** The admin_api_keys row the token resolves to. */
+  row: {
+    id: string;
+    name: string;
+    prefix: string;
+    token_hash: string;
+    last4: string;
+    scopes: string[];
+    created_by: string;
+    created_at: Date;
+    expires_at: Date | null;
+    last_used_at: Date | null;
+    last_used_ip: string | null;
+    revoked_at: Date | null;
+    revoked_by: string | null;
+  };
+}
+
+/**
+ * Mints a real admin API key and the row it hashes to. When the test file's
+ * db mock has `query.adminApiKeys.findFirst`, it is pointed at the row, so the
+ * token authenticates straight away; override fields (revoked_at, expires_at,
+ * last_used_at, …) to exercise the failure paths.
+ *
+ * `last_used_at` defaults to now so the throttled last-used write stays out of
+ * the way of tests that sequence db mocks; pass null to exercise it.
+ */
+export function createTestApiKey(
+  scopes: AdminApiKeyScope[],
+  overrides: Partial<TestApiKey["row"]> & { env?: AdminApiKeyEnv } = {},
+): TestApiKey {
+  const { env = "dev", ...rowOverrides } = overrides;
+  const key = generateApiKey(env);
+  const row: TestApiKey["row"] = {
+    id: key.id,
+    name: "Test key",
+    prefix: key.prefix,
+    token_hash: key.tokenHash,
+    last4: key.last4,
+    scopes: [...scopes],
+    created_by: "admin",
+    created_at: new Date(),
+    expires_at: null,
+    last_used_at: new Date(),
+    last_used_ip: "127.0.0.1",
+    revoked_at: null,
+    revoked_by: null,
+    ...rowOverrides,
+  };
+
+  const findFirst = (db as any).query?.adminApiKeys?.findFirst;
+  if (findFirst && typeof findFirst.mockResolvedValue === "function") {
+    findFirst.mockResolvedValue(row);
+  }
+
+  return { token: key.token, row };
+}
+
+/**
+ * Helper to make a request authenticated with an admin API key.
+ */
+export function apiKeyRequest(
+  app: Hono,
+  token: string,
+  method: string,
+  path: string,
+  body?: unknown,
+  headers?: Record<string, string>,
+): Promise<Response> {
+  return jsonRequest(app, method, path, body, {
+    Authorization: `Bearer ${token}`,
+    ...headers,
   });
 }
 

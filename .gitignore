@@ -14,6 +14,9 @@ build/
 .env.*.local
 !.env.example
 
+# Local MCP client config (holds or references API keys; see .mcp.json.example)
+.mcp.json
+
 # OS files
 .DS_Store
 Thumbs.db

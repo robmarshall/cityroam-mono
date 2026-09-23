@@ -1,4 +1,11 @@
-import type { ApiErrorResponse } from "@cityroam/shared/types";
+import type {
+  AdminApiKeyCreateResponse,
+  AdminApiKeyListResponse,
+  AdminApiKeyRevokeResponse,
+  AdminAuditLogResponse,
+  ApiErrorResponse,
+} from "@cityroam/shared/types";
+import type { AdminApiKeyScope } from "@cityroam/shared/constants";
 
 // ---------------------------------------------------------------------------
 // Error class
@@ -111,4 +118,44 @@ export const api = {
   delete<T>(path: string): Promise<T> {
     return request<T>("DELETE", path);
   },
+
+  /** Admin API keys (session-only endpoints). */
+  apiKeys: {
+    list(): Promise<AdminApiKeyListResponse> {
+      return request<AdminApiKeyListResponse>("GET", "/admin/api-keys");
+    },
+
+    /** The response carries the full token: the only time it is ever shown. */
+    create(input: AdminApiKeyCreateInput): Promise<AdminApiKeyCreateResponse> {
+      return request<AdminApiKeyCreateResponse>("POST", "/admin/api-keys", input);
+    },
+
+    revoke(id: string): Promise<AdminApiKeyRevokeResponse> {
+      return request<AdminApiKeyRevokeResponse>(
+        "POST",
+        `/admin/api-keys/${encodeURIComponent(id)}/revoke`,
+      );
+    },
+  },
+
+  /** Admin audit log, newest first (session-only). */
+  auditLog: {
+    list(
+      params: { actor_id?: string; limit?: number; offset?: number } = {},
+    ): Promise<AdminAuditLogResponse> {
+      const query = new URLSearchParams();
+      if (params.actor_id) query.set("actor_id", params.actor_id);
+      if (params.limit !== undefined) query.set("limit", String(params.limit));
+      if (params.offset !== undefined) query.set("offset", String(params.offset));
+      const qs = query.toString();
+      return request<AdminAuditLogResponse>("GET", `/admin/audit-log${qs ? `?${qs}` : ""}`);
+    },
+  },
 } as const;
+
+export interface AdminApiKeyCreateInput {
+  name: string;
+  scopes: AdminApiKeyScope[];
+  /** 30, 90 or 365; null or omitted for a key that never expires. */
+  expires_in_days?: number | null;
+}

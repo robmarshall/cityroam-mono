@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "cityroam": {
+      "command": "node",
+      "args": ["packages/mcp/bin/cityroam-mcp.mjs"],
+      "env": {
+        "CITYROAM_ENV": "staging",
+        "CITYROAM_API_KEY_STAGING": "${CITYROAM_API_KEY_STAGING}"
+      }
+    }
+  }
+}

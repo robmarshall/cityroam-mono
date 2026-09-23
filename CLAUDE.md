@@ -61,6 +61,8 @@ Documentation for programmatically creating and editing treasure hunt routes liv
 
 Use `POST /admin/routes/bulk-groups` to create a complete route with all groups and blocks in one call. Use the individual CRUD endpoints for edits.
 
+When the `cityroam` MCP server is available (see `docs/llm-authoring/mcp.md`), prefer its tools over raw HTTP: `validate_route` on drafts, then `create_route` with `dry_run: true` before the real call. Never target production unless the user explicitly says so. Routes are always created inactive; a human activates them in the admin UI.
+
 # Preferences
 
 - Never autosave. Save should always be an intentional user action via an explicit "Save" button. This applies to all admin UI: forms, reorder actions, inline edits, etc.

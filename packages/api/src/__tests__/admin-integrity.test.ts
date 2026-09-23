@@ -373,7 +373,7 @@ describe("block positions stay dense and collision-free", () => {
 
     // The two siblings were renumbered before the insert.
     expect((db as any).update).toHaveBeenCalled();
-    const inserted = (db as any).values.mock.calls.at(-1)![0];
+    const inserted = (db as any).values.mock.calls.filter(([v]: any[]) => !v?.actor_type).at(-1)![0];
     expect(inserted.position).toBe(1);
   });
 
@@ -412,7 +412,7 @@ describe("block positions stay dense and collision-free", () => {
     });
 
     expect(res.status).toBe(201);
-    const inserted = (db as any).values.mock.calls.at(-1)![0];
+    const inserted = (db as any).values.mock.calls.filter(([v]: any[]) => !v?.actor_type).at(-1)![0];
     expect(inserted.position).toBe(2);
     // No live-event check and no shift: appending is always safe.
     expect((db as any).update).not.toHaveBeenCalled();
