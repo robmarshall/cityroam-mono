@@ -31,4 +31,5 @@ export {
   groupReorderSchema,
   blockReorderSchema,
   blockMoveSchema,
+  adminApiKeyCreateSchema,
 } from "./admin-input.js";

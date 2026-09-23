@@ -22,6 +22,7 @@ import {
   blockReorderSchema,
   blockMoveSchema,
   messageBankSchema,
+  adminApiKeyCreateSchema,
 } from "./admin-input.js";
 
 // ---------------------------------------------------------------------------
@@ -1048,5 +1049,51 @@ describe("routeImageRefSchema", () => {
       delay_ms: 1500,
     });
     expect(result.success).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// adminApiKeyCreateSchema
+// ---------------------------------------------------------------------------
+describe("adminApiKeyCreateSchema", () => {
+  it("accepts a name, grantable scopes and a known lifetime", () => {
+    const parsed = adminApiKeyCreateSchema.parse({
+      name: "  MCP staging  ",
+      scopes: ["routes:read", "routes:write", "images:write"],
+      expires_in_days: 90,
+    });
+    expect(parsed.name).toBe("MCP staging");
+    expect(parsed.scopes).toEqual(["routes:read", "routes:write", "images:write"]);
+    expect(parsed.expires_in_days).toBe(90);
+  });
+
+  it("accepts a key that never expires, with the lifetime null or omitted", () => {
+    expect(adminApiKeyCreateSchema.safeParse({ name: "k", scopes: ["routes:read"], expires_in_days: null }).success).toBe(true);
+    expect(adminApiKeyCreateSchema.safeParse({ name: "k", scopes: ["routes:read"] }).success).toBe(true);
+  });
+
+  it("refuses routes:publish — activation is human-only", () => {
+    const result = adminApiKeyCreateSchema.safeParse({
+      name: "k",
+      scopes: ["routes:read", "routes:publish"],
+    });
+    expect(result.success).toBe(false);
+    expect(result.error!.issues[0].message).toContain("routes:publish");
+  });
+
+  it("refuses an empty, unknown or repeated scope list", () => {
+    expect(adminApiKeyCreateSchema.safeParse({ name: "k", scopes: [] }).success).toBe(false);
+    expect(adminApiKeyCreateSchema.safeParse({ name: "k", scopes: ["events:read"] }).success).toBe(false);
+    expect(adminApiKeyCreateSchema.safeParse({ name: "k", scopes: ["routes:read", "routes:read"] }).success).toBe(false);
+  });
+
+  it("refuses a blank or over-long name", () => {
+    expect(adminApiKeyCreateSchema.safeParse({ name: "   ", scopes: ["routes:read"] }).success).toBe(false);
+    expect(adminApiKeyCreateSchema.safeParse({ name: "x".repeat(101), scopes: ["routes:read"] }).success).toBe(false);
+    expect(adminApiKeyCreateSchema.safeParse({ name: "x".repeat(100), scopes: ["routes:read"] }).success).toBe(true);
+  });
+
+  it("refuses a lifetime that is not offered", () => {
+    expect(adminApiKeyCreateSchema.safeParse({ name: "k", scopes: ["routes:read"], expires_in_days: 7 }).success).toBe(false);
   });
 });

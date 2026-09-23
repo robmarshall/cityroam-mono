@@ -69,6 +69,9 @@ export type {
   AdminRouteGroupResponse,
   AdminRouteFamilyListResponse,
   AdminRouteFamilyDetailResponse,
+  AdminApiKey,
+  AdminApiKeyListResponse,
+  AdminApiKeyCreateResponse,
 } from "./api.js";
 
 export type { ApiErrorResponse, ApiErrorCode, ValidationErrorCode } from "./api-errors.js";

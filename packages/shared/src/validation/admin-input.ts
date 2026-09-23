@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { MAX_BLOCK_DELAY_MS } from "../constants/index.js";
+import {
+  MAX_BLOCK_DELAY_MS,
+  ADMIN_API_KEY_SCOPES,
+  ADMIN_API_KEY_UNGRANTABLE_SCOPES,
+  ADMIN_API_KEY_EXPIRY_DAYS,
+} from "../constants/index.js";
 import {
   isValidRouteImageRef,
   IMAGE_SLUG_PATTERN,
@@ -196,4 +201,31 @@ export const messageBankSchema = z.object({
   language: z.string().trim().min(2).max(5).optional().default("en"),
   content: z.string().trim().min(1, "Content is required"),
   is_active: z.boolean().optional().default(true),
+});
+
+// --- Admin API keys ---
+
+/**
+ * Body of the (session-only) key-creation endpoint. `routes:publish` is
+ * refused: activating a route so it can be sold is a human-only action, so no
+ * key may ever carry it.
+ */
+export const adminApiKeyCreateSchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(100, "Name must be at most 100 characters"),
+  scopes: z
+    .array(z.enum(ADMIN_API_KEY_SCOPES))
+    .min(1, "At least one scope is required")
+    .refine((scopes) => new Set(scopes).size === scopes.length, "Scopes must not repeat")
+    .refine(
+      (scopes) => !scopes.some((s) => ADMIN_API_KEY_UNGRANTABLE_SCOPES.includes(s)),
+      "routes:publish cannot be granted to an API key: activating a route is human-only",
+    ),
+  expires_in_days: z
+    .union([
+      z.literal(ADMIN_API_KEY_EXPIRY_DAYS[0]),
+      z.literal(ADMIN_API_KEY_EXPIRY_DAYS[1]),
+      z.literal(ADMIN_API_KEY_EXPIRY_DAYS[2]),
+      z.null(),
+    ])
+    .optional(),
 });

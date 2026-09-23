@@ -1,4 +1,5 @@
 import type { EventStatus, SupportedLanguage } from "./enums.js";
+import type { AdminApiKeyScope } from "../constants/index.js";
 import type { Event, Message, Participant, Route, RouteBlock, RouteFamily, RouteGroup } from "./entities.js";
 import type { ChatMessagePayload } from "./websocket.js";
 
@@ -196,4 +197,33 @@ export interface AdminRouteFamilyListResponse {
 export interface AdminRouteFamilyDetailResponse {
   route_family: RouteFamily;
   routes: Array<Route & { group_count: number }>;
+}
+// --- Admin API keys ---
+
+/** A key as listed in the admin panel. The secret is never returned again. */
+export interface AdminApiKey {
+  id: string;
+  name: string;
+  /** `crk_<env>_<keyId>` — the non-secret part of the token. */
+  prefix: string;
+  /** Last four characters of the secret, for recognising a key. */
+  last4: string;
+  scopes: AdminApiKeyScope[];
+  created_by: string;
+  created_at: string;
+  expires_at: string | null;
+  last_used_at: string | null;
+  last_used_ip: string | null;
+  revoked_at: string | null;
+  revoked_by: string | null;
+}
+
+export interface AdminApiKeyListResponse {
+  api_keys: AdminApiKey[];
+}
+
+/** Returned once, at creation: `token` is the only time the full secret is shown. */
+export interface AdminApiKeyCreateResponse {
+  api_key: AdminApiKey;
+  token: string;
 }
