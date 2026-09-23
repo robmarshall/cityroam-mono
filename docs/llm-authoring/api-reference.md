@@ -266,6 +266,33 @@ The `route` object also accepts `city` instead of `route_family_id` to auto-crea
 }
 ```
 
+### Dry Run (`?dry_run=true`)
+
+```
+POST /admin/routes/bulk-groups?dry_run=true
+```
+
+Validates a bulk create against the live database without keeping anything. The API runs the **entire** create — schema validation, route family lookup (or creation when only `city` is given), the one-active-route-per-family-and-language check, every insert, and the deferred position constraints — inside a transaction and then rolls it back. The result is therefore exactly what a real run would do right now.
+
+`dry_run` accepts `true`, `1` or a bare `?dry_run`; `false`, `0` or omitting it is a real run. Any other value is `400 INVALID_INPUT` (it is never guessed at).
+
+On success the response is **200** (not 201):
+
+```json
+{
+  "dry_run": true,
+  "valid": true,
+  "summary": { "groups": 4, "blocks": 23, "creates_route_family": false },
+  "ids_provisional": true,
+  "would_create": { "route": { "id": "uuid", "...": "..." }, "groups": ["... same shape as the 201 response ..."] }
+}
+```
+
+- `would_create` has the same shape as the 201 response. Its ids and timestamps come from the rolled-back inserts (`ids_provisional: true`): they were never committed and a real run assigns new ones, so never reference them.
+- `summary.creates_route_family` is `true` when the payload has no `route_family_id`, i.e. a real run would also create a family.
+- A failure returns the **same status and code as a real run**: `400 INVALID_INPUT` for schema errors, `404 ROUTE_FAMILY_NOT_FOUND`, `409 DUPLICATE_LANGUAGE_VARIANT` (including when the database unique index catches it), and `403 ADMIN_SCOPE_REQUIRED` for an API key sending `is_active: true` (activation stays human-only even in a dry run).
+- It is still a POST: an API key needs `routes:write`, it counts against the key's write rate limit, and it is written to the admin audit log with `params.dry_run = "true"` so it cannot be mistaken for a create.
+
 ---
 
 ## Reading Routes
@@ -333,7 +360,42 @@ Authorization: Bearer <token>
 { "name": "New Location" }
 ```
 
-The group is appended at the end (auto-assigned next position). Response includes `blocks: []`.
+With only `name`, the group is appended at the end (auto-assigned next position) and the response includes `blocks: []`.
+
+The body can also carry the group's blocks and where to put it:
+
+```json
+{
+  "name": "Corn Exchange",
+  "position": 2,
+  "blocks": [
+    { "type": "message", "config": { "type": "message", "content": "Head down Call Lane..." } },
+    { "type": "question", "config": { "type": "question", "clue": "...", "accepted_answers": ["1863"], "hints": [[{ "content": "..." }], [{ "content": "..." }]] } }
+  ]
+}
+```
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| name | string | Yes | 1-100 chars, trimmed |
+| blocks | Block[] | No | 0-50 blocks, each validated exactly like a bulk-create block. Caller `position`s are sort keys; stored positions are always 0..n-1 |
+| position | number | No | 0-indexed. Inserts the group there and shifts every later group up by one. A value at or past the end appends |
+
+- The group and all its blocks are created in **one transaction**: an invalid block (`400`) or any failure creates nothing, so no empty group is left behind.
+- `total_stops` is updated to the new group count.
+- **Live events**: inserting in the middle shifts groups that playable events are walking, so it is refused with `409 GROUP_HAS_LIVE_EVENTS` while any non-finished event exists on the route (the same positional guard as a mid-group block insert). Appending is always allowed; if events are live the response carries the `X-Live-Events: <n>` warning header.
+
+Response (201):
+
+```json
+{
+  "group": {
+    "id": "uuid", "route_id": "uuid", "position": 2, "name": "Corn Exchange",
+    "created_at": "...", "updated_at": "...",
+    "blocks": [{ "id": "uuid", "group_id": "uuid", "position": 0, "type": "message", "config": { "...": "..." }, "delay_ms": 0, "created_at": "..." }]
+  }
+}
+```
 
 ### Update a Group
 
@@ -553,7 +615,7 @@ GET /admin/message-banks?type=success&language=en
 Authorization: Bearer <token>
 ```
 
-Supports filtering by `type` and `language` query parameters.
+Supports filtering by `type` and `language` query parameters (both optional, combined with AND; an empty value means no filter). `language` must be one of `en`, `es`, `fr`, `de`, `nl`; anything else is `400 INVALID_INPUT` rather than an empty list. `type` is not validated: an unknown type simply matches nothing. API keys need `message-banks:read`.
 
 ### Create Message Bank Entry
 
@@ -601,7 +663,7 @@ So for a slug to resolve, a JPEG must exist in the bucket at exactly **`route-im
 
 If the object is missing, the player app shows a neutral placeholder tile instead of a broken image.
 
-To check where a slug resolves in the current environment:
+To check where a slug resolves in the current environment, and whether a photo is already uploaded there:
 
 ```
 GET /admin/route-images/leeds-town-hall-facade
@@ -613,11 +675,43 @@ Authorization: Bearer <token>
   "slug": "leeds-town-hall-facade",
   "key": "route-images/leeds-town-hall-facade.jpg",
   "placeholder": "{{IMAGE:leeds-town-hall-facade}}",
-  "url": "https://cdn.yourdomain.com/route-images/leeds-town-hall-facade.jpg"
+  "url": "https://cdn.yourdomain.com/route-images/leeds-town-hall-facade.jpg",
+  "exists": true,
+  "size": 482113,
+  "last_modified": "2026-09-01T10:00:00.000Z"
 }
 ```
 
-`url` is `null` when no `AWS_CDN_BASE_URL` is configured. A malformed slug returns `400`.
+`url` is `null` when no `AWS_CDN_BASE_URL` is configured. A malformed slug returns `400`. `exists` comes from an S3 `HeadObject` on `key`; `size` (bytes) and `last_modified` are `null` unless it exists. `exists` is `null` when the check itself failed (bucket unreachable or missing permission): treat `null` as "may exist", never as "free to overwrite". Before a slug upload, check this and only overwrite an existing photo deliberately.
+
+To list every slug photo uploaded in the current environment:
+
+```
+GET /admin/route-images
+Authorization: Bearer <token>
+```
+
+```json
+{
+  "images": [
+    {
+      "slug": "corn-exchange-dome",
+      "key": "route-images/corn-exchange-dome.jpg",
+      "size": 391022,
+      "last_modified": "2026-09-01T10:00:00.000Z",
+      "url": "https://cdn.yourdomain.com/route-images/corn-exchange-dome.jpg"
+    }
+  ],
+  "truncated": false
+}
+```
+
+- Sorted by slug. Only objects named `route-images/<valid-slug>.jpg` are listed; anything else under the prefix is skipped because no placeholder can reach it.
+- The API pages through S3 itself (`ListObjectsV2`) up to 5000 objects; `truncated: true` means it stopped at that cap.
+- `url` is `null` when no CDN is configured. An S3 failure is a `500`.
+- Staging and production have separate buckets: the list only shows this environment's photos.
+
+Both route-image endpoints need `images:read` for API keys. The API's IAM user needs `s3:ListBucket` on the bucket for the listing (and so that `HeadObject` on a missing key returns 404 rather than 403), in addition to `s3:GetObject` and `s3:PutObject` on its objects.
 
 ### Get a Pre-signed Upload URL
 
@@ -648,6 +742,8 @@ Authorization: Bearer <token>
   "placeholder": "{{IMAGE:leeds-town-hall-facade}}"
 }
 ```
+
+`url` is `null` when no `AWS_CDN_BASE_URL` is configured, the same as `GET /admin/route-images/:slug`.
 
 Then `PUT` the raw JPEG bytes to `upload_url` with header `Content-Type: image/jpeg`. Nothing in the route needs editing: the blocks keep `placeholder` as their `image_url` and resolve to `url` automatically. Use `placeholder` as the `image_url` for any new block that should show the same photo.
 
@@ -744,6 +840,8 @@ The 8-character `code` is what players use to join the event.
 | Field | Type | Required | Constraints |
 |-------|------|----------|-------------|
 | name | string | Yes | Min 1 char, max 100 chars, trimmed |
+| blocks | Block[] | Bulk: yes; single create: no | Max 50 per group (bulk also needs at least 1) |
+| position | number | No (single create only) | 0-indexed insert position, clamped to the end |
 
 ### Block Fields (Common)
 
@@ -826,6 +924,9 @@ Common codes:
 - `ROUTE_FAMILY_NOT_FOUND` (404) — Route family ID doesn't exist
 - `FAMILY_HAS_ROUTES` (409) — Can't delete family with existing routes
 - `ROUTE_HAS_EVENTS` (409) — Can't delete route with linked events
+- `DUPLICATE_LANGUAGE_VARIANT` (409) — The family already has an active route in this language
+- `GROUP_HAS_LIVE_EVENTS` / `BLOCK_HAS_LIVE_EVENTS` (409) — A positional change (delete, move, mid-group block insert, mid-route group insert) while events are still playing
+- `ADMIN_SCOPE_REQUIRED` (403) — API key lacks the scope, or tried to create or activate an active route
 - `DUPLICATE_GROUP_IDS` (400) — Reorder array has duplicate IDs
 - `INCOMPLETE_GROUP_LIST` (400) — Reorder array missing group IDs
 - `DUPLICATE_BLOCK_IDS` (400) — Reorder array has duplicate IDs

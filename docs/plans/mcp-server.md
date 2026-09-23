@@ -242,18 +242,48 @@ ApiKeysPage. Pruned after 180 days by the data-retention sweep.
 
 ## API gaps (Phase 4)
 
-1. `GET /admin/message-banks?language=` — the `language` query parameter is
-   currently ignored; only `type` filters.
-2. `POST /admin/routes/bulk-groups?dry_run=true` — run the whole transaction
-   (including family/variant checks) and roll it back, returning what would
-   have been created.
-3. `POST /admin/routes/:id/groups` accepting `blocks` and `position`
-   atomically (today it takes only `name` and appends an empty group, so
-   `add_group` would need N+1 calls and could leave a half-built group).
-   Mid-route insertion needs the live-event guard.
-4. `GET /admin/route-images` — list slugs via S3 `ListObjectsV2` on the
-   `route-images/` prefix (paginated). `GET /admin/route-images/:slug` already
-   exists; add an existence check (HeadObject) for upload overwrite protection.
+**Done.** As built:
+
+1. `GET /admin/message-banks?language=` filters by language (AND with
+   `type`; empty values mean no filter). `language` is validated against
+   `SUPPORTED_LANGUAGES` by the shared `messageBankListQuerySchema`, so an
+   unsupported code is `400 INVALID_INPUT` instead of an empty list.
+2. `POST /admin/routes/bulk-groups?dry_run=true` (also `1` or bare
+   `?dry_run`; any value other than true/1/false/0 is a 400) runs the
+   identical transaction — family lookup/creation, active-variant check,
+   every insert, then `SET CONSTRAINTS ALL IMMEDIATE` so the deferred
+   position uniques are checked too — and rolls it back by throwing a
+   sentinel. 200 with `{ dry_run, valid, summary: { groups, blocks,
+   creates_route_family }, ids_provisional: true, would_create }`, where
+   `would_create` is the real 201 shape with ids from the rolled-back
+   inserts. Failures return the real run's codes. `assertCanActivate` runs
+   first, so an API key cannot dry-run an active route. **Audit decision**:
+   a dry run is still audited (it is a POST and counts as a write for the
+   rate limit), tagged `params.dry_run = "true"` via the `auditDryRun`
+   context flag, because the stored path drops the query string.
+3. `POST /admin/routes/:id/groups` takes the shared `groupCreateSchema`:
+   `name`, optional `blocks` (0–50, each `routeBlockSchema`, caller positions
+   are sort keys) and optional `position` (clamped to the end). Group and
+   blocks are one transaction. A mid-route insert shifts later groups with
+   one CASE update (safe under the deferred unique) and is refused with
+   `409 GROUP_HAS_LIVE_EVENTS` while any non-terminal event exists on the
+   route — positional guards stay. An append only sets `X-Live-Events`.
+   Name-only bodies behave exactly as before.
+4. `GET /admin/route-images` (images:read) lists `route-images/<slug>.jpg`
+   via `ListObjectsV2`, paginating up to 5000 objects
+   (`{ images: [{slug, key, size, last_modified, url}], truncated }`, sorted
+   by slug, non-slug keys skipped). `GET /admin/route-images/:slug` adds
+   `exists`, `size`, `last_modified` from `HeadObject`. **Deviation**:
+   `exists` is `boolean | null` — null when the check itself fails, so the
+   admin preview keeps working without S3 read access; MCP overwrite
+   protection must treat null as "may exist".
+5. The slug-upload response `url` is now null when no CDN is configured, the
+   same rule as `GET /admin/route-images/:slug` (one-off uploads still
+   return a string, since the admin stores it on the block).
+
+**Launch checklist**: the API's IAM user needs `s3:ListBucket` on each
+bucket (staging and production) for the listing — and without it S3 answers
+`HeadObject` on a missing key with 403, which reports `exists: null`.
 
 ## Build order
 
@@ -266,7 +296,7 @@ ApiKeysPage. Pruned after 180 days by the data-retention sweep.
    `GET/POST /admin/api-keys`, `POST /admin/api-keys/:id/revoke`; admin UI
    with explicit Save/Create buttons (never autosave), token shown once with
    copy button, scope checkboxes (no publish), expiry select.
-4. **API gaps** — the four items above.
+4. **API gaps** — the items above. **Done.**
 5a. **MCP skeleton + read tools** — `packages/mcp`, env pinning, API client,
    resources, read tools.
 5b. **Lint / `validate_route`**.
