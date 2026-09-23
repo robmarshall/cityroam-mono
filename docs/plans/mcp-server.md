@@ -74,7 +74,8 @@ back). Edits that touch a route with `is_active = true` require
 | `update_group` | routes:write | rename |
 | `delete_group` | routes:write | `confirm` required |
 | `add_block` | routes:write | optional `position` |
-| `update_block` | routes:write | full replace, or `patch_config` (deep-merge into the current config after a GET, then re-validated) |
+| `update_block` | routes:write | full replace (`PUT /admin/blocks/:id`) |
+| `patch_block_config` | routes:write | deep-merge `config_patch` into the current config after a GET (objects merge, arrays replace), re-validate, PUT the full block; cannot change the type |
 | `move_block` | routes:write | `PUT /admin/blocks/:id/move` |
 | `delete_block` | routes:write | `confirm` required |
 | `reorder_groups` | routes:write | full id list |
@@ -301,6 +302,34 @@ bucket (staging and production) for the listing — and without it S3 answers
    resources, read tools.
 5b. **Lint / `validate_route`**.
 6. **Write tools** — dry_run, confirm_live, confirm, GET-merge-PUT, patch_config.
+   **Done** (`src/tools/write.ts`, wire shapes in `src/tools/wire-schemas.ts`,
+   registered in `server.ts`). As built:
+   - Handlers re-parse with the real shared schemas (`bulkRouteGroupCreateSchema`,
+     `routeSchema`, `groupCreateSchema`, `groupUpdateSchema`, `routeBlockSchema`,
+     `blockMoveSchema`, `groupReorderSchema`, `blockReorderSchema`) before any
+     request; a failure is a local `INVALID_INPUT` and nothing is sent.
+   - `create_route` never exposes `is_active` and always sends `false`; it runs
+     `lintRoute` first (errors block unless `force: true`, but shared-schema
+     errors always block), attaches warnings, and `dry_run` maps to the API's
+     `?dry_run=true`. `update_route` sends the route's current `is_active` so a
+     PUT can neither activate nor deactivate.
+   - Every other tool's `dry_run` only GETs: it returns the exact
+     method/path/body and a field-level diff.
+   - **Deviation**: `confirm_live: true` is required for *every* write that
+     touches an ACTIVE route (including move, delete and reorder), not only
+     content edits — the broader rule in the Tools section above. A dry run
+     is never blocked; it says the real call needs it.
+   - The admin API has no block→route or group→route lookup, so tools keyed by
+     a block or group id take an optional `route_id` hint; without it they list
+     the routes and fetch each until found (cached for that call only).
+     `move_block` refuses a target group in a different route.
+   - Reorders check locally that the id list is the complete current set
+     (duplicates, unknown and missing ids → `INCOMPLETE_*_LIST`).
+   - After every successful write the route is re-fetched and returned as the
+     compact tree (a failed re-fetch still reports the write as done).
+     `X-Live-Events` becomes a warning on the first line and `live_events` in
+     `structuredContent`; 409 `GROUP_HAS_LIVE_EVENTS`/`BLOCK_HAS_LIVE_EVENTS`,
+     403 `ADMIN_SCOPE_REQUIRED`/`ADMIN_SESSION_REQUIRED` and 401 get guidance text.
 7. **Images + message banks** — `upload_image`, `list_image_slugs`, message
    bank tools. **Done** (`registerImageTools` / `registerMessageBankTools`;
    wired into `server.ts` in Phase 8, which must pass `{ fetchImpl }` to
