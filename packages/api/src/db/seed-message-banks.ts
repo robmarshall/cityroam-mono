@@ -4,6 +4,7 @@ import postgres from "postgres";
 import { messageBanks } from "./schema/message-banks.js";
 import type { SupportedLanguage } from "@cityroam/shared/types";
 import { SUPPORTED_LANGUAGES, LANGUAGE_NAMES } from "@cityroam/shared/constants";
+import { messageBankSeedData } from "./seed.js";
 
 const DATABASE_URL =
   process.env.DATABASE_URL ??
@@ -308,40 +309,56 @@ const translations: Record<
 
 function printUsage(): void {
   console.log(`
-Usage: seed-message-banks <language|all> [--dry-run] [--clear]
+Usage: seed-message-banks [language|all] [--dry-run] [--clear]
 
 Arguments:
-  language   A supported language code: ${SUPPORTED_LANGUAGES.filter((l) => l !== "en").join(", ")}
-  all        Seed all non-English languages
+  language   A supported language code: ${SUPPORTED_LANGUAGES.join(", ")}
+  all        Seed every language, English included (the default)
+
+Seeding only adds entries that are missing, so it is safe to re-run and never
+touches admin edits. It seeds message banks only, never routes, which makes it
+the right seeder for production.
 
 Options:
   --dry-run  Print what would be inserted without touching the database
   --clear    Delete existing message bank entries for the target language(s) before inserting
+             (requires an explicit language or "all"; it wipes admin edits)
 `);
+}
+
+/** English lives in seed.ts, the other languages in `translations` above. */
+function entriesFor(lang: SupportedLanguage): readonly MessageBankSeedEntry[] | undefined {
+  return lang === "en" ? messageBankSeedData : translations[lang];
 }
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
+  if (args.includes("--help") || args.includes("-h")) {
+    printUsage();
+    return;
+  }
   const dryRun = args.includes("--dry-run");
   const clear = args.includes("--clear");
-  const langArg = args.find((a) => !a.startsWith("--"));
+  const explicitLang = args.find((a) => !a.startsWith("--"));
 
-  if (!langArg) {
+  if (clear && !explicitLang) {
+    console.error('Error: --clear needs an explicit language or "all".');
     printUsage();
     process.exit(1);
   }
+  const langArg = explicitLang ?? "all";
 
   // Determine which languages to seed
-  const targetLanguages: Exclude<SupportedLanguage, "en">[] =
+  const targetLanguages: SupportedLanguage[] =
     langArg === "all"
-      ? (SUPPORTED_LANGUAGES.filter((l) => l !== "en") as Exclude<SupportedLanguage, "en">[])
-      : [langArg as Exclude<SupportedLanguage, "en">];
+      ? [...SUPPORTED_LANGUAGES]
+      : [langArg as SupportedLanguage];
 
   // Validate
   for (const lang of targetLanguages) {
-    if (!translations[lang]) {
+    if (!entriesFor(lang)) {
       console.error(
-        `Error: No translations for "${lang}". Available: ${Object.keys(translations).join(", ")}, all`
+        `Error: No message bank entries for "${lang}". Available: ${SUPPORTED_LANGUAGES.join(", ")}, all`
       );
       process.exit(1);
     }
@@ -349,7 +366,7 @@ async function main(): Promise<void> {
 
   if (dryRun) {
     for (const lang of targetLanguages) {
-      const entries = translations[lang];
+      const entries = entriesFor(lang)!;
       console.log(`\n[DRY RUN] ${LANGUAGE_NAMES[lang]} (${lang}): ${entries.length} entries`);
       const byType = new Map<string, number>();
       for (const e of entries) {
@@ -367,7 +384,7 @@ async function main(): Promise<void> {
 
   try {
     for (const lang of targetLanguages) {
-      const entries = translations[lang];
+      const entries = entriesFor(lang)!;
 
       if (clear) {
         console.log(`Clearing existing ${lang} message bank entries...`);

@@ -133,6 +133,9 @@ This starts Postgres, Redis, API (HTTP + WS), App, Admin, and Marketing in conta
 | `npm run docker:down` | Stop and remove containers |
 | `npm run docker:migrate` | Run migrations inside container |
 | `npm run docker:seed` | Seed database inside container |
+| `npm run docker:prod:migrate` | Run migrations in a running `docker-compose.prod.yml` `api-http` container (uses the built `start:migrate`) |
+| `npm run docker:prod:seed` | Run the full seed in the prod `api-http` container (`start:seed`, includes dev routes) |
+| `npm run docker:prod:seed:message-banks` | Seed message banks only in the prod `api-http` container (`start:seed:message-banks`; the safe seeder for production, pass `-- --dry-run` to preview) |
 
 ## Deployment
 

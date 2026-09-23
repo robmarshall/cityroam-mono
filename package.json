@@ -22,7 +22,10 @@
     "docker:shell": "docker compose exec dev bash",
     "docker:down": "docker compose down",
     "docker:migrate": "docker compose exec api-http npm run migrate",
-    "docker:seed": "docker compose exec api-http npm run seed"
+    "docker:seed": "docker compose exec api-http npm run seed",
+    "docker:prod:migrate": "docker compose -f docker-compose.prod.yml exec api-http npm run start:migrate",
+    "docker:prod:seed": "docker compose -f docker-compose.prod.yml exec api-http npm run start:seed",
+    "docker:prod:seed:message-banks": "docker compose -f docker-compose.prod.yml exec api-http npm run start:seed:message-banks --"
   },
   "devDependencies": {
     "npm-run-all2": "^7.0.2",
