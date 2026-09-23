@@ -302,6 +302,8 @@ bucket (staging and production) for the listing — and without it S3 answers
 5b. **Lint / `validate_route`**.
 6. **Write tools** — dry_run, confirm_live, confirm, GET-merge-PUT, patch_config.
 7. **Images + message banks** — `upload_image`, `list_image_slugs`, message
-   bank tools.
+   bank tools. **Done** (`registerImageTools` / `registerMessageBankTools`;
+   wired into `server.ts` in Phase 8, which must pass `{ fetchImpl }` to
+   `registerImageTools` for the presigned PUT and URL downloads).
 8. **Docs/config** — `.mcp.json.example`, Claude Desktop snippet, CLAUDE.md
    note, key rotation runbook.
