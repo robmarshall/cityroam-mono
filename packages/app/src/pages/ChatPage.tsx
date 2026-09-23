@@ -40,7 +40,7 @@ import type {
   BlockAdvancedPayload,
 } from "@cityroam/shared/types";
 import { api, ApiError } from "../lib/api";
-import { validationMessage } from "../lib/errors";
+import { friendlyError, validationMessage } from "../lib/errors";
 import { trackEvent } from "../lib/analytics";
 import { useParticipant } from "../contexts/ParticipantContext";
 import { useEvent } from "../contexts/EventContext";
@@ -887,11 +887,14 @@ export default function ChatPage() {
       }
       setShowNameDialog(false);
     } catch (err) {
-      if (err instanceof ApiError) {
-        setNameError(err.message);
-      } else {
-        setNameError(t("chat.nameChangeError"));
-      }
+      // Name validation codes are translated inside friendlyError; any other
+      // INVALID_INPUT is a failed rename, not a bad event code.
+      setNameError(
+        friendlyError(err, {
+          codes: { INVALID_INPUT: "chat.nameChangeError" },
+          fallback: "chat.nameChangeError",
+        }),
+      );
     } finally {
       setSavingName(false);
     }

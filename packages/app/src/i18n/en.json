@@ -134,7 +134,12 @@
     "rateLimited": "Too many attempts. Please wait a moment and try again.",
     "unauthorized": "Your session has expired. Please rejoin the game.",
     "networkError": "Couldn't connect. Check your signal and try again.",
-    "generic": "Something went wrong. Please try again."
+    "generic": "Something went wrong. Please try again.",
+    "serverError": "Our server hit a problem. Please try again in a moment.",
+    "leadOnly": "Only the group lead can do that.",
+    "cannotStart": "The game can't be started right now. It may already be under way.",
+    "languageLocked": "The language can only be changed before the game starts.",
+    "languageUnavailable": "This hunt isn't available in that language yet."
   },
   "validation": {
     "DISPLAY_NAME_TOO_SHORT": "Display name must be at least {{min}} characters",

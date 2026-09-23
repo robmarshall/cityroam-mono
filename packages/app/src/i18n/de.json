@@ -134,7 +134,12 @@
     "rateLimited": "Zu viele Versuche. Bitte warte einen Moment und versuche es erneut.",
     "unauthorized": "Deine Sitzung ist abgelaufen. Bitte tritt dem Spiel erneut bei.",
     "networkError": "Verbindung fehlgeschlagen. Überprüfe dein Signal und versuche es erneut.",
-    "generic": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
+    "generic": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+    "serverError": "Unser Server hatte ein Problem. Bitte versuche es gleich noch einmal.",
+    "leadOnly": "Das kann nur die Gruppenleitung.",
+    "cannotStart": "Das Spiel kann gerade nicht gestartet werden. Vielleicht läuft es schon.",
+    "languageLocked": "Die Sprache kann nur vor Spielbeginn geändert werden.",
+    "languageUnavailable": "Diese Schnitzeljagd ist in dieser Sprache noch nicht verfügbar."
   },
   "validation": {
     "DISPLAY_NAME_TOO_SHORT": "Der Anzeigename muss mindestens {{min}} Zeichen lang sein",

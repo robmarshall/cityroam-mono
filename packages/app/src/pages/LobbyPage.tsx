@@ -11,7 +11,8 @@ import type {
   LeadChangedPayload,
   SupportedLanguage,
 } from "@cityroam/shared/types";
-import { api, ApiError } from "../lib/api";
+import { api } from "../lib/api";
+import { friendlyError } from "../lib/errors";
 import { trackEvent } from "../lib/analytics";
 import { useParticipant } from "../contexts/ParticipantContext";
 import { useEvent } from "../contexts/EventContext";
@@ -208,11 +209,15 @@ export default function LobbyPage() {
         language: eventRef.current?.language ?? event.language,
       });
     } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.message);
-      } else {
-        setError(t("lobby.startFailed"));
-      }
+      setError(
+        friendlyError(err, {
+          codes: {
+            "UNAUTHORIZED:403": "error.leadOnly",
+            INVALID_INPUT: "error.cannotStart",
+          },
+          fallback: "lobby.startFailed",
+        }),
+      );
       setStarting(false);
     }
   }, [code, starting, participants.length, setEvent]);
@@ -226,11 +231,15 @@ export default function LobbyPage() {
       await api.put(`/event/${code}/language`, { language: languageConfirm });
       // The WS language_changed event will update context and i18n
     } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.message);
-      } else {
-        setError(t("error.generic"));
-      }
+      setError(
+        friendlyError(err, {
+          codes: {
+            "UNAUTHORIZED:403": "error.leadOnly",
+            INVALID_INPUT: "error.languageLocked",
+            ROUTE_NOT_FOUND: "error.languageUnavailable",
+          },
+        }),
+      );
     } finally {
       setChangingLanguage(false);
       setLanguageConfirm(null);

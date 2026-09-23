@@ -134,7 +134,12 @@
     "rateLimited": "Trop de tentatives. Attends un instant et réessaie.",
     "unauthorized": "Ta session a expiré. Rejoins la partie à nouveau.",
     "networkError": "Connexion impossible. Vérifie ton signal et réessaie.",
-    "generic": "Un problème est survenu. Réessaie."
+    "generic": "Un problème est survenu. Réessaie.",
+    "serverError": "Notre serveur a rencontré un problème. Réessaie dans un instant.",
+    "leadOnly": "Seul le chef du groupe peut faire ça.",
+    "cannotStart": "Impossible de lancer la partie pour le moment. Elle est peut-être déjà en cours.",
+    "languageLocked": "La langue ne peut être changée qu'avant le début de la partie.",
+    "languageUnavailable": "Cette chasse n'est pas encore disponible dans cette langue."
   },
   "validation": {
     "DISPLAY_NAME_TOO_SHORT": "Le nom d'affichage doit contenir au moins {{min}} caractères",

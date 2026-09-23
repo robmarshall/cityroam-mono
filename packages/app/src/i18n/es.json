@@ -134,7 +134,12 @@
     "rateLimited": "Demasiados intentos. Espera un momento e inténtalo de nuevo.",
     "unauthorized": "Tu sesión ha expirado. Vuelve a unirte al juego.",
     "networkError": "No se pudo conectar. Revisa tu señal e inténtalo de nuevo.",
-    "generic": "Algo salió mal. Inténtalo de nuevo."
+    "generic": "Algo salió mal. Inténtalo de nuevo.",
+    "serverError": "Nuestro servidor ha tenido un problema. Inténtalo de nuevo en un momento.",
+    "leadOnly": "Solo el líder del grupo puede hacer eso.",
+    "cannotStart": "No se puede iniciar el juego ahora mismo. Puede que ya esté en marcha.",
+    "languageLocked": "El idioma solo se puede cambiar antes de que empiece el juego.",
+    "languageUnavailable": "Esta búsqueda aún no está disponible en ese idioma."
   },
   "validation": {
     "DISPLAY_NAME_TOO_SHORT": "El nombre debe tener al menos {{min}} caracteres",
