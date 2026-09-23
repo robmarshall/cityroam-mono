@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
-import { withSentryConfig } from "@sentry/nextjs";
+import { withSentryConfig } from "@sentry/nextjs/config";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
@@ -16,6 +16,10 @@ const sentryReleaseVersion = (
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  // src/lib/og.tsx reads the share-card font from disk. Trace it into every
+  // route's output (standalone Docker and Vercel functions) so a request-time
+  // render can't miss it.
+  outputFileTracingIncludes: { "/*": ["./assets/fonts/**"] },
   // Inlined into client, server and edge bundles alike.
   env: { SENTRY_RELEASE_VERSION: sentryReleaseVersion },
 };
