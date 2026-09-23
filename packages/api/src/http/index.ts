@@ -25,6 +25,10 @@ import {
   startIdleTimer,
   stopIdleTimer,
 } from "../services/pipeline/idle-timer.js";
+import {
+  startRetentionSweep,
+  stopRetentionSweep,
+} from "../services/data-retention.js";
 import { createLogger } from "../lib/logger.js";
 import { initSentry, flushSentry } from "../lib/sentry.js";
 
@@ -83,6 +87,7 @@ const server = serve({ fetch: app.fetch, port }, () => {
     log.error("failed to start incoming subscriber", { error: err instanceof Error ? err.message : String(err) }),
   );
   startGroupReconciler();
+  startRetentionSweep();
 });
 
 // Graceful shutdown
@@ -91,6 +96,7 @@ async function shutdown() {
   stopExpirySweep();
   stopIdleTimer();
   stopGroupReconciler();
+  stopRetentionSweep();
   await stopIncomingSubscriber();
   server.close();
   await Promise.all([disconnectRedis(), disconnectDb(), flushSentry()]);
