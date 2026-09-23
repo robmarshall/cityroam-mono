@@ -227,7 +227,12 @@ From inside the container:
 claude login
 ```
 
-Your credentials are persisted via a volume mount to `~/.claude` on the host, so you only need to do this once.
+The compose file no longer bind-mounts your host `~/.claude` or `~/.ssh`, so
+credentials live only inside the container and are lost when it is removed. To
+persist them, add your own mount in a `docker-compose.override.yml` (not
+committed), for example `- ~/.claude:/home/dev/.claude`.
+
+On first start the `dev` container runs `npm ci` if `node_modules` is missing.
 
 #### 4. Run the loop
 
