@@ -1253,7 +1253,7 @@ adminRoutes.put("/admin/routes/:id/groups/reorder", adminAuth, async (c) => {
 
     const now = new Date();
     const cases = group_ids
-      .map((id: string, i: number) => sql`WHEN ${routeGroups.id} = ${id} THEN ${i}`)
+      .map((id: string, i: number) => sql`WHEN ${routeGroups.id} = ${id} THEN ${i}::integer`)
       .reduce((acc: SQL, c: SQL) => sql`${acc} ${c}`);
 
     await tx
@@ -1354,7 +1354,7 @@ adminRoutes.delete("/admin/routes/:id/groups/:groupId", adminAuth, async (c) => 
 
     if (remainingGroups.length > 0) {
       const cases = remainingGroups
-        .map((g, i) => sql`WHEN ${routeGroups.id} = ${g.id} THEN ${i}`)
+        .map((g, i) => sql`WHEN ${routeGroups.id} = ${g.id} THEN ${i}::integer`)
         .reduce((acc, c) => sql`${acc} ${c}`);
 
       await tx
@@ -1431,7 +1431,7 @@ adminRoutes.post("/admin/groups/:groupId/blocks", adminAuth, async (c) => {
 
       if (toShift.length > 0) {
         const shiftCases = toShift
-          .map((b) => sql`WHEN ${routeBlocks.id} = ${b.id} THEN ${b.position + 1}`)
+          .map((b) => sql`WHEN ${routeBlocks.id} = ${b.id} THEN ${b.position + 1}::integer`)
           .reduce((acc, c) => sql`${acc} ${c}`);
 
         await tx
@@ -1516,7 +1516,7 @@ adminRoutes.put("/admin/groups/:groupId/blocks/reorder", adminAuth, async (c) =>
     }
 
     const cases = block_ids
-      .map((id: string, i: number) => sql`WHEN ${routeBlocks.id} = ${id} THEN ${i}`)
+      .map((id: string, i: number) => sql`WHEN ${routeBlocks.id} = ${id} THEN ${i}::integer`)
       .reduce((acc: SQL, c: SQL) => sql`${acc} ${c}`);
 
     await tx
@@ -1609,7 +1609,7 @@ adminRoutes.delete("/admin/blocks/:blockId", adminAuth, async (c) => {
 
     if (remainingBlocks.length > 0) {
       const cases = remainingBlocks
-        .map((b, i) => sql`WHEN ${routeBlocks.id} = ${b.id} THEN ${i}`)
+        .map((b, i) => sql`WHEN ${routeBlocks.id} = ${b.id} THEN ${i}::integer`)
         .reduce((acc, c) => sql`${acc} ${c}`);
 
       await tx
@@ -1676,7 +1676,7 @@ adminRoutes.put("/admin/blocks/:blockId/move", adminAuth, async (c) => {
 
     if (remainingInSource.length > 0) {
       const cases = remainingInSource
-        .map((b, i) => sql`WHEN ${routeBlocks.id} = ${b.id} THEN ${i}`)
+        .map((b, i) => sql`WHEN ${routeBlocks.id} = ${b.id} THEN ${i}::integer`)
         .reduce((acc, c) => sql`${acc} ${c}`);
 
       await tx
@@ -1704,7 +1704,7 @@ adminRoutes.put("/admin/blocks/:blockId/move", adminAuth, async (c) => {
     const toShift = blocksInTarget.filter((b) => b.position >= targetPosition);
     if (toShift.length > 0) {
       const shiftCases = toShift
-        .map((b) => sql`WHEN ${routeBlocks.id} = ${b.id} THEN ${b.position + 1}`)
+        .map((b) => sql`WHEN ${routeBlocks.id} = ${b.id} THEN ${b.position + 1}::integer`)
         .reduce((acc, c) => sql`${acc} ${c}`);
 
       await tx
