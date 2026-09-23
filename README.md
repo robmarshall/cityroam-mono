@@ -184,6 +184,11 @@ set `VITE_WS_URL` on the app's Vercel project to `wss://<WS_DOMAIN>` with no pat
 and no port (e.g. `wss://ws.cityroam.co.uk`), and `VITE_API_URL` to
 `https://<API_DOMAIN>`.
 
+`SENTRY_DSN`, `SENTRY_ENVIRONMENT` and `SENTRY_RELEASE` are optional in both
+files and passed to `api-http` and `api-ws`. Set `SENTRY_ENVIRONMENT` explicitly
+(`staging` / `production`): empty falls back to `NODE_ENV`, which is
+`production` in both. See the Sentry section of `docs/launch-checklist.md`.
+
 Production Traefik routers and services are named `cityroam-prod-api-http` and
 `cityroam-prod-api-ws`, so they do not collide with staging's `api-http` and
 `api-ws` routers when both stacks share one Coolify Traefik.

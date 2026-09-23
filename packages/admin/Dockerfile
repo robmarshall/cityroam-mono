@@ -29,6 +29,14 @@ COPY packages/admin/index.html packages/admin/
 ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
 
+# Optional: Sentry error monitoring. Empty = disabled.
+ARG VITE_SENTRY_DSN
+ARG VITE_SENTRY_ENVIRONMENT
+ARG VITE_SENTRY_RELEASE
+ENV VITE_SENTRY_DSN=$VITE_SENTRY_DSN
+ENV VITE_SENTRY_ENVIRONMENT=$VITE_SENTRY_ENVIRONMENT
+ENV VITE_SENTRY_RELEASE=$VITE_SENTRY_RELEASE
+
 # Fail the build rather than ship a bundle pointing at localhost.
 RUN if [ -z "$VITE_API_URL" ]; then echo "ERROR: build arg VITE_API_URL is required" >&2; exit 1; fi
 

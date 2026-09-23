@@ -2,6 +2,7 @@ import type { ErrorHandler } from "hono";
 import { z } from "zod";
 import { env } from "../env.js";
 import { createLogger } from "../lib/logger.js";
+import { captureError, scrubUrl } from "../lib/sentry.js";
 
 const log = createLogger("error-handler");
 
@@ -34,6 +35,7 @@ export const errorHandler: ErrorHandler = (err, c) => {
       : err.message || "Internal server error";
 
   log.error("unhandled error", { error: err instanceof Error ? err.message : String(err), stack: err instanceof Error ? err.stack : undefined });
+  captureError(err, { method: c.req.method, path: scrubUrl(c.req.path) });
 
   return c.json({ error: message, code: "INTERNAL_ERROR" }, 500);
 };

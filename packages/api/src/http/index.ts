@@ -26,10 +26,12 @@ import {
   stopIdleTimer,
 } from "../services/pipeline/idle-timer.js";
 import { createLogger } from "../lib/logger.js";
+import { initSentry, flushSentry } from "../lib/sentry.js";
 
 const log = createLogger("http");
 
 validateEnv("http");
+initSentry("http");
 
 const app = new Hono();
 
@@ -91,7 +93,7 @@ async function shutdown() {
   stopGroupReconciler();
   await stopIncomingSubscriber();
   server.close();
-  await Promise.all([disconnectRedis(), disconnectDb()]);
+  await Promise.all([disconnectRedis(), disconnectDb(), flushSentry()]);
   process.exit(0);
 }
 

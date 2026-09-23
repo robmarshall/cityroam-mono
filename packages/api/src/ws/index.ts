@@ -21,6 +21,7 @@ import {
 } from "./connections.js";
 import { subscribeEvent, unsubscribeEvent, unsubscribeAll } from "./subscriptions.js";
 import { createLogger } from "../lib/logger.js";
+import { initSentry, captureError, flushSentry } from "../lib/sentry.js";
 
 const log = createLogger("ws");
 
@@ -33,6 +34,7 @@ declare module "ws" {
 }
 
 validateEnv("ws");
+initSentry("ws");
 
 const app = new Hono();
 
@@ -125,6 +127,7 @@ app.get(
           await handleClientMessage(raw, data, session);
         } catch (err) {
           log.error("message handler error", { eventCode: session.event_code, participantId: session.participant_id, error: err instanceof Error ? err.message : String(err) });
+          captureError(err, { where: "ws.onMessage" });
         }
       },
 
@@ -199,7 +202,7 @@ async function shutdown() {
   closeAllConnections(1001, "Server shutting down");
   await unsubscribeAll();
   server.close();
-  await Promise.all([disconnectRedis(), disconnectDb()]);
+  await Promise.all([disconnectRedis(), disconnectDb(), flushSentry()]);
   process.exit(0);
 }
 

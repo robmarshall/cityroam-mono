@@ -39,6 +39,14 @@ ENV VITE_POSTHOG_KEY=$VITE_POSTHOG_KEY
 ENV VITE_POSTHOG_HOST=$VITE_POSTHOG_HOST
 ENV VITE_REVIEW_LINK=$VITE_REVIEW_LINK
 
+# Optional: Sentry error monitoring. Empty = disabled.
+ARG VITE_SENTRY_DSN
+ARG VITE_SENTRY_ENVIRONMENT
+ARG VITE_SENTRY_RELEASE
+ENV VITE_SENTRY_DSN=$VITE_SENTRY_DSN
+ENV VITE_SENTRY_ENVIRONMENT=$VITE_SENTRY_ENVIRONMENT
+ENV VITE_SENTRY_RELEASE=$VITE_SENTRY_RELEASE
+
 # Fail the build rather than ship a bundle pointing at localhost.
 RUN if [ -z "$VITE_API_URL" ]; then echo "ERROR: build arg VITE_API_URL is required" >&2; exit 1; fi
 RUN if [ -z "$VITE_WS_URL" ]; then echo "ERROR: build arg VITE_WS_URL is required" >&2; exit 1; fi

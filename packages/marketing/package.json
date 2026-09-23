@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@cityroam/shared": "*",
+    "@sentry/nextjs": "^10.75.2",
     "motion": "^12.38.0",
     "next": "^15",
     "next-intl": "^4.9.0",
