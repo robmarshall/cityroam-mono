@@ -29,6 +29,7 @@ const REQUIRED = {
   APP_URL: "https://app.example.com",
   APP_PUBLIC_URL: "https://app.example.com/app",
   ADMIN_URL: "https://admin.example.com",
+  API_KEY_ENV: "prd",
 };
 
 describe("validateEnv", () => {
@@ -96,5 +97,32 @@ describe("validateEnv", () => {
     expect(() => validateEnv("http")).toThrow("process.exit(1)");
     const message = String(errorSpy.mock.calls.at(-1)?.[0]);
     expect(message).toContain("COOKIE_DOMAIN");
+  });
+
+  it("refuses to boot the http process without API_KEY_ENV outside development", () => {
+    delete process.env.API_KEY_ENV;
+
+    expect(() => validateEnv("http")).toThrow("process.exit(1)");
+    expect(String(errorSpy.mock.calls.at(-1)?.[0])).toContain("API_KEY_ENV");
+  });
+
+  it("refuses API_KEY_ENV=dev outside development", () => {
+    process.env.API_KEY_ENV = "dev";
+
+    expect(() => validateEnv("http")).toThrow("process.exit(1)");
+  });
+
+  it("accepts API_KEY_ENV=stg for staging", () => {
+    process.env.API_KEY_ENV = "stg";
+
+    expect(() => validateEnv("http")).not.toThrow();
+  });
+
+  it("does not demand API_KEY_ENV from the ws process or in development", () => {
+    delete process.env.API_KEY_ENV;
+    expect(() => validateEnv("ws")).not.toThrow();
+
+    process.env.NODE_ENV = "development";
+    expect(() => validateEnv("http")).not.toThrow();
   });
 });

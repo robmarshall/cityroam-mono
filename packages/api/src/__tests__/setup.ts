@@ -27,6 +27,7 @@ vi.mock("../env.js", () => ({
     ADMIN_URL: "https://admin.test.com",
     BASE_DOMAIN: "test.com",
     NODE_ENV: "development",
+    API_KEY_ENV: "dev",
     PORT: "3001",
     WS_PORT: "3002",
   },

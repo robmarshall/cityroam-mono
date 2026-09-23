@@ -55,6 +55,14 @@ const DEV_REQUIRED_VARS = ["DATABASE_URL", "REDIS_URL"] as const;
  */
 const MIN_SESSION_SECRET_LENGTH = 32;
 
+/**
+ * API_KEY_ENV names the deployment in admin API key prefixes
+ * (`crk_<env>_…`). The API refuses any key minted for another environment, so
+ * a staging key pasted into a production config fails closed. Development
+ * defaults to "dev"; everywhere else it must be set explicitly.
+ */
+const DEPLOYED_API_KEY_ENVS = ["stg", "prd"] as const;
+
 function getEnvValue(key: string): string | undefined {
   return process.env[key] ?? DEFAULTS[key];
 }
@@ -84,6 +92,17 @@ export function validateEnv(target: "http" | "ws"): void {
         `SESSION_SECRET must be at least ${MIN_SESSION_SECRET_LENGTH} characters ` +
           `outside development (got ${secret.length}). Generate one with ` +
           `\`openssl rand -base64 48\`.`,
+      );
+      process.exit(1);
+    }
+  }
+
+  if (!isDev && target === "http") {
+    const apiKeyEnv = process.env.API_KEY_ENV ?? "";
+    if (!(DEPLOYED_API_KEY_ENVS as readonly string[]).includes(apiKeyEnv)) {
+      console.error(
+        `API_KEY_ENV must be one of ${DEPLOYED_API_KEY_ENVS.join(", ")} outside development ` +
+          `(got ${apiKeyEnv ? `"${apiKeyEnv}"` : "nothing"}). Use "stg" on staging and "prd" on production.`,
       );
       process.exit(1);
     }
@@ -137,6 +156,8 @@ function buildEnv() {
     // "default". Empty means "use the only active family, else reject".
     CHECKOUT_ROUTE_FAMILY_IDS: process.env.CHECKOUT_ROUTE_FAMILY_IDS ?? "",
     NODE_ENV: process.env.NODE_ENV ?? DEFAULTS.NODE_ENV,
+    // Environment segment admin API keys must carry. Empty accepts no key.
+    API_KEY_ENV: process.env.API_KEY_ENV ?? (isDev ? "dev" : ""),
     PORT: process.env.PORT ?? DEFAULTS.PORT,
     WS_PORT: process.env.WS_PORT ?? DEFAULTS.WS_PORT,
   } as const;

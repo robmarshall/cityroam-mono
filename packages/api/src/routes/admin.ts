@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import type { Context } from "hono";
-import { createHash, timingSafeEqual } from "node:crypto";
 import { eq, sql, count, desc, and, asc, inArray, or, notInArray, type SQL } from "drizzle-orm";
 import Stripe from "stripe";
 import { adminLoginSchema, adminUpdateEventStatusSchema, adminCreateEventSchema, routeSchema, imageUploadRequestSchema, routeImageSlugSchema, messageBankSchema, routeBlockSchema, groupUpdateSchema, bulkRouteGroupCreateSchema, groupReorderSchema, blockReorderSchema, blockMoveSchema } from "@cityroam/shared/validation";
@@ -12,7 +11,9 @@ import { env } from "../env.js";
 import { db } from "../db/index.js";
 import { routeFamilies, events, participants, messages, routes, messageBanks, routeGroups, routeBlocks } from "../db/schema/index.js";
 import { AppError } from "../middleware/error-handler.js";
-import { adminAuth, signAdminToken } from "../middleware/admin.js";
+import { adminAuth, requireAdmin, assertCanActivate, signAdminToken } from "../middleware/admin.js";
+import { constantTimeEquals } from "../lib/constant-time.js";
+import { clientIp } from "../lib/client-ip.js";
 import {
   checkAdminLoginRateLimit,
   clearAdminLoginRateLimit,
@@ -25,40 +26,6 @@ import { publicImageUrl } from "../lib/image-url.js";
 const log = createLogger("admin");
 
 export const adminRoutes = new Hono();
-
-/**
- * Best-guess client IP for rate limiting. The API sits behind Traefik, which
- * appends to `x-forwarded-for` and sets `x-real-ip`; Cloudflare in front of it
- * sets `cf-connecting-ip`. Most-trusted header first, and the *first* entry of
- * `x-forwarded-for` is only reached when neither proxy header is present.
- *
- * A caller with direct access to the API port can forge these. That is
- * acceptable for a login limiter: forging simply hands the attacker a fresh
- * bucket, which is no worse than the no-limiter status quo, and the API is not
- * exposed outside the proxy in any deployed environment.
- */
-function clientIp(c: Context): string {
-  const direct =
-    c.req.header("cf-connecting-ip") ?? c.req.header("x-real-ip") ?? null;
-  if (direct?.trim()) return direct.trim().slice(0, 64);
-
-  const forwarded = c.req.header("x-forwarded-for");
-  const first = forwarded?.split(",")[0]?.trim();
-  if (first) return first.slice(0, 64);
-
-  return "unknown";
-}
-
-/**
- * Length-independent equality. Hashing first gives timingSafeEqual the
- * equal-length buffers it requires, so the comparison leaks neither the
- * secret's content nor its length.
- */
-function constantTimeEquals(a: string, b: string): boolean {
-  const left = createHash("sha256").update(a, "utf8").digest();
-  const right = createHash("sha256").update(b, "utf8").digest();
-  return timingSafeEqual(left, right);
-}
 
 // POST /admin/login — authenticate admin, return JWT
 adminRoutes.post("/admin/login", async (c) => {
@@ -526,7 +493,7 @@ adminRoutes.post("/admin/events/:id/resend-code", adminAuth, (c) =>
 // With `slug`: the fixed key `route-images/<slug>.jpg` that `{{IMAGE:slug}}`
 // resolves to. That overwrites any existing photo for the slug, which is the
 // point — every block and language using the placeholder picks it up.
-adminRoutes.post("/admin/upload", adminAuth, async (c) => {
+adminRoutes.post("/admin/upload", requireAdmin("images:write"), async (c) => {
   const body = await c.req.json();
   const { filename, content_type, slug } = imageUploadRequestSchema.parse(body);
 
@@ -564,7 +531,7 @@ adminRoutes.post("/admin/upload", adminAuth, async (c) => {
 
 // GET /admin/route-images/:slug — where a `{{IMAGE:slug}}` placeholder resolves,
 // so the admin can preview it without knowing this environment's CDN base.
-adminRoutes.get("/admin/route-images/:slug", adminAuth, (c) => {
+adminRoutes.get("/admin/route-images/:slug", requireAdmin("images:read"), (c) => {
   const slug = routeImageSlugSchema.parse(c.req.param("slug"));
   const key = routeImageKey(slug);
   const response: AdminRouteImageResponse = {
@@ -669,7 +636,7 @@ async function activeVariantExists(
 // ── Route CRUD ──────────────────────────────────────────────────────
 
 // GET /admin/routes — list all routes with group counts
-adminRoutes.get("/admin/routes", adminAuth, async (c) => {
+adminRoutes.get("/admin/routes", requireAdmin("routes:read"), async (c) => {
   const routeRows = await db
     .select()
     .from(routes)
@@ -714,9 +681,10 @@ adminRoutes.get("/admin/routes", adminAuth, async (c) => {
 });
 
 // POST /admin/routes — create a new route
-adminRoutes.post("/admin/routes", adminAuth, async (c) => {
+adminRoutes.post("/admin/routes", requireAdmin("routes:write"), async (c) => {
   const body = await c.req.json();
   const data = routeSchema.parse(body);
+  assertCanActivate(c, false, data.is_active);
 
   let route: typeof routes.$inferSelect;
   try {
@@ -779,7 +747,7 @@ adminRoutes.post("/admin/routes", adminAuth, async (c) => {
 });
 
 // GET /admin/routes/:id — route detail with groups and blocks
-adminRoutes.get("/admin/routes/:id", adminAuth, async (c) => {
+adminRoutes.get("/admin/routes/:id", requireAdmin("routes:read"), async (c) => {
   const id = c.req.param("id");
 
   const route = await db.query.routes.findFirst({
@@ -868,7 +836,7 @@ adminRoutes.get("/admin/routes/:id", adminAuth, async (c) => {
 });
 
 // PUT /admin/routes/:id — update a route
-adminRoutes.put("/admin/routes/:id", adminAuth, async (c) => {
+adminRoutes.put("/admin/routes/:id", requireAdmin("routes:write"), async (c) => {
   const id = c.req.param("id");
   const body = await c.req.json();
   const data = routeSchema.parse(body);
@@ -880,6 +848,8 @@ adminRoutes.put("/admin/routes/:id", adminAuth, async (c) => {
   if (!existing) {
     throw new AppError(404, "Route not found", "ROUTE_NOT_FOUND");
   }
+
+  assertCanActivate(c, existing.is_active, data.is_active);
 
   // Activating a route with no groups sells a hunt that cannot start: the lead
   // presses start and `startEvent` fails with "Route has no groups". Checked
@@ -943,7 +913,8 @@ adminRoutes.put("/admin/routes/:id", adminAuth, async (c) => {
   }, 200);
 });
 
-// DELETE /admin/routes/:id — delete a route (409 if events reference it)
+// DELETE /admin/routes/:id — delete a route (409 if events reference it).
+// Session-only: destructive, and deliberately not offered to API keys.
 adminRoutes.delete("/admin/routes/:id", adminAuth, async (c) => {
   const id = c.req.param("id");
 
@@ -985,7 +956,7 @@ type DbTx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 const TERMINAL_EVENT_STATUSES = ["COMPLETED", "EXPIRED", "REFUNDED"];
 
 /** Counts still-playable events matching a reference condition. */
-async function countLiveEvents(tx: DbTx, reference: SQL): Promise<number> {
+async function countLiveEvents(tx: DbLike, reference: SQL): Promise<number> {
   const rows = await tx
     .select({ count: count() })
     .from(events)
@@ -1035,10 +1006,25 @@ function liveReferenceError(kind: "group" | "block", liveCount: number): AppErro
   );
 }
 
+/**
+ * Content edits that do not shift positions (block text, group names, group
+ * order) are allowed while events are playing the route — the owner chose to
+ * warn rather than block. The warning is the `X-Live-Events` response header
+ * (exposed via CORS), so API clients can surface it without the admin UI
+ * changing.
+ */
+async function flagLiveEvents(c: Context, routeId: string | SQL): Promise<void> {
+  const liveCount = await countLiveEvents(db, sql`${events.route_id} = ${routeId}`);
+  if (liveCount > 0) {
+    c.header("X-Live-Events", String(liveCount));
+  }
+}
+
 // POST /admin/routes/bulk-groups — create a route with groups and blocks in one call
-adminRoutes.post("/admin/routes/bulk-groups", adminAuth, async (c) => {
+adminRoutes.post("/admin/routes/bulk-groups", requireAdmin("routes:write"), async (c) => {
   const body = await c.req.json();
   const data = bulkRouteGroupCreateSchema.parse(body);
+  assertCanActivate(c, false, data.route.is_active);
 
   let result: {
     route: typeof routes.$inferSelect;
@@ -1163,7 +1149,7 @@ adminRoutes.post("/admin/routes/bulk-groups", adminAuth, async (c) => {
 });
 
 // POST /admin/routes/:id/groups — create a group for a route
-adminRoutes.post("/admin/routes/:id/groups", adminAuth, async (c) => {
+adminRoutes.post("/admin/routes/:id/groups", requireAdmin("routes:write"), async (c) => {
   const routeId = c.req.param("id");
   const body = await c.req.json();
   const data = groupUpdateSchema.parse(body);
@@ -1216,7 +1202,7 @@ adminRoutes.post("/admin/routes/:id/groups", adminAuth, async (c) => {
 });
 
 // PUT /admin/routes/:id/groups/reorder — reorder groups (must be before :groupId route)
-adminRoutes.put("/admin/routes/:id/groups/reorder", adminAuth, async (c) => {
+adminRoutes.put("/admin/routes/:id/groups/reorder", requireAdmin("routes:write"), async (c) => {
   const routeId = c.req.param("id");
   const body = await c.req.json();
   const { group_ids } = groupReorderSchema.parse(body);
@@ -1265,11 +1251,15 @@ adminRoutes.put("/admin/routes/:id/groups/reorder", adminAuth, async (c) => {
       .where(inArray(routeGroups.id, group_ids));
   });
 
+  // Reordering groups does not move `current_block_index` within a group, so
+  // it is allowed mid-play, with a warning.
+  await flagLiveEvents(c, routeId);
+
   return c.json({ success: true }, 200);
 });
 
 // PUT /admin/routes/:id/groups/:groupId — update a group
-adminRoutes.put("/admin/routes/:id/groups/:groupId", adminAuth, async (c) => {
+adminRoutes.put("/admin/routes/:id/groups/:groupId", requireAdmin("routes:write"), async (c) => {
   const routeId = c.req.param("id");
   const groupId = c.req.param("groupId");
   const body = await c.req.json();
@@ -1292,6 +1282,8 @@ adminRoutes.put("/admin/routes/:id/groups/:groupId", adminAuth, async (c) => {
     .where(eq(routeGroups.id, groupId))
     .returning();
 
+  await flagLiveEvents(c, routeId);
+
   return c.json({
     group: {
       id: updated.id,
@@ -1305,7 +1297,7 @@ adminRoutes.put("/admin/routes/:id/groups/:groupId", adminAuth, async (c) => {
 });
 
 // DELETE /admin/routes/:id/groups/:groupId — delete a group and renumber
-adminRoutes.delete("/admin/routes/:id/groups/:groupId", adminAuth, async (c) => {
+adminRoutes.delete("/admin/routes/:id/groups/:groupId", requireAdmin("routes:write"), async (c) => {
   const routeId = c.req.param("id");
   const groupId = c.req.param("groupId");
 
@@ -1380,7 +1372,7 @@ adminRoutes.delete("/admin/routes/:id/groups/:groupId", adminAuth, async (c) => 
 });
 
 // POST /admin/groups/:groupId/blocks — create a block for a group
-adminRoutes.post("/admin/groups/:groupId/blocks", adminAuth, async (c) => {
+adminRoutes.post("/admin/groups/:groupId/blocks", requireAdmin("routes:write"), async (c) => {
   const groupId = c.req.param("groupId");
   const body = await c.req.json();
   const data = routeBlockSchema.parse(body);
@@ -1469,7 +1461,7 @@ adminRoutes.post("/admin/groups/:groupId/blocks", adminAuth, async (c) => {
 });
 
 // PUT /admin/groups/:groupId/blocks/reorder — reorder blocks within a group
-adminRoutes.put("/admin/groups/:groupId/blocks/reorder", adminAuth, async (c) => {
+adminRoutes.put("/admin/groups/:groupId/blocks/reorder", requireAdmin("routes:write"), async (c) => {
   const groupId = c.req.param("groupId");
   const body = await c.req.json();
   const { block_ids } = blockReorderSchema.parse(body);
@@ -1531,7 +1523,7 @@ adminRoutes.put("/admin/groups/:groupId/blocks/reorder", adminAuth, async (c) =>
 });
 
 // PUT /admin/blocks/:blockId — update a block
-adminRoutes.put("/admin/blocks/:blockId", adminAuth, async (c) => {
+adminRoutes.put("/admin/blocks/:blockId", requireAdmin("routes:write"), async (c) => {
   const blockId = c.req.param("blockId");
   const body = await c.req.json();
   const data = routeBlockSchema.parse(body);
@@ -1554,6 +1546,13 @@ adminRoutes.put("/admin/blocks/:blockId", adminAuth, async (c) => {
     .where(eq(routeBlocks.id, blockId))
     .returning();
 
+  // Editing a block in place keeps every position, so live events may keep
+  // playing; they pick up the new content when they reach it.
+  await flagLiveEvents(
+    c,
+    sql`(SELECT ${routeGroups.route_id} FROM ${routeGroups} WHERE ${routeGroups.id} = ${existing.group_id})`,
+  );
+
   return c.json({
     block: {
       id: updated.id,
@@ -1568,7 +1567,7 @@ adminRoutes.put("/admin/blocks/:blockId", adminAuth, async (c) => {
 });
 
 // DELETE /admin/blocks/:blockId — delete a block and renumber
-adminRoutes.delete("/admin/blocks/:blockId", adminAuth, async (c) => {
+adminRoutes.delete("/admin/blocks/:blockId", requireAdmin("routes:write"), async (c) => {
   const blockId = c.req.param("blockId");
 
   const existing = await db.query.routeBlocks.findFirst({
@@ -1625,7 +1624,7 @@ adminRoutes.delete("/admin/blocks/:blockId", adminAuth, async (c) => {
 });
 
 // PUT /admin/blocks/:blockId/move — move a block to a different group
-adminRoutes.put("/admin/blocks/:blockId/move", adminAuth, async (c) => {
+adminRoutes.put("/admin/blocks/:blockId/move", requireAdmin("routes:write"), async (c) => {
   const blockId = c.req.param("blockId");
   const body = await c.req.json();
   const data = blockMoveSchema.parse(body);
@@ -1747,7 +1746,7 @@ adminRoutes.put("/admin/blocks/:blockId/move", adminAuth, async (c) => {
 // ── Message Bank CRUD ────────────────────────────────────────────────
 
 // GET /admin/message-banks — list all, filterable by type
-adminRoutes.get("/admin/message-banks", adminAuth, async (c) => {
+adminRoutes.get("/admin/message-banks", requireAdmin("message-banks:read"), async (c) => {
   const typeFilter = c.req.query("type");
 
   const whereClause = typeFilter
@@ -1776,7 +1775,7 @@ adminRoutes.get("/admin/message-banks", adminAuth, async (c) => {
 });
 
 // POST /admin/message-banks — create a message bank entry
-adminRoutes.post("/admin/message-banks", adminAuth, async (c) => {
+adminRoutes.post("/admin/message-banks", requireAdmin("message-banks:write"), async (c) => {
   const body = await c.req.json();
   const data = messageBankSchema.parse(body);
 
@@ -1804,7 +1803,7 @@ adminRoutes.post("/admin/message-banks", adminAuth, async (c) => {
 });
 
 // PUT /admin/message-banks/:id — update a message bank entry
-adminRoutes.put("/admin/message-banks/:id", adminAuth, async (c) => {
+adminRoutes.put("/admin/message-banks/:id", requireAdmin("message-banks:write"), async (c) => {
   const id = c.req.param("id");
   const body = await c.req.json();
   const data = messageBankSchema.parse(body);
@@ -1842,7 +1841,8 @@ adminRoutes.put("/admin/message-banks/:id", adminAuth, async (c) => {
   }, 200);
 });
 
-// DELETE /admin/message-banks/:id — delete a message bank entry
+// DELETE /admin/message-banks/:id — delete a message bank entry.
+// Session-only: destructive, and deliberately not offered to API keys.
 adminRoutes.delete("/admin/message-banks/:id", adminAuth, async (c) => {
   const id = c.req.param("id");
 
@@ -1860,7 +1860,7 @@ adminRoutes.delete("/admin/message-banks/:id", adminAuth, async (c) => {
 });
 
 // GET /admin/route-families — list all route families with their route variants
-adminRoutes.get("/admin/route-families", adminAuth, async (c) => {
+adminRoutes.get("/admin/route-families", requireAdmin("routes:read"), async (c) => {
   const familyRows = await db
     .select()
     .from(routeFamilies)
@@ -1909,7 +1909,7 @@ adminRoutes.get("/admin/route-families", adminAuth, async (c) => {
 });
 
 // GET /admin/route-families/:id — route family detail with all routes
-adminRoutes.get("/admin/route-families/:id", adminAuth, async (c) => {
+adminRoutes.get("/admin/route-families/:id", requireAdmin("routes:read"), async (c) => {
   const id = c.req.param("id");
 
   const family = await db.query.routeFamilies.findFirst({
@@ -1972,7 +1972,7 @@ adminRoutes.get("/admin/route-families/:id", adminAuth, async (c) => {
 });
 
 // POST /admin/route-families — create a new route family
-adminRoutes.post("/admin/route-families", adminAuth, async (c) => {
+adminRoutes.post("/admin/route-families", requireAdmin("routes:write"), async (c) => {
   const body = await c.req.json();
   const { name, city } = body;
 
@@ -2000,7 +2000,7 @@ adminRoutes.post("/admin/route-families", adminAuth, async (c) => {
 });
 
 // PUT /admin/route-families/:id — update a route family
-adminRoutes.put("/admin/route-families/:id", adminAuth, async (c) => {
+adminRoutes.put("/admin/route-families/:id", requireAdmin("routes:write"), async (c) => {
   const id = c.req.param("id");
 
   const existing = await db.query.routeFamilies.findFirst({
@@ -2045,7 +2045,8 @@ adminRoutes.put("/admin/route-families/:id", adminAuth, async (c) => {
   }, 200);
 });
 
-// DELETE /admin/route-families/:id — delete a route family
+// DELETE /admin/route-families/:id — delete a route family.
+// Session-only: destructive, and deliberately not offered to API keys.
 adminRoutes.delete("/admin/route-families/:id", adminAuth, async (c) => {
   const id = c.req.param("id");
 
