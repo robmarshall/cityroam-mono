@@ -408,3 +408,49 @@ describe("HTTP client", () => {
     await expect(http.get("/admin/routes")).rejects.toMatchObject({ code: "TIMEOUT", status: 0 });
   });
 });
+
+describe("structuredContent against the published output schemas", () => {
+  // The SDK client validates structuredContent against a tool's outputSchema
+  // once it has listed the tools (as real clients do), so an API object with
+  // fields the schema does not name must still pass.
+  it("accepts full API objects with extra fields once the client has listed the tools", async () => {
+    const family = { id: FAMILY_ID, name: "Leeds", city: "Leeds", created_at: ts, updated_at: ts };
+    const bank = { id: "m1", type: "success", language: "en", content: "Nice.", is_active: true, created_at: ts, updated_at: ts };
+    const { fetch } = fakeFetch((call) => {
+      const p = call.url.pathname;
+      if (p === "/admin/routes") return json({ routes: [routeListItem({ future_field: 1 })] });
+      if (p === `/admin/routes/${ROUTE_ID}`) return json(routeDetail());
+      if (p === "/admin/route-families") {
+        return json({ route_families: [{ ...family, routes: [{ id: ROUTE_ID, language: "en", name: "Leeds", is_active: false, extra: true }] }] });
+      }
+      if (p === `/admin/route-families/${FAMILY_ID}`) return json({ route_family: family, routes: [routeListItem()] });
+      if (p === "/admin/message-banks") return json({ message_banks: [bank] });
+      if (p === "/admin/route-images") return json({ images: [], truncated: false });
+      return json({ error: "unexpected", code: "X" }, 500);
+    });
+    const client = await connect(testConfig(), fetch);
+    const { tools } = await client.listTools();
+    const withOutput = tools.filter((t) => t.outputSchema).map((t) => t.name).sort();
+    expect(withOutput).toEqual([
+      "get_route_family",
+      "list_image_slugs",
+      "list_message_banks",
+      "list_route_families",
+      "list_routes",
+      "validate_route",
+    ]);
+    const calls: [string, Record<string, unknown>][] = [
+      ["list_routes", {}],
+      ["list_route_families", {}],
+      ["get_route_family", { family_id: FAMILY_ID }],
+      ["list_message_banks", {}],
+      ["validate_route", { route_id: ROUTE_ID }],
+      ["list_image_slugs", { route_id: ROUTE_ID }],
+    ];
+    for (const [name, args] of calls) {
+      const result = await callTool(client, name, args);
+      expect(result.isError, `${name}: ${textOf(result)}`).toBeFalsy();
+      expect(result.structuredContent, name).toBeDefined();
+    }
+  });
+});

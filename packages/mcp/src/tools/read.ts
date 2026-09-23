@@ -73,7 +73,11 @@ export const readToolInputShapes = {
   },
 } as const;
 
-const routeSummary = z.object({
+// Output item schemas are loose: the SDK client validates structuredContent
+// against the published JSON Schema, and z.object() would publish
+// `additionalProperties: false` while the handlers pass through the API's full
+// objects (description, timestamps, …). These list the fields callers can rely on.
+const routeSummary = z.looseObject({
   id: z.string(),
   name: z.string(),
   language: z.string(),
@@ -83,9 +87,9 @@ const routeSummary = z.object({
   total_stops: z.number(),
 });
 
-const family = z.object({ id: z.string(), name: z.string(), city: z.string() });
+const family = z.looseObject({ id: z.string(), name: z.string(), city: z.string() });
 
-const issue = z.object({
+const issue = z.looseObject({
   rule: z.string(),
   message: z.string(),
   path: z.string(),
@@ -98,7 +102,7 @@ export const readToolOutputShapes = {
   list_route_families: {
     route_families: z.array(
       family.extend({
-        routes: z.array(z.object({ id: z.string(), language: z.string(), name: z.string(), is_active: z.boolean() })),
+        routes: z.array(z.looseObject({ id: z.string(), language: z.string(), name: z.string(), is_active: z.boolean() })),
       }),
     ),
   },
@@ -111,7 +115,7 @@ export const readToolOutputShapes = {
   },
   list_message_banks: {
     message_banks: z.array(
-      z.object({ id: z.string(), type: z.string(), language: z.string(), content: z.string(), is_active: z.boolean() }),
+      z.looseObject({ id: z.string(), type: z.string(), language: z.string(), content: z.string(), is_active: z.boolean() }),
     ),
   },
   validate_route: {

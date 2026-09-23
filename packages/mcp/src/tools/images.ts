@@ -84,7 +84,9 @@ export const imageToolInputShapes = {
   },
 } as const;
 
-const usage = z.object({
+// Loose item schemas: the SDK client validates structuredContent against the
+// published JSON Schema, and z.object() would forbid any extra field.
+const usage = z.looseObject({
   route_id: z.string(),
   route_name: z.string(),
   language: z.string(),
@@ -96,7 +98,7 @@ const usage = z.object({
 export const imageToolOutputShapes = {
   list_image_slugs: {
     used: z.array(
-      z.object({
+      z.looseObject({
         slug: z.string(),
         uploaded: z.union([z.boolean(), z.literal("unknown")]),
         usages: z.array(usage),
