@@ -28,6 +28,9 @@ COPY packages/marketing/postcss.config.mjs packages/marketing/
 # build resolves no locale bundle and every page 500s.
 COPY packages/marketing/messages packages/marketing/messages
 
+# Share-card font read by src/lib/og.tsx; traced into the standalone output.
+COPY packages/marketing/assets packages/marketing/assets
+
 # Static assets. Tracked via public/.gitkeep so this COPY always has a source.
 COPY packages/marketing/public packages/marketing/public
 
