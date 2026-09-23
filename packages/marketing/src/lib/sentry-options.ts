@@ -2,10 +2,11 @@
  * Shared Sentry options for every Next.js runtime (browser, Node, edge).
  *
  * Sentry is opt-in: with NEXT_PUBLIC_SENTRY_DSN unset nothing is initialised.
- * No PII: sendDefaultPii stays off, no replay or tracing, and Stripe checkout
- * session ids, event codes and tokens are scrubbed from reported URLs.
+ * No PII: dataCollection is pinned to the old sendDefaultPii-off baseline, no
+ * replay or tracing, and Stripe checkout session ids, event codes and tokens
+ * are scrubbed from reported URLs.
  */
-import type { Breadcrumb, ErrorEvent } from "@sentry/nextjs";
+import type { Breadcrumb, ErrorEvent, init } from "@sentry/nextjs";
 
 export const SENTRY_DSN = process.env.NEXT_PUBLIC_SENTRY_DSN?.trim() || undefined;
 
@@ -64,7 +65,11 @@ function scrubBreadcrumb(crumb: Breadcrumb): Breadcrumb {
   return crumb;
 }
 
-export function sentryOptions() {
+/** The SDK's own v10 denylist for headers and query params (from its migration guide). */
+const PII_HEADER_DENYLIST = ["forwarded", "-ip", "remote-", "via", "-user"];
+
+/** Typed so a renamed or removed SDK option fails the typecheck. */
+export function sentryOptions(): NonNullable<Parameters<typeof init>[0]> {
   return {
     dsn: SENTRY_DSN,
     enabled: Boolean(SENTRY_DSN),
@@ -74,7 +79,25 @@ export function sentryOptions() {
       process.env.NODE_ENV,
     release: SENTRY_RELEASE,
     initialScope: { tags: { service: SENTRY_SERVICE } },
-    sendDefaultPii: false,
+    // SDK v11 replaced `sendDefaultPii` with `dataCollection`, and leaving it
+    // unset now collects cookies, bodies and user info. Spell out the v10
+    // `sendDefaultPii: false` baseline so nothing new is sent.
+    dataCollection: {
+      userInfo: false,
+      cookies: false,
+      httpHeaders: {
+        request: { deny: PII_HEADER_DENYLIST },
+        response: { deny: PII_HEADER_DENYLIST },
+      },
+      httpBodies: [],
+      urlQueryParams: { deny: PII_HEADER_DENYLIST },
+      genAI: { inputs: false, outputs: false },
+      databaseQueryData: false,
+      queues: false,
+      graphQL: { document: false, variables: false },
+    },
+    // v11 defaults this to true; keep v10's behaviour.
+    attachStacktrace: false,
     tracesSampleRate: 0,
     beforeSend: scrubEvent,
     beforeBreadcrumb: scrubBreadcrumb,

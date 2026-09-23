@@ -1,3 +1,5 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { getTranslations } from "next-intl/server";
 import { BRAND, SITE_NAME, siteUrl } from "./site";
@@ -6,6 +8,21 @@ import { BRAND, SITE_NAME, siteUrl } from "./site";
 export const OG_SIZE = { width: 1200, height: 630 };
 export const OG_CONTENT_TYPE = "image/png";
 
+/**
+ * Noto Sans, Latin subset (OFL, see assets/fonts/OFL.txt). It is the font
+ * `next/og` bundled up to Next 15; Next 16 defaults to Geist, so we ship it
+ * ourselves to keep the cards unchanged. Satori needs TTF/OTF, not woff2. As
+ * before, only the regular weight exists, so the 700-weight text renders in it
+ * too. next.config.ts traces the file into the server and standalone output.
+ */
+const FONT_FAMILY = "Noto Sans";
+let fontData: Promise<Buffer> | undefined;
+
+async function ogFonts() {
+  fontData ??= readFile(join(process.cwd(), "assets/fonts/NotoSans-Regular-latin.ttf"));
+  return [{ name: FONT_FAMILY, data: await fontData, style: "normal" as const, weight: 400 as const }];
+}
+
 const displayHost = siteUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
 
 /**
@@ -13,7 +30,10 @@ const displayHost = siteUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
  * the brand colours and the localised tagline at build time.
  */
 export async function renderShareImage(locale: string) {
-  const t = await getTranslations({ locale, namespace: "metadata" });
+  const [t, fonts] = await Promise.all([
+    getTranslations({ locale, namespace: "metadata" }),
+    ogFonts(),
+  ]);
 
   return new ImageResponse(
     (
@@ -28,7 +48,7 @@ export async function renderShareImage(locale: string) {
           backgroundColor: BRAND.blue600,
           backgroundImage: `linear-gradient(135deg, ${BRAND.blue500} 0%, ${BRAND.blue900} 100%)`,
           color: BRAND.white,
-          fontFamily: "sans-serif",
+          fontFamily: FONT_FAMILY,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
@@ -63,12 +83,13 @@ export async function renderShareImage(locale: string) {
         </div>
       </div>
     ),
-    OG_SIZE,
+    { ...OG_SIZE, fonts },
   );
 }
 
 /** 180x180 rounded app icon used for `apple-icon`. */
-export function renderAppIcon(size: number) {
+export async function renderAppIcon(size: number) {
+  const fonts = await ogFonts();
   return new ImageResponse(
     (
       <div
@@ -82,13 +103,13 @@ export function renderAppIcon(size: number) {
           color: BRAND.white,
           fontSize: Math.round(size * 0.42),
           fontWeight: 700,
-          fontFamily: "sans-serif",
+          fontFamily: FONT_FAMILY,
           letterSpacing: "-2px",
         }}
       >
         CR
       </div>
     ),
-    { width: size, height: size },
+    { width: size, height: size, fonts },
   );
 }

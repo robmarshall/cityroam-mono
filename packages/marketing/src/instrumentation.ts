@@ -12,6 +12,6 @@ export async function register() {
   }
 }
 
-// Reports errors from Server Components, route handlers and middleware.
+// Reports errors from Server Components, route handlers and the proxy.
 // A no-op when Sentry was never initialised.
 export const onRequestError = Sentry.captureRequestError;
