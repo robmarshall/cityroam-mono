@@ -617,6 +617,8 @@ describe("POST /admin/routes/:id/groups", () => {
     const shift = mockDb.set.mock.calls.find(([v]: any[]) => v.position !== undefined)![0];
     const { sql, params } = render(shift.position);
     expect(sql).toMatch(/^CASE/);
+    // postgres.js sends numbers untyped, so without the cast the CASE is text.
+    expect(sql).toMatch(/THEN \S+::integer/);
     expect(params).toEqual([later[0].id, 3, later[1].id, 2]);
 
     const shiftLookup = render(mockDb.where.mock.calls[2][0]);

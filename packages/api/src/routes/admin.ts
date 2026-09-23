@@ -1349,7 +1349,7 @@ adminRoutes.post("/admin/routes/:id/groups", requireAdmin("routes:write"), async
         // One CASE update: the intermediate collisions are fine because the
         // (route_id, position) unique is deferred to commit.
         const shiftCases = toShift
-          .map((g) => sql`WHEN ${routeGroups.id} = ${g.id} THEN ${g.position + 1}`)
+          .map((g) => sql`WHEN ${routeGroups.id} = ${g.id} THEN ${g.position + 1}::integer`)
           .reduce((acc, c) => sql`${acc} ${c}`);
 
         await tx
@@ -1441,7 +1441,7 @@ adminRoutes.put("/admin/routes/:id/groups/reorder", requireAdmin("routes:write")
 
     const now = new Date();
     const cases = group_ids
-      .map((id: string, i: number) => sql`WHEN ${routeGroups.id} = ${id} THEN ${i}`)
+      .map((id: string, i: number) => sql`WHEN ${routeGroups.id} = ${id} THEN ${i}::integer`)
       .reduce((acc: SQL, c: SQL) => sql`${acc} ${c}`);
 
     await tx
@@ -1548,7 +1548,7 @@ adminRoutes.delete("/admin/routes/:id/groups/:groupId", requireAdmin("routes:wri
 
     if (remainingGroups.length > 0) {
       const cases = remainingGroups
-        .map((g, i) => sql`WHEN ${routeGroups.id} = ${g.id} THEN ${i}`)
+        .map((g, i) => sql`WHEN ${routeGroups.id} = ${g.id} THEN ${i}::integer`)
         .reduce((acc, c) => sql`${acc} ${c}`);
 
       await tx
@@ -1625,7 +1625,7 @@ adminRoutes.post("/admin/groups/:groupId/blocks", requireAdmin("routes:write"), 
 
       if (toShift.length > 0) {
         const shiftCases = toShift
-          .map((b) => sql`WHEN ${routeBlocks.id} = ${b.id} THEN ${b.position + 1}`)
+          .map((b) => sql`WHEN ${routeBlocks.id} = ${b.id} THEN ${b.position + 1}::integer`)
           .reduce((acc, c) => sql`${acc} ${c}`);
 
         await tx
@@ -1710,7 +1710,7 @@ adminRoutes.put("/admin/groups/:groupId/blocks/reorder", requireAdmin("routes:wr
     }
 
     const cases = block_ids
-      .map((id: string, i: number) => sql`WHEN ${routeBlocks.id} = ${id} THEN ${i}`)
+      .map((id: string, i: number) => sql`WHEN ${routeBlocks.id} = ${id} THEN ${i}::integer`)
       .reduce((acc: SQL, c: SQL) => sql`${acc} ${c}`);
 
     await tx
@@ -1810,7 +1810,7 @@ adminRoutes.delete("/admin/blocks/:blockId", requireAdmin("routes:write"), async
 
     if (remainingBlocks.length > 0) {
       const cases = remainingBlocks
-        .map((b, i) => sql`WHEN ${routeBlocks.id} = ${b.id} THEN ${i}`)
+        .map((b, i) => sql`WHEN ${routeBlocks.id} = ${b.id} THEN ${i}::integer`)
         .reduce((acc, c) => sql`${acc} ${c}`);
 
       await tx
@@ -1877,7 +1877,7 @@ adminRoutes.put("/admin/blocks/:blockId/move", requireAdmin("routes:write"), asy
 
     if (remainingInSource.length > 0) {
       const cases = remainingInSource
-        .map((b, i) => sql`WHEN ${routeBlocks.id} = ${b.id} THEN ${i}`)
+        .map((b, i) => sql`WHEN ${routeBlocks.id} = ${b.id} THEN ${i}::integer`)
         .reduce((acc, c) => sql`${acc} ${c}`);
 
       await tx
@@ -1905,7 +1905,7 @@ adminRoutes.put("/admin/blocks/:blockId/move", requireAdmin("routes:write"), asy
     const toShift = blocksInTarget.filter((b) => b.position >= targetPosition);
     if (toShift.length > 0) {
       const shiftCases = toShift
-        .map((b) => sql`WHEN ${routeBlocks.id} = ${b.id} THEN ${b.position + 1}`)
+        .map((b) => sql`WHEN ${routeBlocks.id} = ${b.id} THEN ${b.position + 1}::integer`)
         .reduce((acc, c) => sql`${acc} ${c}`);
 
       await tx
