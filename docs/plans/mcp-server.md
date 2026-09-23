@@ -226,12 +226,19 @@ warning in the tool result; the admin UI is unaffected.
 
 ## Audit log (Phase 2)
 
-Table `admin_audit_log`: `id`, `at`, `actor_kind` (session/api_key),
-`actor` (username or key id), `key_name`, `method`, `path`, `status`,
-`target_type`, `target_id`, `ip`, `summary jsonb` (request body digest; no
-secrets, no image bytes). Written for every non-GET admin request by
-API-key callers (and session callers for key management). Shown per key on
-the ApiKeysPage. Retention follows the privacy-page sweep (e.g. 180 days).
+As built (migration 0013): table `admin_audit_log` with `id`, `created_at`,
+`actor_type` (session/api_key), `actor_id` (username or key id),
+`actor_name` (username or key name), `method`, `path` (query string, event
+codes and `crk_` tokens scrubbed), `params jsonb` (route params, credential-like
+names redacted), `status`, `ip`, `request_id`; index `(actor_id, created_at)`.
+No request bodies are stored. `requireAdmin` writes a row after the handler
+for every non-GET request by an authenticated caller — sessions and keys
+alike — whose status is below 500, including 4xx refusals (403 scope/session
+rejections too). Requests refused by the per-key rate limit are not audited
+(a runaway client would otherwise turn each rejection into a write), and a
+failed audit write never fails the request. Read via session-only
+`GET /admin/audit-log?actor_id=&limit=&offset=`; shown per key on the
+ApiKeysPage. Pruned after 180 days by the data-retention sweep.
 
 ## API gaps (Phase 4)
 

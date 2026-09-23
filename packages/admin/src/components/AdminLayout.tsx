@@ -6,6 +6,7 @@ const navItems = [
   { to: "/events", label: "Events" },
   { to: "/routes", label: "Routes" },
   { to: "/message-banks", label: "Message Banks" },
+  { to: "/settings/api-keys", label: "API Keys" },
 ];
 
 export default function AdminLayout() {
