@@ -1,6 +1,6 @@
 # City Roam route-authoring MCP server
 
-Status: approved design (owner decisions 2026-09-23). Phase 0 of the build order below.
+Status: approved design (owner decisions 2026-09-23). All build phases (1–8) done on `feature/mcp-server`.
 
 ## Goal
 
@@ -45,7 +45,8 @@ Claude Code / Desktop ──stdio──> packages/mcp (MCP server, Node)
   and again by the API (`API_KEY_ENV`). Every tool result is prefixed with
   `[staging]` or `[PRODUCTION]` so the transcript always shows where a write
   landed.
-- Config via env: `CITYROAM_API_URL`, `CITYROAM_API_KEY`, `CITYROAM_ENV`,
+- Config via env: `CITYROAM_API_URL`, `CITYROAM_API_KEY_<ENV>` (as built: one
+  variable per environment), `CITYROAM_ENV`,
   `CITYROAM_ALLOW_PRODUCTION`, `CITYROAM_IMAGE_ROOTS` (path-delimited list of
   directories `upload_image` may read from).
 - Staging and production have **separate S3 buckets**, so images uploaded
@@ -335,4 +336,26 @@ bucket (staging and production) for the listing — and without it S3 answers
    wired into `server.ts` in Phase 8, which must pass `{ fetchImpl }` to
    `registerImageTools` for the presigned PUT and URL downloads).
 8. **Docs/config** — `.mcp.json.example`, Claude Desktop snippet, CLAUDE.md
-   note, key rotation runbook.
+   note, key rotation runbook. **Done.** As built:
+   - `server.ts` registers the image tools (with the injected `fetchImpl`, so
+     tests never reach the network) and the message bank tools: 22 tools in
+     all (7 read-only, 15 write).
+   - Prompts in `src/prompts.ts`. MCP prompt arguments are strings, so
+     `stops` is parsed and range-checked in the handler and languages are
+     checked against `SUPPORTED_LANGUAGES`. The docs are embedded as
+     `resource` messages read at request time, falling back to
+     `resource_link`s when `CITYROAM_DOCS_DIR` is unreadable.
+     `translate_route` embeds `translation-guide.md` and links
+     content-guide / guide-personality.
+   - Docs: `docs/llm-authoring/mcp.md` (setup, env vars, tool catalogue,
+     safety rules, resources, prompts, staging vs production, rotation,
+     troubleshooting); an "Authentication with API keys" section in
+     `api-reference.md`; `packages/mcp/README.md` with Claude Desktop configs.
+   - `.mcp.json.example` runs `node packages/mcp/bin/cityroam-mcp.mjs` (the
+     bin registers tsx itself, so it works on Windows without a shell
+     wrapper); `.mcp.json` is gitignored.
+   - Config as built uses per-environment key variables
+     (`CITYROAM_API_KEY_STAGING` / `_PRODUCTION` / `_LOCAL`) rather than a
+     single `CITYROAM_API_KEY`, plus `CITYROAM_DOCS_DIR`.
+   - Launch checklist: migrations 0012–0013, `API_KEY_ENV`, `s3:ListBucket`
+     on both buckets, creating an MCP key after deploy.

@@ -4,7 +4,7 @@ Base URL: provided by the City Roam admin (e.g. `https://api.cityroam.co.uk`)
 
 ## Authentication
 
-All endpoints require admin JWT authentication.
+All endpoints require admin authentication: either an admin session token (below) or a scoped admin API key (see [Authentication with API keys](#authentication-with-api-keys)).
 
 **Step 1 — Get a token:**
 
@@ -27,6 +27,40 @@ Authorization: Bearer <token>
 ```
 
 Tokens expire after 8 hours. Re-authenticate if you get a 401.
+
+The session token carries every scope and also reaches the session-only endpoints (events, dashboard, refunds, API key management, deletes of routes, route families and message banks).
+
+---
+
+## Authentication with API keys
+
+Scripts and LLM clients (including the `cityroam` MCP server, see `mcp.md`) should use a scoped, revocable **admin API key** instead of the admin password. A human creates it in the admin panel under **Settings → API Keys**; the full token is shown once, at creation.
+
+```
+Authorization: Bearer crk_stg_<keyId>_<secret>
+```
+
+- **Format**: `crk_<env>_<keyId>_<secret>`. `env` is `dev` (local development), `stg` (staging) or `prd` (production). Each API deployment only accepts keys for its own `API_KEY_ENV` (`dev` by default in development; set to `stg` / `prd` in the staging and production compose files), so a staging key sent to production is refused.
+- **Scopes** (chosen when the key is created):
+
+  | Scope | Allows |
+  |---|---|
+  | `routes:read` | `GET` route families, routes, route detail |
+  | `routes:write` | Create and edit route metadata, route families, groups and blocks (bulk-groups, create, update, reorder, move, delete of groups and blocks) |
+  | `images:read` | `GET /admin/route-images`, `GET /admin/route-images/:slug` |
+  | `images:write` | `POST /admin/upload` |
+  | `message-banks:read` | `GET /admin/message-banks` |
+  | `message-banks:write` | `POST` / `PUT /admin/message-banks` |
+
+  `routes:publish` exists but can **never** be granted to a key: activating a route is human-only. An API key cannot create a route with `is_active: true` or flip an inactive route to active (`403 ADMIN_SCOPE_REQUIRED`). Keeping an already-active route active in a `PUT` is allowed. Because `is_active` defaults to `true` in the route schema, API-key callers must send `is_active: false` explicitly.
+- **Errors**:
+  - `401 ADMIN_UNAUTHORIZED` — unknown, wrong, revoked, expired or wrong-environment key (all look the same on purpose).
+  - `403 ADMIN_SCOPE_REQUIRED` — the key lacks the scope the endpoint needs (the message names it), or it tried to activate a route.
+  - `403 ADMIN_SESSION_REQUIRED` — the endpoint is session-only (events, dashboard, refunds, email resends, API keys, audit log, deletes of routes / route families / message banks).
+  - `429 RATE_LIMITED` with `Retry-After` — per key, **300 reads and 60 writes per minute** (a dry run counts as a write); also 20 invalid-key attempts per 15 minutes per IP.
+- **`X-Live-Events: <n>`** — content edits on a route with live (non-terminal) events succeed but carry this response header (block update, group rename, group reorder, group append). Positional changes (delete, move, mid-group insert, mid-route group insert) are still refused with `409 GROUP_HAS_LIVE_EVENTS` / `BLOCK_HAS_LIVE_EVENTS`.
+- **Audit log**: every non-GET request by a key or session is recorded (method, path, route params, status, key id and name; never request bodies). Admins can read it on the API Keys page or via the session-only `GET /admin/audit-log`.
+- Admin endpoints are not CSRF-guarded, since browsers never attach a bearer header automatically, so server-side clients with no `Origin` header work.
 
 ---
 
@@ -918,6 +952,9 @@ All errors return:
 
 Common codes:
 - `INVALID_CREDENTIALS` (401) — Bad username/password
+- `ADMIN_UNAUTHORIZED` (401) — Missing, invalid, expired, revoked or wrong-environment token or API key
+- `ADMIN_SESSION_REQUIRED` (403) — API key used on a session-only endpoint
+- `RATE_LIMITED` (429) — API key rate limit; honour `Retry-After`
 - `ROUTE_NOT_FOUND` (404) — Route ID doesn't exist
 - `GROUP_NOT_FOUND` (404) — Group ID doesn't exist
 - `BLOCK_NOT_FOUND` (404) — Block ID doesn't exist

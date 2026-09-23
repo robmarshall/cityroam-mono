@@ -26,6 +26,9 @@ done.
 - [ ] Run migrations 0009, 0010, 0011 (`npm run migrate`). 0009 must be in
       place before the new API code is deployed, because the webhook insert now
       uses `ON CONFLICT (stripe_session_id)`.
+- [ ] Run migrations 0012 (`admin_api_keys`) and 0013 (`admin_audit_log`)
+      with the MCP / admin API key release. Both only create new tables, so
+      there is nothing to check first.
 - [ ] Seed message banks so the new `guide-degraded` and `guide-busy` bank
       types exist in every language. In production use the message-banks-only
       seeder, `npm run docker:prod:seed:message-banks` (runs
@@ -60,6 +63,17 @@ done.
       through to `api-http` and `api-ws` in both compose files. Set them in
       Coolify for each environment (see section 5), or leave the DSN empty to
       disable Sentry.
+- [ ] `API_KEY_ENV` is already set in both compose files (`stg` in
+      `docker-compose.staging.yml`, `prd` in `docker-compose.prod.yml`); the API
+      refuses to boot outside development without it. Do not override it in
+      Coolify: a key is only accepted by the deployment whose `API_KEY_ENV`
+      matches its `crk_<env>_` prefix.
+- [ ] Give the API's IAM user `s3:ListBucket` on **both** buckets (staging and
+      production), alongside the existing object permissions. The admin
+      route-image listing and the MCP `list_image_slugs` tool need it, and
+      without it S3 answers `HeadObject` on a missing key with 403, so image
+      existence checks report "unknown" and `upload_image` asks for
+      `overwrite: true` on every slug.
 - [ ] The frontend Dockerfiles still require their build args (app
       `VITE_API_URL`, `VITE_WS_URL`; admin `VITE_API_URL`; marketing
       `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SITE_URL`) if you ever self-host them.
@@ -105,6 +119,18 @@ done.
 - [ ] Docker image builds were validated by inspection only, because Docker
       Desktop was not running locally. The new GitHub Actions workflow builds
       all four images with dummy args on the first push, so watch that run.
+
+## 4a. Route authoring MCP server
+
+- [ ] After each deploy of the API key release (staging, then production),
+      log into that environment's admin panel, open **Settings → API Keys**
+      and create a key for the MCP server with only the scopes it needs
+      (`routes:read`, `routes:write`, `images:read`, `images:write`,
+      `message-banks:read`, `message-banks:write`; `routes:publish` cannot be
+      granted). The token is shown once. Put it in your local client config
+      (see `docs/llm-authoring/mcp.md`), never in the repo. Start with staging
+      only; create a production key when a production change is needed, and
+      revoke keys you no longer use.
 
 ## 5. Sentry
 
