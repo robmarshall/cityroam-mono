@@ -283,6 +283,28 @@ describe("validate_route", () => {
     expect(text).toContain("[hint-count]");
   });
 
+  it("lints a draft without is_active as inactive, the way create_route sends it", async () => {
+    const client = await connect(testConfig(), fakeFetch(() => json({})).fetch);
+    const detail = routeDetail();
+    detail.groups[1].blocks.push({
+      ...detail.groups[1].blocks[0],
+      id: "b3",
+      type: "image",
+      config: { type: "image", image_url: "{{IMAGE:leeds-town-hall}}" },
+    } as never);
+    const groups = detail.groups.map((g) => ({
+      name: g.name,
+      blocks: g.blocks.map((b) => ({ type: b.type, config: b.config, delay_ms: b.delay_ms })),
+    }));
+    const route = { city: "Leeds", name: "Draft", language: "en", estimated_duration_mins: 60, estimated_distance_km: 2 };
+    const rules = async (r: Record<string, unknown>) =>
+      ((await callTool(client, "validate_route", { payload: { route: r, groups } })).structuredContent as {
+        warnings: { rule: string }[];
+      }).warnings.map((w) => w.rule);
+    expect(await rules(route)).not.toContain("active-with-placeholders");
+    expect(await rules({ ...route, is_active: true })).toContain("active-with-placeholders");
+  });
+
   it("requires exactly one of route_id or payload", async () => {
     const client = await connect(testConfig(), fakeFetch(() => json({})).fetch);
     for (const args of [{}, { route_id: ROUTE_ID, payload: { route: {}, groups: [] } }]) {

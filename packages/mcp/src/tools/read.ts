@@ -243,6 +243,12 @@ export function registerReadTools(server: McpServer, ctx: ToolContext): void {
           return errorResult(env, "Error: give exactly one of route_id (a stored route) or payload (a draft route).");
         }
         let input: unknown = payload;
+        const draftRoute = payload?.route;
+        if (draftRoute && typeof draftRoute === "object" && !Array.isArray(draftRoute) && !("is_active" in draftRoute)) {
+          // Lint a draft the way create_route will send it: always inactive, so the
+          // "active with placeholders" warning does not fire for a route that cannot be.
+          input = { ...payload, route: { ...draftRoute, is_active: false } };
+        }
         let subject = "draft route";
         if (route_id !== undefined) {
           const { data } = await http.get<AdminRouteDetailResponse>(`/admin/routes/${encodeURIComponent(route_id)}`);
