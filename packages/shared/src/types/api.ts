@@ -227,3 +227,32 @@ export interface AdminApiKeyCreateResponse {
   api_key: AdminApiKey;
   token: string;
 }
+
+export interface AdminApiKeyRevokeResponse {
+  api_key: AdminApiKey;
+}
+
+// --- Admin audit log ---
+
+/** One admin mutation, as recorded by the API's requireAdmin middleware. */
+export interface AdminAuditLogEntry {
+  id: string;
+  created_at: string;
+  actor_type: "session" | "api_key";
+  /** Admin username for sessions, key id for API keys. */
+  actor_id: string;
+  actor_name: string | null;
+  method: string;
+  /** Request path with query string, event codes and tokens removed. */
+  path: string;
+  params: Record<string, string> | null;
+  status: number;
+  ip: string | null;
+  request_id: string | null;
+}
+
+export interface AdminAuditLogResponse {
+  entries: AdminAuditLogEntry[];
+  /** Offset of the next (older) page, or null when this is the last page. */
+  next_offset: number | null;
+}

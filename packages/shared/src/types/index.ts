@@ -72,6 +72,9 @@ export type {
   AdminApiKey,
   AdminApiKeyListResponse,
   AdminApiKeyCreateResponse,
+  AdminApiKeyRevokeResponse,
+  AdminAuditLogEntry,
+  AdminAuditLogResponse,
 } from "./api.js";
 
 export type { ApiErrorResponse, ApiErrorCode, ValidationErrorCode } from "./api-errors.js";

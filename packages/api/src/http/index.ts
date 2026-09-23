@@ -12,6 +12,7 @@ import {
 import { eventRoutes } from "../routes/events.js";
 import { checkoutRoutes } from "../routes/checkout.js";
 import { adminRoutes } from "../routes/admin.js";
+import { adminApiKeyRoutes } from "../routes/admin-api-keys.js";
 import { startExpirySweep, stopExpirySweep } from "../services/event-expiry.js";
 import {
   startGroupReconciler,
@@ -75,6 +76,9 @@ app.route("/", checkoutRoutes);
 
 // Admin routes
 app.route("/", adminRoutes);
+
+// Admin API key management + audit log (session-only)
+app.route("/", adminApiKeyRoutes);
 
 // Start server
 const port = Number(env.PORT);

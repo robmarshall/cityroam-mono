@@ -8,6 +8,7 @@ import {
 import { eventRoutes } from "../routes/events.js";
 import { checkoutRoutes } from "../routes/checkout.js";
 import { adminRoutes } from "../routes/admin.js";
+import { adminApiKeyRoutes } from "../routes/admin-api-keys.js";
 import { signAdminToken } from "../middleware/admin.js";
 import { generateApiKey } from "../lib/api-keys.js";
 import type { AdminApiKeyEnv, AdminApiKeyScope } from "@cityroam/shared/constants";
@@ -51,6 +52,7 @@ export function createTestApp(): Hono {
   app.route("/", eventRoutes);
   app.route("/", checkoutRoutes);
   app.route("/", adminRoutes);
+  app.route("/", adminApiKeyRoutes);
 
   return app;
 }
