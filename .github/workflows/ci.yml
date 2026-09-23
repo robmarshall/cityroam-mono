@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, development]
+    branches: [main, staging, development]
   pull_request:
 
 concurrency:
@@ -116,15 +116,10 @@ jobs:
       - name: Validate production compose
         run: docker compose -f docker-compose.prod.yml config --quiet
         env:
-          DOMAIN: example.com
           API_DOMAIN: api.example.com
-          ADMIN_DOMAIN: admin.example.com
+          WS_DOMAIN: ws.example.com
           POSTGRES_PASSWORD: ci-placeholder
           REDIS_PASSWORD: ci-placeholder
-          VITE_API_URL: https://api.example.com
-          VITE_WS_URL: wss://api.example.com
-          NEXT_PUBLIC_API_URL: https://api.example.com
-          NEXT_PUBLIC_SITE_URL: https://example.com
 
       - name: Validate staging compose
         run: docker compose -f docker-compose.staging.yml config --quiet

@@ -11,8 +11,10 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
-    // Determine target origin based on path
-    const target = path.startsWith("/app") ? FRONTEND_ORIGIN : MARKETING_ORIGIN;
+    // Only /app and /app/... go to the player SPA. A bare startsWith("/app")
+    // would also capture marketing paths such as /apple or /application.
+    const isApp = path === "/app" || path.startsWith("/app/");
+    const target = isApp ? FRONTEND_ORIGIN : MARKETING_ORIGIN;
 
     // Build the upstream URL preserving path + query string
     const upstreamUrl = new URL(path + url.search, target);

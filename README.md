@@ -124,7 +124,7 @@ To run all services in containers (instead of `npm run dev` on the host):
 docker compose up -d --build
 ```
 
-This starts Postgres, Redis, API (HTTP + WS), App, Admin, and Marketing in containers. Useful for testing production-like setups. See also `docker-compose.prod.yml` and `docker-compose.staging.yml` for deployment configurations.
+This starts Postgres, Redis, API (HTTP + WS), App, Admin, and Marketing in containers, using the dev servers against the bind-mounted source. See also `docker-compose.prod.yml` and `docker-compose.staging.yml` for the backend-only deployment configurations.
 
 | Script | Description |
 |---|---|
@@ -136,9 +136,15 @@ This starts Postgres, Redis, API (HTTP + WS), App, Admin, and Marketing in conta
 
 ## Deployment
 
-Production runs the frontends on Vercel and the API, Postgres and Redis on
-Coolify. `docker-compose.prod.yml` is the full-stack fallback and
-`docker-compose.staging.yml` is backend-only.
+Production and staging both run the frontends (app, admin, marketing) on Vercel
+and the API, WebSocket server, Postgres and Redis on Coolify.
+`docker-compose.prod.yml` and `docker-compose.staging.yml` are both
+backend-only and mirror each other. A Cloudflare worker on the main domain sends
+`/app` and `/app/...` to the player-app Vercel project and everything else to
+marketing; see `infra/cloudflare-workers/README.md`.
+
+The frontend Dockerfiles remain for CI build checks and self-hosting, but no
+compose file deploys them.
 
 ### Build-time vs runtime variables
 
@@ -147,8 +153,8 @@ the JS bundle when it is built. Setting them only at runtime does nothing — th
 bundle already carries whatever was baked in. This is what made the compose path
 ship an app that dialled `ws://localhost:3002` in production.
 
-`docker-compose.prod.yml` therefore passes them as `build.args`, and each
-frontend Dockerfile fails the build when a required one is empty:
+Each frontend Dockerfile takes them as build args and fails the build when a
+required one is empty:
 
 | Image | Required build args | Optional |
 |---|---|---|
@@ -166,12 +172,18 @@ empty rule and a silent 404.
 
 | File | Required |
 |---|---|
-| `docker-compose.prod.yml` | `DOMAIN`, `API_DOMAIN`, `ADMIN_DOMAIN`, `POSTGRES_PASSWORD` |
+| `docker-compose.prod.yml` | `API_DOMAIN`, `WS_DOMAIN`, `POSTGRES_PASSWORD`, `REDIS_PASSWORD` |
 | `docker-compose.staging.yml` | `API_DOMAIN`, `WS_DOMAIN`, `POSTGRES_PASSWORD`, `REDIS_PASSWORD` |
 
-In production the WebSocket server is reached on the API domain: Traefik routes
-`PathPrefix(/ws/)` to the `api-ws` container on port 3002, so `VITE_WS_URL` is
-`wss://<API_DOMAIN>` with no port. Staging gives it a separate `WS_DOMAIN`.
+Both environments give the WebSocket server its own `WS_DOMAIN`, routed by
+Traefik to `api-ws` on port 3002. The player app appends `/ws/<code>` itself, so
+set `VITE_WS_URL` on the app's Vercel project to `wss://<WS_DOMAIN>` with no path
+and no port (e.g. `wss://ws.cityroam.co.uk`), and `VITE_API_URL` to
+`https://<API_DOMAIN>`.
+
+Production Traefik routers and services are named `cityroam-prod-api-http` and
+`cityroam-prod-api-ws`, so they do not collide with staging's `api-http` and
+`api-ws` routers when both stacks share one Coolify Traefik.
 
 Migrations run as a one-shot `migrate` service; `api-http` and `api-ws` both wait
 on `service_completed_successfully` before starting.
