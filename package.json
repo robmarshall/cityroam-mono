@@ -33,7 +33,11 @@
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "^4.60.1",
-    "@esbuild/linux-x64": "^0.27.4"
+    "@esbuild/linux-x64": "^0.27.4",
+    "@tailwindcss/oxide-linux-x64-gnu": "4.2.2",
+    "@tailwindcss/oxide-linux-x64-musl": "4.2.2",
+    "lightningcss-linux-x64-gnu": "1.32.0",
+    "lightningcss-linux-x64-musl": "1.32.0"
   },
   "engines": {
     "node": ">=22 <25"
