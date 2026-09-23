@@ -72,6 +72,10 @@ export default function EventDetailPage() {
   // until an explicit Save or Cancel clears it.
   const [refundDirty, setRefundDirty] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
+  const [showResendModal, setShowResendModal] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendError, setResendError] = useState<string | null>(null);
+  const [resendSuccess, setResendSuccess] = useState<string | null>(null);
   const authFetch = useAuthFetch();
 
   const fetchEvent = useCallback(async () => {
@@ -201,6 +205,36 @@ export default function EventDetailPage() {
     }
   };
 
+  // The API exposes the same send as both /resend-email and /resend-code;
+  // /resend-code is used because it names what the email carries.
+  const handleResendCodeEmail = async () => {
+    setResending(true);
+    setResendError(null);
+    setResendSuccess(null);
+    try {
+      const res = await authFetch(() =>
+        api.post<{ success: boolean; attempts: number }>(
+          `/admin/events/${id}/resend-code`,
+        ),
+      );
+      const attempts = res?.attempts ?? 1;
+      setResendSuccess(
+        `Code email sent to ${data?.event.buyer_email || "the buyer"}` +
+          (attempts > 1 ? ` (after ${attempts} attempts).` : "."),
+      );
+      setShowResendModal(false);
+      fetchEvent();
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.status !== 401) setResendError(err.message);
+      } else {
+        setResendError("Could not reach the server. Check your connection and try again.");
+      }
+    } finally {
+      setResending(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20 text-gray-500">
@@ -224,6 +258,7 @@ export default function EventDetailPage() {
   }
 
   const { event, participants, messages } = data;
+  const codeEmail = data.code_email ?? { sent_at: null, failed_at: null, error: null };
   const statusColors = STATUS_COLORS[event.status];
 
   return (
@@ -276,6 +311,133 @@ export default function EventDetailPage() {
           >
             Dismiss
           </button>
+        </div>
+      )}
+
+      {/* Code email delivery */}
+      <div
+        className={`mb-6 rounded-lg border p-4 ${
+          codeEmail.failed_at ? "border-red-300 bg-red-50" : "border-gray-200 bg-white"
+        }`}
+      >
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
+              Code Email
+            </h2>
+            {codeEmail.failed_at ? (
+              <>
+                <p className="flex items-center gap-2 text-sm font-medium text-red-800">
+                  <span className="inline-flex rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+                    Delivery failed
+                  </span>
+                  {formatDate(codeEmail.failed_at)}
+                </p>
+                {codeEmail.error && (
+                  <p className="mt-2 break-words font-mono text-xs text-red-700">
+                    {codeEmail.error}
+                  </p>
+                )}
+                <p className="mt-2 text-sm text-red-800">
+                  The buyer may not have received their event code.
+                </p>
+              </>
+            ) : codeEmail.sent_at ? (
+              <p className="text-sm text-gray-700">
+                <span className="mr-2 inline-flex rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                  Sent
+                </span>
+                {formatDate(codeEmail.sent_at)}
+              </p>
+            ) : (
+              <p className="text-sm text-gray-500">No send recorded for this event.</p>
+            )}
+            {event.buyer_email && (
+              <p className="mt-2 text-xs text-gray-500">To: {event.buyer_email}</p>
+            )}
+          </div>
+          {event.buyer_email ? (
+            <button
+              onClick={() => {
+                setResendError(null);
+                setResendSuccess(null);
+                setShowResendModal(true);
+              }}
+              disabled={resending}
+              className={`rounded-md px-3 py-1.5 text-xs font-medium disabled:opacity-50 ${
+                codeEmail.failed_at
+                  ? "bg-red-600 text-white hover:bg-red-700"
+                  : "border border-gray-300 text-gray-700 hover:bg-gray-50"
+              }`}
+            >
+              Resend Code Email
+            </button>
+          ) : (
+            <span className="text-xs text-gray-400">No buyer email on file</span>
+          )}
+        </div>
+        {resendSuccess && (
+          <div className="mt-3 rounded-md bg-green-50 p-3 text-sm text-green-700">
+            {resendSuccess}
+            <button
+              onClick={() => setResendSuccess(null)}
+              className="ml-2 font-medium underline"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+        {resendError && !showResendModal && (
+          <div className="mt-3 rounded-md bg-red-100 p-3 text-sm text-red-700">
+            {resendError}
+            <button
+              onClick={() => setResendError(null)}
+              className="ml-2 font-medium underline"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Resend code email confirmation modal */}
+      {showResendModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="mx-4 w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+            <h3 className="mb-2 text-lg font-semibold text-gray-900">
+              Resend Code Email
+            </h3>
+            <p className="mb-4 text-sm text-gray-600">
+              Send the email containing event code{" "}
+              <span className="font-mono font-medium">{event.code}</span> to{" "}
+              <span className="font-medium">{event.buyer_email}</span>? The buyer
+              will receive another copy.
+            </p>
+            {resendError && (
+              <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">
+                {resendError}
+              </div>
+            )}
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowResendModal(false);
+                  setResendError(null);
+                }}
+                disabled={resending}
+                className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleResendCodeEmail}
+                disabled={resending}
+                className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              >
+                {resending ? "Sending..." : "Send Email"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

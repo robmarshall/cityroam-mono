@@ -115,6 +115,16 @@ export interface AdminEventDetailResponse {
   participants: Omit<Participant, "token">[];
   messages: Message[];
   stripe_payment_id: string | null;
+  /**
+   * Delivery state of the email carrying the event code. `failed_at` and
+   * `error` are set when every send attempt failed and cleared by a later
+   * successful send (including an admin resend).
+   */
+  code_email: {
+    sent_at: string | null;
+    failed_at: string | null;
+    error: string | null;
+  };
 }
 
 export type AdminRouteGroupResponse = RouteGroup & {

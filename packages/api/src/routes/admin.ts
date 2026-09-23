@@ -376,6 +376,11 @@ adminRoutes.get("/admin/events/:id", adminAuth, async (c) => {
       created_at: m.created_at.toISOString(),
     })),
     stripe_payment_id: event.stripe_payment_id,
+    code_email: {
+      sent_at: event.code_email_sent_at?.toISOString() ?? null,
+      failed_at: event.code_email_failed_at?.toISOString() ?? null,
+      error: event.code_email_error ?? null,
+    },
   };
 
   return c.json(response, 200);
