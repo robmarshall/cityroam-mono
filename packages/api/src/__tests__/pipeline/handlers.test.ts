@@ -74,17 +74,39 @@ vi.mock("../../services/template-vars.js", () => ({
   applyTemplateVars: vi.fn((content: string) => content),
 }));
 
+// ── Mock the atomic counters ───────────────────────────────────────
+// Both are a single conditional UPDATE against the events row; the SQL is
+// covered in event-counters.test.ts. Mocking them here lets each test say
+// what the row lock handed back.
+vi.mock("../../services/pipeline/event-counters.js", () => ({
+  claimHint: vi.fn(),
+  recordWrongAttempt: vi.fn(),
+}));
+
+// ── Mock en-route lookups ──────────────────────────────────────────
+vi.mock("../../services/enroute.js", () => ({
+  loadEnRouteTail: vi.fn().mockResolvedValue({
+    notes: [],
+    mapLink: null,
+    directions: null,
+  }),
+}));
+
 // ── Imports (after mocks) ───────────────────────────────────────────
 import { db } from "../../db/index.js";
 import { appendMessage, publishMessage, removeMessage } from "../../redis/index.js";
+import { claimHint, recordWrongAttempt } from "../../services/pipeline/event-counters.js";
+import { loadEnRouteTail, type EnRouteContext } from "../../services/enroute.js";
 import { incrementGuideResponseCount } from "../../services/pipeline/guide-response-cap.js";
 import { advanceAfterBlock } from "../../services/group-runner.js";
 import { sendSequence } from "../../services/send-sequence.js";
 
 import {
   handleAnswerAttempt,
+  handleAnswerAttemptWithoutLLM,
   writeGuideMessage,
   getRandomMessageBank,
+  SCRIPTED_MESSAGE,
   type AnswerAttemptContext,
 } from "../../services/pipeline/handlers/answer-attempt.js";
 
@@ -205,7 +227,26 @@ beforeEach(() => {
   vi.clearAllMocks();
   // Default: returning always gives a message-like object so writeGuideMessage works
   (db as any).returning.mockResolvedValue([mockMsg]);
+  // Default: the claims succeed and this caller owns the first hint / attempt
+  vi.mocked(claimHint).mockResolvedValue(1);
+  vi.mocked(recordWrongAttempt).mockResolvedValue({ wrongAttempts: 1, hintsGiven: 0 });
+  vi.mocked(loadEnRouteTail).mockResolvedValue({
+    notes: [],
+    mapLink: null,
+    directions: null,
+  });
 });
+
+function makeEnRoute(overrides: Partial<EnRouteContext> = {}): EnRouteContext {
+  return {
+    groupId: "group-1",
+    fromBlockId: "block-0",
+    stepNumber: 1,
+    nextQuestionBlockId: "block-next",
+    nextQuestionConfig: null,
+    ...overrides,
+  };
+}
 
 // =====================================================================
 // writeGuideMessage image URL handling
@@ -287,10 +328,11 @@ describe("handleAnswerAttempt", () => {
     // LLM was called
     expect(llm.classify).toHaveBeenCalledOnce();
 
-    // Success guide message written
+    // Success guide message written, but it's message-bank text so it
+    // doesn't spend the guide response budget
     expect(appendMessage).toHaveBeenCalled();
     expect(publishMessage).toHaveBeenCalled();
-    expect(incrementGuideResponseCount).toHaveBeenCalled();
+    expect(incrementGuideResponseCount).not.toHaveBeenCalled();
 
     // Counters reset
     expect((db as any).set).toHaveBeenCalledWith(
@@ -330,11 +372,10 @@ describe("handleAnswerAttempt", () => {
     (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
       .mockResolvedValueOnce(questionBlock);
 
-    // First where call is from db.update().set().where() (update wrong_attempts) - returns mockDb (chain)
-    // Second where call is from db.select().from().where() (getRandomMessageBank) - returns array
     (db as any).where
-      .mockResolvedValueOnce(db) // update chain (awaited by Drizzle)
-      .mockResolvedValueOnce([{ content: "Not quite right." }]); // select chain
+      .mockResolvedValueOnce([{ content: "Not quite right." }]); // failure bank
+
+    vi.mocked(recordWrongAttempt).mockResolvedValue({ wrongAttempts: 1, hintsGiven: 1 });
 
     const llm = makeLlm({ type: "answer-incorrect" });
     const ctx = makeAnswerCtx({ wrongAttempts: 0, hintsGiven: 1 });
@@ -342,29 +383,26 @@ describe("handleAnswerAttempt", () => {
 
     expect(result).toEqual({ handled: true, correct: false });
 
-    // wrong_attempts incremented
-    expect((db as any).set).toHaveBeenCalledWith(
-      expect.objectContaining({ wrong_attempts: 1 }),
-    );
+    // wrong_attempts incremented in SQL, against the block it was aimed at
+    expect(recordWrongAttempt).toHaveBeenCalledWith("evt-1", "block-1");
 
     // Guide message sent (failure bank)
     expect(appendMessage).toHaveBeenCalled();
   });
 
-  it("incorrect with >=3 wrong + 0 hints: includes hint nudge text", async () => {
+  it("incorrect on the third attempt with 0 hints: includes hint nudge text", async () => {
     const questionBlock = makeMockQuestionBlock();
 
     (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
       .mockResolvedValueOnce(questionBlock);
 
-    // First where: update chain, second where: getRandomMessageBank
-    (db as any).where
-      .mockResolvedValueOnce(db) // update chain (awaited by Drizzle)
-      .mockResolvedValueOnce([{ content: "Try again." }]);
+    (db as any).where.mockResolvedValueOnce([{ content: "Try again." }]);
+
+    // The row lock says this attempt is the third
+    vi.mocked(recordWrongAttempt).mockResolvedValue({ wrongAttempts: 3, hintsGiven: 0 });
 
     const llm = makeLlm({ type: "answer-incorrect" });
-    // wrongAttempts=2, so newWrongAttempts=3, hintsGiven=0 -> nudge
-    const ctx = makeAnswerCtx({ wrongAttempts: 2, hintsGiven: 0 });
+    const ctx = makeAnswerCtx({ wrongAttempts: 0, hintsGiven: 0 });
     const result = await handleAnswerAttempt(llm, ctx, "wrong answer");
 
     expect(result).toEqual({ handled: true, correct: false });
@@ -373,6 +411,54 @@ describe("handleAnswerAttempt", () => {
     const insertCalls = (db as any).values.mock.calls;
     const lastInsertValues = insertCalls[insertCalls.length - 1][0];
     expect(lastInsertValues.content).toContain("You might want to ask for a hint.");
+  });
+
+  it("nudges once: the fourth wrong attempt does not repeat the suggestion", async () => {
+    const questionBlock = makeMockQuestionBlock();
+
+    (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(questionBlock);
+
+    (db as any).where.mockResolvedValueOnce([{ content: "Try again." }]);
+
+    vi.mocked(recordWrongAttempt).mockResolvedValue({ wrongAttempts: 4, hintsGiven: 0 });
+
+    const llm = makeLlm({ type: "answer-incorrect" });
+    await handleAnswerAttempt(llm, makeAnswerCtx(), "wrong again");
+
+    const insertCalls = (db as any).values.mock.calls;
+    const lastInsertValues = insertCalls[insertCalls.length - 1][0];
+    expect(lastInsertValues.content).not.toContain("You might want to ask for a hint.");
+  });
+
+  it("wrong answer for a block the group has already left: says nothing", async () => {
+    const questionBlock = makeMockQuestionBlock();
+
+    (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(questionBlock);
+
+    // The conditional UPDATE matched no row — a teammate answered correctly
+    // while this message was in flight.
+    vi.mocked(recordWrongAttempt).mockResolvedValue(null);
+
+    const llm = makeLlm({ type: "answer-incorrect" });
+    const result = await handleAnswerAttempt(llm, makeAnswerCtx(), "wrong answer");
+
+    expect(result).toEqual({ handled: true, correct: false });
+    expect(appendMessage).not.toHaveBeenCalled();
+  });
+
+  it("mid-advancement (no current block): does not count a wrong attempt", async () => {
+    // getRandomMessageBank: clarification bank
+    (db as any).where.mockResolvedValueOnce([{ content: "Not sure what you mean." }]);
+
+    const llm = makeLlm({ type: "answer-incorrect" });
+    const ctx = makeAnswerCtx({ currentBlockId: null, wrongAttempts: 0 });
+    const result = await handleAnswerAttempt(llm, ctx, "Town Hall");
+
+    expect(result).toEqual({ handled: true, correct: false });
+    expect(recordWrongAttempt).not.toHaveBeenCalled();
+    expect(llm.classify).not.toHaveBeenCalled();
   });
 
   it("LLM failure: uses deterministic fallback for non-matching answer", async () => {
@@ -384,9 +470,7 @@ describe("handleAnswerAttempt", () => {
     // LLM returns null (failure)
     const llm = makeLlm(null);
 
-    // First where: update chain (wrong_attempts), second where: getRandomMessageBank (failure bank)
     (db as any).where
-      .mockResolvedValueOnce(db)
       .mockResolvedValueOnce([{ content: "That's not quite right." }]);
 
     const ctx = makeAnswerCtx();
@@ -447,6 +531,8 @@ describe("handleHintRequest", () => {
     (db.query.events.findFirst as ReturnType<typeof vi.fn>)
       .mockResolvedValueOnce({ route_id: "route-1" });
 
+    vi.mocked(claimHint).mockResolvedValue(1);
+
     const ctx = makeHintCtx({ hintsGiven: 0 });
     const result = await handleHintRequest(ctx);
 
@@ -461,10 +547,8 @@ describe("handleHintRequest", () => {
       expect.any(Object),
     );
 
-    // hints_given incremented to 1
-    expect((db as any).set).toHaveBeenCalledWith(
-      expect.objectContaining({ hints_given: 1 }),
-    );
+    // hints_given moved atomically, bounded by the number of hints
+    expect(claimHint).toHaveBeenCalledWith("evt-1", "block-1", 3);
   });
 
   it("hints exhausted: reveals answer with {{ANSWER}} replaced, calls advanceAfterBlock", async () => {
@@ -486,7 +570,10 @@ describe("handleHintRequest", () => {
     (db as any).where
       .mockResolvedValueOnce([{ content: "The answer was {{ANSWER}}. Moving on!" }]);
 
-    // hintsGiven=1 and hints has length 1, so exhausted
+    // One hint exists and the claim came back one past it — this caller owns
+    // the reveal.
+    vi.mocked(claimHint).mockResolvedValue(2);
+
     const ctx = makeHintCtx({ hintsGiven: 1 });
     const result = await handleHintRequest(ctx);
 
@@ -701,5 +788,260 @@ describe("silent handlers", () => {
     const insertCalls = (db as any).values.mock.calls;
     const msgInsert = insertCalls[insertCalls.length - 1][0];
     expect(msgInsert.content).toBe("I didn't quite catch that.");
+  });
+});
+
+// =====================================================================
+// Guide response cap accounting
+// =====================================================================
+
+describe("guide response cap accounting", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (db as any).returning.mockReturnValue([mockMsg]);
+    (db as any).where.mockImplementation(() => db);
+  });
+
+  it("charges the cap for an LLM-generated guide message", async () => {
+    await writeGuideMessage("evt-1", "ABC123", 1, "Something the model wrote");
+
+    expect(incrementGuideResponseCount).toHaveBeenCalledWith("evt-1");
+  });
+
+  it("does not charge the cap for a scripted route block", async () => {
+    await writeGuideMessage(
+      "evt-1", "ABC123", 1, "Walk to the fountain", null, "message", SCRIPTED_MESSAGE,
+    );
+
+    expect(incrementGuideResponseCount).not.toHaveBeenCalled();
+  });
+
+  it("does not charge the cap for message-bank text", async () => {
+    await writeGuideMessage(
+      "evt-1", "ABC123", 1, "Nice one!", null, undefined, SCRIPTED_MESSAGE,
+    );
+
+    expect(incrementGuideResponseCount).not.toHaveBeenCalled();
+  });
+});
+
+// =====================================================================
+// handleAnswerAttemptWithoutLLM — the capped-event answer path
+// =====================================================================
+
+describe("handleAnswerAttemptWithoutLLM", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (db as any).returning.mockReturnValue([mockMsg]);
+    (db as any).where.mockImplementation(() => db);
+  });
+
+  it("accepts a matching answer and advances the hunt", async () => {
+    (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(makeMockQuestionBlock());
+    (db as any).where.mockResolvedValueOnce([{ content: "Correct!" }]);
+
+    const matched = await handleAnswerAttemptWithoutLLM(makeAnswerCtx(), "Town Hall");
+
+    expect(matched).toBe(true);
+    expect(advanceAfterBlock).toHaveBeenCalledWith("evt-1", "ABC123", "block-1");
+  });
+
+  it("rejects a non-matching message without touching wrong_attempts", async () => {
+    (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(makeMockQuestionBlock());
+
+    const matched = await handleAnswerAttemptWithoutLLM(makeAnswerCtx(), "what time is it");
+
+    expect(matched).toBe(false);
+    expect(advanceAfterBlock).not.toHaveBeenCalled();
+    expect((db as any).set).not.toHaveBeenCalled();
+  });
+
+  it("returns false when no block is current", async () => {
+    const matched = await handleAnswerAttemptWithoutLLM(
+      makeAnswerCtx({ currentBlockId: null }),
+      "Town Hall",
+    );
+
+    expect(matched).toBe(false);
+    expect(db.query.routeBlocks.findFirst).not.toHaveBeenCalled();
+  });
+
+  it("returns false when the current block is not a question", async () => {
+    (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({ id: "block-1", type: "action", config: { type: "action", label: "Go" } });
+
+    const matched = await handleAnswerAttemptWithoutLLM(makeAnswerCtx(), "Town Hall");
+
+    expect(matched).toBe(false);
+    expect(advanceAfterBlock).not.toHaveBeenCalled();
+  });
+});
+
+// =====================================================================
+// Handlers during the walk between blocks
+// =====================================================================
+
+describe("handlers while the group is walking", () => {
+  it("question: answers from the leg's directions instead of the clarification bank", async () => {
+    vi.mocked(loadEnRouteTail).mockResolvedValue({
+      notes: ["Cross the bridge and turn left at the pub."],
+      mapLink: "https://maps.google.com/?q=bridge",
+      directions: "Cross the bridge and turn left at the pub.",
+    });
+
+    (db.query.routes.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(makeMockRoute());
+    (db.query.routeFamilies.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({ city: "Leeds" });
+
+    const llm = makeLlm({ type: "answer", text: "Left at the pub, then straight on." });
+
+    const result = await handleQuestion(
+      llm,
+      makeQuestionCtx({ currentBlockId: null, enRoute: makeEnRoute() }),
+      "which way at the bridge?",
+    );
+
+    expect(result).toEqual({ handled: true });
+
+    // The block lookup is skipped — there is no current block to load
+    expect(db.query.routeBlocks.findFirst).not.toHaveBeenCalled();
+
+    const prompt = llm.classify.mock.calls[0][0] as string;
+    expect(prompt).toContain("Cross the bridge and turn left at the pub.");
+    expect(prompt).toContain("walking between stops");
+
+    const sent = (db as any).values.mock.calls.map((c: any[]) => c[0].content);
+    expect(sent).toContain("Left at the pub, then straight on.");
+  });
+
+  it("question: the clue they are walking towards never reaches the prompt", async () => {
+    vi.mocked(loadEnRouteTail).mockResolvedValue({
+      notes: ["Head for the river."],
+      mapLink: null,
+      directions: "Head for the river.",
+    });
+
+    (db.query.routes.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(makeMockRoute());
+    (db.query.routeFamilies.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({ city: "Leeds" });
+
+    const llm = makeLlm({ type: "answer", text: "Keep going." });
+
+    await handleQuestion(
+      llm,
+      makeQuestionCtx({
+        currentBlockId: null,
+        enRoute: makeEnRoute({
+          nextQuestionConfig: {
+            type: "question",
+            clue: "Find the tallest building in the square.",
+            accepted_answers: ["Town Hall"],
+            hints: [],
+          } as any,
+        }),
+      }),
+      "how far now?",
+    );
+
+    const prompt = llm.classify.mock.calls[0][0] as string;
+    expect(prompt).not.toContain("tallest building");
+  });
+
+  it("answer: an early correct answer is acknowledged, never advanced", async () => {
+    (db as any).where.mockResolvedValueOnce([]); // no early-answer bank entry
+
+    const llm = makeLlm({ type: "answer-correct" });
+
+    const result = await handleAnswerAttempt(
+      llm,
+      makeAnswerCtx({
+        currentBlockId: null,
+        enRoute: makeEnRoute({
+          nextQuestionConfig: {
+            type: "question",
+            clue: "Find the tallest building in the square.",
+            accepted_answers: ["Town Hall"],
+            hints: [],
+          } as any,
+        }),
+      }),
+      "it's the town hall",
+    );
+
+    // Not treated as a correct answer: nothing advances mid-sequence
+    expect(result).toEqual({ handled: true, correct: false });
+    expect(advanceAfterBlock).not.toHaveBeenCalled();
+    expect(recordWrongAttempt).not.toHaveBeenCalled();
+
+    const sent = (db as any).values.mock.calls.map((c: any[]) => c[0].content);
+    expect(sent[0]).toContain("not there yet");
+  });
+
+  it("answer: a wrong guess during the walk counts nothing and says nothing", async () => {
+    const llm = makeLlm({ type: "answer-incorrect" });
+
+    const result = await handleAnswerAttempt(
+      llm,
+      makeAnswerCtx({
+        currentBlockId: null,
+        enRoute: makeEnRoute({
+          nextQuestionConfig: {
+            type: "question",
+            clue: "Find the tallest building in the square.",
+            accepted_answers: ["Town Hall"],
+            hints: [],
+          } as any,
+        }),
+      }),
+      "the cathedral?",
+    );
+
+    expect(result).toEqual({ handled: true, correct: false });
+    expect(recordWrongAttempt).not.toHaveBeenCalled();
+    expect(advanceAfterBlock).not.toHaveBeenCalled();
+    expect(appendMessage).not.toHaveBeenCalled();
+  });
+
+  it("answer: stays quiet when there is no question ahead", async () => {
+    const llm = makeLlm({ type: "answer-correct" });
+
+    const result = await handleAnswerAttempt(
+      llm,
+      makeAnswerCtx({
+        currentBlockId: null,
+        enRoute: makeEnRoute({ nextQuestionBlockId: null, nextQuestionConfig: null }),
+      }),
+      "town hall",
+    );
+
+    expect(result).toEqual({ handled: true, correct: false });
+    expect(llm.classify).not.toHaveBeenCalled();
+    expect(appendMessage).not.toHaveBeenCalled();
+  });
+
+  it("capped answer: an early deterministic match is acknowledged, not advanced", async () => {
+    (db as any).where.mockResolvedValueOnce([]); // no early-answer bank entry
+
+    const handled = await handleAnswerAttemptWithoutLLM(
+      makeAnswerCtx({
+        currentBlockId: null,
+        enRoute: makeEnRoute({
+          nextQuestionConfig: {
+            type: "question",
+            clue: "Find the tallest building in the square.",
+            accepted_answers: ["Town Hall"],
+            hints: [],
+          } as any,
+        }),
+      }),
+      "town hall",
+    );
+
+    expect(handled).toBe(true);
+    expect(advanceAfterBlock).not.toHaveBeenCalled();
   });
 });

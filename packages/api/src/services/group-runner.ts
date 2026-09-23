@@ -1,10 +1,11 @@
-import { eq, asc } from "drizzle-orm";
+import { and, eq, asc } from "drizzle-orm";
 import type { BlockConfig, SupportedLanguage } from "@cityroam/shared/types";
 import { db, schema } from "../db/index.js";
 import { publishTyping, publishControl } from "../redis/index.js";
-import { writeGuideMessage } from "./pipeline/handlers/answer-attempt.js";
+import { writeGuideMessage, SCRIPTED_MESSAGE } from "./pipeline/handlers/answer-attempt.js";
 import { handleGameCompletion } from "./pipeline/handlers/game-completion.js";
 import { applyTemplateVars, buildRouteTemplateVars } from "./template-vars.js";
+import { clearEnRoute, enRouteTtlMs, setEnRoute } from "./enroute.js";
 import { createLogger } from "../lib/logger.js";
 
 const log = createLogger("group-runner");
@@ -82,33 +83,41 @@ async function sendBlocks(
       case "message": {
         await showTypingDelay(eventCode, block.delay_ms);
         const content = applyTemplateVars(config.content, templateVars);
-        await writeGuideMessage(eventId, eventCode, stepNumber, content, null, "message");
+        await writeGuideMessage(eventId, eventCode, stepNumber, content, null, "message", SCRIPTED_MESSAGE);
+        await persistBlockIndex(eventId, i + 1);
         break;
       }
 
       case "image": {
         await showTypingDelay(eventCode, block.delay_ms);
-        await writeGuideMessage(eventId, eventCode, stepNumber, "", config.image_url, "image");
+        await writeGuideMessage(eventId, eventCode, stepNumber, "", config.image_url, "image", SCRIPTED_MESSAGE);
+        await persistBlockIndex(eventId, i + 1);
         break;
       }
 
       case "map": {
         await showTypingDelay(eventCode, block.delay_ms);
-        await writeGuideMessage(eventId, eventCode, stepNumber, config.google_maps_link, null, "map");
+        await writeGuideMessage(eventId, eventCode, stepNumber, config.google_maps_link, null, "map", SCRIPTED_MESSAGE);
+        await persistBlockIndex(eventId, i + 1);
         break;
       }
 
       case "question": {
         await showTypingDelay(eventCode, block.delay_ms);
-        await writeGuideMessage(eventId, eventCode, stepNumber, config.clue, null, "question");
+        await writeGuideMessage(eventId, eventCode, stepNumber, config.clue, null, "question", SCRIPTED_MESSAGE);
 
         // Update event to track current block — pauses for user interaction
         await db
           .update(schema.events)
           .set({
             current_block_id: block.id,
+            current_block_index: i,
           })
           .where(eq(schema.events.id, eventId));
+
+        // The walk is over: the group is parked on a real block again, so the
+        // handlers go back to reading their context from current_block_id.
+        await clearEnRoute(eventId);
         return i;
       }
 
@@ -118,8 +127,11 @@ async function sendBlocks(
           .update(schema.events)
           .set({
             current_block_id: block.id,
+            current_block_index: i,
           })
           .where(eq(schema.events.id, eventId));
+
+        await clearEnRoute(eventId);
 
         // Publish action_waiting control event
         await publishControl(eventCode, {
@@ -135,8 +147,22 @@ async function sendBlocks(
 }
 
 /**
- * Run a group from the beginning: load blocks, send auto-send blocks
- * until a question/action block is hit or the group is exhausted.
+ * Record how far through the current group the runner has got, so a restart
+ * mid-group can pick up from the next unsent block instead of stranding the
+ * event with nothing scheduled.
+ */
+async function persistBlockIndex(eventId: string, nextIndex: number): Promise<void> {
+  await db
+    .update(schema.events)
+    .set({ current_block_index: nextIndex })
+    .where(eq(schema.events.id, eventId));
+}
+
+/**
+ * Run a group: load blocks, send auto-send blocks from `startIndex` until a
+ * question/action block is hit or the group is exhausted. `startIndex` is
+ * non-zero only when the startup reconciler resumes a group a restart
+ * interrupted.
  *
  * If the group completes without blocking, advances to the next group.
  * If all groups are exhausted, triggers game completion.
@@ -145,6 +171,7 @@ export async function runGroup(
   eventId: string,
   eventCode: string,
   groupId: string,
+  startIndex = 0,
 ): Promise<void> {
   // Load event to get route_id and step_number
   const event = await db.query.events.findFirst({
@@ -178,13 +205,36 @@ export async function runGroup(
     groupId,
     event.current_stop,
     blocks,
-    0,
+    startIndex,
   );
 
   // If all blocks sent without blocking, advance to next group
   if (blockingIndex === -1) {
     await advanceToNextGroup(eventId, eventCode, event.route_id, groupId, language);
   }
+}
+
+/**
+ * Atomically clear current_block_id, but only if it still points at the
+ * block the caller is advancing past. Returns false when someone else got
+ * there first, in which case the caller must not advance.
+ */
+async function claimBlockAdvance(
+  eventId: string,
+  expectedBlockId: string,
+): Promise<boolean> {
+  const claimed = await db
+    .update(schema.events)
+    .set({ current_block_id: null })
+    .where(
+      and(
+        eq(schema.events.id, eventId),
+        eq(schema.events.current_block_id, expectedBlockId),
+      ),
+    )
+    .returning({ id: schema.events.id });
+
+  return claimed.length > 0;
 }
 
 /**
@@ -197,6 +247,22 @@ export async function advanceAfterBlock(
   eventCode: string,
   blockId: string,
 ): Promise<void> {
+  // Claim the advancement. Sending the remaining blocks takes tens of
+  // seconds, so without this a second correct answer or a duplicated
+  // action_confirm (possibly from the other process) would re-enter and
+  // skip a whole group.
+  if (!(await claimBlockAdvance(eventId, blockId))) {
+    log.info("advance already claimed, ignoring", { eventCode, blockId });
+    return;
+  }
+
+  // Tell clients the block they were prompted about is resolved. Only the
+  // caller that won the claim publishes, so it fires exactly once.
+  await publishControl(eventCode, {
+    type: "block_advanced",
+    data: { block_id: blockId },
+  });
+
   // Load the block to find its group
   const block = await db.query.routeBlocks.findFirst({
     where: eq(schema.routeBlocks.id, blockId),
@@ -231,6 +297,28 @@ export async function advanceAfterBlock(
     log.error("block not found in group", { blockId, groupId: block.group_id });
     return;
   }
+
+  // Record the resume point before the first send, so a restart during the
+  // very first delay doesn't replay the block we just advanced past
+  await persistBlockIndex(eventId, currentIndex + 1);
+
+  // The group is now walking. current_block_id has to stay null — the claim
+  // above, the stranded-run reconciler and the pending-action prompt all read
+  // it — so the walk is recorded beside it instead, and the guide keeps this
+  // group's directions and fun facts in context until the next block lands.
+  const remainingDelaysMs = blocks
+    .slice(currentIndex + 1)
+    .reduce((total, b) => total + (b.delay_ms ?? 0), 0);
+
+  await setEnRoute(
+    eventId,
+    {
+      groupId: block.group_id,
+      fromBlockId: blockId,
+      stepNumber: event.current_stop,
+    },
+    enRouteTtlMs(remainingDelaysMs),
+  );
 
   // Continue sending from the block after the current one
   const blockingIndex = await sendBlocks(
@@ -278,6 +366,7 @@ async function advanceToNextGroup(
       .set({
         current_group_id: nextGroup.id,
         current_block_id: null,
+        current_block_index: 0,
         current_stop: currentIndex + 2, // 1-based step number for messages
       })
       .where(eq(schema.events.id, eventId));
@@ -285,7 +374,10 @@ async function advanceToNextGroup(
     // Run the next group
     await runGroup(eventId, eventCode, nextGroup.id);
   } else {
-    // All groups complete — trigger game completion
+    // All groups complete — nothing left to walk to
+    await clearEnRoute(eventId);
+
+    // Trigger game completion
     await handleGameCompletion({
       eventId,
       eventCode,

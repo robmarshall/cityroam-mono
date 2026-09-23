@@ -14,6 +14,9 @@ import {
   publishTyping,
   checkGuideRateLimit,
 } from "../../redis/index.js";
+// Not re-exported from redis/index.js, so imported from the module directly —
+// same as pre-filter.ts does for the participant limit.
+import { checkGuideBusyNoticeRateLimit } from "../../redis/rate-limit.js";
 import { DeepSeekService } from "../llm/deepseek.js";
 import { preFilter } from "./pre-filter.js";
 import { classifyIntent } from "./classifier.js";
@@ -28,7 +31,9 @@ import {
 } from "./idle-timer.js";
 import {
   handleAnswerAttempt,
+  handleAnswerAttemptWithoutLLM,
   writeGuideMessage,
+  SCRIPTED_MESSAGE,
 } from "./handlers/answer-attempt.js";
 import { handleHintRequest } from "./handlers/hint-request.js";
 import { handleHintNudge } from "./handlers/hint-nudge.js";
@@ -41,12 +46,49 @@ import {
   handleClarification,
 } from "./handlers/silent.js";
 import type { SilentHandlerContext } from "./handlers/silent.js";
-import { deterministicAnswerMatch } from "./deterministic-match.js";
-import { isAffirmativeResponse, isNegativeResponse } from "./word-match.js";
+import {
+  isAffirmativeResponse,
+  isNegativeResponse,
+  isHintRequest,
+  isSkipRequest,
+} from "./word-match.js";
+import {
+  classifyWithoutLLM,
+  sendDegradedNotice,
+  sendGuideBusyNotice,
+} from "./degraded-mode.js";
+import { withHealthTracking } from "./llm-health.js";
 import { getRandomMessageBank } from "./handlers/answer-attempt.js";
+import { buildEnRouteContext, type EnRouteContext } from "../enroute.js";
 
 const log = createLogger("pipeline");
-const llm = new DeepSeekService();
+
+/**
+ * Health-wrapped so that once the provider has failed a few times in a row,
+ * calls return null immediately instead of each waiting out the 30s client
+ * timeout. Every consumer of this instance — the classifier, the answer
+ * matcher, the question handler — already treats null as "fall back to
+ * scripted text", so the wrapper only makes that fallback fast.
+ */
+const llm = withHealthTracking(new DeepSeekService());
+
+/**
+ * Intents whose reply is conversational: an LLM-written answer, or a bank
+ * line that only exists to acknowledge chatter. These are what the shared
+ * per-event guide limit is for — several people talking at once must not turn
+ * into several guide messages.
+ *
+ * Everything absent from this set bypasses the limit: answer attempts, hint
+ * requests and hint nudges move the hunt along and must never be dropped,
+ * off-topic and contextual chat produce no reply at all, and moderation has
+ * to run on every message or a limited window becomes a way through the
+ * filter.
+ */
+const RATE_LIMITED_INTENTS: ReadonlySet<string> = new Set([
+  "question",
+  "clarification",
+  "degraded-notice",
+]);
 
 const HINT_DECLINE_FALLBACK: Record<SupportedLanguage, string> = {
   en: "No worries — keep at it!",
@@ -55,6 +97,65 @@ const HINT_DECLINE_FALLBACK: Record<SupportedLanguage, string> = {
   de: "Kein Problem — mach weiter so!",
   nl: "Geen zorgen — ga zo door!",
 };
+
+/**
+ * Everything the capped path needs from the event row.
+ */
+interface CappedEventContext {
+  id: string;
+  current_block_id: string | null;
+  current_stop: number;
+  wrong_attempts: number;
+  hints_given: number;
+}
+
+/**
+ * Handle a message on an event that has spent its guide response budget.
+ *
+ * The LLM is off limits, but both routes out of a block are scripted, so both
+ * stay open: the deterministic matcher accepts a correct answer, and a
+ * keyword-matched hint request serves the next hint — or, once hints run out,
+ * reveals the answer and advances. Without the second route a group that
+ * simply doesn't know the answer would still be stuck for good.
+ *
+ * Anything neither of those recognises gets the cap notice. Without
+ * classification we can't tell an answer attempt from chatter, so nothing is
+ * counted as a wrong attempt.
+ */
+async function handleMessageWhileCapped(
+  event: CappedEventContext,
+  eventCode: string,
+  text: string,
+  language: SupportedLanguage,
+  enRoute: EnRouteContext | null,
+): Promise<void> {
+  const ctx = {
+    eventId: event.id,
+    eventCode,
+    currentBlockId: event.current_block_id,
+    currentStop: event.current_stop,
+    wrongAttempts: event.wrong_attempts,
+    hintsGiven: event.hints_given,
+    language,
+    enRoute,
+  };
+
+  // Answers win over hint keywords, so "stuck on this — is it the Town Hall?"
+  // is still accepted as the answer it is.
+  if (await handleAnswerAttemptWithoutLLM(ctx, text)) return;
+
+  if (isHintRequest(text, language) || isSkipRequest(text, language)) {
+    await handleHintRequest(ctx);
+    return;
+  }
+
+  // The notice is the only noisy branch here, so it alone keeps the shared
+  // guide rate limit. The two escape hatches above must never be dropped.
+  const rateLimit = await checkGuideRateLimit(eventCode);
+  if (!rateLimit.allowed) return;
+
+  await sendCapReachedMessage(event.id, eventCode, event.current_stop, language);
+}
 
 /**
  * Main entry point for the AI guide pipeline.
@@ -139,6 +240,17 @@ export async function processIncomingMessage(
   await appendMessage(eventCode, userMsgPayload);
   await publishMessage(eventCode, userMsgPayload);
 
+  // Step 3b: Work out whether the group is walking between blocks.
+  //
+  // current_block_id is null for the whole post-answer sequence — the fun
+  // facts, the map, the directions, the en-route commentary — which the
+  // authoring guide encourages to run for several minutes. Without this the
+  // handlers had no block context for that entire stretch and answered every
+  // message with the clarification bank.
+  const enRoute = event.current_block_id
+    ? null
+    : await buildEnRouteContext(eventId);
+
   // Step 4: Run Layer 1 pre-filter
   const preFilterResult = await preFilter(text, eventCode, participantId, language);
 
@@ -148,33 +260,24 @@ export async function processIncomingMessage(
   }
 
   if (preFilterResult.action === "respond") {
-    if (!(await isGuideResponseCapReached(eventId))) {
-      await writeGuideMessage(
-        eventId,
-        eventCode,
-        event.current_stop,
-        preFilterResult.response!,
-      );
-    }
+    // Pre-filter responses are message-bank text, so they cost nothing and
+    // stay available even on a capped event
+    await writeGuideMessage(
+      eventId,
+      eventCode,
+      event.current_stop,
+      preFilterResult.response!,
+      null,
+      undefined,
+      SCRIPTED_MESSAGE,
+    );
     updateIdleTimestamp(eventCode, eventId, language);
     return;
   }
 
-  // Step 5: Check guide response cap before LLM work
-  if (await isGuideResponseCapReached(eventId)) {
-    await sendCapReachedMessage(eventId, eventCode, event.current_stop, language);
-    updateIdleTimestamp(eventCode, eventId, language);
-    return;
-  }
-
-  // Step 6: Check guide rate limit
-  const guideRateLimit = await checkGuideRateLimit(eventCode);
-  if (!guideRateLimit.allowed) {
-    updateIdleTimestamp(eventCode, eventId, language);
-    return;
-  }
-
-  // Step 6.5: Check if a hint was offered and this is a confirmation/decline
+  // Step 5: Check if a hint was offered and this is a confirmation/decline.
+  // Deterministic and scripted, so it runs ahead of the rate limit — and it
+  // fires at most once per offer, since the flag is cleared immediately.
   if (event.hint_offered) {
     // Clear the flag regardless of response
     await db
@@ -198,6 +301,7 @@ export async function processIncomingMessage(
           currentStop: event.current_stop,
           hintsGiven: event.hints_given,
           language,
+          enRoute,
         });
       } finally {
         await publishTyping(eventCode, {
@@ -222,7 +326,15 @@ export async function processIncomingMessage(
       try {
         const declineMsg = await getRandomMessageBank("hint-decline", language);
         const content = declineMsg ?? (HINT_DECLINE_FALLBACK[language] ?? HINT_DECLINE_FALLBACK.en);
-        await writeGuideMessage(eventId, eventCode, event.current_stop, content);
+        await writeGuideMessage(
+          eventId,
+          eventCode,
+          event.current_stop,
+          content,
+          null,
+          undefined,
+          SCRIPTED_MESSAGE,
+        );
       } finally {
         await publishTyping(eventCode, {
           type: "guide_typing",
@@ -239,7 +351,24 @@ export async function processIncomingMessage(
     // The player may have ignored the hint offer and sent an answer or other message.
   }
 
-  // Step 7: Publish guide typing on
+  // Step 6: Guide response cap. No more LLM work, but answers and hints still
+  // have to land — otherwise a capped event could never be finished. Checked
+  // before the rate limit because those escape hatches do no LLM work, and
+  // dropping one because a teammate typed 4 seconds ago would make the only
+  // way out of a capped hunt intermittent.
+  if (await isGuideResponseCapReached(eventId)) {
+    await handleMessageWhileCapped(event, eventCode, text, language, enRoute);
+    updateIdleTimestamp(eventCode, eventId, language);
+    return;
+  }
+
+  // Step 7: Publish guide typing on.
+  //
+  // The shared guide rate limit used to sit here, ahead of classification,
+  // which meant a correct answer sent two seconds after a teammate's chatter
+  // was dropped with no reply and no error. It now runs after classification
+  // (step 11) and only for conversational intents, so answers and hint
+  // requests are never swallowed.
   await publishTyping(eventCode, {
     type: "guide_typing",
     participant_name: null,
@@ -263,34 +392,63 @@ export async function processIncomingMessage(
         currentClue = config.clue;
         acceptedAnswers = config.accepted_answers;
       }
+    } else if (enRoute?.nextQuestionConfig) {
+      // Mid-walk the classifier has no clue to work from, which made every
+      // early answer look like chatter. The question they are walking towards
+      // is the right yardstick — it only ever reaches the classifier, never
+      // the players.
+      currentClue = enRoute.nextQuestionConfig.clue;
+      acceptedAnswers = enRoute.nextQuestionConfig.accepted_answers;
     }
 
     // Step 9: Run Layer 2 intent classification
     const classification = await classifyIntent(llm, currentClue, text, language);
 
-    // LLM failure → try deterministic answer match before falling back to clarification
+    // Classifier unavailable → degraded mode. The keyword matchers keep the
+    // two scripted routes out of a block open (answer, hint/skip); anything
+    // else gets a notice saying so, rather than a clarification line that
+    // would repeat forever while the provider is down.
     let intent: string;
     if (classification !== null) {
       intent = classification.type;
     } else {
-      if (acceptedAnswers.length > 0 && deterministicAnswerMatch(text, acceptedAnswers, language)) {
-        log.info("LLM down, deterministic match hit", { eventCode });
-        intent = "answer-attempt";
-      } else {
-        intent = "clarification";
-      }
+      intent = classifyWithoutLLM(text, acceptedAnswers, language);
+      log.warn("classifier unavailable, using degraded intent", { eventCode, intent });
     }
 
     // Step 10: Re-check cap before sending handler response
     if (intent !== "off-topic-chat" && intent !== "contextual-comment") {
       if (await isGuideResponseCapReached(eventId)) {
-        await sendCapReachedMessage(eventId, eventCode, event.current_stop, language);
+        await handleMessageWhileCapped(event, eventCode, text, language, enRoute);
         updateIdleTimestamp(eventCode, eventId, language);
         return;
       }
     }
 
-    // Step 11: Route to handler
+    // Step 11: Shared guide rate limit, conversational replies only. A group
+    // talking over itself shouldn't get a wall of guide messages, but nothing
+    // that moves the hunt along passes through here.
+    if (RATE_LIMITED_INTENTS.has(intent)) {
+      const guideRateLimit = await checkGuideRateLimit(eventCode);
+      if (!guideRateLimit.allowed) {
+        // Silence is the wrong answer for a player who asked something, so
+        // send a cheap bank line instead — but only as often as the coarser
+        // notice limit allows, or a chatty group just gets different spam.
+        // In degraded mode the notice would restate the message a teammate
+        // just triggered, so that case stays quiet.
+        if (intent !== "degraded-notice") {
+          const notice = await checkGuideBusyNoticeRateLimit(eventCode);
+          if (notice.allowed) {
+            await sendGuideBusyNotice(eventId, eventCode, event.current_stop, language);
+          }
+        }
+        log.info("conversational reply rate limited", { eventCode, intent });
+        updateIdleTimestamp(eventCode, eventId, language);
+        return;
+      }
+    }
+
+    // Step 12: Route to handler
     const silentCtx: SilentHandlerContext = {
       eventId,
       eventCode,
@@ -311,6 +469,7 @@ export async function processIncomingMessage(
             wrongAttempts: event.wrong_attempts,
             hintsGiven: event.hints_given,
             language,
+            enRoute,
           },
           text,
         );
@@ -324,6 +483,7 @@ export async function processIncomingMessage(
           currentStop: event.current_stop,
           hintsGiven: event.hints_given,
           language,
+          enRoute,
         });
         break;
 
@@ -346,6 +506,7 @@ export async function processIncomingMessage(
             currentBlockId: event.current_block_id,
             currentStop: event.current_stop,
             language,
+            enRoute,
           },
           text,
         );
@@ -375,15 +536,22 @@ export async function processIncomingMessage(
         await handleClarification(silentCtx);
         break;
       }
+
+      case "degraded-notice": {
+        // Only reachable while the classifier is unavailable. Bank text, so
+        // it costs no LLM call and no guide-response budget.
+        await sendDegradedNotice(eventId, eventCode, event.current_stop, language);
+        break;
+      }
     }
 
-    // Step 12: Update idle timer
+    // Step 13: Update idle timer
     const wasPaused = updateIdleTimestamp(eventCode, eventId, language);
     if (wasPaused) {
       await handleIdleResume(eventId, eventCode, language);
     }
 
-    // Step 13: Remove from idle tracking if game completed during this pipeline run
+    // Step 14: Remove from idle tracking if game completed during this pipeline run
     const updatedEvent = await db.query.events.findFirst({
       where: eq(schema.events.id, eventId),
       columns: { status: true },
@@ -395,7 +563,7 @@ export async function processIncomingMessage(
     log.error("pipeline error", { messageId: incomingMessageId, eventCode, error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
     throw error;
   } finally {
-    // Step 14: Always turn off guide typing
+    // Step 15: Always turn off guide typing
     await publishTyping(eventCode, {
       type: "guide_typing",
       participant_name: null,

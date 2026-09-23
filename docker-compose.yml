@@ -3,9 +3,10 @@ services:
     build: .
     volumes:
       - .:/workspace
-      - /c/Users/rober/.claude:/home/dev/.claude
-      - /c/Users/rober/.ssh:/home/dev/.ssh:ro
     working_dir: /workspace
+    # Install workspace deps on a fresh clone (no node_modules yet), then keep
+    # an interactive shell open. Existing node_modules are left alone.
+    command: ["bash", "-c", "[ -d node_modules ] || npm ci; exec bash"]
     stdin_open: true
     tty: true
     environment:

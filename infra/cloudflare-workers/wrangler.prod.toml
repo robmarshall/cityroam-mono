@@ -1,0 +1,23 @@
+# Production router worker. Deploy from this folder with:
+#   npx wrangler deploy --config wrangler.prod.toml
+# See README.md in this folder before the first deploy.
+
+name = "cityroam-prod-router"
+main = "prod-router.js"
+compatibility_date = "2026-09-01"
+
+# Every path on the apex and www goes through the worker. Replace the zone and
+# hostnames if the production domain is not cityroam.co.uk.
+routes = [
+  { pattern = "cityroam.co.uk/*", zone_name = "cityroam.co.uk" },
+  { pattern = "www.cityroam.co.uk/*", zone_name = "cityroam.co.uk" },
+]
+
+# REPLACE BEFORE DEPLOY: the production Vercel projects do not exist yet, so no
+# origins are checked in. Uncomment the block below and fill in the real
+# *.vercel.app hostnames (or set both variables in the Cloudflare dashboard).
+# The worker has no fallbacks: with either variable unset it answers every
+# request with 503 "Router misconfigured".
+# [vars]
+# FRONTEND_ORIGIN = "https://REPLACE-ME-app-project.vercel.app"
+# MARKETING_ORIGIN = "https://REPLACE-ME-marketing-project.vercel.app"

@@ -6,6 +6,7 @@
     "rootDir": "src",
     "jsx": "react-jsx",
     "paths": {
+      "@cityroam/shared/validation/player": ["../shared/src/validation/player.ts"],
       "@cityroam/shared/*": ["../shared/src/*/index.ts"]
     }
   },

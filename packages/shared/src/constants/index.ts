@@ -13,6 +13,7 @@ export const IDLE_PAUSE_TIMEOUT_MS = 90 * 60 * 1000; // 90 minutes
 export const WEBSOCKET_PING_INTERVAL_MS = 30 * 1000; // 30 seconds
 export const TYPING_INDICATOR_DEBOUNCE_MS = 3 * 1000; // 3 seconds
 export const GUIDE_RATE_LIMIT_MS = 5 * 1000; // 5 seconds
+export const MAX_BLOCK_DELAY_MS = 5 * 60 * 1000; // 5 minutes — longest a route block may pause
 export const PARTICIPANT_RATE_LIMIT_COUNT = 3; // max messages
 export const PARTICIPANT_RATE_LIMIT_WINDOW_MS = 10 * 1000; // in 10 seconds
 

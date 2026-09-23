@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import i18n from "../i18n/index";
-import { displayNameSchema } from "@cityroam/shared/validation";
+import { setLanguage } from "../i18n/index";
+import { displayNameSchema } from "@cityroam/shared/validation/player";
 import { MIN_DISPLAY_NAME_LENGTH, MAX_DISPLAY_NAME_LENGTH } from "@cityroam/shared/constants";
 import { POSTHOG_EVENTS } from "@cityroam/shared/analytics";
 import type {
@@ -15,6 +15,7 @@ import { friendlyError, validationMessage } from "../lib/errors";
 import { trackEvent } from "../lib/analytics";
 import { useParticipant } from "../contexts/ParticipantContext";
 import { useEvent } from "../contexts/EventContext";
+import type { FatalCloseReason } from "../contexts/WebSocketContext";
 
 function redirectForStatus(
   navigate: ReturnType<typeof useNavigate>,
@@ -42,11 +43,22 @@ export default function JoinPage() {
   const { setParticipant, setToken } = useParticipant();
   const { setEvent, setParticipants, setAvailableLanguages } = useEvent();
 
-  const sessionExpired = (location.state as { sessionExpired?: boolean } | null)?.sessionExpired === true;
+  const navState = location.state as {
+    sessionExpired?: boolean;
+    disconnectedReason?: FatalCloseReason;
+  } | null;
+  const sessionExpired = navState?.sessionExpired === true;
+  // A fatal socket close (event gone, event over, no longer a participant)
+  // sends the player back here; explain why instead of showing a bare form.
+  const disconnectedReason = navState?.disconnectedReason;
 
   const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState<string | null>(
-    sessionExpired ? t("join.sessionExpired") : null,
+    sessionExpired
+      ? t("join.sessionExpired")
+      : disconnectedReason
+        ? t(`join.disconnected.${disconnectedReason}`)
+        : null,
   );
   const [blockingError, setBlockingError] = useState(false);
   const [fieldError, setFieldError] = useState<string | null>(null);
@@ -79,7 +91,7 @@ export default function JoinPage() {
           });
           setParticipants(data.participants);
           setAvailableLanguages(data.available_languages);
-          i18n.changeLanguage(data.event.language);
+          void setLanguage(data.event.language);
           redirectForStatus(navigate, code!, data.event.status);
           return;
         }
@@ -153,7 +165,7 @@ export default function JoinPage() {
         });
         setParticipants(data.participants);
         setAvailableLanguages(data.available_languages);
-        i18n.changeLanguage(data.event.language);
+        void setLanguage(data.event.language);
 
         // Track analytics
         trackEvent(POSTHOG_EVENTS.GAME_JOINED, {
@@ -202,6 +214,15 @@ export default function JoinPage() {
           </div>
         )}
 
+        {blockingError && (
+          <Link
+            to="/"
+            className="block w-full rounded-lg bg-brand-600 px-4 py-3.5 text-center font-medium text-white transition-colors hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
+          >
+            {t("entry.tryAnotherCode")}
+          </Link>
+        )}
+
         {!blockingError && (
           <form onSubmit={handleSubmit} noValidate>
             <label
@@ -243,6 +264,7 @@ export default function JoinPage() {
             </button>
           </form>
         )}
+
       </div>
     </div>
   );

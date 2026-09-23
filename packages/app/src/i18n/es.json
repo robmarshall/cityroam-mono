@@ -11,6 +11,17 @@
     "saving": "Guardando...",
     "connectionClosed": "Conexión cerrada."
   },
+  "entry": {
+    "title": "Introduce tu código de evento",
+    "subtitle": "Escribe el código de tu email de confirmación para empezar tu aventura.",
+    "codeLabel": "Código del evento",
+    "codePlaceholder": "ej. k7fq2mtz",
+    "submitButton": "Continuar",
+    "emptyCode": "Introduce tu código de evento para continuar.",
+    "invalidCode": "Ese código no parece correcto. Revisa tu email de confirmación e inténtalo de nuevo.",
+    "help": "Tu código está en el email de confirmación que recibiste al reservar.",
+    "tryAnotherCode": "Introducir otro código"
+  },
   "join": {
     "title": "Unirse al equipo",
     "nameLabel": "Tu nombre",
@@ -21,7 +32,12 @@
     "statusCompleted": "Este evento ya ha terminado.",
     "statusExpired": "Este evento ha expirado.",
     "statusRefunded": "Este evento ha sido reembolsado.",
-    "statusUnavailable": "Este evento ya no está disponible."
+    "statusUnavailable": "Este evento ya no está disponible.",
+    "disconnected": {
+      "eventNotFound": "No hemos encontrado ese evento.",
+      "eventEnded": "Este evento ha terminado.",
+      "notActive": "Ya no estás en esta partida. Vuelve a unirte con tu nombre."
+    }
   },
   "lobby": {
     "title": "Esperando jugadores",
@@ -75,6 +91,7 @@
     "participantJoined": "{{name}} se unió al juego",
     "participantLeft": "{{name}} salió del juego",
     "nameChanged": "{{oldName}} cambió su nombre a {{newName}}",
+    "leadChanged": "{{name}} es ahora el líder del grupo",
     "leaveDialog": {
       "title": "¿Salir del juego?",
       "message": "Se te eliminará del juego. Puedes volver a unirte más tarde abriendo el enlace de nuevo.",
@@ -86,7 +103,11 @@
       "placeholder": "Escribe tu nombre"
     },
     "sendAriaLabel": "Enviar mensaje",
-    "closeAriaLabel": "Cerrar"
+    "closeAriaLabel": "Cerrar",
+    "sending": "Enviando...",
+    "sendFailed": "No enviado. Toca para reintentar.",
+    "retryAriaLabel": "Reintentar enviar el mensaje",
+    "actionOfflineError": "Estás sin conexión: no se pudo confirmar. Inténtalo de nuevo."
   },
   "complete": {
     "title": "¡Juego completado!",
@@ -113,7 +134,12 @@
     "rateLimited": "Demasiados intentos. Espera un momento e inténtalo de nuevo.",
     "unauthorized": "Tu sesión ha expirado. Vuelve a unirte al juego.",
     "networkError": "No se pudo conectar. Revisa tu señal e inténtalo de nuevo.",
-    "generic": "Algo salió mal. Inténtalo de nuevo."
+    "generic": "Algo salió mal. Inténtalo de nuevo.",
+    "serverError": "Nuestro servidor ha tenido un problema. Inténtalo de nuevo en un momento.",
+    "leadOnly": "Solo el líder del grupo puede hacer eso.",
+    "cannotStart": "No se puede iniciar el juego ahora mismo. Puede que ya esté en marcha.",
+    "languageLocked": "El idioma solo se puede cambiar antes de que empiece el juego.",
+    "languageUnavailable": "Esta búsqueda aún no está disponible en ese idioma."
   },
   "validation": {
     "DISPLAY_NAME_TOO_SHORT": "El nombre debe tener al menos {{min}} caracteres",

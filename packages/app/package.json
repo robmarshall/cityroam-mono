@@ -7,11 +7,13 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run"
   },
   "dependencies": {
     "@cityroam/shared": "*",
     "@headlessui/react": "^2.2.9",
+    "@sentry/react": "^10.75.2",
     "i18next": "^26.0.3",
     "posthog-js": "^1.364.1",
     "react": "^19",
@@ -26,6 +28,10 @@
     "@vitejs/plugin-react": "^4",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vite": "^6"
+    "vite": "^6",
+    "vitest": "^4.1.2"
+  },
+  "engines": {
+    "node": ">=22 <25"
   }
 }

@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import type { SupportedLanguage } from "@cityroam/shared/types";
 import { db, schema } from "../../../db/index.js";
-import { writeGuideMessage, getRandomMessageBank } from "./answer-attempt.js";
+import { writeGuideMessage, getRandomMessageBank, SCRIPTED_MESSAGE } from "./answer-attempt.js";
 import { createLogger } from "../../../lib/logger.js";
 
 const log = createLogger("hint-nudge");
@@ -32,7 +32,7 @@ export async function handleHintNudge(ctx: HintNudgeContext): Promise<void> {
   const offerMsg = await getRandomMessageBank("hint-offer", ctx.language);
   const content = offerMsg ?? (HINT_OFFER_FALLBACK[ctx.language] ?? HINT_OFFER_FALLBACK.en);
 
-  await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, content);
+  await writeGuideMessage(ctx.eventId, ctx.eventCode, ctx.currentStop, content, null, undefined, SCRIPTED_MESSAGE);
 
   await db
     .update(schema.events)

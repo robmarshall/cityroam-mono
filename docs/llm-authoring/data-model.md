@@ -99,7 +99,7 @@ Use for: directions, fun facts, narrative text, any guide dialogue.
 
 | Config Field | Type | Purpose |
 |-------------|------|---------|
-| image_url | string (URL) | URL of the image to display |
+| image_url | string | Absolute `http(s)` URL, or `{{IMAGE:slug}}` placeholder resolved at send time to `${AWS_CDN_BASE_URL}/route-images/<slug>.jpg` |
 
 Use for: location photos, visual clues, maps as images.
 
@@ -270,6 +270,8 @@ Template variables in message block `content` fields are replaced at runtime, so
 | unknown-answer | 2 | 3 |
 | over-length | 2 | 3 |
 | completion | 2 | 3 |
+| guide-degraded | 2 | 3 |
+| guide-busy | 2 | 3 |
 
 ---
 

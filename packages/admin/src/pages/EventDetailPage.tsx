@@ -11,6 +11,34 @@ import { api, ApiError } from "../lib/api";
 import { useAuthFetch } from "../contexts/AuthContext";
 import { STATUS_LABELS, STATUS_COLORS, formatDate, formatTime } from "../lib/event-utils";
 
+/**
+ * A chat attachment. Route photos are often `{{IMAGE:slug}}` placeholders whose
+ * photo has not been uploaded yet, so a 404 shows a grey tile, not a broken image.
+ */
+function ChatImage({ src }: { src: string }) {
+  const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [src]);
+
+  if (failed) {
+    return (
+      <div
+        className="mt-2 flex h-24 w-40 items-center justify-center rounded-md border border-dashed border-gray-300 bg-gray-100 p-2 text-center text-xs text-gray-500"
+        title={src}
+      >
+        Image not uploaded
+      </div>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt="Message attachment"
+      onError={() => setFailed(true)}
+      className="mt-2 max-h-48 rounded-md"
+    />
+  );
+}
+
 const SENDER_COLORS: Record<SenderType, string> = {
   user: "bg-blue-50 border-blue-200",
   guide: "bg-gray-50 border-gray-200",
@@ -40,8 +68,14 @@ export default function EventDetailPage() {
   const [savingNote, setSavingNote] = useState(false);
   const [noteSaved, setNoteSaved] = useState(false);
   const [noteError, setNoteError] = useState<string | null>(null);
-  const [isEditingRefund, setIsEditingRefund] = useState(false);
+  // True once the user edits the refund form; the poll leaves the form alone
+  // until an explicit Save or Cancel clears it.
+  const [refundDirty, setRefundDirty] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
+  const [showResendModal, setShowResendModal] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendError, setResendError] = useState<string | null>(null);
+  const [resendSuccess, setResendSuccess] = useState<string | null>(null);
   const authFetch = useAuthFetch();
 
   const fetchEvent = useCallback(async () => {
@@ -65,19 +99,17 @@ export default function EventDetailPage() {
     fetchEvent();
   }, [fetchEvent]);
 
-  // Sync refund fields when data loads
+  // Sync refund fields from server data, but never on top of unsaved edits.
   useEffect(() => {
-    if (data) {
-      setRefundNote(data.event.refund_note ?? "");
-      setRefundRequested(data.event.refund_requested);
-    }
-  }, [data]);
+    if (!data || refundDirty) return;
+    setRefundNote(data.event.refund_note ?? "");
+    setRefundRequested(data.event.refund_requested);
+  }, [data, refundDirty]);
 
-  // Silent auto-refresh every 5 seconds so new messages appear without manual reload
-  // Pauses when user is editing the refund section to avoid overwriting their changes
+  // Silent auto-refresh every 5 seconds so new messages appear without a manual
+  // reload. It keeps running while the refund form is dirty — the sync effect
+  // above is what protects the unsaved fields.
   useEffect(() => {
-    if (isEditingRefund) return;
-
     const interval = setInterval(async () => {
       try {
         const res = await authFetch(() =>
@@ -94,7 +126,15 @@ export default function EventDetailPage() {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [authFetch, id, isEditingRefund]);
+  }, [authFetch, id]);
+
+  // Warn before a page unload discards unsaved refund edits.
+  useEffect(() => {
+    if (!refundDirty) return;
+    const handler = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [refundDirty]);
 
   const handleCopyPaymentId = async (paymentId: string) => {
     await navigator.clipboard.writeText(paymentId);
@@ -113,6 +153,21 @@ export default function EventDetailPage() {
           refund_note: refundNote,
         }),
       );
+      // Fold the saved values into the loaded data so the sync effect above
+      // does not bounce the form back to the pre-save poll snapshot.
+      setData((prev) =>
+        prev
+          ? {
+              ...prev,
+              event: {
+                ...prev.event,
+                refund_requested: refundRequested,
+                refund_note: refundNote,
+              },
+            }
+          : prev,
+      );
+      setRefundDirty(false);
       setNoteSaved(true);
       setTimeout(() => setNoteSaved(false), 3000);
     } catch (err) {
@@ -122,6 +177,13 @@ export default function EventDetailPage() {
     } finally {
       setSavingNote(false);
     }
+  };
+
+  const handleCancelRefundEdit = () => {
+    setRefundNote(data?.event.refund_note ?? "");
+    setRefundRequested(data?.event.refund_requested ?? false);
+    setRefundDirty(false);
+    setNoteError(null);
   };
 
   const handleRefund = async () => {
@@ -140,6 +202,36 @@ export default function EventDetailPage() {
       }
     } finally {
       setRefunding(false);
+    }
+  };
+
+  // The API exposes the same send as both /resend-email and /resend-code;
+  // /resend-code is used because it names what the email carries.
+  const handleResendCodeEmail = async () => {
+    setResending(true);
+    setResendError(null);
+    setResendSuccess(null);
+    try {
+      const res = await authFetch(() =>
+        api.post<{ success: boolean; attempts: number }>(
+          `/admin/events/${id}/resend-code`,
+        ),
+      );
+      const attempts = res?.attempts ?? 1;
+      setResendSuccess(
+        `Code email sent to ${data?.event.buyer_email || "the buyer"}` +
+          (attempts > 1 ? ` (after ${attempts} attempts).` : "."),
+      );
+      setShowResendModal(false);
+      fetchEvent();
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.status !== 401) setResendError(err.message);
+      } else {
+        setResendError("Could not reach the server. Check your connection and try again.");
+      }
+    } finally {
+      setResending(false);
     }
   };
 
@@ -166,6 +258,7 @@ export default function EventDetailPage() {
   }
 
   const { event, participants, messages } = data;
+  const codeEmail = data.code_email ?? { sent_at: null, failed_at: null, error: null };
   const statusColors = STATUS_COLORS[event.status];
 
   return (
@@ -218,6 +311,133 @@ export default function EventDetailPage() {
           >
             Dismiss
           </button>
+        </div>
+      )}
+
+      {/* Code email delivery */}
+      <div
+        className={`mb-6 rounded-lg border p-4 ${
+          codeEmail.failed_at ? "border-red-300 bg-red-50" : "border-gray-200 bg-white"
+        }`}
+      >
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
+              Code Email
+            </h2>
+            {codeEmail.failed_at ? (
+              <>
+                <p className="flex items-center gap-2 text-sm font-medium text-red-800">
+                  <span className="inline-flex rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+                    Delivery failed
+                  </span>
+                  {formatDate(codeEmail.failed_at)}
+                </p>
+                {codeEmail.error && (
+                  <p className="mt-2 break-words font-mono text-xs text-red-700">
+                    {codeEmail.error}
+                  </p>
+                )}
+                <p className="mt-2 text-sm text-red-800">
+                  The buyer may not have received their event code.
+                </p>
+              </>
+            ) : codeEmail.sent_at ? (
+              <p className="text-sm text-gray-700">
+                <span className="mr-2 inline-flex rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                  Sent
+                </span>
+                {formatDate(codeEmail.sent_at)}
+              </p>
+            ) : (
+              <p className="text-sm text-gray-500">No send recorded for this event.</p>
+            )}
+            {event.buyer_email && (
+              <p className="mt-2 text-xs text-gray-500">To: {event.buyer_email}</p>
+            )}
+          </div>
+          {event.buyer_email ? (
+            <button
+              onClick={() => {
+                setResendError(null);
+                setResendSuccess(null);
+                setShowResendModal(true);
+              }}
+              disabled={resending}
+              className={`rounded-md px-3 py-1.5 text-xs font-medium disabled:opacity-50 ${
+                codeEmail.failed_at
+                  ? "bg-red-600 text-white hover:bg-red-700"
+                  : "border border-gray-300 text-gray-700 hover:bg-gray-50"
+              }`}
+            >
+              Resend Code Email
+            </button>
+          ) : (
+            <span className="text-xs text-gray-400">No buyer email on file</span>
+          )}
+        </div>
+        {resendSuccess && (
+          <div className="mt-3 rounded-md bg-green-50 p-3 text-sm text-green-700">
+            {resendSuccess}
+            <button
+              onClick={() => setResendSuccess(null)}
+              className="ml-2 font-medium underline"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+        {resendError && !showResendModal && (
+          <div className="mt-3 rounded-md bg-red-100 p-3 text-sm text-red-700">
+            {resendError}
+            <button
+              onClick={() => setResendError(null)}
+              className="ml-2 font-medium underline"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Resend code email confirmation modal */}
+      {showResendModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="mx-4 w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+            <h3 className="mb-2 text-lg font-semibold text-gray-900">
+              Resend Code Email
+            </h3>
+            <p className="mb-4 text-sm text-gray-600">
+              Send the email containing event code{" "}
+              <span className="font-mono font-medium">{event.code}</span> to{" "}
+              <span className="font-medium">{event.buyer_email}</span>? The buyer
+              will receive another copy.
+            </p>
+            {resendError && (
+              <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">
+                {resendError}
+              </div>
+            )}
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowResendModal(false);
+                  setResendError(null);
+                }}
+                disabled={resending}
+                className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleResendCodeEmail}
+                disabled={resending}
+                className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              >
+                {resending ? "Sending..." : "Send Email"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -300,7 +520,10 @@ export default function EventDetailPage() {
           <input
             type="checkbox"
             checked={refundRequested}
-            onChange={(e) => setRefundRequested(e.target.checked)}
+            onChange={(e) => {
+              setRefundRequested(e.target.checked);
+              setRefundDirty(true);
+            }}
             className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
           <span className="text-sm font-medium text-gray-700">Refund Requested</span>
@@ -310,9 +533,10 @@ export default function EventDetailPage() {
         </label>
         <textarea
           value={refundNote}
-          onChange={(e) => setRefundNote(e.target.value)}
-          onFocus={() => setIsEditingRefund(true)}
-          onBlur={() => setIsEditingRefund(false)}
+          onChange={(e) => {
+            setRefundNote(e.target.value);
+            setRefundDirty(true);
+          }}
           placeholder="Add notes about the refund..."
           rows={3}
           maxLength={2000}
@@ -326,7 +550,22 @@ export default function EventDetailPage() {
           >
             {savingNote ? "Saving..." : "Save"}
           </button>
-          {noteSaved && (
+          {refundDirty && (
+            <button
+              onClick={handleCancelRefundEdit}
+              disabled={savingNote}
+              className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            >
+              Cancel
+            </button>
+          )}
+          {refundDirty && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500" />
+              Unsaved changes
+            </span>
+          )}
+          {noteSaved && !refundDirty && (
             <span className="text-sm text-green-600">Saved successfully</span>
           )}
           {noteError && (
@@ -779,13 +1018,7 @@ function MessageLog({
                     <p className="whitespace-pre-wrap text-sm text-gray-800">
                       {msg.content}
                     </p>
-                    {msg.image_url && (
-                      <img
-                        src={msg.image_url}
-                        alt="Message attachment"
-                        className="mt-2 max-h-48 rounded-md"
-                      />
-                    )}
+                    {msg.image_url && <ChatImage src={msg.image_url} />}
                   </div>
                 ))
               )}

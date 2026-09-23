@@ -570,7 +570,7 @@ Authorization: Bearer <token>
 }
 ```
 
-Valid types: `success`, `failure`, `hint-exhausted`, `hint-offer`, `hint-decline`, `clarification`, `unknown-answer`, `completion`, `over-length`
+Valid types: `success`, `failure`, `hint-exhausted`, `hint-offer`, `hint-decline`, `clarification`, `unknown-answer`, `completion`, `over-length`, `guide-degraded`, `guide-busy`
 
 > Message banks are filtered by language at runtime so the AI guide uses messages matching the route's language.
 
@@ -585,7 +585,39 @@ DELETE /admin/message-banks/:id
 
 ## Image Uploads
 
-To use images in `image` blocks, you need a publicly accessible URL. You can upload images via the admin API to get a hosted URL.
+An `image_url` (on `image` blocks and hint `SequenceItem`s) must be either an absolute `http(s)://` URL or an `{{IMAGE:slug}}` placeholder (slug: lowercase letters, digits and single hyphens, no leading/trailing hyphen, max 100 chars — see [content-guide.md](content-guide.md#image-urls)). Anything else is rejected with `400`.
+
+### Placeholders and the `route-images/` key
+
+A placeholder is stored as written and resolved by the API every time a message reaches a player:
+
+| Stored `image_url` | Sent to the player as |
+|---|---|
+| `{{IMAGE:leeds-town-hall-facade}}` | `${AWS_CDN_BASE_URL}/route-images/leeds-town-hall-facade.jpg` |
+| `https://…` | unchanged |
+| malformed `{{…}}` (legacy rows only) | `null` (no image) |
+
+So for a slug to resolve, a JPEG must exist in the bucket at exactly **`route-images/<slug>.jpg`**. Upload it with `POST /admin/upload` and a `slug` (below), which presigns exactly that key. Staging and production use separate buckets, so a slug must be uploaded in each environment it is used in. Uploading to an existing slug replaces the photo for every block, hint and language that uses it; the CDN may serve the old photo until its cache expires.
+
+If the object is missing, the player app shows a neutral placeholder tile instead of a broken image.
+
+To check where a slug resolves in the current environment:
+
+```
+GET /admin/route-images/leeds-town-hall-facade
+Authorization: Bearer <token>
+```
+
+```json
+{
+  "slug": "leeds-town-hall-facade",
+  "key": "route-images/leeds-town-hall-facade.jpg",
+  "placeholder": "{{IMAGE:leeds-town-hall-facade}}",
+  "url": "https://cdn.yourdomain.com/route-images/leeds-town-hall-facade.jpg"
+}
+```
+
+`url` is `null` when no `AWS_CDN_BASE_URL` is configured. A malformed slug returns `400`.
 
 ### Get a Pre-signed Upload URL
 
@@ -593,14 +625,38 @@ To use images in `image` blocks, you need a publicly accessible URL. You can upl
 POST /admin/upload
 Content-Type: application/json
 Authorization: Bearer <token>
+```
 
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| filename | string | Yes | Used for the key of one-off uploads; ignored (but still required) with `slug` |
+| content_type | string | Yes | `image/jpeg` or `image/png`; must be `image/jpeg` with `slug` |
+| slug | string | No | Placeholder slug. When present the upload targets `route-images/<slug>.jpg` |
+
+**Slug upload** (fills a `{{IMAGE:slug}}` placeholder — the usual path for programmatically authored routes):
+
+```json
+{ "filename": "town-hall.jpg", "content_type": "image/jpeg", "slug": "leeds-town-hall-facade" }
+```
+
+```json
 {
-  "filename": "leeds-town-hall.jpg",
-  "content_type": "image/jpeg"
+  "upload_url": "https://s3.amazonaws.com/...",
+  "key": "route-images/leeds-town-hall-facade.jpg",
+  "url": "https://cdn.yourdomain.com/route-images/leeds-town-hall-facade.jpg",
+  "slug": "leeds-town-hall-facade",
+  "placeholder": "{{IMAGE:leeds-town-hall-facade}}"
 }
 ```
 
-Response:
+Then `PUT` the raw JPEG bytes to `upload_url` with header `Content-Type: image/jpeg`. Nothing in the route needs editing: the blocks keep `placeholder` as their `image_url` and resolve to `url` automatically. Use `placeholder` as the `image_url` for any new block that should show the same photo.
+
+**One-off upload** (no `slug`):
+
+```json
+{ "filename": "leeds-town-hall.jpg", "content_type": "image/jpeg" }
+```
+
 ```json
 {
   "upload_url": "https://s3.amazonaws.com/...",
@@ -609,7 +665,9 @@ Response:
 }
 ```
 
-Then `PUT` the raw image bytes to `upload_url`. Put `url` — the absolute public URL — in the image block's `image_url`; `key` is the raw S3 object path and a browser would resolve it against whatever page it is rendered on.
+Then `PUT` the raw image bytes to `upload_url` with the same `Content-Type`. Put `url` — the absolute public URL — in the block's `image_url` (this replaces a placeholder for that block only); `key` is the raw S3 object path and a browser would resolve it against whatever page it is rendered on.
+
+The pre-signed URL expires after 5 minutes.
 
 **Constraints:**
 - Allowed types: `image/jpeg`, `image/png`
@@ -710,7 +768,7 @@ The 8-character `code` is what players use to join the event.
 | Field | Type | Required | Constraints |
 |-------|------|----------|-------------|
 | type | `"image"` | Yes | Must be `"image"` |
-| image_url | string | Yes | Must be valid URL |
+| image_url | string | Yes | Absolute `http(s)` URL, or `{{IMAGE:slug}}` placeholder (see Image Uploads) |
 
 **question:**
 
@@ -726,7 +784,7 @@ Each `SequenceItem`:
 | Field | Type | Required | Constraints |
 |-------|------|----------|-------------|
 | content | string | Yes | The hint text |
-| image_url | string or null | No | Valid URL or null |
+| image_url | string or null | No | Absolute `http(s)` URL, `{{IMAGE:slug}}` placeholder, or null |
 | delay_ms | number | No | 0-10000ms, default: 0 |
 
 **action:**

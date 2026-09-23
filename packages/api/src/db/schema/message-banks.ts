@@ -11,5 +11,5 @@ export const messageBanks = pgTable("message_banks", {
   updated_at: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [
   index("message_banks_type_language_idx").on(table.type, table.language),
-  check("message_banks_type_check", sql`${table.type} IN ('success', 'failure', 'hint-exhausted', 'hint-offer', 'hint-decline', 'clarification', 'unknown-answer', 'completion', 'over-length')`),
+  check("message_banks_type_check", sql`${table.type} IN ('success', 'failure', 'hint-exhausted', 'hint-offer', 'hint-decline', 'clarification', 'unknown-answer', 'completion', 'over-length', 'guide-degraded', 'guide-busy')`),
 ]);

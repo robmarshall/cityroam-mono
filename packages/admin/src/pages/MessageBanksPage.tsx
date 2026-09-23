@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type {
   AdminMessageBankListResponse,
   MessageBankType,
@@ -23,6 +23,8 @@ const BANK_TYPES: { value: MessageBankType; label: string }[] = [
   { value: "unknown-answer", label: "Unknown Answer" },
   { value: "completion", label: "Completion" },
   { value: "over-length", label: "Over-length" },
+  { value: "guide-degraded", label: "Guide Degraded" },
+  { value: "guide-busy", label: "Guide Busy" },
 ];
 
 const TEMPLATE_VARS: Partial<Record<MessageBankType, string[]>> = {
@@ -70,6 +72,24 @@ export default function MessageBanksPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
 
+  // Pending active/inactive toggles (bank id -> desired is_active).
+  // Nothing is persisted until Save is pressed.
+  const [pendingActive, setPendingActive] = useState<Record<string, boolean>>(
+    {},
+  );
+  const [savingToggles, setSavingToggles] = useState(false);
+  const [toggleError, setToggleError] = useState<string | null>(null);
+  const pendingToggleIdsRef = useRef<string[]>([]);
+  pendingToggleIdsRef.current = Object.keys(pendingActive);
+
+  // Warn before a full page unload throws pending toggles away.
+  useEffect(() => {
+    if (Object.keys(pendingActive).length === 0) return;
+    const handler = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [pendingActive]);
+
   const fetchBanks = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -98,7 +118,9 @@ export default function MessageBanksPage() {
       b.type === activeTab &&
       (activeLanguage === "all" || b.language === activeLanguage),
   );
-  const activeCount = filtered.filter((b) => b.is_active).length;
+  // What the entry will be once pending toggles are saved.
+  const effectiveActive = (b: MessageBank) => pendingActive[b.id] ?? b.is_active;
+  const activeCount = filtered.filter(effectiveActive).length;
 
   const openCreateForm = () => {
     setEditingId(null);
@@ -130,11 +152,20 @@ export default function MessageBanksPage() {
     setFormError(null);
   };
 
+  // Saving or deleting an entry reloads the list, which drops pending toggles.
+  const confirmLosingToggles = (action: string) => {
+    if (pendingToggleIdsRef.current.length === 0) return true;
+    return window.confirm(
+      `You have unsaved active/inactive changes. ${action} reloads the list and discards them. Continue?`,
+    );
+  };
+
   const handleSave = async () => {
     if (!form.content.trim()) {
       setFormError("Content is required.");
       return;
     }
+    if (!confirmLosingToggles("Saving this entry")) return;
     setSaving(true);
     setFormError(null);
     try {
@@ -171,6 +202,7 @@ export default function MessageBanksPage() {
   };
 
   const handleDelete = async (id: string) => {
+    if (!confirmLosingToggles("Deleting this entry")) return;
     setDeleting(true);
     try {
       await authFetch(() => api.delete(`/admin/message-banks/${id}`));
@@ -188,24 +220,53 @@ export default function MessageBanksPage() {
     }
   };
 
-  const handleToggleActive = async (bank: MessageBank) => {
+  // Clicking the toggle only records the intent — Save persists it.
+  const handleToggleActive = (bank: MessageBank) => {
+    setToggleError(null);
+    setPendingActive((prev) => {
+      const next = { ...prev };
+      const desired = !(prev[bank.id] ?? bank.is_active);
+      if (desired === bank.is_active) delete next[bank.id];
+      else next[bank.id] = desired;
+      return next;
+    });
+  };
+
+  const pendingToggleIds = Object.keys(pendingActive);
+
+  const handleSaveToggles = async () => {
+    if (pendingToggleIds.length === 0) return;
+    setSavingToggles(true);
+    setToggleError(null);
     try {
-      await authFetch(() =>
-        api.put(`/admin/message-banks/${bank.id}`, {
-          type: bank.type,
-          language: bank.language,
-          content: bank.content,
-          is_active: !bank.is_active,
-        }),
-      );
+      for (const bankId of pendingToggleIds) {
+        const bank = banks.find((b) => b.id === bankId);
+        if (!bank) continue;
+        await authFetch(() =>
+          api.put(`/admin/message-banks/${bankId}`, {
+            type: bank.type,
+            language: bank.language,
+            content: bank.content,
+            is_active: pendingActive[bankId],
+          }),
+        );
+      }
+      setPendingActive({});
       await fetchBanks();
     } catch (err) {
       if (err instanceof ApiError && err.status !== 401) {
-        setError(err.message);
+        setToggleError(err.message);
       } else if (!(err instanceof ApiError)) {
-        setError("Failed to update message bank entry.");
+        setToggleError("Failed to save active/inactive changes.");
       }
+    } finally {
+      setSavingToggles(false);
     }
+  };
+
+  const handleCancelToggles = () => {
+    setPendingActive({});
+    setToggleError(null);
   };
 
   if (loading) {
@@ -337,6 +398,38 @@ export default function MessageBanksPage() {
         </div>
       )}
 
+      {/* Pending toggle bar */}
+      {pendingToggleIds.length > 0 && (
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-md border border-amber-300 bg-amber-50 p-3">
+          <span className="text-sm text-amber-900">
+            <span className="font-medium">
+              {pendingToggleIds.length} unsaved active/inactive change
+              {pendingToggleIds.length !== 1 ? "s" : ""}
+            </span>
+            . Nothing is applied until you press Save.
+          </span>
+          {toggleError && (
+            <span className="text-sm text-red-600">{toggleError}</span>
+          )}
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              onClick={handleSaveToggles}
+              disabled={savingToggles}
+              className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+            >
+              {savingToggles ? "Saving..." : "Save Changes"}
+            </button>
+            <button
+              onClick={handleCancelToggles}
+              disabled={savingToggles}
+              className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Entry list */}
       {filtered.length === 0 ? (
         <p className="text-sm text-gray-500">
@@ -348,9 +441,11 @@ export default function MessageBanksPage() {
             <div
               key={bank.id}
               className={`rounded-lg border p-4 ${
-                bank.is_active
-                  ? "border-gray-200 bg-white"
-                  : "border-gray-100 bg-gray-50 opacity-60"
+                pendingActive[bank.id] !== undefined
+                  ? "border-amber-300 bg-amber-50"
+                  : bank.is_active
+                    ? "border-gray-200 bg-white"
+                    : "border-gray-100 bg-gray-50 opacity-60"
               }`}
             >
               <div className="flex items-start justify-between gap-4">
@@ -368,17 +463,27 @@ export default function MessageBanksPage() {
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
-                  {/* Active toggle */}
+                  {/* Active toggle — pending until saved */}
                   <button
                     onClick={() => handleToggleActive(bank)}
-                    title={bank.is_active ? "Deactivate" : "Activate"}
-                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                      bank.is_active
-                        ? "bg-green-100 text-green-700 hover:bg-green-200"
-                        : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                    disabled={savingToggles}
+                    title={
+                      pendingActive[bank.id] !== undefined
+                        ? "Unsaved change — press Save to apply"
+                        : bank.is_active
+                          ? "Deactivate"
+                          : "Activate"
+                    }
+                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium disabled:opacity-50 ${
+                      pendingActive[bank.id] !== undefined
+                        ? "bg-amber-100 text-amber-800 ring-1 ring-amber-400 hover:bg-amber-200"
+                        : bank.is_active
+                          ? "bg-green-100 text-green-700 hover:bg-green-200"
+                          : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                     }`}
                   >
-                    {bank.is_active ? "Active" : "Inactive"}
+                    {effectiveActive(bank) ? "Active" : "Inactive"}
+                    {pendingActive[bank.id] !== undefined && " (unsaved)"}
                   </button>
                   {/* Edit */}
                   <button

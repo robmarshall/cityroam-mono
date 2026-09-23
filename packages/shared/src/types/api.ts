@@ -27,6 +27,15 @@ export interface EventDetailResponse {
     is_lead: boolean;
     token: string;
   } | null;
+  /**
+   * Set while the hunt is parked on an action block waiting for the lead to
+   * confirm. Lets a client that missed (or reloaded past) the action_waiting
+   * broadcast rebuild the confirm prompt.
+   */
+  pending_action: {
+    block_id: string;
+    label: string;
+  } | null;
 }
 
 export interface JoinEventResponse {
@@ -88,6 +97,11 @@ export interface AdminEventListResponse {
     created_at: string;
     participant_count: number;
     refund_requested: boolean;
+    /**
+     * Set when every attempt to email the event code failed. The buyer has no
+     * other lasting copy of the code, so the list flags it for a resend.
+     */
+    code_email_failed_at?: string | null;
   }>;
   total: number;
   page: number;
@@ -101,6 +115,16 @@ export interface AdminEventDetailResponse {
   participants: Omit<Participant, "token">[];
   messages: Message[];
   stripe_payment_id: string | null;
+  /**
+   * Delivery state of the email carrying the event code. `failed_at` and
+   * `error` are set when every send attempt failed and cleared by a later
+   * successful send (including an admin resend).
+   */
+  code_email: {
+    sent_at: string | null;
+    failed_at: string | null;
+    error: string | null;
+  };
 }
 
 export type AdminRouteGroupResponse = RouteGroup & {
@@ -129,6 +153,28 @@ export interface AdminCreateEventResponse {
     created_at: string;
     expires_at: string;
   };
+}
+
+/** POST /admin/upload */
+export interface AdminImageUploadResponse {
+  /** Pre-signed S3 PUT URL (expires after 5 minutes). */
+  upload_url: string;
+  /** S3 object key the PUT writes to. */
+  key: string;
+  /** Public CDN URL of the object once uploaded. */
+  url: string;
+  /** Present for slug uploads: the `{{IMAGE:slug}}` placeholder that resolves to `url`. */
+  slug?: string;
+  placeholder?: string;
+}
+
+/** GET /admin/route-images/:slug — where a `{{IMAGE:slug}}` placeholder resolves. */
+export interface AdminRouteImageResponse {
+  slug: string;
+  key: string;
+  placeholder: string;
+  /** CDN URL the placeholder resolves to, or null when no CDN base is configured. */
+  url: string | null;
 }
 
 export interface AdminMessageBankListResponse {

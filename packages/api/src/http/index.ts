@@ -14,6 +14,10 @@ import { checkoutRoutes } from "../routes/checkout.js";
 import { adminRoutes } from "../routes/admin.js";
 import { startExpirySweep, stopExpirySweep } from "../services/event-expiry.js";
 import {
+  startGroupReconciler,
+  stopGroupReconciler,
+} from "../services/group-reconciler.js";
+import {
   startIncomingSubscriber,
   stopIncomingSubscriber,
 } from "../services/pipeline/incoming-subscriber.js";
@@ -21,11 +25,17 @@ import {
   startIdleTimer,
   stopIdleTimer,
 } from "../services/pipeline/idle-timer.js";
+import {
+  startRetentionSweep,
+  stopRetentionSweep,
+} from "../services/data-retention.js";
 import { createLogger } from "../lib/logger.js";
+import { initSentry, flushSentry } from "../lib/sentry.js";
 
 const log = createLogger("http");
 
 validateEnv("http");
+initSentry("http");
 
 const app = new Hono();
 
@@ -76,6 +86,8 @@ const server = serve({ fetch: app.fetch, port }, () => {
   startIncomingSubscriber().catch((err) =>
     log.error("failed to start incoming subscriber", { error: err instanceof Error ? err.message : String(err) }),
   );
+  startGroupReconciler();
+  startRetentionSweep();
 });
 
 // Graceful shutdown
@@ -83,9 +95,11 @@ async function shutdown() {
   log.info("shutting down");
   stopExpirySweep();
   stopIdleTimer();
+  stopGroupReconciler();
+  stopRetentionSweep();
   await stopIncomingSubscriber();
   server.close();
-  await Promise.all([disconnectRedis(), disconnectDb()]);
+  await Promise.all([disconnectRedis(), disconnectDb(), flushSentry()]);
   process.exit(0);
 }
 

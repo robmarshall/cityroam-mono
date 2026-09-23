@@ -40,22 +40,50 @@
     {
       "idx": 5,
       "version": "7",
-      "when": 1743523200000,
+      "when": 1775004057336,
       "tag": "0005_remove_opening_message_bank",
       "breakpoints": true
     },
     {
       "idx": 6,
       "version": "7",
-      "when": 1743523200001,
+      "when": 1775004057337,
       "tag": "0006_add_hint_offered",
       "breakpoints": true
     },
     {
       "idx": 7,
       "version": "7",
-      "when": 1743523200002,
+      "when": 1775004057338,
       "tag": "0007_add_route_families_and_language",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1786353753725,
+      "tag": "0008_premium_colleen_wing",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1788338620275,
+      "tag": "0009_add_events_stripe_session_unique",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1788339218830,
+      "tag": "0010_add_guide_degraded_busy_bank_types",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1788343063640,
+      "tag": "0011_add_position_uniques_and_email_state",
       "breakpoints": true
     }
   ]

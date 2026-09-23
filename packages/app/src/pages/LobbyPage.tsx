@@ -1,35 +1,38 @@
 import { useEffect, useCallback, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import i18n from "../i18n/index";
+import { setLanguage } from "../i18n/index";
 import { POSTHOG_EVENTS } from "@cityroam/shared/analytics";
 import type {
   ParticipantJoinedPayload,
   ParticipantLeftPayload,
   GameStartedPayload,
   LanguageChangedPayload,
+  LeadChangedPayload,
   SupportedLanguage,
 } from "@cityroam/shared/types";
-import { api, ApiError } from "../lib/api";
+import { api } from "../lib/api";
+import { friendlyError } from "../lib/errors";
 import { trackEvent } from "../lib/analytics";
 import { useParticipant } from "../contexts/ParticipantContext";
 import { useEvent } from "../contexts/EventContext";
 import {
   useWebSocket,
   REJOIN_CLOSE_CODES,
-  FATAL_CLOSE_CODES,
+  fatalCloseReason,
 } from "../contexts/WebSocketContext";
 
 export default function LobbyPage() {
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { participant, token } = useParticipant();
+  const { participant, token, setParticipant } = useParticipant();
   const {
     event,
     participants,
     available_languages,
     setEvent,
+    setParticipants,
     addParticipant,
     removeParticipant,
   } = useEvent();
@@ -37,6 +40,7 @@ export default function LobbyPage() {
     status: wsStatus,
     closeCode,
     maxAttemptsReached,
+    isRejected,
     subscribe,
     connect,
     manualRetry,
@@ -65,7 +69,9 @@ export default function LobbyPage() {
     }
   }, [event?.status, code, navigate]);
 
-  // Handle close codes — redirect to join on auth failure with explanation
+  // Handle close codes — leave the lobby with an explanation rather than
+  // sitting on a dead screen. Fatal codes are terminal, so the join screen
+  // (which re-reads the event) is the only place that can recover.
   useEffect(() => {
     if (closeCode === null || !code) return;
     if (REJOIN_CLOSE_CODES.has(closeCode)) {
@@ -73,32 +79,57 @@ export default function LobbyPage() {
         replace: true,
         state: { sessionExpired: true },
       });
+      return;
+    }
+    const reason = fatalCloseReason(closeCode);
+    if (reason) {
+      navigate(`/event/${code}`, {
+        replace: true,
+        state: { disconnectedReason: reason },
+      });
     }
   }, [closeCode, code, navigate]);
 
-  // Connect WebSocket on mount
+  // Connect WebSocket on mount.
+  //
+  // The guard matters: a fatal close leaves the status at a terminal value
+  // without navigating instantly, and without a one-shot ref this effect
+  // would re-fire on every status change and call connect() again — which
+  // resets the backoff, so a refused socket would spin in a tight loop.
+  const connectRef = useRef(connect);
+  connectRef.current = connect;
+  const hasConnectedRef = useRef(false);
+
   useEffect(() => {
-    if (code && token && wsStatus === "disconnected") {
-      connect(code, token);
+    if (code && token && wsStatus === "disconnected" && !isRejected && !hasConnectedRef.current) {
+      hasConnectedRef.current = true;
+      connectRef.current(code, token);
     }
     return () => {
       // Don't disconnect on unmount — the play page will reuse the connection
     };
-  }, [code, token, connect, wsStatus]);
+  }, [code, token, wsStatus, isRejected]);
 
   // Handle incoming WebSocket messages via subscription (no batching risk)
   const participantsRef = useRef(participants);
   participantsRef.current = participants;
   const eventRef = useRef(event);
   eventRef.current = event;
+  const participantContextRef = useRef(participant);
+  participantContextRef.current = participant;
 
   useEffect(() => {
     const unsubscribe = subscribe((msg) => {
       switch (msg.type) {
         case "participant_joined": {
           const payload = msg.payload as ParticipantJoinedPayload;
+          // Use the real id — a locally invented one would never match the
+          // participant_id in lead_changed, so the Lead badge would break
+          if (participantsRef.current.some((p) => p.id === payload.participant_id)) {
+            break;
+          }
           addParticipant({
-            id: crypto.randomUUID(),
+            id: payload.participant_id,
             display_name: payload.name,
             is_lead: false,
             is_active: true,
@@ -107,11 +138,20 @@ export default function LobbyPage() {
         }
         case "participant_left": {
           const payload = msg.payload as ParticipantLeftPayload;
-          const leaving = participantsRef.current.find(
-            (p) => p.display_name === payload.name,
+          removeParticipant(payload.participant_id);
+          break;
+        }
+        case "lead_changed": {
+          const payload = msg.payload as LeadChangedPayload;
+          setParticipants(
+            participantsRef.current.map((p) => ({
+              ...p,
+              is_lead: p.id === payload.participant_id,
+            })),
           );
-          if (leaving) {
-            removeParticipant(leaving.id);
+          const me = participantContextRef.current;
+          if (me) {
+            setParticipant({ ...me, is_lead: me.id === payload.participant_id });
           }
           break;
         }
@@ -132,14 +172,22 @@ export default function LobbyPage() {
             ...eventRef.current!,
             language: newLang,
           });
-          i18n.changeLanguage(newLang);
+          void setLanguage(newLang);
           break;
         }
       }
     });
 
     return unsubscribe;
-  }, [subscribe, code, addParticipant, removeParticipant, setEvent]);
+  }, [
+    subscribe,
+    code,
+    addParticipant,
+    removeParticipant,
+    setEvent,
+    setParticipants,
+    setParticipant,
+  ]);
 
   const handleStart = useCallback(async () => {
     if (!code || !event || starting) return;
@@ -161,11 +209,15 @@ export default function LobbyPage() {
         language: eventRef.current?.language ?? event.language,
       });
     } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.message);
-      } else {
-        setError(t("lobby.startFailed"));
-      }
+      setError(
+        friendlyError(err, {
+          codes: {
+            "UNAUTHORIZED:403": "error.leadOnly",
+            INVALID_INPUT: "error.cannotStart",
+          },
+          fallback: "lobby.startFailed",
+        }),
+      );
       setStarting(false);
     }
   }, [code, starting, participants.length, setEvent]);
@@ -179,11 +231,15 @@ export default function LobbyPage() {
       await api.put(`/event/${code}/language`, { language: languageConfirm });
       // The WS language_changed event will update context and i18n
     } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.message);
-      } else {
-        setError(t("error.generic"));
-      }
+      setError(
+        friendlyError(err, {
+          codes: {
+            "UNAUTHORIZED:403": "error.leadOnly",
+            INVALID_INPUT: "error.languageLocked",
+            ROUTE_NOT_FOUND: "error.languageUnavailable",
+          },
+        }),
+      );
     } finally {
       setChangingLanguage(false);
       setLanguageConfirm(null);
@@ -203,20 +259,10 @@ export default function LobbyPage() {
   const leadName = participants.find((p) => p.is_lead)?.display_name;
   const activeParticipants = participants.filter((p) => p.is_active);
 
-  // Determine fatal error message from close code
-  const fatalMessage =
-    closeCode !== null && FATAL_CLOSE_CODES.has(closeCode)
-      ? closeCode === 4003
-        ? t("lobby.fatalEventNotFound")
-        : closeCode === 4004
-          ? t("lobby.fatalEventEnded")
-          : t("lobby.fatalNotActive")
-      : null;
-
   return (
     <div className="flex min-h-svh flex-col bg-white">
       {/* Connection status banners */}
-      {wsStatus === "reconnecting" && (
+      {wsStatus === "reconnecting" && !maxAttemptsReached && (
         <div className="shrink-0 bg-yellow-400 px-4 py-1.5 text-center text-sm font-medium text-yellow-900">
           {t("common.reconnecting")}
         </div>
@@ -230,11 +276,6 @@ export default function LobbyPage() {
           >
             {t("common.retry")}
           </button>
-        </div>
-      )}
-      {fatalMessage && (
-        <div className="shrink-0 bg-red-500 px-4 py-1.5 text-center text-sm font-medium text-white">
-          {fatalMessage}
         </div>
       )}
 

@@ -11,6 +11,17 @@
     "saving": "Opslaan...",
     "connectionClosed": "Verbinding gesloten."
   },
+  "entry": {
+    "title": "Voer je evenementcode in",
+    "subtitle": "Vul de code uit je bevestigingsmail in om je avontuur te starten.",
+    "codeLabel": "Evenementcode",
+    "codePlaceholder": "bijv. k7fq2mtz",
+    "submitButton": "Doorgaan",
+    "emptyCode": "Voer je evenementcode in om door te gaan.",
+    "invalidCode": "Deze code lijkt niet te kloppen. Controleer je bevestigingsmail en probeer het opnieuw.",
+    "help": "Je code staat in de bevestigingsmail die je bij je boeking hebt ontvangen.",
+    "tryAnotherCode": "Andere code invoeren"
+  },
   "join": {
     "title": "Doe mee met het team",
     "nameLabel": "Je naam",
@@ -21,7 +32,12 @@
     "statusCompleted": "Dit evenement is al afgelopen.",
     "statusExpired": "Dit evenement is verlopen.",
     "statusRefunded": "Dit evenement is terugbetaald.",
-    "statusUnavailable": "Dit evenement is niet meer beschikbaar."
+    "statusUnavailable": "Dit evenement is niet meer beschikbaar.",
+    "disconnected": {
+      "eventNotFound": "We konden dat evenement niet vinden.",
+      "eventEnded": "Dit evenement is afgelopen.",
+      "notActive": "Je doet niet meer mee aan dit spel. Neem opnieuw deel met je naam."
+    }
   },
   "lobby": {
     "title": "Wachten op spelers",
@@ -75,6 +91,7 @@
     "participantJoined": "{{name}} doet mee met het spel",
     "participantLeft": "{{name}} heeft het spel verlaten",
     "nameChanged": "{{oldName}} heeft de naam gewijzigd naar {{newName}}",
+    "leadChanged": "{{name}} is nu de groepsleider",
     "leaveDialog": {
       "title": "Spel verlaten?",
       "message": "Je wordt uit het spel verwijderd. Je kunt later opnieuw deelnemen door de link opnieuw te openen.",
@@ -86,7 +103,11 @@
       "placeholder": "Vul je naam in"
     },
     "sendAriaLabel": "Bericht versturen",
-    "closeAriaLabel": "Sluiten"
+    "closeAriaLabel": "Sluiten",
+    "sending": "Versturen...",
+    "sendFailed": "Niet verzonden. Tik om opnieuw te proberen.",
+    "retryAriaLabel": "Bericht opnieuw verzenden",
+    "actionOfflineError": "Je bent offline — bevestigen is niet gelukt. Probeer het opnieuw."
   },
   "complete": {
     "title": "Spel voltooid!",
@@ -113,7 +134,12 @@
     "rateLimited": "Te veel pogingen. Wacht even en probeer het opnieuw.",
     "unauthorized": "Je sessie is verlopen. Neem opnieuw deel aan het spel.",
     "networkError": "Kan geen verbinding maken. Controleer je signaal en probeer het opnieuw.",
-    "generic": "Er ging iets mis. Probeer het opnieuw."
+    "generic": "Er ging iets mis. Probeer het opnieuw.",
+    "serverError": "Onze server had een probleem. Probeer het zo meteen opnieuw.",
+    "leadOnly": "Alleen de groepsleider kan dat doen.",
+    "cannotStart": "Het spel kan nu niet worden gestart. Misschien is het al bezig.",
+    "languageLocked": "De taal kan alleen worden gewijzigd voordat het spel begint.",
+    "languageUnavailable": "Deze speurtocht is nog niet beschikbaar in die taal."
   },
   "validation": {
     "DISPLAY_NAME_TOO_SHORT": "Weergavenaam moet minimaal {{min}} tekens zijn",

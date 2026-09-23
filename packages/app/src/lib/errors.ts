@@ -32,6 +32,7 @@ const ERROR_CODE_KEYS: Record<string, string> = {
   INVALID_INPUT: "error.invalidInput",
   RATE_LIMITED: "error.rateLimited",
   UNAUTHORIZED: "error.unauthorized",
+  INTERNAL_ERROR: "error.serverError",
 };
 
 export function validationMessage(code: string): string {
@@ -47,19 +48,48 @@ export function validationMessage(code: string): string {
   return i18n.t("error.generic");
 }
 
-export function friendlyError(err: unknown): string {
+export interface FriendlyErrorOptions {
+  /**
+   * Per-call-site overrides of API code to i18n key. The same API code can
+   * mean different things on different endpoints (e.g. a 403 UNAUTHORIZED on
+   * /start means "lead only", not "session expired"). A key of the form
+   * `CODE:STATUS` matches only that status and wins over a bare `CODE`.
+   */
+  codes?: Record<string, string>;
+  /** i18n key used instead of `error.generic` when nothing more specific matches. */
+  fallback?: string;
+}
+
+/**
+ * Turns any thrown value into a translated, user-facing message. Never
+ * returns the raw server message, which is English and written for developers.
+ */
+export function friendlyError(err: unknown, options: FriendlyErrorOptions = {}): string {
+  const { codes = {}, fallback = "error.generic" } = options;
+
   if (err instanceof ApiError) {
-    const key = err.code ? ERROR_CODE_KEYS[err.code] : undefined;
-    if (key) {
-      return i18n.t(key);
+    if (err.code) {
+      // Zod failures come back as INVALID_INPUT with the schema's message code
+      // (e.g. DISPLAY_NAME_TOO_SHORT) as the error text.
+      if (err.code === "INVALID_INPUT" && i18n.exists(`validation.${err.message}`)) {
+        return validationMessage(err.message);
+      }
+      const override = codes[`${err.code}:${err.status}`] ?? codes[err.code];
+      if (override) {
+        return i18n.t(override);
+      }
+      const key = ERROR_CODE_KEYS[err.code];
+      if (key) {
+        return i18n.t(key);
+      }
     }
     if (err.status === 404) {
       return i18n.t("error.eventNotFound");
     }
-    return i18n.t("error.generic");
+    return i18n.t(fallback);
   }
   if (err instanceof TypeError && err.message === "Failed to fetch") {
     return i18n.t("error.networkError");
   }
-  return i18n.t("error.generic");
+  return i18n.t(fallback);
 }

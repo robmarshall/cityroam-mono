@@ -17,6 +17,14 @@ const { mockClassify } = vi.hoisted(() => ({
   mockClassify: vi.fn().mockResolvedValue({ type: "answer-attempt" }),
 }));
 
+// The two atomic counters. They are one conditional UPDATE each against the
+// events row, which a chainable DB mock cannot model, so they stand in for
+// the row lock and report what it would have returned.
+const { mockClaimHint, mockRecordWrongAttempt } = vi.hoisted(() => ({
+  mockClaimHint: vi.fn(),
+  mockRecordWrongAttempt: vi.fn(),
+}));
+
 // ── Mock env ──────────────────────────────────────────────────────────
 vi.mock("../../env.js", () => ({
   env: {
@@ -128,6 +136,12 @@ vi.mock("../../services/template-vars.js", () => ({
   applyTemplateVars: vi.fn((content: string) => content),
 }));
 
+// ── Mock the atomic counters ───────────────────────────────────────
+vi.mock("../../services/pipeline/event-counters.js", () => ({
+  claimHint: mockClaimHint,
+  recordWrongAttempt: mockRecordWrongAttempt,
+}));
+
 // ── Imports (AFTER mocks) ────────────────────────────────────────────
 import { processIncomingMessage } from "../../services/pipeline/orchestrator.js";
 import { db } from "../../db/index.js";
@@ -223,6 +237,12 @@ describe("End-to-end message lifecycle integration", () => {
         },
       ]);
     });
+
+    // Default: both counter claims succeed and this caller is the first
+    mockClaimHint.mockReset().mockResolvedValue(1);
+    mockRecordWrongAttempt
+      .mockReset()
+      .mockResolvedValue({ wrongAttempts: 1, hintsGiven: 0 });
 
     // Default: event exists and is IN_PROGRESS
     mockDb.query.events.findFirst.mockResolvedValue(eventRow);
@@ -465,10 +485,8 @@ describe("End-to-end message lifecycle integration", () => {
     it("sends failure message and increments wrong_attempts", async () => {
       await processIncomingMessage(makePayload("some wrong answer"));
 
-      // wrong_attempts incremented
-      expect(mockDb.set).toHaveBeenCalledWith(
-        expect.objectContaining({ wrong_attempts: 1 }),
-      );
+      // wrong_attempts incremented in SQL, against the block it was aimed at
+      expect(mockRecordWrongAttempt).toHaveBeenCalledWith(EVENT_ID, BLOCK_ID);
 
       // Failure guide message written
       const valuesCalls = mockDb.values.mock.calls;
@@ -478,17 +496,17 @@ describe("End-to-end message lifecycle integration", () => {
       expect(guideInserts.length).toBe(1);
     });
 
-    it("includes hint nudge after 3+ wrong attempts with 0 hints", async () => {
-      // Override event to have 2 wrong attempts (will become 3)
-      mockDb.query.events.findFirst
-        .mockReset()
-        .mockResolvedValue({ ...eventRow, wrong_attempts: 2 });
+    it("includes hint nudge on the third wrong attempt with 0 hints", async () => {
+      // The row lock reports this attempt as the third
+      mockRecordWrongAttempt.mockResolvedValue({ wrongAttempts: 3, hintsGiven: 0 });
 
       await processIncomingMessage(makePayload("another wrong guess"));
 
-      // wrong_attempts set to 3
-      expect(mockDb.set).toHaveBeenCalledWith(
-        expect.objectContaining({ wrong_attempts: 3 }),
+      const guideInserts = mockDb.values.mock.calls
+        .map((c: any[]) => c[0])
+        .filter((v: any) => v?.sender_type === "guide");
+      expect(guideInserts[guideInserts.length - 1].content).toContain(
+        "You might want to ask for a hint.",
       );
     });
   });
@@ -837,10 +855,8 @@ describe("End-to-end message lifecycle integration", () => {
         expect.any(Object),
       );
 
-      // hints_given incremented on event
-      expect(mockDb.set).toHaveBeenCalledWith(
-        expect.objectContaining({ hints_given: 1 }),
-      );
+      // hints_given moved atomically, bounded by the hints the block has
+      expect(mockClaimHint).toHaveBeenCalledWith(EVENT_ID, BLOCK_ID, 2);
     });
   });
 

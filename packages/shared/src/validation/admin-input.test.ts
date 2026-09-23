@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
+import { MAX_BLOCK_DELAY_MS } from "../constants/index.js";
 import {
   adminLoginSchema,
   routeSchema,
   sequenceItemSchema,
+  routeImageRefSchema,
   imageUploadRequestSchema,
   adminUpdateEventStatusSchema,
   adminCreateEventSchema,
@@ -170,6 +172,11 @@ describe("sequenceItemSchema", () => {
     expect(() => sequenceItemSchema.parse({ image_url: "not-a-url" })).toThrow();
   });
 
+  it("accepts an {{IMAGE:slug}} placeholder image_url", () => {
+    const result = sequenceItemSchema.parse({ image_url: "{{IMAGE:corn-exchange-dome}}" });
+    expect(result.image_url).toBe("{{IMAGE:corn-exchange-dome}}");
+  });
+
   it("rejects negative delay_ms", () => {
     expect(() => sequenceItemSchema.parse({ delay_ms: -1 })).toThrow();
   });
@@ -219,6 +226,29 @@ describe("imageUploadRequestSchema", () => {
   it("rejects unsupported content_type", () => {
     expect(() => imageUploadRequestSchema.parse({ filename: "f.gif", content_type: "image/gif" })).toThrow();
     expect(() => imageUploadRequestSchema.parse({ filename: "f.webp", content_type: "image/webp" })).toThrow();
+  });
+
+  it("accepts a valid slug with a JPEG", () => {
+    const result = imageUploadRequestSchema.parse({
+      filename: "photo.jpg",
+      content_type: "image/jpeg",
+      slug: "leeds-town-hall-facade",
+    });
+    expect(result.slug).toBe("leeds-town-hall-facade");
+  });
+
+  it("rejects a slug upload that is not JPEG", () => {
+    expect(() =>
+      imageUploadRequestSchema.parse({ filename: "p.png", content_type: "image/png", slug: "town-hall" }),
+    ).toThrow(/JPEG/);
+  });
+
+  it("rejects malformed slugs", () => {
+    for (const slug of ["Town-Hall", "town_hall", "-town", "town-", "town--hall", "../x", "", "a".repeat(101)]) {
+      expect(() =>
+        imageUploadRequestSchema.parse({ filename: "p.jpg", content_type: "image/jpeg", slug }),
+      ).toThrow();
+    }
   });
 
   it("rejects missing fields", () => {
@@ -366,6 +396,11 @@ describe("imageBlockConfigSchema", () => {
 
   it("rejects invalid URL", () => {
     expect(() => imageBlockConfigSchema.parse({ type: "image", image_url: "not-a-url" })).toThrow();
+  });
+
+  it("accepts an {{IMAGE:slug}} placeholder", () => {
+    const result = imageBlockConfigSchema.parse({ type: "image", image_url: "{{IMAGE:leeds-town-hall-facade}}" });
+    expect(result.image_url).toBe("{{IMAGE:leeds-town-hall-facade}}");
   });
 
   it("rejects missing image_url", () => {
@@ -561,6 +596,16 @@ describe("blockConfigSchema", () => {
 // routeBlockSchema (with type/config.type refine)
 // ---------------------------------------------------------------------------
 describe("routeBlockSchema", () => {
+  it("bounds a route block's delay at MAX_BLOCK_DELAY_MS", () => {
+    const base = { type: "message" as const, config: { type: "message" as const, content: "hi" } };
+    expect(() =>
+      routeBlockSchema.parse({ ...base, delay_ms: MAX_BLOCK_DELAY_MS }),
+    ).not.toThrow();
+    expect(() =>
+      routeBlockSchema.parse({ ...base, delay_ms: MAX_BLOCK_DELAY_MS + 1 }),
+    ).toThrow();
+  });
+
   it("accepts valid block with matching type and config.type", () => {
     const result = routeBlockSchema.parse({
       type: "message",
@@ -887,6 +932,8 @@ describe("messageBankSchema", () => {
       "unknown-answer",
       "completion",
       "over-length",
+      "guide-degraded",
+      "guide-busy",
     ] as const;
     for (const t of types) {
       expect(messageBankSchema.parse({ type: t, content: "msg" }).type).toBe(t);
@@ -950,5 +997,56 @@ describe("messageBankSchema", () => {
 
   it("rejects missing content", () => {
     expect(() => messageBankSchema.parse({ type: "success" })).toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// routeImageRefSchema
+// ---------------------------------------------------------------------------
+describe("routeImageRefSchema", () => {
+  it.each([
+    "https://cdn.example.com/uploads/1699_photo.png",
+    "http://example.com/a.jpg",
+    "{{IMAGE:leeds-town-hall-facade}}",
+    "{{IMAGE:a}}",
+    "{{IMAGE:stop-2-photo}}",
+  ])("accepts %s", (value) => {
+    expect(routeImageRefSchema.safeParse(value).success).toBe(true);
+  });
+
+  it("trims surrounding whitespace", () => {
+    expect(routeImageRefSchema.parse("  {{IMAGE:corn-exchange-dome}} ")).toBe(
+      "{{IMAGE:corn-exchange-dome}}",
+    );
+  });
+
+  it.each([
+    "",
+    "not-a-url",
+    "uploads/1699_photo.png",
+    "javascript:alert(1)",
+    "ftp://example.com/a.jpg",
+    "{{IMAGE:}}",
+    "{{IMAGE:Leeds-Town-Hall}}",
+    "{{IMAGE:leeds town hall}}",
+    "{{IMAGE:leeds_town_hall}}",
+    "{{IMAGE:-leading}}",
+    "{{IMAGE:trailing-}}",
+    "{{IMAGE:double--hyphen}}",
+    "{{IMAGE:../etc/passwd}}",
+    "{{image:lowercase-tag}}",
+    "{{IMAGE:ok}} trailing",
+    `{{IMAGE:${"a".repeat(101)}}}`,
+  ])("rejects %s", (value) => {
+    expect(routeImageRefSchema.safeParse(value).success).toBe(false);
+  });
+
+  it("accepts a placeholder in a bulk-created route's image block", () => {
+    const result = routeBlockSchema.safeParse({
+      type: "image",
+      config: { type: "image", image_url: "{{IMAGE:kirkgate-market-exterior}}" },
+      delay_ms: 1500,
+    });
+    expect(result.success).toBe(true);
   });
 });

@@ -2,17 +2,22 @@ export {
   displayNameSchema,
   chatMessageSchema,
   eventCodeSchema,
-} from "./user-input.js";
+  joinEventRequestSchema,
+  startEventRequestSchema,
+  changeNameRequestSchema,
+} from "./player.js";
 
 export {
   adminLoginSchema,
   routeSchema,
   imageUploadSchema,
   imageUploadRequestSchema,
+  routeImageSlugSchema,
   adminUpdateEventStatusSchema,
   adminCreateEventSchema,
   messageBankSchema,
   sequenceItemSchema,
+  routeImageRefSchema,
   messageBlockConfigSchema,
   imageBlockConfigSchema,
   questionBlockConfigSchema,
@@ -27,9 +32,3 @@ export {
   blockReorderSchema,
   blockMoveSchema,
 } from "./admin-input.js";
-
-export {
-  joinEventRequestSchema,
-  startEventRequestSchema,
-  changeNameRequestSchema,
-} from "./api-requests.js";

@@ -1,0 +1,11 @@
+-- Enforces one event per Stripe checkout session. NULL stripe_session_id rows
+-- stay distinct under a Postgres unique index, so manually created events are
+-- unaffected.
+--
+-- If this migration fails with a duplicate key error, an earlier webhook race
+-- already created two events for one session. Find them with:
+--   SELECT stripe_session_id, count(*) FROM events
+--   WHERE stripe_session_id IS NOT NULL
+--   GROUP BY stripe_session_id HAVING count(*) > 1;
+-- and decide by hand which event code the buyer is using before deleting.
+CREATE UNIQUE INDEX "events_stripe_session_id_unique" ON "events" USING btree ("stripe_session_id");

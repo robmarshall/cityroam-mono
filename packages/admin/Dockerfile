@@ -17,11 +17,28 @@ RUN npm ci --workspace=packages/shared --workspace=packages/admin --include-work
 COPY packages/shared/src packages/shared/src
 COPY packages/shared/tsconfig.json packages/shared/
 
-# Copy admin source and build
+# Copy admin source
 COPY packages/admin/src packages/admin/src
 COPY packages/admin/tsconfig.json packages/admin/
 COPY packages/admin/vite.config.ts packages/admin/
 COPY packages/admin/index.html packages/admin/
+
+# Vite inlines `import.meta.env.VITE_*` at BUILD time, so the API origin must be
+# supplied as a build arg. Enumerated from `import.meta.env.VITE_` across
+# packages/admin/src.
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
+# Optional: Sentry error monitoring. Empty = disabled.
+ARG VITE_SENTRY_DSN
+ARG VITE_SENTRY_ENVIRONMENT
+ARG VITE_SENTRY_RELEASE
+ENV VITE_SENTRY_DSN=$VITE_SENTRY_DSN
+ENV VITE_SENTRY_ENVIRONMENT=$VITE_SENTRY_ENVIRONMENT
+ENV VITE_SENTRY_RELEASE=$VITE_SENTRY_RELEASE
+
+# Fail the build rather than ship a bundle pointing at localhost.
+RUN if [ -z "$VITE_API_URL" ]; then echo "ERROR: build arg VITE_API_URL is required" >&2; exit 1; fi
 
 RUN npm run build --workspace=packages/admin
 

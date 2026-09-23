@@ -6,6 +6,7 @@
   "exports": {
     "./types": "./src/types/index.ts",
     "./validation": "./src/validation/index.ts",
+    "./validation/player": "./src/validation/player.ts",
     "./constants": "./src/constants/index.ts",
     "./utils": "./src/utils/index.ts",
     "./tailwind": "./src/tailwind/preset.css",
@@ -23,5 +24,8 @@
   },
   "dependencies": {
     "zod": "^4.3.6"
+  },
+  "engines": {
+    "node": ">=22 <25"
   }
 }

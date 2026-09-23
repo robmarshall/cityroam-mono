@@ -1,5 +1,8 @@
 {
   "metadata": {
+    "og": {
+      "tagline": "B\u00fasquedas del tesoro guiadas por IA en Leeds"
+    },
     "home": {
       "title": "City Roam — Búsquedas del tesoro guiadas por IA en Leeds",
       "description": "Explora Leeds con una búsqueda del tesoro impulsada por IA. Resuelve pistas, descubre rincones escondidos y diviértete con tus amigos, todo guiado por IA desde tu móvil.",
@@ -573,6 +576,324 @@
       "whatsNext": "¿Y ahora qué?",
       "whatsNextDescription": "Comparte este enlace con tu grupo. Cada persona lo abre, escribe su nombre y quien lidere el grupo da el pistoletazo de salida cuando estéis todos listos.",
       "refundNote": "¿No te ha convencido? Te devolvemos el dinero, sin preguntas."
+    }
+  },
+  "legal": {
+    "lastUpdated": "Última actualización: 2 de septiembre de 2026",
+    "backHome": "Volver al inicio",
+    "footer": {
+      "navLabel": "Información legal",
+      "terms": "Términos",
+      "privacy": "Privacidad",
+      "refunds": "Reembolsos"
+    },
+    "meta": {
+      "terms": {
+        "title": "Términos y condiciones — City Roam",
+        "description": "Los términos que se aplican cuando compras o juegas una búsqueda del tesoro autoguiada de City Roam."
+      },
+      "privacy": {
+        "title": "Política de privacidad — City Roam",
+        "description": "Qué datos personales recoge City Roam cuando compras o juegas una experiencia, para qué los usamos y cuáles son tus derechos."
+      },
+      "refunds": {
+        "title": "Política de reembolsos — City Roam",
+        "description": "Cómo funcionan los reembolsos de City Roam: reembolso íntegro si no quedas satisfecho y cómo solicitarlo."
+      }
+    },
+    "terms": {
+      "title": "Términos y condiciones",
+      "intro": "Estos términos se aplican cuando compras una búsqueda del tesoro de City Roam o te unes a una como jugador. Léelos antes de comprar.",
+      "sections": [
+        {
+          "heading": "Quiénes somos",
+          "body": [
+            "City Roam vende búsquedas del tesoro autoguiadas que se juegan desde el móvil en una ciudad real, con la ayuda de un guía basado en inteligencia artificial. Tenemos sede en el Reino Unido y nuestro sitio web es cityroam.co.uk."
+          ],
+          "bullets": [
+            "Nombre comercial: City Roam",
+            "Razón social y domicilio registrado: [completar antes del lanzamiento]",
+            "Correo electrónico: hello@cityroam.co.uk"
+          ]
+        },
+        {
+          "heading": "Qué estás comprando",
+          "body": [
+            "Al comprar una experiencia recibes un código de evento. Ese código es una licencia para que un grupo juegue una experiencia, una sola vez.",
+            "Pueden jugar hasta 10 personas con un mismo código. Cada una se une desde su propio móvil y una de ellas actúa como responsable del grupo.",
+            "El código pertenece a tu grupo. No puedes revenderlo, publicarlo ni cederlo a otra persona a cambio de dinero."
+          ]
+        },
+        {
+          "heading": "Cuánto dura tu código",
+          "body": [
+            "Tu código de evento es válido durante 90 días desde el momento de la compra. Puedes empezar la experiencia en cualquier momento dentro de ese plazo.",
+            "Pasados los 90 días el código caduca automáticamente y ya no sirve para empezar una experiencia. Si tu código caduca sin que hayas podido usarlo, escríbenos y te daremos uno nuevo o te reembolsaremos.",
+            "Una vez completada la experiencia, el código no puede volver a utilizarse."
+          ]
+        },
+        {
+          "heading": "Cómo se juega",
+          "body": [
+            "La experiencia se desarrolla al aire libre y a pie, en una ciudad real. Necesitas un móvil con conexión de datos y batería suficiente para toda la partida.",
+            "Tú decides cuándo empezar y a qué ritmo avanzar. Puedes hacer una pausa y continuar más tarde."
+          ]
+        },
+        {
+          "heading": "Tu seguridad es tu responsabilidad",
+          "body": [
+            "City Roam es un juego que se desarrolla en la vía pública. Eres responsable de tu propia seguridad y de la de todo tu grupo. Presta especial atención a lo siguiente."
+          ],
+          "bullets": [
+            "Fíjate en el tráfico y en tu entorno. No mires el móvil mientras cruzas la calle.",
+            "Respeta las normas de circulación, la señalización y las normas locales.",
+            "Los menores deben estar acompañados en todo momento por un adulto responsable. La persona adulta que compra o dirige la experiencia responde de los menores de 18 años del grupo.",
+            "Circula por vías públicas y lugares de acceso libre. Nunca entres en una propiedad privada ni en una zona restringida para buscar una respuesta.",
+            "Consulta el tiempo, lleva calzado adecuado y agua.",
+            "Deja de jugar si las condiciones dejan de ser seguras, si alguien se encuentra mal o si te piden abandonar un lugar."
+          ]
+        },
+        {
+          "heading": "El guía con inteligencia artificial",
+          "body": [
+            "Tu experiencia está guiada por un chatbot automático. Puede equivocarse y no sabe qué está ocurriendo a tu alrededor.",
+            "Trata sus pistas, indicaciones y datos como parte de un juego, no como una fuente fiable de navegación ni de seguridad. Usa tu propio criterio y una aplicación de mapas si necesitas orientarte.",
+            "Los lugares cambian. Un monumento puede estar en obras, una tienda puede haber cerrado o una zona puede estar vallada. Avísanos si una pista ya no funciona y corregiremos la ruta."
+          ]
+        },
+        {
+          "heading": "Uso del chat",
+          "body": [
+            "El chat del juego lo comparte todo tu grupo. Mantén un trato respetuoso."
+          ],
+          "bullets": [
+            "No envíes contenido ofensivo, amenazante, de odio ni de carácter sexual.",
+            "No envíes nada ilegal ni que vulnere los derechos de otras personas.",
+            "No compartas datos personales de terceros.",
+            "No intentes manipular, sondear ni hacer un uso indebido del juego o del guía."
+          ],
+          "after": [
+            "Podemos dar por terminada una experiencia sin reembolso si el chat se usa para agredir a otro jugador o a nuestro equipo."
+          ]
+        },
+        {
+          "heading": "Nuestros contenidos",
+          "body": [
+            "Las rutas, pistas, ayudas, textos, ilustraciones y el software que componen City Roam nos pertenecen a nosotros o a nuestros licenciantes. Puedes usarlos para jugar la experiencia que has comprado y para nada más.",
+            "No copies, publiques ni revendas el contenido de nuestras rutas, tampoco publicando en internet el conjunto de respuestas."
+          ]
+        },
+        {
+          "heading": "Si algo sale mal",
+          "body": [
+            "Queremos que cada experiencia funcione. Si el servicio falla, si no puedes empezar tu partida o si simplemente no has quedado satisfecho, escríbenos y lo solucionaremos. Nuestra política de reembolsos explica qué puedes esperar.",
+            "No podemos garantizar que el servicio esté siempre disponible ni libre de errores. Depende de tu dispositivo, de tu conexión y de servicios de terceros que no controlamos."
+          ]
+        },
+        {
+          "heading": "Nuestra responsabilidad",
+          "body": [
+            "Nada en estos términos limita nuestra responsabilidad por fallecimiento o daños personales causados por nuestra negligencia, por fraude, ni por cualquier otro supuesto que la legislación del Reino Unido no permita limitar.",
+            "Con esa salvedad, nuestra responsabilidad total en relación con una experiencia se limita al importe que hayas pagado por ella.",
+            "No respondemos de pérdidas que no fueran razonablemente previsibles en el momento de la compra, del lucro cesante o de pérdidas empresariales, ni de daños derivados de tus propias decisiones durante el juego, del comportamiento de otras personas de tu grupo o de terceros, ni del estado de las calles y lugares que visites.",
+            "Vendemos nuestras experiencias a consumidores. Si compras con fines profesionales o empresariales, las protecciones de consumo de estos términos no te resultan aplicables."
+          ]
+        },
+        {
+          "heading": "Cancelación y reembolsos",
+          "body": [
+            "Dispones del derecho legal de desistimiento durante 14 días conforme a la normativa británica de contratos a distancia de 2013. Como el código de evento se entrega de inmediato, al finalizar la compra aceptas que la prestación comience enseguida.",
+            "Nuestra política de reembolsos es deliberadamente más generosa que el mínimo legal. Consulta la página de reembolsos para conocer el detalle y cómo solicitarlo."
+          ]
+        },
+        {
+          "heading": "Cambios en estos términos",
+          "body": [
+            "Podemos actualizar estos términos. La versión aplicable a tu compra es la publicada el día en que compraste. Cualquier cambio aparecerá en esta página con una fecha nueva en la parte superior."
+          ]
+        },
+        {
+          "heading": "Legislación y controversias",
+          "body": [
+            "Estos términos se rigen por el Derecho de Inglaterra y Gales, y los tribunales de Inglaterra y Gales son competentes para conocer de cualquier controversia. Si resides en Escocia o en Irlanda del Norte, también puedes acudir a los tribunales de tu territorio.",
+            "Si no estás conforme con nuestra forma de gestionar una reclamación, escríbenos primero a nosotros e intentaremos resolverla."
+          ]
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Política de privacidad",
+      "intro": "Este aviso explica qué hacemos con los datos personales cuando compras o juegas una experiencia de City Roam. Somos el responsable del tratamiento de esos datos.",
+      "sections": [
+        {
+          "heading": "Quiénes somos y cómo contactarnos",
+          "body": [
+            "City Roam es el responsable del tratamiento de los datos personales que se describen aquí. Si tienes alguna duda sobre este aviso o quieres ejercer un derecho, escríbenos."
+          ],
+          "bullets": [
+            "Razón social y domicilio registrado: [completar antes del lanzamiento]",
+            "Correo electrónico: hello@cityroam.co.uk"
+          ]
+        },
+        {
+          "heading": "Qué datos recogemos",
+          "bullets": [
+            "Tu dirección de correo electrónico cuando compras, para enviarte el recibo y el código de evento.",
+            "Los datos de pago, gestionados íntegramente por Stripe. Nunca vemos ni almacenamos los datos de tu tarjeta. Guardamos la referencia del pago que nos facilita Stripe.",
+            "El nombre visible que elige cada jugador al unirse. No tiene que ser un nombre real.",
+            "Los mensajes y las fotos que los jugadores envían en el chat durante la partida.",
+            "Datos de progreso: en qué parada estás, ayudas utilizadas, respuestas intentadas, horas de inicio y de fin, y el idioma en el que juegas.",
+            "Datos técnicos: dirección IP, tipo de navegador y de dispositivo, y registros del servidor.",
+            "Datos analíticos sobre el uso del sitio y de la aplicación, si aceptas las cookies analíticas."
+          ]
+        },
+        {
+          "heading": "Para qué los usamos y con qué base jurídica",
+          "bullets": [
+            "Para venderte y entregarte la experiencia, enviarte el código y hacer funcionar el juego. Base jurídica: ejecución del contrato contigo.",
+            "Para responder a tus correos y gestionar reembolsos. Base jurídica: el contrato contigo y nuestro interés legítimo en gestionar el negocio.",
+            "Para mantener el servicio seguro, evitar abusos y corregir fallos. Base jurídica: nuestro interés legítimo.",
+            "Para mejorar rutas y pistas a partir de los datos de juego. Base jurídica: nuestro interés legítimo.",
+            "Para medir el uso del sitio con la analítica de PostHog. Base jurídica: nuestro interés legítimo en conocer y mejorar el servicio.",
+            "Para conservar los registros contables de las ventas. Base jurídica: nuestras obligaciones legales."
+          ]
+        },
+        {
+          "heading": "El guía con inteligencia artificial",
+          "body": [
+            "Los mensajes del chat se transmiten a nuestro proveedor de inteligencia artificial, DeepSeek, para que el guía pueda interpretarlos y responder. No escribas información personal sensible en el chat."
+          ]
+        },
+        {
+          "heading": "Con quién compartimos los datos",
+          "bullets": [
+            "Stripe, para procesar los pagos.",
+            "Resend, para enviarte el correo de confirmación.",
+            "PostHog, para la analítica de producto, y solo si aceptas las cookies analíticas.",
+            "DeepSeek, para generar las respuestas del guía.",
+            "Nuestros proveedores de alojamiento e infraestructura."
+          ],
+          "after": [
+            "No vendemos tus datos personales. Algunos de estos proveedores se encuentran fuera del Reino Unido. En esos casos nos amparamos en las decisiones británicas de adecuación o en el anexo británico de transferencia internacional de datos para proteger tu información."
+          ]
+        },
+        {
+          "heading": "Cuánto tiempo los conservamos",
+          "bullets": [
+            "Registros de eventos, participantes y chat: 12 meses desde que la experiencia se completa, se reembolsa o caduca; después se eliminan o se anonimizan.",
+            "Registros de compra y contables: 6 años, como exige la normativa fiscal británica.",
+            "Correspondencia por correo electrónico: 24 meses.",
+            "Datos analíticos: nunca más de 12 meses."
+          ]
+        },
+        {
+          "heading": "Cookies y almacenamiento del navegador",
+          "body": [
+            "Usamos un número reducido de cookies estrictamente necesarias y de almacenamiento del navegador para mantenerte conectado a tu experiencia y recordar tu elección sobre cookies. Estas no requieren consentimiento.",
+            "También usamos cookies analíticas de PostHog, que se instalan cuando visitas el sitio por primera vez, para medir cómo se usan el sitio y la aplicación. Puedes bloquearlas con la configuración de privacidad de tu navegador o con un bloqueador de contenido, y puedes escribirnos para pedir que eliminemos los datos analíticos que tengamos sobre ti."
+          ]
+        },
+        {
+          "heading": "Menores",
+          "body": [
+            "Nuestras experiencias están pensadas para familias y los menores pueden jugar acompañados de un adulto. Los únicos datos que recogemos de un menor son el nombre visible que elige y los mensajes que envía durante la partida.",
+            "Si crees que conservamos datos de un menor que deberían eliminarse, escríbenos y los borraremos."
+          ]
+        },
+        {
+          "heading": "Tus derechos",
+          "body": [
+            "La normativa británica de protección de datos te reconoce el derecho a:"
+          ],
+          "bullets": [
+            "solicitar una copia de los datos que tenemos sobre ti",
+            "que se corrijan los datos inexactos",
+            "pedirnos que eliminemos los datos que ya no necesitamos",
+            "limitar u oponerte al uso que hacemos de ellos",
+            "recibir tus datos en un formato portátil",
+            "oponerte en cualquier momento al uso de tus datos con fines analíticos"
+          ],
+          "after": [
+            "Escríbenos para ejercer cualquiera de estos derechos y te responderemos en el plazo de un mes. Si no estás conforme con nuestra respuesta, puedes reclamar ante la autoridad británica de protección de datos en ico.org.uk."
+          ]
+        },
+        {
+          "heading": "Seguridad y cambios en este aviso",
+          "body": [
+            "Usamos conexiones cifradas, limitamos quién puede acceder a los datos que conservamos y trabajamos con proveedores consolidados. Ningún sistema es completamente seguro, pero adoptamos medidas razonables para proteger tus datos.",
+            "Podemos actualizar este aviso. Los cambios aparecerán en esta página con una fecha nueva en la parte superior."
+          ]
+        }
+      ]
+    },
+    "refunds": {
+      "title": "Política de reembolsos",
+      "intro": "Queremos que disfrutes de tu experiencia. Si no es así, te devolvemos el dinero. Esta página explica exactamente cómo funciona.",
+      "sections": [
+        {
+          "heading": "Nuestro compromiso",
+          "body": [
+            "Si no quedas satisfecho con tu experiencia de City Roam, te devolvemos el importe íntegro. Sin preguntas.",
+            "Da igual que no hayas llegado a jugar, que algo saliera mal ese día o que sencillamente no te gustara."
+          ]
+        },
+        {
+          "heading": "Antes de empezar",
+          "body": [
+            "Si aún no has empezado la experiencia, puedes pedir el reembolso íntegro en cualquier momento mientras tu código siga siendo válido. Te devolvemos todo el importe pagado."
+          ]
+        },
+        {
+          "heading": "Después de jugar",
+          "body": [
+            "Si has empezado o terminado una experiencia y no has quedado satisfecho, escríbenos en los 14 días siguientes y te reembolsaremos el importe íntegro.",
+            "Nos ayuda que nos cuentes qué falló, pero no estás obligado a hacerlo."
+          ]
+        },
+        {
+          "heading": "Tu derecho legal de desistimiento",
+          "body": [
+            "También dispones del derecho legal de desistir en los 14 días siguientes a la compra, conforme a la normativa británica de contratos a distancia de 2013. Como el código de evento se entrega de inmediato, al finalizar la compra aceptas que la prestación comience enseguida, lo que puede extinguir ese derecho una vez iniciada la experiencia.",
+            "Nuestro compromiso es deliberadamente más generoso, así que en la práctica quedas cubierto en ambos casos. Esta política no afecta al resto de tus derechos legales."
+          ]
+        },
+        {
+          "heading": "Cómo pedir un reembolso",
+          "body": [
+            "Escribe a hello@cityroam.co.uk desde la dirección con la que compraste e incluye tu código de evento."
+          ],
+          "bullets": [
+            "Respondemos en un plazo de 2 días laborables.",
+            "Los reembolsos son siempre por el importe íntegro. No hacemos reembolsos parciales.",
+            "El dinero vuelve a la tarjeta o al medio de pago que utilizaste, a través de Stripe.",
+            "Suele llegar a tu cuenta en un plazo de 5 a 10 días laborables, según tu banco."
+          ]
+        },
+        {
+          "heading": "Qué ocurre con tu experiencia",
+          "body": [
+            "Cuando reembolsamos una compra, el código de evento deja de funcionar de inmediato y se cierra la sesión de quien siga jugando. Si tu grupo está a mitad de la partida, asegúrate de que todos hayan terminado antes de pedir el reembolso."
+          ]
+        },
+        {
+          "heading": "Códigos caducados sin usar",
+          "body": [
+            "Los códigos de evento son válidos durante 90 días. Si el tuyo caducó sin que pudieras usarlo, escríbenos dentro de los 30 días siguientes a la fecha de caducidad y te daremos un código nuevo o te reembolsaremos, lo que prefieras."
+          ]
+        },
+        {
+          "heading": "Si no podemos prestar el servicio",
+          "body": [
+            "Si no podemos ofrecerte la experiencia por un fallo nuestro o porque una ruta no está disponible, te ofreceremos un código nuevo o el reembolso íntegro. Tú eliges."
+          ]
+        },
+        {
+          "heading": "Reclamaciones",
+          "body": [
+            "Si no estás conforme con cómo hemos gestionado un reembolso, escríbenos indicando «Reclamación» en el asunto. Lo revisaremos de nuevo y te responderemos en un plazo de 5 días laborables."
+          ]
+        }
+      ]
     }
   }
 }

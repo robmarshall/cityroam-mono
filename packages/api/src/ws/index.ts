@@ -21,6 +21,7 @@ import {
 } from "./connections.js";
 import { subscribeEvent, unsubscribeEvent, unsubscribeAll } from "./subscriptions.js";
 import { createLogger } from "../lib/logger.js";
+import { initSentry, captureError, flushSentry } from "../lib/sentry.js";
 
 const log = createLogger("ws");
 
@@ -33,10 +34,17 @@ declare module "ws" {
 }
 
 validateEnv("ws");
+initSentry("ws");
 
 const app = new Hono();
 
-const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app });
+const { injectWebSocket, upgradeWebSocket, wss } = createNodeWebSocket({ app });
+
+// Cap inbound frames. Clients only ever send short JSON (chat is capped at 200
+// characters), so the ws default of 100MB is a free memory-exhaustion lever.
+// ws reads this at upgrade time, so setting it on the existing server is enough.
+const MAX_WS_PAYLOAD_BYTES = 16 * 1024;
+wss.options.maxPayload = MAX_WS_PAYLOAD_BYTES;
 
 // Global middleware
 app.use("*", requestLogger);
@@ -64,6 +72,11 @@ app.get(
   "/ws/:code",
   upgradeWebSocket(async (c) => {
     const eventCode = c.req.param("code") ?? "";
+    // The session token rides in the query string because browsers can't set
+    // headers on a WebSocket handshake and the cookie is unavailable across
+    // origins. The trade-off is that the token can land in proxy and access
+    // logs; it is a random UUID scoped to one event and expires with the
+    // session, and moving it into a subprotocol would break existing clients.
     const token = new URL(c.req.url).searchParams.get("token");
 
     const authResult = await authenticateConnection(eventCode, token);
@@ -114,6 +127,7 @@ app.get(
           await handleClientMessage(raw, data, session);
         } catch (err) {
           log.error("message handler error", { eventCode: session.event_code, participantId: session.participant_id, error: err instanceof Error ? err.message : String(err) });
+          captureError(err, { where: "ws.onMessage" });
         }
       },
 
@@ -188,7 +202,7 @@ async function shutdown() {
   closeAllConnections(1001, "Server shutting down");
   await unsubscribeAll();
   server.close();
-  await Promise.all([disconnectRedis(), disconnectDb()]);
+  await Promise.all([disconnectRedis(), disconnectDb(), flushSentry()]);
   process.exit(0);
 }
 

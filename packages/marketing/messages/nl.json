@@ -1,5 +1,8 @@
 {
   "metadata": {
+    "og": {
+      "tagline": "AI-begeleide speurtochten in Leeds"
+    },
     "home": {
       "title": "City Roam — AI-begeleide speurtochten in Leeds",
       "description": "Ontdek Leeds met een speurtocht op basis van AI. Los aanwijzingen op, vind verborgen plekjes en beleef plezier met vrienden — allemaal begeleid door AI op je telefoon.",
@@ -573,6 +576,324 @@
       "whatsNext": "Wat nu?",
       "whatsNextDescription": "Deel deze link met je groep. Iedereen opent hem, vult zijn naam in, en degene die het voortouw neemt start het spel zodra iedereen klaar is.",
       "refundNote": "Niet tevreden? Volledige terugbetaling — zonder vragen."
+    }
+  },
+  "legal": {
+    "lastUpdated": "Laatst bijgewerkt: 2 september 2026",
+    "backHome": "Terug naar start",
+    "footer": {
+      "navLabel": "Juridisch",
+      "terms": "Voorwaarden",
+      "privacy": "Privacy",
+      "refunds": "Terugbetalingen"
+    },
+    "meta": {
+      "terms": {
+        "title": "Algemene voorwaarden — City Roam",
+        "description": "De voorwaarden die gelden als je een zelfgeleide speurtocht van City Roam koopt of speelt."
+      },
+      "privacy": {
+        "title": "Privacyverklaring — City Roam",
+        "description": "Welke persoonsgegevens City Roam verzamelt bij aankoop en tijdens het spelen, waarvoor we ze gebruiken en welke rechten je hebt."
+      },
+      "refunds": {
+        "title": "Terugbetalingsbeleid — City Roam",
+        "description": "Hoe terugbetalingen bij City Roam werken: volledige terugbetaling als je niet tevreden bent, en hoe je die aanvraagt."
+      }
+    },
+    "terms": {
+      "title": "Algemene voorwaarden",
+      "intro": "Deze voorwaarden gelden wanneer je een speurtocht van City Roam koopt of als speler meedoet. Lees ze door voordat je koopt.",
+      "sections": [
+        {
+          "heading": "Wie we zijn",
+          "body": [
+            "City Roam verkoopt zelfgeleide speurtochten die je op je telefoon speelt in een echte stad, begeleid door een AI-chatbot als gids. We zijn gevestigd in het Verenigd Koninkrijk en onze website is cityroam.co.uk."
+          ],
+          "bullets": [
+            "Handelsnaam: City Roam",
+            "Statutaire naam en geregistreerd adres: [aanvullen vóór de lancering]",
+            "E-mail: hello@cityroam.co.uk"
+          ]
+        },
+        {
+          "heading": "Wat je koopt",
+          "body": [
+            "Bij je aankoop krijg je één eventcode. Die code is een licentie voor één groep om één speurtocht één keer te spelen.",
+            "Met één code kunnen maximaal 10 mensen meespelen. Iedereen doet mee vanaf zijn eigen telefoon en één speler is groepsleider.",
+            "De code hoort bij jouw groep. Je mag hem niet doorverkopen, publiceren of tegen betaling aan iemand anders overdragen."
+          ]
+        },
+        {
+          "heading": "Hoe lang je code geldig is",
+          "body": [
+            "Je eventcode is 90 dagen geldig vanaf het moment van aankoop. Binnen die periode kun je op elk moment beginnen.",
+            "Na 90 dagen verloopt de code automatisch en kun je er geen speurtocht meer mee starten. Verloopt je code voordat je hem hebt kunnen gebruiken, mail ons dan: we sturen een nieuwe of betalen je terug.",
+            "Is een speurtocht eenmaal afgerond, dan kan de code niet opnieuw worden gebruikt."
+          ]
+        },
+        {
+          "heading": "Zo speel je",
+          "body": [
+            "Een speurtocht speel je buiten en te voet, in een echte stad. Je hebt een telefoon nodig met een werkende dataverbinding en genoeg batterij voor de hele tocht.",
+            "Je bepaalt zelf wanneer je begint en hoe snel je gaat. Je kunt pauzeren en later verder spelen."
+          ]
+        },
+        {
+          "heading": "Je veiligheid is je eigen verantwoordelijkheid",
+          "body": [
+            "City Roam is een spel in de openbare ruimte. Je bent zelf verantwoordelijk voor je veiligheid en voor iedereen in je groep. Let vooral op het volgende."
+          ],
+          "bullets": [
+            "Let op het verkeer en op je omgeving. Kijk niet op je telefoon terwijl je oversteekt.",
+            "Houd je aan de verkeersregels, de borden en de plaatselijke regels.",
+            "Kinderen moeten altijd onder toezicht staan van een verantwoordelijke volwassene. De volwassene die de speurtocht koopt of de groep leidt, is verantwoordelijk voor minderjarigen in de groep.",
+            "Blijf op openbare paden en op plekken die vrij toegankelijk zijn. Betreed nooit privéterrein of een afgesloten gebied om een antwoord te vinden.",
+            "Check het weer, trek geschikte schoenen aan en neem water mee.",
+            "Stop met spelen als de omstandigheden onveilig worden, als iemand zich niet lekker voelt of als je gevraagd wordt een plek te verlaten."
+          ]
+        },
+        {
+          "heading": "De AI-gids",
+          "body": [
+            "Je speurtocht wordt begeleid door een geautomatiseerde chatbot. Die kan fouten maken en weet niet wat er om je heen gebeurt.",
+            "Zie zijn aanwijzingen, routebeschrijvingen en weetjes als onderdeel van het spel, niet als betrouwbare navigatie of veiligheidsadvies. Gebruik je eigen oordeel en pak een echte kaartenapp als je de weg zoekt.",
+            "Plekken veranderen. Een monument kan in de steigers staan, een winkel kan gesloten zijn of een gebied kan afgezet zijn. Laat het ons weten als een aanwijzing niet meer klopt, dan passen we de route aan."
+          ]
+        },
+        {
+          "heading": "De chat gebruiken",
+          "body": [
+            "De chat in het spel deel je met de rest van je groep. Houd het netjes."
+          ],
+          "bullets": [
+            "Stuur geen beledigende, bedreigende, haatdragende of seksuele inhoud.",
+            "Stuur niets onwettigs en niets dat de rechten van anderen schendt.",
+            "Deel geen persoonsgegevens van anderen.",
+            "Probeer het spel of de gids niet te breken, uit te testen of te misbruiken."
+          ],
+          "after": [
+            "We kunnen een speurtocht zonder terugbetaling beëindigen als de chat wordt gebruikt om een medespeler of ons team te bejegenen met misbruik."
+          ]
+        },
+        {
+          "heading": "Onze content",
+          "body": [
+            "De routes, aanwijzingen, hints, teksten, illustraties en software van City Roam zijn van ons of van onze licentiegevers. Je mag ze gebruiken om de speurtocht te spelen die je hebt gekocht, en verder nergens voor.",
+            "Kopieer, publiceer of verkoop onze routecontent niet, ook niet door een complete set antwoorden online te zetten."
+          ]
+        },
+        {
+          "heading": "Als er iets misgaat",
+          "body": [
+            "We willen dat elke speurtocht goed verloopt. Valt de dienst uit, kun je niet starten of ben je gewoon niet tevreden, neem dan contact op en we lossen het op. In ons terugbetalingsbeleid lees je wat je kunt verwachten.",
+            "We kunnen niet beloven dat de dienst altijd beschikbaar of storingsvrij is. Dat hangt af van je toestel, je netwerk en diensten van derden waar wij geen invloed op hebben."
+          ]
+        },
+        {
+          "heading": "Onze aansprakelijkheid",
+          "body": [
+            "Niets in deze voorwaarden beperkt onze aansprakelijkheid voor overlijden of letsel door onze nalatigheid, voor fraude, of voor andere gevallen waarin beperking naar Brits recht niet is toegestaan.",
+            "Met inachtneming daarvan is onze totale aansprakelijkheid rond een speurtocht beperkt tot het bedrag dat je ervoor hebt betaald.",
+            "We zijn niet aansprakelijk voor schade die bij de aankoop redelijkerwijs niet te voorzien was, voor winst- of bedrijfsschade, en evenmin voor letsel of schade door je eigen keuzes tijdens het spelen, door andere leden van je groep, door derden of door de staat van de straten en plekken die je bezoekt.",
+            "We verkopen aan consumenten. Koop je voor zakelijke doeleinden, dan gelden de consumentenbeschermingen in deze voorwaarden niet voor jou."
+          ]
+        },
+        {
+          "heading": "Annuleren en terugbetaling",
+          "body": [
+            "Je hebt op grond van de Britse Consumer Contracts Regulations 2013 een wettelijk herroepingsrecht van 14 dagen. Omdat je eventcode meteen wordt geleverd, ga je bij het afrekenen ermee akkoord dat de levering direct begint.",
+            "Ons terugbetalingsbeleid is bewust ruimer dan het wettelijke minimum. Op de pagina over terugbetalingen lees je de details en hoe je een verzoek indient."
+          ]
+        },
+        {
+          "heading": "Wijzigingen in deze voorwaarden",
+          "body": [
+            "We kunnen deze voorwaarden aanpassen. Voor jouw aankoop geldt de versie die op de dag van aankoop was gepubliceerd. Wijzigingen verschijnen op deze pagina met een nieuwe datum bovenaan."
+          ]
+        },
+        {
+          "heading": "Recht en geschillen",
+          "body": [
+            "Op deze voorwaarden is het recht van Engeland en Wales van toepassing en de rechtbanken van Engeland en Wales zijn bevoegd. Woon je in Schotland of Noord-Ierland, dan kun je je zaak ook bij je lokale rechtbank aanbrengen.",
+            "Ben je niet tevreden over hoe we een klacht hebben afgehandeld, mail ons dan eerst. We proberen er samen uit te komen."
+          ]
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Privacyverklaring",
+      "intro": "Deze verklaring legt uit wat we met persoonsgegevens doen wanneer je een speurtocht van City Roam koopt of speelt. Wij zijn de verwerkingsverantwoordelijke voor die gegevens.",
+      "sections": [
+        {
+          "heading": "Wie we zijn en hoe je ons bereikt",
+          "body": [
+            "City Roam is verwerkingsverantwoordelijke voor de hier beschreven persoonsgegevens. Heb je een vraag over deze verklaring of wil je een recht uitoefenen, mail ons dan."
+          ],
+          "bullets": [
+            "Statutaire naam en geregistreerd adres: [aanvullen vóór de lancering]",
+            "E-mail: hello@cityroam.co.uk"
+          ]
+        },
+        {
+          "heading": "Wat we verzamelen",
+          "bullets": [
+            "Je e-mailadres bij aankoop, zodat we je het bewijs van aankoop en je eventcode kunnen sturen.",
+            "Betaalgegevens, die volledig door Stripe worden verwerkt. Wij zien of bewaren je kaartgegevens nooit. We bewaren wel de betaalreferentie van Stripe.",
+            "De weergavenaam die elke speler kiest bij het meedoen. Dat hoeft geen echte naam te zijn.",
+            "De berichten en foto's die spelers tijdens het spelen in de chat sturen.",
+            "Voortgangsgegevens: bij welke stop je bent, gebruikte hints, geprobeerde antwoorden, start- en eindtijd en de taal waarin je speelt.",
+            "Technische gegevens: IP-adres, browser- en apparaattype en serverlogs.",
+            "Gebruiksstatistieken van de site en de app, als je analytische cookies accepteert."
+          ]
+        },
+        {
+          "heading": "Waarvoor we ze gebruiken en op welke grondslag",
+          "bullets": [
+            "Om je speurtocht te verkopen en te leveren, je code te sturen en het spel te laten draaien. Grondslag: uitvoering van onze overeenkomst met jou.",
+            "Om je e-mails te beantwoorden en terugbetalingen af te handelen. Grondslag: onze overeenkomst met jou en ons gerechtvaardigd belang om het bedrijf te runnen.",
+            "Om de dienst veilig te houden, misbruik te voorkomen en storingen te verhelpen. Grondslag: ons gerechtvaardigd belang.",
+            "Om routes en aanwijzingen te verbeteren op basis van spelgegevens. Grondslag: ons gerechtvaardigd belang.",
+            "Om met PostHog te meten hoe de site gebruikt wordt. Grondslag: ons gerechtvaardigd belang om de dienst te begrijpen en te verbeteren.",
+            "Om administratie van verkopen te bewaren. Grondslag: onze wettelijke verplichtingen."
+          ]
+        },
+        {
+          "heading": "De AI-gids",
+          "body": [
+            "Berichten uit de chat gaan naar onze AI-leverancier DeepSeek, zodat de gids ze kan begrijpen en kan antwoorden. Typ geen gevoelige persoonlijke informatie in de chat."
+          ]
+        },
+        {
+          "heading": "Met wie we gegevens delen",
+          "bullets": [
+            "Stripe, voor de betalingsverwerking.",
+            "Resend, voor het versturen van je bevestigingsmail.",
+            "PostHog, voor productanalyse, en alleen als je analytische cookies accepteert.",
+            "DeepSeek, voor het genereren van de antwoorden van de gids.",
+            "Onze hosting- en infrastructuurleveranciers."
+          ],
+          "after": [
+            "We verkopen je persoonsgegevens niet. Sommige van deze leveranciers zitten buiten het Verenigd Koninkrijk. In die gevallen steunen we op Britse adequaatheidsbesluiten of op het Britse International Data Transfer Addendum om je gegevens te beschermen."
+          ]
+        },
+        {
+          "heading": "Hoe lang we ze bewaren",
+          "bullets": [
+            "Event-, deelnemers- en chatgegevens: 12 maanden nadat de speurtocht is afgerond, terugbetaald of verlopen, daarna verwijderd of geanonimiseerd.",
+            "Aankoop- en boekhoudgegevens: 6 jaar, zoals de Britse belastingwetgeving vereist.",
+            "E-mailcorrespondentie: 24 maanden.",
+            "Analysegegevens: niet langer dan 12 maanden."
+          ]
+        },
+        {
+          "heading": "Cookies en browseropslag",
+          "body": [
+            "We gebruiken een klein aantal strikt noodzakelijke cookies en browseropslag om je met je speurtocht verbonden te houden en je cookiekeuze te onthouden. Daarvoor is geen toestemming nodig.",
+            "Daarnaast plaatsen we bij je eerste bezoek analytische cookies van PostHog om te meten hoe de site en de app gebruikt worden. Je kunt ze blokkeren via de privacy-instellingen van je browser of met een contentblocker, en je kunt ons mailen om de analysegegevens over jou te laten verwijderen."
+          ]
+        },
+        {
+          "heading": "Kinderen",
+          "body": [
+            "Onze speurtochten zijn gemaakt voor gezinnen en kinderen mogen meespelen met een volwassene erbij. De enige gegevens die we over een kind verzamelen zijn de weergavenaam die het kiest en de berichten die het tijdens het spelen stuurt.",
+            "Denk je dat we gegevens van een kind bewaren die verwijderd moeten worden, mail ons dan en we wissen ze."
+          ]
+        },
+        {
+          "heading": "Je rechten",
+          "body": [
+            "Op grond van de Britse privacywetgeving heb je het recht om:"
+          ],
+          "bullets": [
+            "een kopie op te vragen van de gegevens die we over je hebben",
+            "onjuiste gegevens te laten corrigeren",
+            "ons te vragen gegevens te wissen die we niet meer nodig hebben",
+            "het gebruik te beperken of er bezwaar tegen te maken",
+            "je gegevens in een overdraagbaar formaat te ontvangen",
+            "op elk moment bezwaar te maken tegen het gebruik van je gegevens voor analytics"
+          ],
+          "after": [
+            "Mail ons om een van deze rechten uit te oefenen; we reageren binnen een maand. Ben je niet tevreden met ons antwoord, dan kun je een klacht indienen bij de Britse privacytoezichthouder via ico.org.uk."
+          ]
+        },
+        {
+          "heading": "Beveiliging en wijzigingen in deze verklaring",
+          "body": [
+            "We gebruiken versleutelde verbindingen, beperken wie bij de gegevens kan en werken met gevestigde leveranciers. Geen enkel systeem is volledig veilig, maar we nemen redelijke maatregelen om je gegevens te beschermen.",
+            "We kunnen deze verklaring bijwerken. Wijzigingen verschijnen op deze pagina met een nieuwe datum bovenaan."
+          ]
+        }
+      ]
+    },
+    "refunds": {
+      "title": "Terugbetalingsbeleid",
+      "intro": "We willen dat je geniet van je speurtocht. Is dat niet zo, dan betalen we je terug. Op deze pagina lees je precies hoe dat werkt.",
+      "sections": [
+        {
+          "heading": "Onze belofte",
+          "body": [
+            "Ben je niet tevreden over je speurtocht van City Roam, dan betalen we je het volledige bedrag terug. Zonder vragen te stellen.",
+            "Dat geldt of je nu nooit aan spelen bent toegekomen, er die dag iets misging, of je het simpelweg niet leuk vond."
+          ]
+        },
+        {
+          "heading": "Voordat je begint",
+          "body": [
+            "Ben je nog niet begonnen, dan kun je zolang je code geldig is op elk moment volledige terugbetaling vragen. We betalen het hele bedrag terug dat je hebt betaald."
+          ]
+        },
+        {
+          "heading": "Nadat je hebt gespeeld",
+          "body": [
+            "Ben je begonnen of klaar met een speurtocht en was je niet tevreden, laat het ons dan binnen 14 dagen na het spelen weten. We betalen je het volledige bedrag terug.",
+            "Het helpt ons als je vertelt wat er misging, maar dat hoeft niet."
+          ]
+        },
+        {
+          "heading": "Je wettelijke herroepingsrecht",
+          "body": [
+            "Je hebt daarnaast een wettelijk recht om binnen 14 dagen na aankoop te herroepen op grond van de Britse Consumer Contracts Regulations 2013. Omdat je eventcode direct wordt geleverd, ga je bij het afrekenen akkoord met onmiddellijke levering, waardoor dat recht kan vervallen zodra de speurtocht is gestart.",
+            "Onze belofte hierboven is bewust ruimer, dus in de praktijk ben je hoe dan ook gedekt. Dit beleid doet niets af aan je overige wettelijke rechten."
+          ]
+        },
+        {
+          "heading": "Hoe je terugbetaling aanvraagt",
+          "body": [
+            "Mail naar hello@cityroam.co.uk vanaf het adres waarmee je hebt gekocht en vermeld je eventcode."
+          ],
+          "bullets": [
+            "We reageren binnen 2 werkdagen.",
+            "Terugbetalingen zijn altijd voor het volledige bedrag. Gedeeltelijke terugbetalingen doen we niet.",
+            "Het geld gaat via Stripe terug naar de kaart of betaalmethode waarmee je betaalde.",
+            "Meestal staat het binnen 5 tot 10 werkdagen op je rekening, afhankelijk van je bank."
+          ]
+        },
+        {
+          "heading": "Wat er met je speurtocht gebeurt",
+          "body": [
+            "Zodra we een aankoop terugbetalen, werkt de eventcode meteen niet meer en wordt iedereen die nog speelt uitgelogd. Zit je groep midden in een tocht, zorg dan dat iedereen klaar is voordat je terugbetaling aanvraagt."
+          ]
+        },
+        {
+          "heading": "Ongebruikt verlopen codes",
+          "body": [
+            "Eventcodes zijn 90 dagen geldig. Is die van jou verlopen voordat je hem kon gebruiken, mail ons dan binnen 30 dagen na de vervaldatum. Je krijgt een nieuwe code of je geld terug, wat je zelf wilt."
+          ]
+        },
+        {
+          "heading": "Als wij niet kunnen leveren",
+          "body": [
+            "Kan een speurtocht niet doorgaan door een fout aan onze kant of omdat een route niet beschikbaar is, dan bieden we je een nieuwe code of volledige terugbetaling aan. Jij kiest."
+          ]
+        },
+        {
+          "heading": "Klachten",
+          "body": [
+            "Ben je niet tevreden over hoe we een terugbetaling hebben afgehandeld, mail ons dan met “Klacht” in het onderwerp. We kijken er opnieuw naar en reageren binnen 5 werkdagen."
+          ]
+        }
+      ]
     }
   }
 }

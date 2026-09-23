@@ -1,5 +1,8 @@
 {
   "metadata": {
+    "og": {
+      "tagline": "AI-guided treasure hunts in Leeds"
+    },
     "home": {
       "title": "City Roam \u2014 AI-Guided Treasure Hunts in Leeds",
       "description": "Explore Leeds with an AI-powered treasure hunt. Solve clues, discover hidden gems, and have fun with friends \u2014 all guided by AI on your phone.",
@@ -573,6 +576,324 @@
       "whatsNext": "What's next?",
       "whatsNextDescription": "Share this link with your group. Everyone opens it, enters their name, and the lead person starts when everyone's ready.",
       "refundNote": "Not happy? Get a full refund \u2014 no questions asked."
+    }
+  },
+  "legal": {
+    "lastUpdated": "Last updated: 2 September 2026",
+    "backHome": "Back to home",
+    "footer": {
+      "navLabel": "Legal",
+      "terms": "Terms",
+      "privacy": "Privacy",
+      "refunds": "Refunds"
+    },
+    "meta": {
+      "terms": {
+        "title": "Terms and Conditions — City Roam",
+        "description": "The terms that apply when you buy or play a City Roam self-guided treasure hunt."
+      },
+      "privacy": {
+        "title": "Privacy Policy — City Roam",
+        "description": "What personal data City Roam collects when you buy or play a hunt, why we use it, and your rights."
+      },
+      "refunds": {
+        "title": "Refunds Policy — City Roam",
+        "description": "How City Roam refunds work: a full refund if you are not happy, and how to ask for one."
+      }
+    },
+    "terms": {
+      "title": "Terms and Conditions",
+      "intro": "These terms apply when you buy a City Roam treasure hunt or join one as a player. Please read them before you buy.",
+      "sections": [
+        {
+          "heading": "Who we are",
+          "body": [
+            "City Roam sells self-guided treasure hunts that you play on your phone in a real city, guided by an AI chatbot. We are based in the United Kingdom and our website is cityroam.co.uk."
+          ],
+          "bullets": [
+            "Trading name: City Roam",
+            "Registered business name and address: [complete before launch]",
+            "Email: hello@cityroam.co.uk"
+          ]
+        },
+        {
+          "heading": "What you are buying",
+          "body": [
+            "When you buy a hunt you receive one event code. That code is a licence for one group to play one hunt, once.",
+            "Up to 10 people can play on a single code. Everyone joins from their own phone and one player acts as the group lead.",
+            "The code belongs to your group. You may not resell it, publish it, or transfer it to someone else for payment."
+          ]
+        },
+        {
+          "heading": "How long your code lasts",
+          "body": [
+            "Your event code is valid for 90 days from the moment you buy it. You can start the hunt at any point in that window.",
+            "After 90 days the code expires automatically and can no longer be used to start a hunt. If your code expires before you have had a chance to use it, email us and we will issue a new one or refund you.",
+            "Once a hunt has been completed, the code cannot be used again."
+          ]
+        },
+        {
+          "heading": "Playing the hunt",
+          "body": [
+            "A hunt takes place outdoors and on foot in a real city. You will need a phone with a working data connection and enough battery to last the hunt.",
+            "You choose when to start and how fast to go. You can stop for a break and carry on afterwards."
+          ]
+        },
+        {
+          "heading": "Your safety is your responsibility",
+          "body": [
+            "City Roam is a game played in a public place. You are responsible for your own safety and for everyone in your group. Please take particular care with the following."
+          ],
+          "bullets": [
+            "Pay attention to traffic and your surroundings. Do not read your phone while crossing a road.",
+            "Follow the Highway Code and all local rules and signage.",
+            "Children must be supervised by a responsible adult at all times. The adult who buys or leads the hunt is responsible for anyone under 18 in the group.",
+            "Stay on public paths and in publicly accessible places. Never enter private property or a restricted area to find an answer.",
+            "Check the weather, wear suitable footwear and take water.",
+            "Stop playing if conditions become unsafe, if someone is unwell, or if you are asked to leave a location."
+          ]
+        },
+        {
+          "heading": "The AI guide",
+          "body": [
+            "Your hunt is guided by an automated chatbot. It can make mistakes and it does not know what is happening around you.",
+            "Treat its clues, directions and facts as part of a game rather than as reliable navigation or safety advice. Use your own judgement, and use a proper maps app if you need directions.",
+            "Places change. A landmark may be under scaffolding, a shop may have closed, or an area may be fenced off. Tell us if a clue no longer works and we will fix the route."
+          ]
+        },
+        {
+          "heading": "Using the chat",
+          "body": [
+            "The in-game chat is shared with the rest of your group. Please keep it civil."
+          ],
+          "bullets": [
+            "Do not send abusive, threatening, hateful or sexual content.",
+            "Do not send anything unlawful or anything that infringes someone else’s rights.",
+            "Do not share other people’s personal information.",
+            "Do not try to break, probe or misuse the game or the AI guide."
+          ],
+          "after": [
+            "We may end a hunt without a refund if the chat is used to abuse another player or our staff."
+          ]
+        },
+        {
+          "heading": "Our content",
+          "body": [
+            "The routes, clues, hints, text, artwork and software that make up City Roam belong to us or to our licensors. You may use them to play the hunt you have bought and for nothing else.",
+            "Please do not copy, publish or resell our route content, including by posting a full set of answers online."
+          ]
+        },
+        {
+          "heading": "If something goes wrong",
+          "body": [
+            "We want every hunt to work. If the service fails, if you cannot start your hunt, or if you are simply not happy, contact us and we will put it right. Our refunds policy explains what you can expect.",
+            "We cannot promise that the service will always be available or free of faults. It depends on your device, your network and third-party services we do not control."
+          ]
+        },
+        {
+          "heading": "Our liability to you",
+          "body": [
+            "Nothing in these terms limits our liability for death or personal injury caused by our negligence, for fraud, or for anything else that cannot be limited under UK law.",
+            "Subject to that, our total liability to you in connection with a hunt is limited to the amount you paid for it.",
+            "We are not liable for losses that were not reasonably foreseeable when you bought, for loss of profit or business, or for injury or loss caused by your own decisions while playing, by other members of your group, by other people, or by the condition of the streets and places you visit.",
+            "We supply hunts to consumers. If you buy for business purposes, the consumer protections in these terms do not apply to you."
+          ]
+        },
+        {
+          "heading": "Cancelling and refunds",
+          "body": [
+            "You have a legal right to cancel within 14 days under the Consumer Contracts Regulations 2013. Because your event code is delivered immediately, you agree at checkout that supply starts straight away.",
+            "Our refunds policy is deliberately more generous than the legal minimum. See the refunds page for the detail and for how to make a request."
+          ]
+        },
+        {
+          "heading": "Changes to these terms",
+          "body": [
+            "We may update these terms. The version that applies to your purchase is the one published on the day you bought. Any changes appear on this page with a new date at the top."
+          ]
+        },
+        {
+          "heading": "Law and disputes",
+          "body": [
+            "These terms are governed by the law of England and Wales, and the courts of England and Wales have jurisdiction. If you live in Scotland or Northern Ireland you may also bring proceedings in your local courts.",
+            "If you are unhappy with how we have handled a complaint, email us first and we will try to resolve it."
+          ]
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Privacy Policy",
+      "intro": "This notice explains what we do with personal data when you buy or play a City Roam hunt. We are the data controller for that data.",
+      "sections": [
+        {
+          "heading": "Who we are and how to contact us",
+          "body": [
+            "City Roam is the controller of the personal data described here. If you have a question about this notice, or want to exercise a right, email us."
+          ],
+          "bullets": [
+            "Registered business name and address: [complete before launch]",
+            "Email: hello@cityroam.co.uk"
+          ]
+        },
+        {
+          "heading": "What we collect",
+          "bullets": [
+            "Your email address, when you buy a hunt, so we can send you the receipt and your event code.",
+            "Payment information, which is handled entirely by Stripe. We never see or store your card details. We keep Stripe’s reference for your payment.",
+            "The display name each player chooses when joining a hunt. It does not have to be a real name.",
+            "The messages and any photos players send in the in-game chat while playing.",
+            "Progress data: which stop you are on, hints used, answers attempted, start and finish times, and the language you play in.",
+            "Technical data: IP address, browser and device type, and server logs.",
+            "Analytics about how the site and app are used, if you accept analytics cookies."
+          ]
+        },
+        {
+          "heading": "Why we use it, and our legal basis",
+          "bullets": [
+            "To sell and deliver your hunt, send your code and run the game. Legal basis: performance of our contract with you.",
+            "To answer your emails and handle refunds. Legal basis: our contract with you, and our legitimate interest in running the business.",
+            "To keep the service secure, prevent abuse and fix faults. Legal basis: our legitimate interests.",
+            "To improve routes and clues using gameplay data. Legal basis: our legitimate interests.",
+            "To measure how the site is used with PostHog analytics. Legal basis: our legitimate interest in understanding and improving the service.",
+            "To keep accounting records of sales. Legal basis: our legal obligations."
+          ]
+        },
+        {
+          "heading": "The AI guide",
+          "body": [
+            "Messages sent in the in-game chat are passed to our AI provider, DeepSeek, so that the guide can understand them and reply. Please do not type sensitive personal information into the chat."
+          ]
+        },
+        {
+          "heading": "Who we share data with",
+          "bullets": [
+            "Stripe, for payment processing.",
+            "Resend, for sending your confirmation email.",
+            "PostHog, for product analytics, and only if you accept analytics cookies.",
+            "DeepSeek, for generating the AI guide’s replies.",
+            "Our hosting and infrastructure providers."
+          ],
+          "after": [
+            "We do not sell your personal data. Some of these providers are outside the UK. Where that is the case we rely on UK adequacy regulations or on the UK International Data Transfer Addendum to protect your data."
+          ]
+        },
+        {
+          "heading": "How long we keep it",
+          "bullets": [
+            "Event, participant and chat records: 12 months after the hunt is completed, refunded or expires, then deleted or anonymised.",
+            "Purchase and accounting records: 6 years, as UK tax law requires.",
+            "Email correspondence: 24 months.",
+            "Analytics data: no longer than 12 months."
+          ]
+        },
+        {
+          "heading": "Cookies and browser storage",
+          "body": [
+            "We use a small number of strictly necessary cookies and browser storage to keep you connected to your hunt and to remember your cookie choice. These do not require consent.",
+            "We also use PostHog analytics cookies, which are set when you first visit the site, to measure how the site and the app are used. You can block them with your browser's privacy settings or a content blocker, and you can email us to ask that we delete the analytics data held about you."
+          ]
+        },
+        {
+          "heading": "Children",
+          "body": [
+            "Our hunts are designed for families and children are welcome to play alongside an adult. The only data we collect about a child is the display name they choose and the messages they send during a hunt.",
+            "If you believe we hold data about a child that should be removed, email us and we will delete it."
+          ]
+        },
+        {
+          "heading": "Your rights",
+          "body": [
+            "Under UK data protection law you have the right to:"
+          ],
+          "bullets": [
+            "ask for a copy of the data we hold about you",
+            "have inaccurate data corrected",
+            "ask us to delete data we no longer need",
+            "restrict or object to how we use it",
+            "receive your data in a portable format",
+            "object to our use of your data for analytics at any time"
+          ],
+          "after": [
+            "Email us to exercise any of these and we will reply within one month. If you are unhappy with our response you can complain to the Information Commissioner’s Office at ico.org.uk."
+          ]
+        },
+        {
+          "heading": "Security and changes to this notice",
+          "body": [
+            "We use encrypted connections, limit who can access the data we hold, and work with established providers. No system is completely secure, but we take reasonable steps to protect your data.",
+            "We may update this notice. Changes appear on this page with a new date at the top."
+          ]
+        }
+      ]
+    },
+    "refunds": {
+      "title": "Refunds Policy",
+      "intro": "We want you to enjoy your hunt. If you do not, we will refund you. This page explains exactly how that works.",
+      "sections": [
+        {
+          "heading": "Our promise",
+          "body": [
+            "If you are not happy with your City Roam hunt, we will refund you in full. No questions asked.",
+            "That applies whether you never got round to playing, something went wrong on the day, or you simply did not enjoy it."
+          ]
+        },
+        {
+          "heading": "Before you start",
+          "body": [
+            "If you have not started your hunt, you can ask for a full refund at any point while your code is still valid. We refund the whole amount you paid."
+          ]
+        },
+        {
+          "heading": "After you have played",
+          "body": [
+            "If you have started or finished a hunt and were not happy with it, ask us within 14 days of playing and we will refund you in full.",
+            "It helps us if you tell us what went wrong, but you do not have to."
+          ]
+        },
+        {
+          "heading": "Your legal right to cancel",
+          "body": [
+            "You also have a statutory right to cancel within 14 days of purchase under the Consumer Contracts Regulations 2013. Because your event code is supplied immediately, you agree at checkout to supply starting straight away, which can end that right once the hunt has been started.",
+            "Our promise above is deliberately more generous, so in practice you are covered either way. This policy does not affect your other legal rights."
+          ]
+        },
+        {
+          "heading": "How to ask for a refund",
+          "body": [
+            "Email hello@cityroam.co.uk from the address you used to buy, and include your event code."
+          ],
+          "bullets": [
+            "We reply within 2 working days.",
+            "Refunds are always for the full amount. We do not issue partial refunds.",
+            "The money goes back to the card or payment method you paid with, through Stripe.",
+            "It usually reaches your account within 5 to 10 working days, depending on your bank."
+          ]
+        },
+        {
+          "heading": "What happens to your hunt",
+          "body": [
+            "When we refund a purchase, the event code stops working immediately and anyone still playing is signed out. If your group is part-way through a hunt, make sure everyone has finished before you ask for the refund."
+          ]
+        },
+        {
+          "heading": "Codes that expired unused",
+          "body": [
+            "Event codes are valid for 90 days. If yours expired before you could use it, email us within 30 days of the expiry date and we will either issue a new code or refund you, whichever you prefer."
+          ]
+        },
+        {
+          "heading": "If we cannot deliver",
+          "body": [
+            "If a hunt cannot be delivered because of a fault on our side, or because a route is unavailable, we will offer you a new code or a full refund. The choice is yours."
+          ]
+        },
+        {
+          "heading": "Complaints",
+          "body": [
+            "If you are unhappy with how we have handled a refund, email us and mark your message “Complaint”. We will look at it again and reply within 5 working days."
+          ]
+        }
+      ]
     }
   }
 }

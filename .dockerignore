@@ -1,8 +1,22 @@
+# Bare patterns only match the context root, so each entry is repeated with a
+# `**/` form to also catch packages/*/ — without it every build context carried
+# ~260MB of packages/marketing/.next plus stale per-package dist/node_modules.
 node_modules
-.git
-.next
+**/node_modules
 dist
+**/dist
+.next
+**/.next
+*.tsbuildinfo
+**/*.tsbuildinfo
+
+.git
+.github
+
+# Secrets never enter an image. This is why every public VITE_*/NEXT_PUBLIC_*
+# value must be passed as a build arg instead — see the frontend Dockerfiles.
 .env*
+
 .claude
 AUTOMATION_LOCK
 IN_PROGRESS.md

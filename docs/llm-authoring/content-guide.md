@@ -335,7 +335,31 @@ Images can be included via `image` blocks with a URL. They are a key tool for ma
 
 ### Image URLs
 
-When creating routes programmatically, use descriptive placeholder URLs in the format `{{IMAGE:description}}` (e.g. `{{IMAGE:leeds-town-hall-facade}}`, `{{IMAGE:kirkgate-market-interior}}`). An admin will replace these with real URLs through the admin panel before the route goes live.
+An `image_url` (on an `image` block or a hint `SequenceItem`) accepts exactly two forms:
+
+1. **An absolute `http(s)://` URL** — normally the `url` returned by `POST /admin/upload`.
+2. **A placeholder `{{IMAGE:slug}}`** — use this when creating routes programmatically, because the photo does not exist yet (e.g. `{{IMAGE:leeds-town-hall-facade}}`, `{{IMAGE:kirkgate-market-interior}}`).
+
+**Slug rules** (enforced by the API; anything else is rejected with a 400):
+
+- lowercase letters `a-z`, digits `0-9` and single hyphens only — no spaces, underscores, capitals, dots or slashes
+- must not start or end with a hyphen, no `--`, max 100 characters
+- the tag itself is uppercase and exact: `{{IMAGE:` … `}}`, with nothing before or after
+- describe the subject, not the route: reuse the same slug wherever the same photo fits (including in translated variants of the route), so one upload covers them all
+
+**How a placeholder becomes a photo.** The placeholder is stored as written. Whenever a message is sent to a player, the API resolves it to
+
+```
+${AWS_CDN_BASE_URL}/route-images/<slug>.jpg
+```
+
+i.e. the S3 object key must be exactly **`route-images/<slug>.jpg`** (JPEG, lowercase `.jpg`). For `{{IMAGE:leeds-town-hall-facade}}` that is `route-images/leeds-town-hall-facade.jpg`. Once an object exists at that key the photo appears for every route using the slug, with no database edit.
+
+Until the photo is uploaded, the player sees a neutral grey "image" tile in the chat instead of a broken image, so a route with outstanding placeholders is playable but looks unfinished — upload every slug before the route goes live.
+
+**Uploading a slug's photo.** Use `POST /admin/upload` with a `slug` (see [api-reference.md](api-reference.md#image-uploads)): it returns a pre-signed URL for exactly `route-images/<slug>.jpg` in the environment's own bucket (staging and production are separate buckets, so upload to each). The file must be a JPEG. In the admin route editor, any image field holding a placeholder shows a preview of the resolved photo (a grey "Not uploaded yet" tile if it is missing) and an **Upload photo for this slug** button. Uploading replaces the photo for that slug everywhere it is used — every block, hint and language version — and changes nothing in the route itself, so there is nothing to save afterwards. The CDN may keep serving a replaced photo for a while.
+
+**Alternative: replace the placeholder.** An admin can instead open the image block in the admin route editor, click **One-off upload**, and save. That upload (`POST /admin/upload` without `slug`) stores the file at `uploads/<timestamp>_<filename>` and puts that absolute CDN URL into `image_url`, replacing the placeholder for that one block only. It does not write to `route-images/`, so it never satisfies a slug for other blocks. (**Upload to slug** in the same editor does the opposite: it stores the JPEG at a slug you name and puts `{{IMAGE:slug}}` in the field.)
 
 ---
 
@@ -564,4 +588,4 @@ Notice how:
 - **Individual messages stay short** — 1-2 sentences each, never a wall of text
 - The **guide's personality** comes through in word choice and pacing, not in lengthy explanations
 - The **success acknowledgement is NOT duplicated** — it comes from the message bank automatically
-- **Image placeholders** use `{{IMAGE:description}}` format for admin to replace later
+- **Image placeholders** use `{{IMAGE:slug}}` format (lowercase kebab-case slug); they resolve to `route-images/<slug>.jpg` on the CDN once that photo is uploaded

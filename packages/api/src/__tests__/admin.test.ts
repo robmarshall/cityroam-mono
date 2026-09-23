@@ -61,7 +61,12 @@ vi.mock("../redis/index.js", () => ({
 }));
 
 vi.mock("../redis/client.js", () => ({
-  redis: { ping: vi.fn().mockResolvedValue("PONG") },
+  redis: {
+    ping: vi.fn().mockResolvedValue("PONG"),
+    // The admin login limiter runs INCR+TTL through eval and clears with del.
+    eval: vi.fn().mockResolvedValue([1, 900]),
+    del: vi.fn().mockResolvedValue(1),
+  },
   redisSub: { subscribe: vi.fn(), on: vi.fn(), off: vi.fn() },
   disconnectRedis: vi.fn(),
 }));
@@ -123,6 +128,12 @@ import {
 } from "./helpers.js";
 import { signAdminToken } from "../middleware/admin.js";
 import { generatePresignedUploadUrl } from "../services/s3.js";
+import { redis } from "../redis/client.js";
+
+const mockRedis = redis as unknown as {
+  eval: ReturnType<typeof vi.fn>;
+  del: ReturnType<typeof vi.fn>;
+};
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
@@ -157,6 +168,9 @@ beforeEach(() => {
   (db as any).query.messageBanks.findFirst.mockReset();
   (db as any).query.routeBlocks.findFirst.mockReset();
   (db as any).query.routeGroups.findFirst.mockReset();
+
+  mockRedis.eval.mockReset().mockResolvedValue([1, 900]);
+  mockRedis.del.mockReset().mockResolvedValue(1);
 
   app = createTestApp();
 });
@@ -196,6 +210,134 @@ describe("POST /admin/login", () => {
 
     // Validation error (ZodError) - status depends on zod version compatibility
     expect(res.status).toBeGreaterThanOrEqual(400);
+  });
+
+  it("returns 401 for a wrong username with the right password", async () => {
+    const res = await jsonRequest(app, "POST", "/admin/login", {
+      username: "root",
+      password: "admin123",
+    });
+
+    expect(res.status).toBe(401);
+    const body = await res.json();
+    expect(body.code).toBe("INVALID_CREDENTIALS");
+  });
+
+  it("accepts a correct password whose length differs from a wrong one", async () => {
+    // Guards the constant-time comparison: hashing to equal-length buffers must
+    // not break ordinary equality for secrets of any length.
+    const res = await jsonRequest(app, "POST", "/admin/login", {
+      username: "admin",
+      password: "admin123",
+    });
+
+    expect(res.status).toBe(200);
+
+    const wrong = await jsonRequest(app, "POST", "/admin/login", {
+      username: "admin",
+      password: "admin123-but-much-longer",
+    });
+    expect(wrong.status).toBe(401);
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────
+// POST /admin/login — brute-force limiter
+// ────────────────────────────────────────────────────────────────────
+describe("POST /admin/login rate limiting", () => {
+  /** Makes the Redis counter return `count` attempts with `ttl` left. */
+  function attemptCount(count: number, ttl = 900) {
+    mockRedis.eval.mockResolvedValueOnce([count, ttl]);
+  }
+
+  it("allows attempts up to the limit", async () => {
+    for (let attempt = 1; attempt <= 5; attempt++) {
+      attemptCount(attempt);
+      const res = await jsonRequest(app, "POST", "/admin/login", {
+        username: "admin",
+        password: "wrong",
+      });
+      expect(res.status).toBe(401);
+    }
+  });
+
+  it("returns 429 with Retry-After once the limit is passed", async () => {
+    attemptCount(6, 742);
+    const res = await jsonRequest(app, "POST", "/admin/login", {
+      username: "admin",
+      password: "wrong",
+    });
+
+    expect(res.status).toBe(429);
+    expect(res.headers.get("Retry-After")).toBe("742");
+    const body = await res.json();
+    expect(body.code).toBe("RATE_LIMITED");
+  });
+
+  it("blocks the correct password too once the limit is passed", async () => {
+    attemptCount(6);
+    const res = await jsonRequest(app, "POST", "/admin/login", {
+      username: "admin",
+      password: "admin123",
+    });
+
+    expect(res.status).toBe(429);
+  });
+
+  it("keys the counter on the client IP behind the proxy", async () => {
+    await jsonRequest(
+      app,
+      "POST",
+      "/admin/login",
+      { username: "admin", password: "wrong" },
+      { "cf-connecting-ip": "203.0.113.9", "x-forwarded-for": "10.0.0.1" },
+    );
+
+    const key = mockRedis.eval.mock.calls[0][2];
+    expect(key).toBe("ratelimit:adminlogin:203.0.113.9");
+  });
+
+  it("falls back to the first x-forwarded-for entry", async () => {
+    await jsonRequest(
+      app,
+      "POST",
+      "/admin/login",
+      { username: "admin", password: "wrong" },
+      { "x-forwarded-for": "203.0.113.7, 10.0.0.1" },
+    );
+
+    expect(mockRedis.eval.mock.calls[0][2]).toBe("ratelimit:adminlogin:203.0.113.7");
+  });
+
+  it("resets the counter after a successful login", async () => {
+    const res = await jsonRequest(app, "POST", "/admin/login", {
+      username: "admin",
+      password: "admin123",
+    });
+
+    expect(res.status).toBe(200);
+    expect(mockRedis.del).toHaveBeenCalledWith("ratelimit:adminlogin:unknown");
+  });
+
+  it("leaves the counter alone after a failed login", async () => {
+    const res = await jsonRequest(app, "POST", "/admin/login", {
+      username: "admin",
+      password: "wrong",
+    });
+
+    expect(res.status).toBe(401);
+    expect(mockRedis.del).not.toHaveBeenCalled();
+  });
+
+  it("fails open when Redis is unavailable", async () => {
+    mockRedis.eval.mockRejectedValueOnce(new Error("ECONNREFUSED"));
+
+    const res = await jsonRequest(app, "POST", "/admin/login", {
+      username: "admin",
+      password: "admin123",
+    });
+
+    expect(res.status).toBe(200);
   });
 });
 
@@ -438,6 +580,101 @@ describe("POST /admin/upload", () => {
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(body.code).toBe("INVALID_FILENAME");
+  });
+
+  it("presigns the fixed route-images key for a slug upload and returns the placeholder", async () => {
+    vi.mocked(generatePresignedUploadUrl).mockResolvedValueOnce({
+      upload_url: "https://s3.test.com/presigned-slug",
+      key: "route-images/leeds-town-hall-facade.jpg",
+    });
+
+    const res = await adminRequest(app, "POST", "/admin/upload", {
+      filename: "IMG 0042.JPG",
+      content_type: "image/jpeg",
+      slug: "leeds-town-hall-facade",
+    });
+
+    expect(res.status).toBe(200);
+    expect(generatePresignedUploadUrl).toHaveBeenLastCalledWith(
+      "route-images/leeds-town-hall-facade.jpg",
+      "image/jpeg",
+    );
+    const body = await res.json();
+    expect(body).toEqual({
+      upload_url: "https://s3.test.com/presigned-slug",
+      key: "route-images/leeds-town-hall-facade.jpg",
+      url: "https://cdn.test.com/route-images/leeds-town-hall-facade.jpg",
+      slug: "leeds-town-hall-facade",
+      placeholder: "{{IMAGE:leeds-town-hall-facade}}",
+    });
+  });
+
+  it("ignores an unusable filename on a slug upload (the key comes from the slug)", async () => {
+    const res = await adminRequest(app, "POST", "/admin/upload", {
+      filename: "///",
+      content_type: "image/jpeg",
+      slug: "corn-exchange",
+    });
+
+    expect(res.status).toBe(200);
+    expect(generatePresignedUploadUrl).toHaveBeenLastCalledWith(
+      "route-images/corn-exchange.jpg",
+      "image/jpeg",
+    );
+  });
+
+  it("rejects a PNG slug upload, since the key is always .jpg", async () => {
+    vi.mocked(generatePresignedUploadUrl).mockClear();
+    const res = await adminRequest(app, "POST", "/admin/upload", {
+      filename: "photo.png",
+      content_type: "image/png",
+      slug: "corn-exchange",
+    });
+
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.code).toBe("INVALID_INPUT");
+    expect(generatePresignedUploadUrl).not.toHaveBeenCalled();
+  });
+
+  it("rejects malformed slugs without presigning anything", async () => {
+    vi.mocked(generatePresignedUploadUrl).mockClear();
+    for (const slug of ["../uploads/evil", "Town-Hall", "town_hall", "town-", ""]) {
+      const res = await adminRequest(app, "POST", "/admin/upload", {
+        filename: "photo.jpg",
+        content_type: "image/jpeg",
+        slug,
+      });
+      expect(res.status).toBe(400);
+    }
+    expect(generatePresignedUploadUrl).not.toHaveBeenCalled();
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────
+// GET /admin/route-images/:slug
+// ────────────────────────────────────────────────────────────────────
+describe("GET /admin/route-images/:slug", () => {
+  it("returns the CDN URL a placeholder resolves to", async () => {
+    const res = await adminRequest(app, "GET", "/admin/route-images/leeds-town-hall-facade");
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      slug: "leeds-town-hall-facade",
+      key: "route-images/leeds-town-hall-facade.jpg",
+      placeholder: "{{IMAGE:leeds-town-hall-facade}}",
+      url: "https://cdn.test.com/route-images/leeds-town-hall-facade.jpg",
+    });
+  });
+
+  it("rejects a malformed slug", async () => {
+    const res = await adminRequest(app, "GET", "/admin/route-images/Bad_Slug");
+    expect(res.status).toBe(400);
+  });
+
+  it("requires admin auth", async () => {
+    const res = await jsonRequest(app, "GET", "/admin/route-images/corn-exchange");
+    expect(res.status).toBe(401);
   });
 });
 
@@ -724,8 +961,12 @@ describe("Admin Group CRUD", () => {
       );
 
       // Transaction calls in order:
-      // 1. tx.delete().where() — delete is awaited, where returns db (default chain)
-      // 2. tx.select().from().where().orderBy() — orderBy is terminal
+      // 1. tx.select().from().where() — the group's block ids for the guard
+      (db as any).where.mockResolvedValueOnce([]);
+      // 2. tx.select().from().where() — live event count for the guard
+      (db as any).where.mockResolvedValueOnce([{ count: 0 }]);
+      // 3. tx.delete().where() — delete is awaited, where returns db (default chain)
+      // 4. tx.select().from().where().orderBy() — orderBy is terminal
       (db as any).orderBy.mockResolvedValueOnce([{ id: remainingGroupId }]);
       // 3. tx.update().set().where(inArray) — renumber positions
       // 4. tx.update().set().where(eq) — update total_stops
@@ -735,6 +976,31 @@ describe("Admin Group CRUD", () => {
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body.success).toBe(true);
+    });
+
+    it("returns 409 when a live event is playing the group", async () => {
+      const routeId = fakeUUID();
+      const groupId = fakeUUID();
+
+      (db as any).query.routeGroups.findFirst.mockResolvedValueOnce(
+        mockRouteGroup({ id: groupId, route_id: routeId }),
+      );
+
+      // Guard: the group's block ids, then two live events referencing them
+      (db as any).where.mockResolvedValueOnce([{ id: fakeUUID() }]);
+      (db as any).where.mockResolvedValueOnce([{ count: 2 }]);
+
+      const res = await adminRequest(
+        app,
+        "DELETE",
+        `/admin/routes/${routeId}/groups/${groupId}`,
+      );
+
+      expect(res.status).toBe(409);
+      const body = await res.json();
+      expect(body.code).toBe("GROUP_HAS_LIVE_EVENTS");
+      expect(body.error).toContain("2 in-progress events");
+      expect((db as any).delete).not.toHaveBeenCalled();
     });
 
     it("returns 404 when group does not exist", async () => {
@@ -806,6 +1072,8 @@ describe("Admin Block CRUD", () => {
 
       (db as any).query.routeGroups.findFirst.mockResolvedValueOnce(mockRouteGroup({ id: groupId }));
 
+      // Transaction: live event guard (terminal: where)
+      (db as any).where.mockResolvedValueOnce([{ count: 0 }]);
       // Transaction: existing blocks query (terminal: where)
       (db as any).where.mockResolvedValueOnce([{ id: blockId1 }, { id: blockId2 }]);
       // Transaction: update positions (terminal: where)
@@ -818,6 +1086,23 @@ describe("Admin Block CRUD", () => {
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body.success).toBe(true);
+    });
+
+    it("returns 409 when a live event is in the group", async () => {
+      const groupId = fakeUUID();
+      const blockId1 = crypto.randomUUID();
+      const blockId2 = crypto.randomUUID();
+
+      (db as any).query.routeGroups.findFirst.mockResolvedValueOnce(mockRouteGroup({ id: groupId }));
+      (db as any).where.mockResolvedValueOnce([{ count: 3 }]);
+
+      const res = await adminRequest(app, "PUT", `/admin/groups/${groupId}/blocks/reorder`, {
+        block_ids: [blockId2, blockId1],
+      });
+
+      expect(res.status).toBe(409);
+      const body = await res.json();
+      expect(body.code).toBe("GROUP_HAS_LIVE_EVENTS");
     });
 
     it("returns 400 for duplicate block IDs", async () => {
@@ -894,6 +1179,8 @@ describe("Admin Block CRUD", () => {
         mockRouteBlock({ id: blockId, group_id: groupId }),
       );
 
+      // Transaction: live event guard (terminal: where)
+      (db as any).where.mockResolvedValueOnce([{ count: 0 }]);
       // Transaction: delete (chain default)
       // Transaction: remaining blocks query (terminal: orderBy)
       (db as any).orderBy.mockResolvedValueOnce([{ id: remainingBlockId }]);
@@ -904,6 +1191,26 @@ describe("Admin Block CRUD", () => {
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body.success).toBe(true);
+    });
+
+    it("returns 409 when a live event is inside the block's group", async () => {
+      const blockId = fakeUUID();
+      const groupId = fakeUUID();
+
+      (db as any).query.routeBlocks.findFirst.mockResolvedValueOnce(
+        mockRouteBlock({ id: blockId, group_id: groupId }),
+      );
+
+      // Guard: one live event in the group whose block indices would shift
+      (db as any).where.mockResolvedValueOnce([{ count: 1 }]);
+
+      const res = await adminRequest(app, "DELETE", `/admin/blocks/${blockId}`);
+
+      expect(res.status).toBe(409);
+      const body = await res.json();
+      expect(body.code).toBe("BLOCK_HAS_LIVE_EVENTS");
+      expect(body.error).toContain("1 in-progress event is");
+      expect((db as any).delete).not.toHaveBeenCalled();
     });
 
     it("returns 404 when block does not exist", async () => {

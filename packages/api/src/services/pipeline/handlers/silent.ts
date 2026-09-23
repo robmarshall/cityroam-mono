@@ -4,7 +4,7 @@ import type { SupportedLanguage } from "@cityroam/shared/types";
 import { db, schema } from "../../../db/index.js";
 import { createLogger } from "../../../lib/logger.js";
 import { removeMessage, publishControl } from "../../../redis/index.js";
-import { writeGuideMessage, getRandomMessageBank } from "./answer-attempt.js";
+import { writeGuideMessage, getRandomMessageBank, SCRIPTED_MESSAGE } from "./answer-attempt.js";
 
 const log = createLogger("pipeline");
 
@@ -132,6 +132,9 @@ export async function handleClarification(
       ctx.eventCode,
       ctx.currentStop,
       content,
+      null,
+      undefined,
+      SCRIPTED_MESSAGE,
     );
   }
   return { handled: true, deleted: false };

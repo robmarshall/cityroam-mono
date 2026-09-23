@@ -14,7 +14,7 @@ Self-guided treasure hunt web app. Customers purchase a hunt via Stripe, receive
 
 ## Prerequisites
 
-- Node.js 20 (see `.nvmrc`)
+- Node.js 22 LTS (see `.nvmrc`); `engines` allows 22-24
 - Docker and Docker Compose (for Postgres, Redis, and optional full-stack containers)
 
 ## Getting Started
@@ -87,12 +87,34 @@ npm run seed:message-banks  # Seed message bank templates only
 
 ## Testing
 
+All five packages define `test`, `build` and `typecheck`, so the workspace-wide
+scripts no longer use `--if-present` — a package that loses a script fails loudly
+instead of being silently skipped.
+
 ```bash
-npm test                          # All packages
-npm -w @cityroam/api run test     # API tests only
-npm -w @cityroam/shared run test  # Shared package tests only
-npm run typecheck                 # TypeScript checks across all packages
+npm test                             # All five packages
+npm -w @cityroam/api run test        # API tests only
+npm -w @cityroam/shared run test     # Shared package tests only
+npm -w @cityroam/app run test        # Player app smoke tests
+npm -w @cityroam/admin run test      # Admin smoke tests
+npm -w @cityroam/marketing run test  # Marketing i18n smoke tests
+npm run typecheck                    # TypeScript checks across all packages
 ```
+
+## Continuous Integration
+
+`.github/workflows/ci.yml` runs on every push to `main`/`development` and on
+every pull request, in three parallel jobs:
+
+| Job | What it does |
+|---|---|
+| `verify` | Node from `.nvmrc`, `npm ci`, `npm run typecheck`, `npm test`, `npm run build` |
+| `docker` | Builds the API, app, admin and marketing images with placeholder build args |
+| `compose` | `docker compose config` on the prod and staging files, to catch interpolation drift |
+
+The build and docker jobs pass placeholder public URLs. They prove the build
+compiles and that the Dockerfiles wire their build args through; they are not
+deployment values.
 
 ## Docker (Full Stack)
 
@@ -102,7 +124,7 @@ To run all services in containers (instead of `npm run dev` on the host):
 docker compose up -d --build
 ```
 
-This starts Postgres, Redis, API (HTTP + WS), App, Admin, and Marketing in containers. Useful for testing production-like setups. See also `docker-compose.prod.yml` and `docker-compose.staging.yml` for deployment configurations.
+This starts Postgres, Redis, API (HTTP + WS), App, Admin, and Marketing in containers, using the dev servers against the bind-mounted source. See also `docker-compose.prod.yml` and `docker-compose.staging.yml` for the backend-only deployment configurations.
 
 | Script | Description |
 |---|---|
@@ -111,6 +133,74 @@ This starts Postgres, Redis, API (HTTP + WS), App, Admin, and Marketing in conta
 | `npm run docker:down` | Stop and remove containers |
 | `npm run docker:migrate` | Run migrations inside container |
 | `npm run docker:seed` | Seed database inside container |
+| `npm run docker:prod:migrate` | Run migrations in a running `docker-compose.prod.yml` `api-http` container (uses the built `start:migrate`) |
+| `npm run docker:prod:seed` | Run the full seed in the prod `api-http` container (`start:seed`, includes dev routes) |
+| `npm run docker:prod:seed:message-banks` | Seed message banks only in the prod `api-http` container (`start:seed:message-banks`; the safe seeder for production, pass `-- --dry-run` to preview) |
+
+## Deployment
+
+Production and staging both run the frontends (app, admin, marketing) on Vercel
+and the API, WebSocket server, Postgres and Redis on Coolify.
+`docker-compose.prod.yml` and `docker-compose.staging.yml` are both
+backend-only and mirror each other. A Cloudflare worker on the main domain sends
+`/app` and `/app/...` to the player-app Vercel project and everything else to
+marketing; see `infra/cloudflare-workers/README.md`.
+
+The frontend Dockerfiles remain for CI build checks and self-hosting, but no
+compose file deploys them.
+
+### Build-time vs runtime variables
+
+Vite (`VITE_*`) and Next.js (`NEXT_PUBLIC_*`) **inline** their public values into
+the JS bundle when it is built. Setting them only at runtime does nothing — the
+bundle already carries whatever was baked in. This is what made the compose path
+ship an app that dialled `ws://localhost:3002` in production.
+
+Each frontend Dockerfile takes them as build args and fails the build when a
+required one is empty:
+
+| Image | Required build args | Optional |
+|---|---|---|
+| `packages/app` | `VITE_API_URL`, `VITE_WS_URL` | `VITE_POSTHOG_KEY`, `VITE_POSTHOG_HOST`, `VITE_REVIEW_LINK` |
+| `packages/admin` | `VITE_API_URL` | — |
+| `packages/marketing` | `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SITE_URL` | `NEXT_PUBLIC_POSTHOG_KEY` |
+
+On Vercel the same names are set as project environment variables instead.
+
+### Routing variables
+
+Every domain used in a Traefik `Host()` rule is interpolated with `${VAR:?...}`,
+so an unset value aborts the deploy. Previously an unset variable produced an
+empty rule and a silent 404.
+
+| File | Required |
+|---|---|
+| `docker-compose.prod.yml` | `API_DOMAIN`, `WS_DOMAIN`, `POSTGRES_PASSWORD`, `REDIS_PASSWORD` |
+| `docker-compose.staging.yml` | `API_DOMAIN`, `WS_DOMAIN`, `POSTGRES_PASSWORD`, `REDIS_PASSWORD` |
+
+Both environments give the WebSocket server its own `WS_DOMAIN`, routed by
+Traefik to `api-ws` on port 3002. The player app appends `/ws/<code>` itself, so
+set `VITE_WS_URL` on the app's Vercel project to `wss://<WS_DOMAIN>` with no path
+and no port (e.g. `wss://ws.cityroam.co.uk`), and `VITE_API_URL` to
+`https://<API_DOMAIN>`.
+
+`SENTRY_DSN`, `SENTRY_ENVIRONMENT` and `SENTRY_RELEASE` are optional in both
+files and passed to `api-http` and `api-ws`. Set `SENTRY_ENVIRONMENT` explicitly
+(`staging` / `production`): empty falls back to `NODE_ENV`, which is
+`production` in both. See the Sentry section of `docs/launch-checklist.md`.
+
+Production Traefik routers and services are named `cityroam-prod-api-http` and
+`cityroam-prod-api-ws`, so they do not collide with staging's `api-http` and
+`api-ws` routers when both stacks share one Coolify Traefik.
+
+Migrations run as a one-shot `migrate` service; `api-http` and `api-ws` both wait
+on `service_completed_successfully` before starting.
+
+### Node version
+
+`.nvmrc` and every Docker base image are on Node 22 LTS. Vercel ends Node 20
+support on 2026-10-01 — **the Node version in the Vercel project settings must be
+changed there manually**, it is not driven by `.nvmrc`.
 
 ## Automated Development Loop
 
@@ -119,14 +209,6 @@ AI-driven development loop powered by Claude Code running inside Docker. Cycles 
 ### Prerequisites
 
 - Claude Code account (for authentication)
-
-### Quick Start
-
-```bash
-npm run start
-```
-
-This builds the Docker image, starts the container, and launches the build loop inside it.
 
 ### Setup
 
@@ -150,7 +232,12 @@ From inside the container:
 claude login
 ```
 
-Your credentials are persisted via a volume mount to `~/.claude` on the host, so you only need to do this once.
+The compose file no longer bind-mounts your host `~/.claude` or `~/.ssh`, so
+credentials live only inside the container and are lost when it is removed. To
+persist them, add your own mount in a `docker-compose.override.yml` (not
+committed), for example `- ~/.claude:/home/dev/.claude`.
+
+On first start the `dev` container runs `npm ci` if `node_modules` is missing.
 
 #### 4. Run the loop
 
@@ -176,11 +263,11 @@ From inside the container:
 
 ### npm Scripts
 
+The `loop` and `loop:plan` scripts were removed: they ran `run.sh`, which is no
+longer in the repository. Run `./loop.sh` from inside the container instead.
+
 | Script | Description |
 |---|---|
-| `npm run loop` | Build, start container, and run the build loop |
-| `npm run loop:plan` | Build, start container, and run the plan loop |
-| `npm run loop:plan -- 5` | Plan loop, max 5 iterations |
 | `npm run docker:build` | Build and start the container in the background |
 | `npm run docker:shell` | Open a shell inside the running container |
 | `npm run docker:down` | Stop and remove the container |

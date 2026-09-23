@@ -343,6 +343,9 @@ export default function EventsListPage() {
                     Created
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Code Email
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                     Refund
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -374,6 +377,18 @@ export default function EventsListPage() {
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-500">
                         {formatDate(event.created_at)}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3">
+                        {event.code_email_failed_at ? (
+                          <span
+                            title={`Every send attempt failed at ${formatDate(event.code_email_failed_at)}. Open the event to resend.`}
+                            className="inline-flex rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700"
+                          >
+                            Failed
+                          </span>
+                        ) : (
+                          <span className="text-sm text-gray-400">&mdash;</span>
+                        )}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3">
                         {event.status === "REFUNDED" ? (

@@ -1,14 +1,23 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
-import { getMessages, getTranslations } from "next-intl/server";
+import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import "../globals.css";
 import { PostHogProvider } from "@/components/PostHogProvider";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { locales } from "@/i18n/config";
+import { SITE_NAME, siteUrl } from "@/lib/site";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://cityroam.co.uk";
+export function generateStaticParams() {
+  return locales.map((locale) => ({ locale }));
+}
 
+/**
+ * Site-wide defaults only. Page-specific Open Graph, Twitter and canonical
+ * tags are built per page by `buildMetadata` so that segment pages no longer
+ * inherit the homepage's share card.
+ */
 export async function generateMetadata({
   params,
 }: {
@@ -17,40 +26,11 @@ export async function generateMetadata({
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "metadata" });
 
-  const title = t("home.title");
-  const description = t("home.description");
-
   return {
-    title,
-    description,
+    title: t("home.title"),
+    description: t("home.description"),
     metadataBase: new URL(siteUrl),
-    alternates: {
-      languages: Object.fromEntries([
-        ["x-default", siteUrl],
-        ...locales.map((l) => [l, `${siteUrl}/${l}`]),
-      ]),
-    },
-    openGraph: {
-      title,
-      description,
-      url: siteUrl,
-      siteName: "City Roam",
-      type: "website",
-      images: [
-        {
-          url: "/og-image.png",
-          width: 1200,
-          height: 630,
-          alt: title,
-        },
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: ["/og-image.png"],
-    },
+    applicationName: SITE_NAME,
   };
 }
 
@@ -67,6 +47,8 @@ export default async function LocaleLayout({
     notFound();
   }
 
+  setRequestLocale(locale);
+
   const messages = await getMessages();
   const t = await getTranslations({ locale, namespace: "metadata" });
 
@@ -77,14 +59,14 @@ export default async function LocaleLayout({
     description: t("home.description"),
     brand: {
       "@type": "Brand",
-      name: "City Roam",
+      name: SITE_NAME,
     },
     offers: {
       "@type": "Offer",
       price: "29.00",
       priceCurrency: "GBP",
       availability: "https://schema.org/InStock",
-      url: siteUrl,
+      url: `${siteUrl}/${locale}`,
     },
     areaServed: {
       "@type": "City",
@@ -101,13 +83,14 @@ export default async function LocaleLayout({
       <head>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\u003c") }}
         />
       </head>
       <body>
         <NextIntlClientProvider messages={messages}>
           <Header />
           <PostHogProvider>{children}</PostHogProvider>
+          <Footer />
         </NextIntlClientProvider>
       </body>
     </html>

@@ -135,6 +135,22 @@ function resetDbChainMocks(): void {
   mockedDb.delete.mockReset().mockImplementation(() => mockedDb);
   mockedDb.execute.mockReset().mockResolvedValue([{ "?column?": 1 }]);
   mockedDb.transaction.mockReset().mockImplementation((fn: any) => fn(mockedDb));
+  mockedDb.query.events.findFirst.mockReset();
+  mockedDb.query.participants.findFirst.mockReset();
+  mockedDb.query.routeBlocks.findFirst.mockReset();
+  mockedDb.query.routeGroups.findFirst.mockReset();
+}
+
+/**
+ * resolveSession's Redis fast path re-reads the participant row to confirm
+ * they're still active, so any test with a session must queue that row first.
+ */
+function mockSessionParticipant(overrides: Record<string, unknown> = {}): void {
+  mockedDb.query.participants.findFirst.mockResolvedValueOnce({
+    is_active: true,
+    is_lead: true,
+    ...overrides,
+  });
 }
 
 // =====================================================================
@@ -150,7 +166,7 @@ describe("GET /event/:code", () => {
     app = buildApp();
   });
 
-  it("returns event details (200) for valid code", async () => {
+  it("returns event status but withholds the roster from a caller with no session", async () => {
     const event = mockEvent({ code: "abcd2345", status: "NOT_STARTED" });
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
 
@@ -166,11 +182,35 @@ describe("GET /event/:code", () => {
     expect(res.status).toBe(200);
 
     const body = await res.json();
+    // The join page needs the status and languages before anyone has a session
     expect(body.event.code).toBe("abcd2345");
     expect(body.event.status).toBe("NOT_STARTED");
-    expect(body.participants).toHaveLength(2);
-    expect(body.lead_name).toBe("Alice");
     expect(body.current_participant).toBeNull();
+    // ...but knowing the event code must not enumerate the players
+    expect(body.participants).toHaveLength(0);
+    expect(body.lead_name).toBeNull();
+  });
+
+  it("returns the roster to a participant of the event", async () => {
+    const event = mockEvent({ code: "abcd2345", status: "WAITING" });
+    mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
+
+    vi.mocked(getSessionFromRedis).mockResolvedValueOnce(makeSessionData() as any);
+    mockSessionParticipant();
+
+    mockedDb.where.mockResolvedValueOnce([
+      { id: "p-id", display_name: "Lead", is_lead: true, is_active: true },
+      { id: "p2", display_name: "Bob", is_lead: false, is_active: true },
+    ]);
+
+    const res = await app.request("/event/abcd2345", {
+      headers: { Cookie: "cityroam_session=fake-token" },
+    });
+    expect(res.status).toBe(200);
+
+    const body = await res.json();
+    expect(body.participants).toHaveLength(2);
+    expect(body.lead_name).toBe("Lead");
   });
 
   it("returns 404 for missing event", async () => {
@@ -189,6 +229,7 @@ describe("GET /event/:code", () => {
 
     // Mock getSession from the session module (used by middleware)
     vi.mocked(getSessionFromRedis).mockResolvedValueOnce(makeSessionData() as any);
+    mockSessionParticipant();
 
     // Participant list
     const participantRows = [
@@ -323,13 +364,14 @@ describe("POST /event/:code/join", () => {
     const event = mockEvent({ id: "e-id", code: "abcd2345", status: "NOT_STARTED" });
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
 
+    // No active lead yet -> the joiner takes it
+    mockedDb.query.participants.findFirst.mockResolvedValueOnce(undefined);
+
     // 1) active count: 0
-    // 2) total count: 0 (first joiner -> isLead = true)
-    // 3) update event set().where() for lead promotion
-    // 4) participant list for response
+    // 2) update event set().where() for lead promotion
+    // 3) participant list for response
     mockedDb.where
       .mockResolvedValueOnce([{ count: 0 }])   // active count
-      .mockResolvedValueOnce([{ count: 0 }])   // total count (first joiner)
       .mockResolvedValueOnce(undefined)         // update event chain
       .mockResolvedValueOnce([                  // participant list for response
         { id: "lead-p", display_name: "FirstUser", is_lead: true, is_active: true },
@@ -444,6 +486,7 @@ describe("POST /event/:code/start", () => {
     vi.mocked(getSessionFromRedis).mockResolvedValueOnce(
       makeSessionData({ is_lead: false }) as any
     );
+    mockSessionParticipant({ is_lead: false });
 
     const res = await app.request("/event/abcd2345/start", {
       method: "POST",
@@ -463,6 +506,7 @@ describe("POST /event/:code/start", () => {
     vi.mocked(getSessionFromRedis).mockResolvedValueOnce(
       makeSessionData() as any
     );
+    mockSessionParticipant();
 
     // Event is IN_PROGRESS, not WAITING
     const event = mockEvent({ id: "e-id", code: "abcd2345", status: "IN_PROGRESS", route_id: "r-id" });
@@ -486,6 +530,7 @@ describe("POST /event/:code/start", () => {
     vi.mocked(getSessionFromRedis).mockResolvedValueOnce(
       makeSessionData() as any
     );
+    mockSessionParticipant();
 
     const event = mockEvent({
       id: "e-id",
@@ -554,6 +599,7 @@ describe("POST /event/:code/leave", () => {
     vi.mocked(getSessionFromRedis).mockResolvedValueOnce(
       makeSessionData({ is_lead: false, display_name: "Bob" }) as any
     );
+    mockSessionParticipant({ is_lead: false });
 
     const event = mockEvent({ id: "e-id", code: "abcd2345", status: "IN_PROGRESS" });
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
@@ -588,10 +634,12 @@ describe("POST /event/:code/leave", () => {
     // Session deleted from Redis
     expect(deleteSession).toHaveBeenCalledWith("fake-token");
 
-    // Control event published
+    // Control event published, carrying the real id so clients can match
+    // the leaver without guessing by display name
     expect(publishControl).toHaveBeenCalledWith("abcd2345", {
       type: "participant_left",
       data: {
+        participant_id: "p-id",
         name: "Bob",
         participant_count: 3,
         reason: "voluntary",
@@ -608,24 +656,32 @@ describe("POST /event/:code/leave", () => {
     vi.mocked(getSessionFromRedis).mockResolvedValueOnce(
       makeSessionData({ participant_id: "lead-p", is_lead: true, display_name: "Lead" }) as any
     );
+    mockSessionParticipant();
 
     const event = mockEvent({ id: "e-id", code: "abcd2345", status: "WAITING" });
-    mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
+    // Once for the leave handler, once for ensureActiveLead's locked read
+    mockedDb.query.events.findFirst
+      .mockResolvedValueOnce(event)
+      .mockResolvedValueOnce(event);
 
-    // Find next lead via db.query.participants.findFirst
+    // ensureActiveLead: no active lead remains, then find the oldest active
     const nextLead = mockParticipant({
       id: "next-lead",
       display_name: "Alice",
       is_active: true,
     });
-    mockedDb.query.participants.findFirst.mockResolvedValueOnce(nextLead);
+    mockedDb.query.participants.findFirst
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce(nextLead);
 
     // 1) update participant to inactive: db.update().set().where()
-    // 2) update new lead is_lead=true: db.update().set().where()
-    // 3) update event lead_participant_id: db.update().set().where()
-    // 4) count remaining active: db.select().from().where()
+    // 2) demote stale leads: db.update().set().where()
+    // 3) update new lead is_lead=true: db.update().set().where()
+    // 4) update event lead_participant_id: db.update().set().where()
+    // 5) count remaining active: db.select().from().where()
     mockedDb.where
       .mockResolvedValueOnce(undefined)       // update participant inactive
+      .mockResolvedValueOnce(undefined)       // demote stale leads
       .mockResolvedValueOnce(undefined)       // update new lead
       .mockResolvedValueOnce(undefined)       // update event lead
       .mockResolvedValueOnce([{ count: 2 }]); // count remaining
@@ -648,6 +704,12 @@ describe("POST /event/:code/leave", () => {
     expect(publishControl).toHaveBeenCalledWith("abcd2345", expect.objectContaining({
       type: "participant_left",
     }));
+
+    // Promotion is announced so clients can re-render lead-only controls
+    expect(publishControl).toHaveBeenCalledWith("abcd2345", {
+      type: "lead_changed",
+      data: { participant_id: "next-lead", name: "Alice" },
+    });
   });
 });
 
@@ -666,6 +728,8 @@ describe("GET /event/:code/messages", () => {
 
   it("returns messages in order (200)", async () => {
     const event = mockEvent({ id: "e-id", code: "abcd2345" });
+    vi.mocked(getSessionFromRedis).mockResolvedValueOnce(makeSessionData() as any);
+    mockSessionParticipant();
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
 
     const cachedMessages = [
@@ -692,7 +756,9 @@ describe("GET /event/:code/messages", () => {
     ];
     vi.mocked(getMessages).mockResolvedValueOnce(cachedMessages as any);
 
-    const res = await app.request("/event/abcd2345/messages");
+    const res = await app.request("/event/abcd2345/messages", {
+      headers: { Cookie: "cityroam_session=fake-token" },
+    });
     expect(res.status).toBe(200);
 
     const body = await res.json();
@@ -703,6 +769,8 @@ describe("GET /event/:code/messages", () => {
 
   it("respects 'since' filter", async () => {
     const event = mockEvent({ id: "e-id", code: "abcd2345" });
+    vi.mocked(getSessionFromRedis).mockResolvedValueOnce(makeSessionData() as any);
+    mockSessionParticipant();
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
 
     const sinceMessages = [
@@ -719,7 +787,9 @@ describe("GET /event/:code/messages", () => {
     ];
     vi.mocked(getMessagesSince).mockResolvedValueOnce(sinceMessages as any);
 
-    const res = await app.request("/event/abcd2345/messages?since=2026-01-01T00:02:00.000Z");
+    const res = await app.request("/event/abcd2345/messages?since=2026-01-01T00:02:00.000Z", {
+      headers: { Cookie: "cityroam_session=fake-token" },
+    });
     expect(res.status).toBe(200);
 
     const body = await res.json();
@@ -732,6 +802,8 @@ describe("GET /event/:code/messages", () => {
 
   it("absolutizes bare S3 keys stored before uploads returned full URLs", async () => {
     const event = mockEvent({ id: "e-id", code: "abcd2345" });
+    vi.mocked(getSessionFromRedis).mockResolvedValueOnce(makeSessionData() as any);
+    mockSessionParticipant();
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
 
     // Empty cache forces the DB fallback, which is the path legacy rows take.
@@ -762,7 +834,9 @@ describe("GET /event/:code/messages", () => {
       },
     ]);
 
-    const res = await app.request("/event/abcd2345/messages");
+    const res = await app.request("/event/abcd2345/messages", {
+      headers: { Cookie: "cityroam_session=fake-token" },
+    });
     expect(res.status).toBe(200);
 
     const body = await res.json();
@@ -770,5 +844,305 @@ describe("GET /event/:code/messages", () => {
     expect(body.messages[1].image_url).toBe(
       "https://cdn.test.com/uploads/already-absolute.png",
     );
+  });
+});
+
+// =====================================================================
+// Rejoining after being marked inactive
+// =====================================================================
+describe("rejoin after inactivity", () => {
+  let app: Hono;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    resetUUIDs();
+    resetDbChainMocks();
+    app = buildApp();
+  });
+
+  it("GET omits current_participant when the session's participant is inactive", async () => {
+    const event = mockEvent({ id: "e-id", code: "abcd2345", status: "IN_PROGRESS" });
+    mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
+
+    vi.mocked(getSessionFromRedis).mockResolvedValueOnce(
+      makeSessionData({ participant_id: "p1", display_name: "Swept" }) as any,
+    );
+    mockSessionParticipant({ is_active: false });
+
+    mockedDb.where.mockResolvedValueOnce([
+      { id: "p1", display_name: "Swept", is_lead: true, is_active: false },
+      { id: "p2", display_name: "Bob", is_lead: false, is_active: true },
+    ]);
+
+    const res = await app.request("/event/abcd2345", {
+      headers: { Cookie: "cityroam_session=fake-token" },
+    });
+
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.current_participant).toBeNull();
+  });
+
+  it("GET reports current_participant using the DB row, not the cached session", async () => {
+    const event = mockEvent({ id: "e-id", code: "abcd2345", status: "IN_PROGRESS" });
+    mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
+
+    // Session still says is_lead=false, but the participant was promoted
+    vi.mocked(getSessionFromRedis).mockResolvedValueOnce(
+      makeSessionData({ participant_id: "p1", display_name: "Alice", is_lead: false }) as any,
+    );
+    mockSessionParticipant({ is_lead: false });
+
+    mockedDb.where.mockResolvedValueOnce([
+      { id: "p1", display_name: "Alice", is_lead: true, is_active: true },
+    ]);
+
+    const res = await app.request("/event/abcd2345", {
+      headers: { Cookie: "cityroam_session=fake-token" },
+    });
+
+    const body = await res.json();
+    expect(body.current_participant.is_lead).toBe(true);
+  });
+
+  it("reactivates an inactive participant instead of inserting a duplicate", async () => {
+    const event = mockEvent({ id: "e-id", code: "abcd2345", status: "IN_PROGRESS" });
+    mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
+
+    mockedDb.query.participants.findFirst
+      .mockResolvedValueOnce(
+        mockParticipant({
+          id: "p1",
+          event_id: "e-id",
+          token: "fake-token",
+          is_active: false,
+          display_name: "Swept",
+        }),
+      ) // the cookie's row, resolved first
+      .mockResolvedValueOnce({ id: "other-lead" }); // an active lead still exists
+
+    mockedDb.where
+      .mockResolvedValueOnce([{ count: 1 }]) // active count
+      .mockImplementationOnce(() => mockedDb) // reactivate update -> returning()
+      .mockResolvedValueOnce([
+        { id: "p1", display_name: "Swept", is_lead: false, is_active: true },
+      ]);
+
+    mockedDb.returning.mockResolvedValueOnce([
+      mockParticipant({
+        id: "p1",
+        event_id: "e-id",
+        token: "fake-token",
+        is_active: true,
+        is_lead: false,
+        display_name: "Swept",
+      }),
+    ]);
+
+    const res = await app.request("/event/abcd2345/join", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: "cityroam_session=fake-token",
+      },
+      body: JSON.stringify({ display_name: "Swept" }),
+    });
+
+    expect(res.status).toBe(201);
+    const body = await res.json();
+    expect(body.participant.id).toBe("p1");
+
+    // Reactivated in place — no new participant row
+    expect(mockedDb.insert).not.toHaveBeenCalled();
+    expect(mockedDb.set).toHaveBeenCalledWith(
+      expect.objectContaining({
+        is_active: true,
+        left_at: null,
+        left_reason: null,
+      }),
+    );
+  });
+
+  it("gives the lead back to a solo player who left and rejoined", async () => {
+    const event = mockEvent({ id: "e-id", code: "abcd2345", status: "WAITING" });
+    mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
+
+    mockedDb.query.participants.findFirst
+      .mockResolvedValueOnce(
+        mockParticipant({
+          id: "p1",
+          event_id: "e-id",
+          token: "fake-token",
+          is_active: false,
+          is_lead: false,
+        }),
+      ) // the cookie's row, resolved first
+      .mockResolvedValueOnce(undefined); // no active lead
+
+    mockedDb.where
+      .mockResolvedValueOnce([{ count: 0 }]) // active count
+      .mockImplementationOnce(() => mockedDb) // reactivate update -> returning()
+      .mockResolvedValueOnce(undefined) // update event lead_participant_id
+      .mockResolvedValueOnce([
+        { id: "p1", display_name: "Solo", is_lead: true, is_active: true },
+      ]);
+
+    mockedDb.returning.mockResolvedValueOnce([
+      mockParticipant({
+        id: "p1",
+        event_id: "e-id",
+        token: "fake-token",
+        is_active: true,
+        is_lead: true,
+        display_name: "Solo",
+      }),
+    ]);
+
+    const res = await app.request("/event/abcd2345/join", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: "cityroam_session=fake-token",
+      },
+      body: JSON.stringify({ display_name: "Solo" }),
+    });
+
+    expect(res.status).toBe(201);
+    const body = await res.json();
+    expect(body.participant.is_lead).toBe(true);
+    expect(mockedDb.set).toHaveBeenCalledWith(
+      expect.objectContaining({ is_lead: true }),
+    );
+    expect(mockedDb.set).toHaveBeenCalledWith(
+      expect.objectContaining({ lead_participant_id: "p1" }),
+    );
+  });
+
+  it("keeps an in-progress event IN_PROGRESS when a rejoiner claims the lead", async () => {
+    const event = mockEvent({ id: "e-id", code: "abcd2345", status: "IN_PROGRESS" });
+    mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
+
+    mockedDb.query.participants.findFirst.mockResolvedValueOnce(undefined);
+
+    mockedDb.where
+      .mockResolvedValueOnce([{ count: 0 }])
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce([
+        { id: "new-p", display_name: "Newbie", is_lead: true, is_active: true },
+      ]);
+
+    mockedDb.returning.mockResolvedValueOnce([
+      mockParticipant({ id: "new-p", event_id: "e-id", is_lead: true, display_name: "Newbie" }),
+    ]);
+
+    const res = await app.request("/event/abcd2345/join", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ display_name: "Newbie" }),
+    });
+
+    expect(res.status).toBe(201);
+    const body = await res.json();
+    expect(body.event.status).toBe("IN_PROGRESS");
+    expect(mockedDb.set).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "IN_PROGRESS", lead_participant_id: "new-p" }),
+    );
+  });
+});
+
+// =====================================================================
+// Pending action exposure
+// =====================================================================
+describe("GET /event/:code pending_action", () => {
+  let app: Hono;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    resetUUIDs();
+    resetDbChainMocks();
+    app = buildApp();
+  });
+
+  it("reports the outstanding action block so a reloaded client can confirm it", async () => {
+    const event = mockEvent({
+      id: "e-id",
+      code: "abcd2345",
+      status: "IN_PROGRESS",
+      current_block_id: "action-block-1",
+    });
+    vi.mocked(getSessionFromRedis).mockResolvedValueOnce(makeSessionData() as any);
+    mockSessionParticipant();
+    mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
+    mockedDb.where.mockResolvedValueOnce([
+      { id: "p-id", display_name: "Lead", is_lead: true, is_active: true },
+    ]);
+    mockedDb.query.routeBlocks.findFirst.mockResolvedValueOnce({
+      id: "action-block-1",
+      type: "action",
+      config: { type: "action", label: "Take a photo of the statue" },
+    });
+
+    const res = await app.request("/event/abcd2345", {
+      headers: { Cookie: "cityroam_session=fake-token" },
+    });
+    expect(res.status).toBe(200);
+
+    const body = await res.json();
+    expect(body.pending_action).toEqual({
+      block_id: "action-block-1",
+      label: "Take a photo of the statue",
+    });
+  });
+
+  it("reports null while the hunt waits on a question rather than an action", async () => {
+    const event = mockEvent({
+      id: "e-id",
+      code: "abcd2345",
+      status: "IN_PROGRESS",
+      current_block_id: "question-block-1",
+    });
+    mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
+    mockedDb.where.mockResolvedValueOnce([]);
+    mockedDb.query.routeBlocks.findFirst.mockResolvedValueOnce({
+      id: "question-block-1",
+      type: "question",
+      config: { type: "question", clue: "Find it", accepted_answers: ["x"], hints: [] },
+    });
+
+    const res = await app.request("/event/abcd2345");
+    const body = await res.json();
+    expect(body.pending_action).toBeNull();
+  });
+
+  it("reports null mid-advancement when no block is current", async () => {
+    const event = mockEvent({
+      id: "e-id",
+      code: "abcd2345",
+      status: "IN_PROGRESS",
+      current_block_id: null,
+    });
+    mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
+    mockedDb.where.mockResolvedValueOnce([]);
+
+    const res = await app.request("/event/abcd2345");
+    const body = await res.json();
+    expect(body.pending_action).toBeNull();
+    expect(mockedDb.query.routeBlocks.findFirst).not.toHaveBeenCalled();
+  });
+
+  it("reports null for a terminal event", async () => {
+    const event = mockEvent({
+      id: "e-id",
+      code: "abcd2345",
+      status: "COMPLETED",
+      current_block_id: "action-block-1",
+    });
+    mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
+    mockedDb.where.mockResolvedValueOnce([]);
+
+    const res = await app.request("/event/abcd2345");
+    const body = await res.json();
+    expect(body.pending_action).toBeNull();
+    expect(mockedDb.query.routeBlocks.findFirst).not.toHaveBeenCalled();
   });
 });

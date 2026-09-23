@@ -412,6 +412,9 @@ describe("PUT /admin/blocks/:blockId/move", () => {
     const targetGroup = { id: targetGroupId };
     (db as any).query.routeGroups.findFirst.mockResolvedValueOnce(targetGroup);
 
+    // Live-event guard across the source and target groups: none playing
+    (db as any).where.mockResolvedValueOnce([{ count: 0 }]);
+
     // Source group remaining blocks (after removing moved block)
     (db as any).orderBy
       .mockResolvedValueOnce([])       // remaining in source group
@@ -424,6 +427,26 @@ describe("PUT /admin/blocks/:blockId/move", () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.block).toBeDefined();
+  });
+
+  it("returns 409 when a live event is in the source or target group", async () => {
+    const block = mockRouteBlock({ group_id: fakeUUID() });
+    (db as any).query.routeBlocks.findFirst.mockResolvedValueOnce(block);
+
+    const targetGroupId = validUUID();
+    (db as any).query.routeGroups.findFirst.mockResolvedValueOnce({ id: targetGroupId });
+
+    // A move renumbers both groups, stranding a live current_block_index.
+    (db as any).where.mockResolvedValueOnce([{ count: 1 }]);
+
+    const res = await adminRequest(app, "PUT", `/admin/blocks/${block.id}/move`, {
+      target_group_id: targetGroupId,
+      position: 0,
+    });
+
+    expect(res.status).toBe(409);
+    const body = await res.json();
+    expect(body.code).toBe("BLOCK_HAS_LIVE_EVENTS");
   });
 
   it("returns 404 when block does not exist", async () => {

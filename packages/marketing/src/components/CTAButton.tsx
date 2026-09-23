@@ -1,21 +1,34 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { POSTHOG_EVENTS } from "@cityroam/shared/analytics";
 import type { CheckoutSessionResponse } from "@cityroam/shared/types";
 import { trackEvent } from "@/lib/analytics";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
+/**
+ * Marketing segments the API maps to route families. "general" is the
+ * homepage, which takes whatever family is configured as the default.
+ */
+export type CheckoutSegment =
+  | "general"
+  | "families"
+  | "hen-parties"
+  | "team-building";
+
 export function CTAButton({
   location,
   label,
+  segment = "general",
 }: {
   location: string;
   label?: string;
+  segment?: CheckoutSegment;
 }) {
   const t = useTranslations("cta");
+  const locale = useLocale();
   const displayLabel = label ?? t("defaultLabel");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -33,6 +46,9 @@ export function CTAButton({
       const res = await fetch(`${API_URL}/checkout/create-session`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        // The API needs both to pick a hunt: without them it would fall back
+        // to an arbitrary route and email the buyer in the wrong language.
+        body: JSON.stringify({ segment, language: locale }),
       });
 
       if (!res.ok) {

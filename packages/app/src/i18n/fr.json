@@ -11,6 +11,17 @@
     "saving": "Enregistrement...",
     "connectionClosed": "Connexion fermée."
   },
+  "entry": {
+    "title": "Entre ton code d'événement",
+    "subtitle": "Saisis le code reçu dans ton email de confirmation pour commencer l'aventure.",
+    "codeLabel": "Code de l'événement",
+    "codePlaceholder": "ex. k7fq2mtz",
+    "submitButton": "Continuer",
+    "emptyCode": "Entre ton code d'événement pour continuer.",
+    "invalidCode": "Ce code ne semble pas valide. Vérifie ton email de confirmation et réessaie.",
+    "help": "Ton code se trouve dans l'email de confirmation envoyé lors de ta réservation.",
+    "tryAnotherCode": "Saisir un autre code"
+  },
   "join": {
     "title": "Rejoins l'équipe",
     "nameLabel": "Ton nom",
@@ -21,7 +32,12 @@
     "statusCompleted": "Cet événement est déjà terminé.",
     "statusExpired": "Cet événement a expiré.",
     "statusRefunded": "Cet événement a été remboursé.",
-    "statusUnavailable": "Cet événement n'est plus disponible."
+    "statusUnavailable": "Cet événement n'est plus disponible.",
+    "disconnected": {
+      "eventNotFound": "Nous n'avons pas trouvé cet événement.",
+      "eventEnded": "Cet événement est terminé.",
+      "notActive": "Tu n'es plus dans cette partie. Rejoins à nouveau avec ton nom."
+    }
   },
   "lobby": {
     "title": "En attente des joueurs",
@@ -75,6 +91,7 @@
     "participantJoined": "{{name}} a rejoint la partie",
     "participantLeft": "{{name}} a quitté la partie",
     "nameChanged": "{{oldName}} a changé son nom en {{newName}}",
+    "leadChanged": "{{name}} est maintenant le chef du groupe",
     "leaveDialog": {
       "title": "Quitter la partie ?",
       "message": "Tu seras retiré de la partie. Tu pourras revenir plus tard en ouvrant le lien à nouveau.",
@@ -86,7 +103,11 @@
       "placeholder": "Entre ton nom"
     },
     "sendAriaLabel": "Envoyer le message",
-    "closeAriaLabel": "Fermer"
+    "closeAriaLabel": "Fermer",
+    "sending": "Envoi...",
+    "sendFailed": "Non envoyé. Touche pour réessayer.",
+    "retryAriaLabel": "Réessayer d'envoyer le message",
+    "actionOfflineError": "Tu es hors ligne — confirmation impossible. Réessaie."
   },
   "complete": {
     "title": "Partie terminée !",
@@ -113,7 +134,12 @@
     "rateLimited": "Trop de tentatives. Attends un instant et réessaie.",
     "unauthorized": "Ta session a expiré. Rejoins la partie à nouveau.",
     "networkError": "Connexion impossible. Vérifie ton signal et réessaie.",
-    "generic": "Un problème est survenu. Réessaie."
+    "generic": "Un problème est survenu. Réessaie.",
+    "serverError": "Notre serveur a rencontré un problème. Réessaie dans un instant.",
+    "leadOnly": "Seul le chef du groupe peut faire ça.",
+    "cannotStart": "Impossible de lancer la partie pour le moment. Elle est peut-être déjà en cours.",
+    "languageLocked": "La langue ne peut être changée qu'avant le début de la partie.",
+    "languageUnavailable": "Cette chasse n'est pas encore disponible dans cette langue."
   },
   "validation": {
     "DISPLAY_NAME_TOO_SHORT": "Le nom d'affichage doit contenir au moins {{min}} caractères",

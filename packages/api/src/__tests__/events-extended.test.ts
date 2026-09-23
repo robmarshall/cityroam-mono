@@ -125,6 +125,20 @@ function resetDbChainMocks(): void {
   mockedDb.delete.mockReset().mockImplementation(() => mockedDb);
   mockedDb.execute.mockReset().mockResolvedValue([{ "?column?": 1 }]);
   mockedDb.transaction.mockReset().mockImplementation((fn: any) => fn(mockedDb));
+  mockedDb.query.events.findFirst.mockReset();
+  mockedDb.query.participants.findFirst.mockReset();
+}
+
+/**
+ * resolveSession's Redis fast path re-reads the participant row to confirm
+ * they're still active, so any test with a session must queue that row first.
+ */
+function mockSessionParticipant(overrides: Record<string, unknown> = {}): void {
+  mockedDb.query.participants.findFirst.mockResolvedValueOnce({
+    is_active: true,
+    is_lead: true,
+    ...overrides,
+  });
 }
 
 // =====================================================================
@@ -144,6 +158,7 @@ describe("POST /event/:code/name", () => {
     vi.mocked(getSessionFromRedis).mockResolvedValueOnce(
       makeSessionData() as any,
     );
+    mockSessionParticipant();
 
     const event = mockEvent({ id: "e-id", code: "abcd2345", status: "WAITING" });
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
@@ -192,6 +207,7 @@ describe("POST /event/:code/name", () => {
     vi.mocked(getSessionFromRedis).mockResolvedValueOnce(
       makeSessionData() as any,
     );
+    mockSessionParticipant();
 
     const event = mockEvent({ id: "e-id", code: "abcd2345", status: "WAITING" });
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
@@ -221,6 +237,7 @@ describe("POST /event/:code/name", () => {
     vi.mocked(getSessionFromRedis).mockResolvedValueOnce(
       makeSessionData({ event_code: "other999" }) as any,
     );
+    mockSessionParticipant();
 
     const res = await app.request("/event/abcd2345/name", {
       method: "POST",
@@ -241,6 +258,7 @@ describe("POST /event/:code/name", () => {
     vi.mocked(getSessionFromRedis).mockResolvedValueOnce(
       makeSessionData() as any,
     );
+    mockSessionParticipant();
 
     const event = mockEvent({ id: "e-id", code: "abcd2345", status: "COMPLETED" });
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
@@ -264,6 +282,7 @@ describe("POST /event/:code/name", () => {
     vi.mocked(getSessionFromRedis).mockResolvedValueOnce(
       makeSessionData({ display_name: "Lead" }) as any,
     );
+    mockSessionParticipant();
 
     const event = mockEvent({ id: "e-id", code: "abcd2345", status: "WAITING" });
     mockedDb.query.events.findFirst.mockResolvedValueOnce(event);
@@ -307,6 +326,7 @@ describe("PUT /event/:code/language", () => {
     vi.mocked(getSessionFromRedis).mockResolvedValueOnce(
       makeSessionData() as any,
     );
+    mockSessionParticipant();
 
     const event = mockEvent({
       id: "e-id",
@@ -356,6 +376,7 @@ describe("PUT /event/:code/language", () => {
     vi.mocked(getSessionFromRedis).mockResolvedValueOnce(
       makeSessionData({ is_lead: false }) as any,
     );
+    mockSessionParticipant({ is_lead: false });
 
     const res = await app.request("/event/abcd2345/language", {
       method: "PUT",
@@ -376,6 +397,7 @@ describe("PUT /event/:code/language", () => {
     vi.mocked(getSessionFromRedis).mockResolvedValueOnce(
       makeSessionData() as any,
     );
+    mockSessionParticipant();
 
     const res = await app.request("/event/abcd2345/language", {
       method: "PUT",
@@ -396,6 +418,7 @@ describe("PUT /event/:code/language", () => {
     vi.mocked(getSessionFromRedis).mockResolvedValueOnce(
       makeSessionData() as any,
     );
+    mockSessionParticipant();
 
     const event = mockEvent({
       id: "e-id",
@@ -424,6 +447,7 @@ describe("PUT /event/:code/language", () => {
     vi.mocked(getSessionFromRedis).mockResolvedValueOnce(
       makeSessionData() as any,
     );
+    mockSessionParticipant();
 
     const event = mockEvent({
       id: "e-id",

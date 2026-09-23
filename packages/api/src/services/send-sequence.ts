@@ -1,6 +1,6 @@
 import type { SequenceItem } from "@cityroam/shared/types";
 import { publishTyping } from "../redis/index.js";
-import { writeGuideMessage } from "./pipeline/handlers/answer-attempt.js";
+import { writeGuideMessage, SCRIPTED_MESSAGE } from "./pipeline/handlers/answer-attempt.js";
 import { createLogger } from "../lib/logger.js";
 
 const log = createLogger("send-sequence");
@@ -52,6 +52,8 @@ export async function sendSequence(
         stepNumber,
         content,
         item.image_url ?? null,
+        undefined,
+        SCRIPTED_MESSAGE,
       );
     } catch (err) {
       log.error("failed to send sequence item", { eventId, eventCode, err });

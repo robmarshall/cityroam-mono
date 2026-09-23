@@ -1,20 +1,42 @@
 # Production docker-compose for Coolify deployment
-# Traefik routing is configured via labels on each service.
+# Backend services only. All frontends (app, admin, marketing) are on Vercel,
+# and a Cloudflare worker (infra/cloudflare-workers/prod-router.js) routes
+# <DOMAIN>/app/* to the player-app project and everything else to marketing.
+# This file mirrors docker-compose.staging.yml; keep the two in step.
 #
-# Required: Set these in Coolify's environment variables UI:
-#   DOMAIN          - e.g. cityroam.com
-#   API_DOMAIN      - e.g. api.cityroam.com
-#   ADMIN_DOMAIN    - e.g. admin.cityroam.com
+# Required env vars in Coolify:
+#   API_DOMAIN          - e.g. api.cityroam.co.uk
+#   WS_DOMAIN           - e.g. ws.cityroam.co.uk (separate subdomain for WebSocket)
+#   POSTGRES_PASSWORD   - strong random password
+#   REDIS_PASSWORD      - strong random password
+#
+# All four are interpolated with `:?` — an unset value aborts the deploy rather
+# than producing an empty Traefik Host() rule that silently 404s.
+#
+# Optional:
+#   SENTRY_DSN          - error reporting for api-http and api-ws; empty disables it
+#   SENTRY_ENVIRONMENT  - set explicitly to `production`; empty falls back to NODE_ENV
+#                         (production), which would mix staging into prod alerts
+#   SENTRY_RELEASE      - version or SHA (no prefix); empty falls back to Coolify's
+#                         SOURCE_COMMIT, reported as api@<sha>
+#
+# Frontend values that must match this file (set on the Vercel projects):
+#   VITE_API_URL        = https://<API_DOMAIN>
+#   VITE_WS_URL         = wss://<WS_DOMAIN>   (no path, no port — the app appends
+#                         /ws/<code>, see packages/app/src/contexts/WebSocketContext.tsx)
+#
+# Traefik router and service names are prefixed `cityroam-prod-` so they cannot
+# collide with the staging stack's `api-http` / `api-ws` routers when both run
+# behind the same Coolify Traefik instance.
 #
 # All other env vars should be set in Coolify per .env.example.
-# Traefik and Let's Encrypt SSL are managed by Coolify automatically.
 
 services:
-  postgres:
+  cityroam-postgres:
     image: postgres:16
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-cityroam}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
       POSTGRES_DB: ${POSTGRES_DB:-cityroam}
     volumes:
       - postgres-data:/var/lib/postgresql/data
@@ -27,13 +49,13 @@ services:
       - cityroam-network
     restart: unless-stopped
 
-  redis:
+  cityroam-redis:
     image: redis:7
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:?REDIS_PASSWORD must be set}"]
     volumes:
       - redis-data:/data
     healthcheck:
-      test: ["CMD-SHELL", "redis-cli ${REDIS_PASSWORD:+-a $REDIS_PASSWORD} ping"]
+      test: ["CMD-SHELL", "redis-cli -a ${REDIS_PASSWORD} ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -48,9 +70,9 @@ services:
     command: ["node", "--import", "tsx", "src/db/migrate.ts"]
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://${POSTGRES_USER:-cityroam}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-cityroam}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-cityroam}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@cityroam-postgres:5432/${POSTGRES_DB:-cityroam}
     depends_on:
-      postgres:
+      cityroam-postgres:
         condition: service_healthy
     networks:
       - cityroam-network
@@ -64,13 +86,20 @@ services:
     environment:
       NODE_ENV: production
       PORT: "3001"
-      DATABASE_URL: postgresql://${POSTGRES_USER:-cityroam}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-cityroam}
-      REDIS_URL: redis://${REDIS_PASSWORD:+:${REDIS_PASSWORD}@}redis:6379
+      DATABASE_URL: postgresql://${POSTGRES_USER:-cityroam}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@cityroam-postgres:5432/${POSTGRES_DB:-cityroam}
+      REDIS_URL: redis://${REDIS_PASSWORD:+:${REDIS_PASSWORD}@}cityroam-redis:6379
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      # Empty values fall back (see packages/api/src/lib/sentry.ts).
+      SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-}
+      SENTRY_RELEASE: ${SENTRY_RELEASE:-}
+      # Coolify sets SOURCE_COMMIT; the API uses it as the Sentry release (api@<sha>)
+      # when SENTRY_RELEASE is not set.
+      SOURCE_COMMIT: ${SOURCE_COMMIT:-}
     env_file: .env
     depends_on:
       migrate:
         condition: service_completed_successfully
-      redis:
+      cityroam-redis:
         condition: service_healthy
     networks:
       - cityroam-network
@@ -78,17 +107,14 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      # HTTP API routes (non-WebSocket)
-      - "traefik.http.routers.api-http.rule=Host(`${API_DOMAIN}`)"
-      - "traefik.http.routers.api-http.entrypoints=https"
-      - "traefik.http.routers.api-http.tls=true"
-      - "traefik.http.routers.api-http.tls.certresolver=letsencrypt"
-      - "traefik.http.services.api-http.loadbalancer.server.port=3001"
-      # Lower priority than api-ws so /ws/* is routed to WebSocket server
-      - "traefik.http.routers.api-http.priority=10"
-      # Health check
-      - "traefik.http.services.api-http.loadbalancer.healthcheck.path=/health"
-      - "traefik.http.services.api-http.loadbalancer.healthcheck.interval=30s"
+      - "traefik.http.routers.cityroam-prod-api-http.rule=Host(`${API_DOMAIN:?API_DOMAIN must be set (e.g. api.cityroam.co.uk)}`)"
+      - "traefik.http.routers.cityroam-prod-api-http.entrypoints=https"
+      - "traefik.http.routers.cityroam-prod-api-http.tls=true"
+      - "traefik.http.routers.cityroam-prod-api-http.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.cityroam-prod-api-http.service=cityroam-prod-api-http"
+      - "traefik.http.services.cityroam-prod-api-http.loadbalancer.server.port=3001"
+      - "traefik.http.services.cityroam-prod-api-http.loadbalancer.healthcheck.path=/health"
+      - "traefik.http.services.cityroam-prod-api-http.loadbalancer.healthcheck.interval=30s"
 
   api-ws:
     build:
@@ -98,13 +124,20 @@ services:
     environment:
       NODE_ENV: production
       WS_PORT: "3002"
-      DATABASE_URL: postgresql://${POSTGRES_USER:-cityroam}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-cityroam}
-      REDIS_URL: redis://${REDIS_PASSWORD:+:${REDIS_PASSWORD}@}redis:6379
+      DATABASE_URL: postgresql://${POSTGRES_USER:-cityroam}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@cityroam-postgres:5432/${POSTGRES_DB:-cityroam}
+      REDIS_URL: redis://${REDIS_PASSWORD:+:${REDIS_PASSWORD}@}cityroam-redis:6379
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      # Empty values fall back (see packages/api/src/lib/sentry.ts).
+      SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-}
+      SENTRY_RELEASE: ${SENTRY_RELEASE:-}
+      # Coolify sets SOURCE_COMMIT; the API uses it as the Sentry release (api@<sha>)
+      # when SENTRY_RELEASE is not set.
+      SOURCE_COMMIT: ${SOURCE_COMMIT:-}
     env_file: .env
     depends_on:
       migrate:
         condition: service_completed_successfully
-      redis:
+      cityroam-redis:
         condition: service_healthy
     networks:
       - cityroam-network
@@ -112,81 +145,14 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      # WebSocket routes — PathPrefix /ws/ on the API domain
-      - "traefik.http.routers.api-ws.rule=Host(`${API_DOMAIN}`) && PathPrefix(`/ws/`)"
-      - "traefik.http.routers.api-ws.entrypoints=https"
-      - "traefik.http.routers.api-ws.tls=true"
-      - "traefik.http.routers.api-ws.tls.certresolver=letsencrypt"
-      - "traefik.http.services.api-ws.loadbalancer.server.port=3002"
-      # Higher priority than api-http so /ws/* is matched first
-      - "traefik.http.routers.api-ws.priority=20"
-      # Health check
-      - "traefik.http.services.api-ws.loadbalancer.healthcheck.path=/health"
-      - "traefik.http.services.api-ws.loadbalancer.healthcheck.interval=30s"
-
-  marketing:
-    build:
-      context: .
-      dockerfile: packages/marketing/Dockerfile
-    environment:
-      NODE_ENV: production
-      HOSTNAME: "0.0.0.0"
-      PORT: "3000"
-    env_file: .env
-    networks:
-      - cityroam-network
-      - coolify
-    restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
-      # Marketing catches all traffic on the root domain EXCEPT /app/*
-      - "traefik.http.routers.marketing.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.marketing.entrypoints=https"
-      - "traefik.http.routers.marketing.tls=true"
-      - "traefik.http.routers.marketing.tls.certresolver=letsencrypt"
-      - "traefik.http.services.marketing.loadbalancer.server.port=3000"
-      # Lower priority than app so /app/* is matched first
-      - "traefik.http.routers.marketing.priority=1"
-      # Health check
-      - "traefik.http.services.marketing.loadbalancer.healthcheck.path=/"
-      - "traefik.http.services.marketing.loadbalancer.healthcheck.interval=30s"
-
-  app:
-    build:
-      context: .
-      dockerfile: packages/app/Dockerfile
-    networks:
-      - cityroam-network
-      - coolify
-    restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
-      # App SPA at /app/* on the root domain
-      # No strip-prefix — the app's base path is /app/ (configured in vite.config.ts)
-      - "traefik.http.routers.app.rule=Host(`${DOMAIN}`) && PathPrefix(`/app/`)"
-      - "traefik.http.routers.app.entrypoints=https"
-      - "traefik.http.routers.app.tls=true"
-      - "traefik.http.routers.app.tls.certresolver=letsencrypt"
-      - "traefik.http.services.app.loadbalancer.server.port=80"
-      # Higher priority than marketing so /app/* is matched first
-      - "traefik.http.routers.app.priority=10"
-
-  admin:
-    build:
-      context: .
-      dockerfile: packages/admin/Dockerfile
-    networks:
-      - cityroam-network
-      - coolify
-    restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
-      # Admin on its own subdomain
-      - "traefik.http.routers.admin.rule=Host(`${ADMIN_DOMAIN}`)"
-      - "traefik.http.routers.admin.entrypoints=https"
-      - "traefik.http.routers.admin.tls=true"
-      - "traefik.http.routers.admin.tls.certresolver=letsencrypt"
-      - "traefik.http.services.admin.loadbalancer.server.port=80"
+      - "traefik.http.routers.cityroam-prod-api-ws.rule=Host(`${WS_DOMAIN:?WS_DOMAIN must be set (e.g. ws.cityroam.co.uk)}`)"
+      - "traefik.http.routers.cityroam-prod-api-ws.entrypoints=https"
+      - "traefik.http.routers.cityroam-prod-api-ws.tls=true"
+      - "traefik.http.routers.cityroam-prod-api-ws.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.cityroam-prod-api-ws.service=cityroam-prod-api-ws"
+      - "traefik.http.services.cityroam-prod-api-ws.loadbalancer.server.port=3002"
+      - "traefik.http.services.cityroam-prod-api-ws.loadbalancer.healthcheck.path=/health"
+      - "traefik.http.services.cityroam-prod-api-ws.loadbalancer.healthcheck.interval=30s"
 
 volumes:
   postgres-data:
