@@ -17,11 +17,14 @@ import {
   routeBlockSchema,
   routeGroupSchema,
   groupUpdateSchema,
+  groupCreateSchema,
   bulkRouteGroupCreateSchema,
   groupReorderSchema,
   blockReorderSchema,
   blockMoveSchema,
   messageBankSchema,
+  messageBankListQuerySchema,
+  adminApiKeyCreateSchema,
 } from "./admin-input.js";
 
 // ---------------------------------------------------------------------------
@@ -1048,5 +1051,112 @@ describe("routeImageRefSchema", () => {
       delay_ms: 1500,
     });
     expect(result.success).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// adminApiKeyCreateSchema
+// ---------------------------------------------------------------------------
+describe("adminApiKeyCreateSchema", () => {
+  it("accepts a name, grantable scopes and a known lifetime", () => {
+    const parsed = adminApiKeyCreateSchema.parse({
+      name: "  MCP staging  ",
+      scopes: ["routes:read", "routes:write", "images:write"],
+      expires_in_days: 90,
+    });
+    expect(parsed.name).toBe("MCP staging");
+    expect(parsed.scopes).toEqual(["routes:read", "routes:write", "images:write"]);
+    expect(parsed.expires_in_days).toBe(90);
+  });
+
+  it("accepts a key that never expires, with the lifetime null or omitted", () => {
+    expect(adminApiKeyCreateSchema.safeParse({ name: "k", scopes: ["routes:read"], expires_in_days: null }).success).toBe(true);
+    expect(adminApiKeyCreateSchema.safeParse({ name: "k", scopes: ["routes:read"] }).success).toBe(true);
+  });
+
+  it("refuses routes:publish — activation is human-only", () => {
+    const result = adminApiKeyCreateSchema.safeParse({
+      name: "k",
+      scopes: ["routes:read", "routes:publish"],
+    });
+    expect(result.success).toBe(false);
+    expect(result.error!.issues[0].message).toContain("routes:publish");
+  });
+
+  it("refuses an empty, unknown or repeated scope list", () => {
+    expect(adminApiKeyCreateSchema.safeParse({ name: "k", scopes: [] }).success).toBe(false);
+    expect(adminApiKeyCreateSchema.safeParse({ name: "k", scopes: ["events:read"] }).success).toBe(false);
+    expect(adminApiKeyCreateSchema.safeParse({ name: "k", scopes: ["routes:read", "routes:read"] }).success).toBe(false);
+  });
+
+  it("refuses a blank or over-long name", () => {
+    expect(adminApiKeyCreateSchema.safeParse({ name: "   ", scopes: ["routes:read"] }).success).toBe(false);
+    expect(adminApiKeyCreateSchema.safeParse({ name: "x".repeat(101), scopes: ["routes:read"] }).success).toBe(false);
+    expect(adminApiKeyCreateSchema.safeParse({ name: "x".repeat(100), scopes: ["routes:read"] }).success).toBe(true);
+  });
+
+  it("refuses a lifetime that is not offered", () => {
+    expect(adminApiKeyCreateSchema.safeParse({ name: "k", scopes: ["routes:read"], expires_in_days: 7 }).success).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// groupCreateSchema
+// ---------------------------------------------------------------------------
+describe("groupCreateSchema", () => {
+  const block = { type: "message" as const, config: { type: "message" as const, content: "Hi" } };
+
+  it("accepts a name-only body (the original contract)", () => {
+    expect(groupCreateSchema.parse({ name: "  Intro " })).toEqual({ name: "Intro" });
+  });
+
+  it("accepts blocks and a position", () => {
+    const result = groupCreateSchema.parse({ name: "Intro", position: 2, blocks: [block] });
+    expect(result.position).toBe(2);
+    expect(result.blocks).toHaveLength(1);
+    expect(result.blocks![0].delay_ms).toBe(0);
+  });
+
+  it("accepts an empty blocks array", () => {
+    expect(groupCreateSchema.parse({ name: "Intro", blocks: [] }).blocks).toEqual([]);
+  });
+
+  it("rejects more than 50 blocks", () => {
+    expect(() =>
+      groupCreateSchema.parse({ name: "Intro", blocks: Array.from({ length: 51 }, () => block) }),
+    ).toThrow("Maximum 50 blocks per group");
+  });
+
+  it("validates each block with routeBlockSchema", () => {
+    expect(() =>
+      groupCreateSchema.parse({ name: "Intro", blocks: [{ ...block, type: "question" }] }),
+    ).toThrow("Block type must match config type");
+  });
+
+  it("rejects a negative or fractional position", () => {
+    expect(() => groupCreateSchema.parse({ name: "Intro", position: -1 })).toThrow();
+    expect(() => groupCreateSchema.parse({ name: "Intro", position: 1.5 })).toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// messageBankListQuerySchema
+// ---------------------------------------------------------------------------
+describe("messageBankListQuerySchema", () => {
+  it("accepts every supported language", () => {
+    for (const language of ["en", "es", "fr", "de", "nl"]) {
+      expect(messageBankListQuerySchema.parse({ language }).language).toBe(language);
+    }
+  });
+
+  it("rejects an unsupported language", () => {
+    expect(() => messageBankListQuerySchema.parse({ language: "it" })).toThrow(
+      "Language must be one of: en, es, fr, de, nl",
+    );
+  });
+
+  it("leaves both filters optional and type free-form", () => {
+    expect(messageBankListQuerySchema.parse({})).toEqual({});
+    expect(messageBankListQuerySchema.parse({ type: "anything" }).type).toBe("anything");
   });
 });

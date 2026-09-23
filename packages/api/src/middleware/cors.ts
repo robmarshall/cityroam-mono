@@ -10,6 +10,8 @@ export function createCorsMiddleware() {
     },
     credentials: true,
     allowHeaders: ["Content-Type", "Authorization"],
+    // Warns an admin client that a content edit landed on a route with live events.
+    exposeHeaders: ["X-Live-Events"],
     allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   });
 }

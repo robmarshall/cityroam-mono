@@ -66,9 +66,20 @@ export type {
   AdminMessageBankListResponse,
   AdminImageUploadResponse,
   AdminRouteImageResponse,
+  AdminRouteImageListItem,
+  AdminRouteImageListResponse,
   AdminRouteGroupResponse,
+  AdminGroupCreateResponse,
+  AdminBulkRouteCreateResponse,
+  AdminBulkRouteDryRunResponse,
   AdminRouteFamilyListResponse,
   AdminRouteFamilyDetailResponse,
+  AdminApiKey,
+  AdminApiKeyListResponse,
+  AdminApiKeyCreateResponse,
+  AdminApiKeyRevokeResponse,
+  AdminAuditLogEntry,
+  AdminAuditLogResponse,
 } from "./api.js";
 
 export type { ApiErrorResponse, ApiErrorCode, ValidationErrorCode } from "./api-errors.js";

@@ -1,0 +1,29 @@
+{
+  "name": "@cityroam/mcp",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "cityroam-mcp": "bin/cityroam-mcp.mjs"
+  },
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "build": "tsc -b",
+    "typecheck": "tsc -b",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@cityroam/shared": "*",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "tsx": "^4",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.2",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.1"
+  },
+  "engines": {
+    "node": ">=22 <25"
+  }
+}

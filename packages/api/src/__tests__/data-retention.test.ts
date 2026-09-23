@@ -17,6 +17,7 @@ vi.mock("../db/index.js", () => {
     limit: vi.fn().mockResolvedValue([]),
     update: vi.fn(() => mockDb),
     set: vi.fn(() => mockDb),
+    delete: vi.fn(() => mockDb),
     returning: vi.fn().mockResolvedValue([]),
     transaction: vi.fn(async (cb: (tx: any) => unknown) => cb(mockTx)),
     __tx: mockTx,
@@ -36,7 +37,7 @@ vi.mock("../redis/client.js", () => ({
 import { PgDialect } from "drizzle-orm/pg-core";
 import { db } from "../db/index.js";
 import { redis } from "../redis/client.js";
-import { messages, participants, events } from "../db/schema/index.js";
+import { messages, participants, events, adminAuditLog } from "../db/schema/index.js";
 import {
   anonymiseCandidateFilter,
   paymentRefCandidateFilter,
@@ -49,6 +50,9 @@ import {
   eventRetentionCutoff,
   accountingRetentionCutoff,
   monthsBefore,
+  adminAuditRetentionCutoff,
+  pruneAdminAuditLogBatch,
+  ADMIN_AUDIT_RETENTION_DAYS,
   RETENTION_BATCH_SIZE,
   MAX_BATCHES_PER_RUN,
 } from "../services/data-retention.js";
@@ -63,7 +67,7 @@ function ids(n: number, prefix = "evt") {
 
 function resetChains() {
   vi.clearAllMocks();
-  for (const m of ["select", "from", "where", "orderBy", "update", "set"]) {
+  for (const m of ["select", "from", "where", "orderBy", "update", "set", "delete"]) {
     mockedDb[m].mockReturnValue(mockedDb);
   }
   mockedDb.limit.mockResolvedValue([]);
@@ -205,6 +209,55 @@ describe("stripPaymentRefBatch", () => {
   });
 });
 
+// ── pruneAdminAuditLogBatch ───────────────────────────────────────
+describe("pruneAdminAuditLogBatch", () => {
+  beforeEach(resetChains);
+  const now = new Date("2026-09-23T12:00:00Z");
+
+  it("keeps admin audit rows for 180 days", () => {
+    expect(ADMIN_AUDIT_RETENTION_DAYS).toBe(180);
+    expect(adminAuditRetentionCutoff(now).toISOString()).toBe("2026-03-27T12:00:00.000Z");
+  });
+
+  it("does nothing when no rows are past the window", async () => {
+    expect(await pruneAdminAuditLogBatch(now)).toBe(0);
+    expect(mockedDb.from).toHaveBeenCalledWith(adminAuditLog);
+    expect(mockedDb.delete).not.toHaveBeenCalled();
+  });
+
+  it("selects only rows older than the cutoff", async () => {
+    await pruneAdminAuditLogBatch(now);
+    const where = mockedDb.where.mock.calls[0][0];
+    const { sql, params } = new PgDialect().sqlToQuery(where);
+    expect(sql).toContain('"admin_audit_log"."created_at" < ');
+    expect(params).toContain("2026-03-27T12:00:00.000Z");
+    expect(mockedDb.limit).toHaveBeenCalledWith(RETENTION_BATCH_SIZE);
+  });
+
+  it("deletes the batch of expired rows", async () => {
+    mockedDb.limit.mockResolvedValueOnce(ids(3, "audit"));
+    mockedDb.returning.mockResolvedValueOnce(ids(3, "audit"));
+
+    expect(await pruneAdminAuditLogBatch(now)).toBe(3);
+    expect(mockedDb.delete).toHaveBeenCalledWith(adminAuditLog);
+  });
+
+  it("runs as part of the retention sweep", async () => {
+    // Anonymise: nothing. Strip: nothing. Audit: one short batch.
+    mockedDb.limit
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce(ids(2, "audit"));
+    mockedDb.returning.mockResolvedValueOnce(ids(2, "audit"));
+    vi.spyOn(console, "log").mockImplementation(() => {});
+
+    const result = await runRetentionSweep(now);
+    expect(result.prunedAuditRows).toBe(2);
+    expect(mockedDb.delete).toHaveBeenCalledWith(adminAuditLog);
+    vi.restoreAllMocks();
+  });
+});
+
 // ── runRetentionSweep ─────────────────────────────────────────────
 describe("runRetentionSweep", () => {
   beforeEach(() => {
@@ -220,6 +273,7 @@ describe("runRetentionSweep", () => {
       deletedMessages: 0,
       deletedParticipants: 0,
       strippedPaymentRefs: 0,
+      prunedAuditRows: 0,
     });
     expect(console.log).not.toHaveBeenCalledWith(
       expect.stringContaining('"component":"data-retention"'),
