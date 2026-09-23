@@ -65,7 +65,7 @@ vi.mock("../redis/index.js", () => ({
 }));
 
 import { db } from "../db/index.js";
-import { adminApiKeys } from "../db/schema/index.js";
+import { adminApiKeys, routes } from "../db/schema/index.js";
 import {
   base62ToUuid,
   generateApiKey,
@@ -363,7 +363,7 @@ describe("route activation with an API key", () => {
     const body = await res.json();
     expect(body.code).toBe("ADMIN_SCOPE_REQUIRED");
     expect(body.error).toContain("routes:publish");
-    expect(mockDb.insert).not.toHaveBeenCalled();
+    expect(mockDb.insert).not.toHaveBeenCalledWith(routes);
   });
 
   it("refuses when is_active is omitted, because it defaults to true", async () => {

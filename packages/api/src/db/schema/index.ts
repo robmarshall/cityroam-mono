@@ -7,3 +7,4 @@ export { messageBanks } from "./message-banks.js";
 export { routeGroups } from "./route-groups.js";
 export { routeBlocks } from "./route-blocks.js";
 export { adminApiKeys } from "./admin-api-keys.js";
+export { adminAuditLog } from "./admin-audit-log.js";

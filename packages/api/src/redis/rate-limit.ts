@@ -189,3 +189,151 @@ export async function clearAdminLoginRateLimit(clientIp: string): Promise<void> 
     });
   }
 }
+
+// ---------------------------------------------------------------------------
+// Admin API key limiters
+// ---------------------------------------------------------------------------
+/**
+ * Per-key request budget for admin API keys, in fixed one-minute windows.
+ * Writes get a much smaller budget than reads: a runaway MCP client re-issuing
+ * block edits in a loop is the failure this exists to contain.
+ */
+export const ADMIN_API_KEY_READ_LIMIT = 300;
+export const ADMIN_API_KEY_WRITE_LIMIT = 60;
+export const ADMIN_API_KEY_WINDOW_MS = 60 * 1000;
+
+/**
+ * Failed API key authentications per client IP. Secrets carry 256 bits of
+ * entropy so guessing is hopeless anyway; this keeps a scanner from turning
+ * every guess into a database read.
+ */
+export const ADMIN_API_KEY_INVALID_LIMIT = 20;
+export const ADMIN_API_KEY_INVALID_WINDOW_MS = 15 * 60 * 1000;
+
+export type AdminApiKeyRequestKind = "read" | "write";
+
+/** Reads count against the read budget; every other method is a write. */
+export function adminApiKeyRequestKind(method: string): AdminApiKeyRequestKind {
+  const m = method.toUpperCase();
+  return m === "GET" || m === "HEAD" || m === "OPTIONS" ? "read" : "write";
+}
+
+function adminApiKeyBucket(keyId: string, kind: AdminApiKeyRequestKind): string {
+  return `ratelimit:adminkey:${kind}:${keyId}`;
+}
+
+function adminApiKeyInvalidBucket(clientIp: string): string {
+  return `ratelimit:adminkey-invalid:${clientIp}`;
+}
+
+/** Reads a counter and its TTL without incrementing it. */
+const PEEK_WITH_TTL_LUA = `
+local count = tonumber(redis.call("GET", KEYS[1]) or "0")
+return { count, redis.call("TTL", KEYS[1]) }
+`;
+
+/**
+ * Normalises an eval reply of `{ count, ttl }`. A bare number (older mocks,
+ * or a script returning only the count) is read as a count with no TTL.
+ */
+function readCountAndTtl(reply: unknown): { count: number; ttl: number } {
+  if (Array.isArray(reply)) {
+    return { count: Number(reply[0]) || 0, ttl: Number(reply[1]) };
+  }
+  return { count: Number(reply) || 0, ttl: -1 };
+}
+
+function retryAfter(ttl: number, windowSeconds: number): number {
+  return ttl > 0 ? ttl : windowSeconds;
+}
+
+/**
+ * Counts one request by an admin API key against its read or write budget.
+ *
+ * Fails open like the login limiter: a Redis outage logs an error and lets the
+ * request through. Authentication itself is database-backed, so an outage
+ * removes the throttle but never grants access.
+ */
+export async function checkAdminApiKeyRateLimit(
+  keyId: string,
+  kind: AdminApiKeyRequestKind,
+): Promise<LoginRateLimitResult> {
+  const limit = kind === "read" ? ADMIN_API_KEY_READ_LIMIT : ADMIN_API_KEY_WRITE_LIMIT;
+  const windowSeconds = Math.ceil(ADMIN_API_KEY_WINDOW_MS / 1000);
+
+  try {
+    const { count, ttl } = readCountAndTtl(
+      await redis.eval(
+        RATE_LIMIT_WITH_TTL_LUA,
+        1,
+        adminApiKeyBucket(keyId, kind),
+        String(windowSeconds),
+      ),
+    );
+    const allowed = count <= limit;
+    return {
+      allowed,
+      current: count,
+      limit,
+      retryAfterSeconds: allowed ? 0 : retryAfter(ttl, windowSeconds),
+    };
+  } catch (err) {
+    rateLimitLog.error("admin api key rate limit unavailable — failing open", {
+      key_id: keyId,
+      kind,
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return { allowed: true, current: 0, limit, retryAfterSeconds: 0 };
+  }
+}
+
+/**
+ * Whether this IP may try another API key. Checked before verification, so a
+ * blocked IP costs no database read. Only failures are counted (see
+ * recordInvalidAdminApiKeyAttempt), so a busy but valid key is never slowed.
+ * Fails open on Redis errors.
+ */
+export async function checkInvalidAdminApiKeyRateLimit(
+  clientIp: string,
+): Promise<LoginRateLimitResult> {
+  const windowSeconds = Math.ceil(ADMIN_API_KEY_INVALID_WINDOW_MS / 1000);
+  try {
+    const { count, ttl } = readCountAndTtl(
+      await redis.eval(PEEK_WITH_TTL_LUA, 1, adminApiKeyInvalidBucket(clientIp)),
+    );
+    const allowed = count < ADMIN_API_KEY_INVALID_LIMIT;
+    return {
+      allowed,
+      current: count,
+      limit: ADMIN_API_KEY_INVALID_LIMIT,
+      retryAfterSeconds: allowed ? 0 : retryAfter(ttl, windowSeconds),
+    };
+  } catch (err) {
+    rateLimitLog.error("admin api key invalid-attempt limit unavailable — failing open", {
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return {
+      allowed: true,
+      current: 0,
+      limit: ADMIN_API_KEY_INVALID_LIMIT,
+      retryAfterSeconds: 0,
+    };
+  }
+}
+
+/** Counts one failed API key authentication for this IP. Never throws. */
+export async function recordInvalidAdminApiKeyAttempt(clientIp: string): Promise<void> {
+  const windowSeconds = Math.ceil(ADMIN_API_KEY_INVALID_WINDOW_MS / 1000);
+  try {
+    await redis.eval(
+      RATE_LIMIT_WITH_TTL_LUA,
+      1,
+      adminApiKeyInvalidBucket(clientIp),
+      String(windowSeconds),
+    );
+  } catch (err) {
+    rateLimitLog.error("failed to record invalid admin api key attempt", {
+      error: err instanceof Error ? err.message : String(err),
+    });
+  }
+}

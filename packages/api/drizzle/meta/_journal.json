@@ -92,6 +92,13 @@
       "when": 1790171402756,
       "tag": "0012_add_admin_api_keys",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1790173275315,
+      "tag": "0013_add_admin_audit_log",
+      "breakpoints": true
     }
   ]
 }

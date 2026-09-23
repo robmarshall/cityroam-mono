@@ -6,6 +6,13 @@ import { AppError } from "./error-handler.js";
 import { isApiKeyToken, verifyApiKey } from "../lib/api-keys.js";
 import { clientIp } from "../lib/client-ip.js";
 import { createLogger } from "../lib/logger.js";
+import { isAuditedMethod, writeAdminAuditLog } from "../lib/audit-log.js";
+import {
+  adminApiKeyRequestKind,
+  checkAdminApiKeyRateLimit,
+  checkInvalidAdminApiKeyRateLimit,
+  recordInvalidAdminApiKeyAttempt,
+} from "../redis/rate-limit.js";
 
 const log = createLogger("admin-auth");
 
@@ -56,8 +63,18 @@ function unauthorized(message = "Invalid or expired admin token"): AppError {
 async function authenticate(c: Context, token: string): Promise<AdminContext> {
   if (isApiKeyToken(token)) {
     const ip = clientIp(c);
+
+    // Checked before verification so a blocked IP costs no database read.
+    const attempts = await checkInvalidAdminApiKeyRateLimit(ip);
+    if (!attempts.allowed) {
+      log.warn("admin api key attempts rate limited", { ip, attempts: attempts.current });
+      c.header("Retry-After", String(attempts.retryAfterSeconds));
+      throw new AppError(429, "Too many invalid API key attempts. Try again later.", "RATE_LIMITED");
+    }
+
     const key = await verifyApiKey(token, { expectedEnv: env.API_KEY_ENV, ip });
     if (!key) {
+      await recordInvalidAdminApiKeyAttempt(ip);
       log.warn("admin api key rejected", { ip, path: c.req.path });
       // One response for unknown id, wrong secret, revoked, expired and wrong
       // environment, so a caller learns nothing about which it was.
@@ -88,6 +105,12 @@ async function authenticate(c: Context, token: string): Promise<AdminContext> {
  *
  * 401 when there is no valid credential; 403 ADMIN_SESSION_REQUIRED or
  * ADMIN_SCOPE_REQUIRED when the credential is valid but not enough.
+ *
+ * API keys are rate limited per key (reads and writes separately) and failed
+ * key attempts per IP; both limiters fail open when Redis is down, and the
+ * credential check itself never depends on Redis. Every non-GET request by an
+ * authenticated caller that does not end in a 5xx is written to the admin
+ * audit log (sessions and keys alike, 4xx refusals included).
  */
 export function requireAdmin(requirement?: AdminRequirement): MiddlewareHandler {
   return async (c, next) => {
@@ -97,27 +120,75 @@ export function requireAdmin(requirement?: AdminRequirement): MiddlewareHandler 
     }
 
     const admin = await authenticate(c, authHeader.slice(7).trim());
+    c.set("admin", admin);
 
-    if (admin.kind === "api_key") {
-      if (requirement === "session-only") {
+    const audited = isAuditedMethod(c.req.method);
+    const params = c.req.param() as Record<string, string>;
+    let auditWritten = false;
+    const audit = async (status: number) => {
+      if (!audited || auditWritten || status >= 500) return;
+      auditWritten = true;
+      await writeAdminAuditLog(c, admin, status, params);
+    };
+
+    try {
+      authorize(admin, requirement);
+    } catch (err) {
+      // A refused mutation by a known caller is worth a row too.
+      if (err instanceof AppError) await audit(err.statusCode);
+      throw err;
+    }
+
+    if (admin.kind === "api_key" && admin.keyId) {
+      const kind = adminApiKeyRequestKind(c.req.method);
+      const limit = await checkAdminApiKeyRateLimit(admin.keyId, kind);
+      if (!limit.allowed) {
+        // Not audited: a runaway client would otherwise turn every rejected
+        // request into a database write, which is what the limit prevents.
+        log.warn("admin api key rate limited", {
+          key_id: admin.keyId,
+          kind,
+          requests: limit.current,
+          limit: limit.limit,
+        });
+        c.header("Retry-After", String(limit.retryAfterSeconds));
         throw new AppError(
-          403,
-          "This endpoint requires a signed-in admin session; API keys cannot use it",
-          "ADMIN_SESSION_REQUIRED",
-        );
-      }
-      if (requirement && !admin.scopes.includes(requirement)) {
-        throw new AppError(
-          403,
-          `This API key lacks the "${requirement}" scope`,
-          "ADMIN_SCOPE_REQUIRED",
+          429,
+          `API key ${kind} rate limit exceeded (${limit.limit} per minute). Try again later.`,
+          "RATE_LIMITED",
         );
       }
     }
 
-    c.set("admin", admin);
-    await next();
+    try {
+      await next();
+    } catch (err) {
+      // Hono normally turns a handler error into a response before next()
+      // returns; this covers an error that escapes anyway.
+      if (err instanceof AppError) await audit(err.statusCode);
+      throw err;
+    }
+    await audit(c.res.status);
   };
+}
+
+/** Throws 403 when a valid credential is not enough for the route. */
+function authorize(admin: AdminContext, requirement: AdminRequirement | undefined): void {
+  if (admin.kind !== "api_key") return;
+  if (requirement === "session-only") {
+    throw new AppError(
+      403,
+      "This endpoint requires a signed-in admin session; API keys cannot use it",
+      "ADMIN_SESSION_REQUIRED",
+    );
+  }
+  if (requirement && !admin.scopes.includes(requirement)) {
+    throw new AppError(
+      403,
+      `This API key lacks the "${requirement}" scope`,
+      "ADMIN_SCOPE_REQUIRED",
+    );
+  }
 }
 
 /** Session-only admin auth — for routes that never accept API keys. */
