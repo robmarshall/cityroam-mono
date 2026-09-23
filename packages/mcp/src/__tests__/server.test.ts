@@ -19,11 +19,33 @@ import {
 const READ_TOOLS = [
   "get_route",
   "get_route_family",
+  "list_image_slugs",
   "list_message_banks",
   "list_route_families",
   "list_routes",
   "validate_route",
 ];
+
+const WRITE_TOOLS = [
+  "add_block",
+  "add_group",
+  "create_message_bank_entry",
+  "create_route",
+  "delete_block",
+  "delete_group",
+  "move_block",
+  "patch_block_config",
+  "reorder_blocks",
+  "reorder_groups",
+  "update_block",
+  "update_group",
+  "update_message_bank_entry",
+  "update_route",
+  "upload_image",
+];
+
+/** Tools that can remove or replace content: deletes, and upload_image with overwrite. */
+const DESTRUCTIVE_TOOLS = ["delete_block", "delete_group", "upload_image"];
 
 const ts = "2026-09-01T00:00:00.000Z";
 const routeListItem = (overrides: Record<string, unknown> = {}) => ({
@@ -43,6 +65,27 @@ const routeListItem = (overrides: Record<string, unknown> = {}) => ({
 });
 
 describe("tool listing", () => {
+  it("registers exactly the designed tool catalogue (no activation, deletion of routes, events or keys)", async () => {
+    const client = await connect(testConfig(), fakeFetch(() => json({})).fetch);
+    const { tools } = await client.listTools();
+    expect(tools.map((t) => t.name).sort()).toEqual([...READ_TOOLS, ...WRITE_TOOLS].sort());
+    for (const tool of tools) {
+      expect(tool.name, tool.name).not.toMatch(/activate|publish|delete_route|event|refund|api_key/);
+    }
+  });
+
+  it("annotates every write tool as non-read-only, and only deletes and upload_image as destructive", async () => {
+    const client = await connect(testConfig(), fakeFetch(() => json({})).fetch);
+    const { tools } = await client.listTools();
+    const byName = new Map(tools.map((t) => [t.name, t]));
+    for (const name of WRITE_TOOLS) {
+      const tool = byName.get(name)!;
+      expect(tool.annotations?.readOnlyHint, name).toBe(false);
+      expect(tool.annotations?.destructiveHint, name).toBe(DESTRUCTIVE_TOOLS.includes(name));
+      expect(tool.description, name).toBeTruthy();
+    }
+  });
+
   it("lists the read tools, all annotated read-only", async () => {
     const client = await connect(testConfig(), fakeFetch(() => json({})).fetch);
     const { tools } = await client.listTools();
@@ -55,10 +98,15 @@ describe("tool listing", () => {
     }
   });
 
-  it("serialises every inputSchema to a plain JSON Schema object", async () => {
+  it("serialises every inputSchema (and outputSchema) to a plain JSON Schema object", async () => {
     const client = await connect(testConfig(), fakeFetch(() => json({})).fetch);
     const { tools } = await client.listTools();
+    expect(tools).toHaveLength(READ_TOOLS.length + WRITE_TOOLS.length);
     for (const tool of tools) {
+      if (tool.outputSchema) {
+        expect(tool.outputSchema.type, `${tool.name} output`).toBe("object");
+        expect(JSON.parse(JSON.stringify(tool.outputSchema)), `${tool.name} output`).toEqual(tool.outputSchema);
+      }
       const schema = tool.inputSchema as Record<string, unknown>;
       expect(schema.type, tool.name).toBe("object");
       expect(typeof schema.properties, tool.name).toBe("object");
