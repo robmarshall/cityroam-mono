@@ -43,11 +43,12 @@ const routeListItem = (overrides: Record<string, unknown> = {}) => ({
 });
 
 describe("tool listing", () => {
-  it("lists exactly the read tools, all annotated read-only", async () => {
+  it("lists the read tools, all annotated read-only", async () => {
     const client = await connect(testConfig(), fakeFetch(() => json({})).fetch);
     const { tools } = await client.listTools();
-    expect(tools.map((t) => t.name).sort()).toEqual(READ_TOOLS);
-    for (const tool of tools) {
+    const readTools = tools.filter((t) => t.annotations?.readOnlyHint === true);
+    expect(readTools.map((t) => t.name).sort()).toEqual(READ_TOOLS);
+    for (const tool of readTools) {
       expect(tool.annotations?.readOnlyHint, tool.name).toBe(true);
       expect(tool.annotations?.destructiveHint, tool.name).toBe(false);
       expect(tool.description, tool.name).toBeTruthy();

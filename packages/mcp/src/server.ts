@@ -3,6 +3,7 @@ import { HttpClient, type FetchLike } from "./client/http.js";
 import type { Config } from "./config.js";
 import { registerResources } from "./resources.js";
 import { registerReadTools } from "./tools/read.js";
+import { registerWriteTools } from "./tools/write.js";
 
 export const SERVER_NAME = "cityroam";
 export const SERVER_VERSION = "0.1.0";
@@ -22,11 +23,13 @@ export function createServer(config: Config, fetchImpl: FetchLike = fetch, optio
         `City Roam route authoring, pinned to the ${config.env} environment (${config.apiUrl}). ` +
         "Every tool result starts with the environment tag. Read the cityroam://docs/* resources " +
         "(api-reference, content-guide, guide-personality, data-model) before authoring a route, and " +
-        "run validate_route on drafts.",
+        "run validate_route on drafts. Write tools accept dry_run to preview; routes are always created inactive, " +
+        "and changes to an ACTIVE route need confirm_live: true.",
     },
   );
   const ctx = { config, http };
   registerReadTools(server, ctx);
+  registerWriteTools(server, ctx);
   registerResources(server, ctx);
   return server;
 }
