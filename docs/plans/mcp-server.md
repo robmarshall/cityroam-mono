@@ -359,3 +359,13 @@ bucket (staging and production) for the listing — and without it S3 answers
      single `CITYROAM_API_KEY`, plus `CITYROAM_DOCS_DIR`.
    - Launch checklist: migrations 0012–0013, `API_KEY_ENV`, `s3:ListBucket`
      on both buckets, creating an MCP key after deploy.
+   - End-to-end run against a real local API (Postgres + Redis, seeded, a
+     `crk_dev_` key) found two bugs the mocked tests could not: tool output
+     schemas published `additionalProperties: false`, so SDK clients that
+     list tools first rejected results carrying the API's extra fields (item
+     schemas are now loose); and every `CASE` position update in
+     `routes/admin.ts` (group/block reorder, move, delete, mid-position
+     inserts) failed on Postgres because postgres.js sends numbers untyped
+     (now cast to integer, with a source-level test). The second predates
+     this branch, so group/block reorder and delete were also broken in the
+     admin panel on development and staging.
