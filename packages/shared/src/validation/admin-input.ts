@@ -1,5 +1,23 @@
 import { z } from "zod";
 import { MAX_BLOCK_DELAY_MS } from "../constants/index.js";
+import {
+  isValidRouteImageRef,
+  IMAGE_SLUG_PATTERN,
+  IMAGE_SLUG_MAX_LENGTH,
+} from "../utils/index.js";
+
+/**
+ * A route image reference: an absolute http(s) URL (typically the CDN URL that
+ * POST /admin/upload returns) or a `{{IMAGE:slug}}` placeholder with a lowercase
+ * kebab-case slug, which resolves at runtime to `<cdn>/route-images/<slug>.jpg`.
+ */
+export const routeImageRefSchema = z
+  .string()
+  .trim()
+  .refine(isValidRouteImageRef, {
+    message:
+      "Image must be an http(s) URL or a placeholder like {{IMAGE:leeds-town-hall-facade}} (lowercase letters, digits and hyphens)",
+  });
 
 export const adminLoginSchema = z.object({
   username: z.string().trim().min(1, "Username is required"),
@@ -22,7 +40,7 @@ export const routeSchema = z.object({
 
 export const sequenceItemSchema = z.object({
   content: z.string().default(""),
-  image_url: z.string().url("Invalid image URL").nullable().optional().default(null),
+  image_url: routeImageRefSchema.nullable().optional().default(null),
   delay_ms: z.number().int().min(0).max(10000).default(0),
 });
 
@@ -38,14 +56,39 @@ export const imageUploadSchema = z.object({
   filename: z.string().trim().min(1, "Filename is required"),
 });
 
-/** Server-side schema for POST /admin/upload request body */
-export const imageUploadRequestSchema = z.object({
-  filename: z.string().trim().min(1, "Filename is required"),
-  content_type: z.string().refine(
-    (val) => ALLOWED_IMAGE_TYPES.includes(val),
-    "Only JPEG and PNG images are allowed"
-  ),
-});
+/**
+ * A route image slug — the `slug` in `{{IMAGE:slug}}`. Lowercase kebab-case,
+ * at most IMAGE_SLUG_MAX_LENGTH characters.
+ */
+export const routeImageSlugSchema = z
+  .string()
+  .trim()
+  .max(IMAGE_SLUG_MAX_LENGTH, `Slug must be at most ${IMAGE_SLUG_MAX_LENGTH} characters`)
+  .regex(
+    IMAGE_SLUG_PATTERN,
+    "Slug must be lowercase letters, digits and single hyphens (e.g. leeds-town-hall-facade)",
+  );
+
+/**
+ * Server-side schema for POST /admin/upload request body.
+ *
+ * With `slug`, the upload targets the fixed key `route-images/<slug>.jpg` that
+ * `{{IMAGE:slug}}` resolves to, so the content type must be JPEG. Without it,
+ * the upload is a one-off at `uploads/<timestamp>_<filename>`.
+ */
+export const imageUploadRequestSchema = z
+  .object({
+    filename: z.string().trim().min(1, "Filename is required"),
+    content_type: z.string().refine(
+      (val) => ALLOWED_IMAGE_TYPES.includes(val),
+      "Only JPEG and PNG images are allowed"
+    ),
+    slug: routeImageSlugSchema.optional(),
+  })
+  .refine((data) => data.slug === undefined || data.content_type === "image/jpeg", {
+    message: "Slug photos must be JPEG (they are stored as <slug>.jpg)",
+    path: ["content_type"],
+  });
 
 export const adminUpdateEventStatusSchema = z.object({
   status: z.enum(["NOT_STARTED", "WAITING", "IN_PROGRESS", "COMPLETED", "EXPIRED", "REFUNDED"]).optional(),
@@ -71,7 +114,7 @@ export const messageBlockConfigSchema = z.object({
 
 export const imageBlockConfigSchema = z.object({
   type: z.literal("image"),
-  image_url: z.string().url(),
+  image_url: routeImageRefSchema,
 });
 
 export const questionBlockConfigSchema = z.object({

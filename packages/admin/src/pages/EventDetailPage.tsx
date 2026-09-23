@@ -11,6 +11,34 @@ import { api, ApiError } from "../lib/api";
 import { useAuthFetch } from "../contexts/AuthContext";
 import { STATUS_LABELS, STATUS_COLORS, formatDate, formatTime } from "../lib/event-utils";
 
+/**
+ * A chat attachment. Route photos are often `{{IMAGE:slug}}` placeholders whose
+ * photo has not been uploaded yet, so a 404 shows a grey tile, not a broken image.
+ */
+function ChatImage({ src }: { src: string }) {
+  const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [src]);
+
+  if (failed) {
+    return (
+      <div
+        className="mt-2 flex h-24 w-40 items-center justify-center rounded-md border border-dashed border-gray-300 bg-gray-100 p-2 text-center text-xs text-gray-500"
+        title={src}
+      >
+        Image not uploaded
+      </div>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt="Message attachment"
+      onError={() => setFailed(true)}
+      className="mt-2 max-h-48 rounded-md"
+    />
+  );
+}
+
 const SENDER_COLORS: Record<SenderType, string> = {
   user: "bg-blue-50 border-blue-200",
   guide: "bg-gray-50 border-gray-200",
@@ -828,13 +856,7 @@ function MessageLog({
                     <p className="whitespace-pre-wrap text-sm text-gray-800">
                       {msg.content}
                     </p>
-                    {msg.image_url && (
-                      <img
-                        src={msg.image_url}
-                        alt="Message attachment"
-                        className="mt-2 max-h-48 rounded-md"
-                      />
-                    )}
+                    {msg.image_url && <ChatImage src={msg.image_url} />}
                   </div>
                 ))
               )}

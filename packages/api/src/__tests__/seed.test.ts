@@ -7,6 +7,8 @@ vi.mock("postgres", () => ({ default: vi.fn(() => ({ end: vi.fn() })) }));
 
 import { messageBankSeedData, seedMessageBanks } from "../db/seed.js";
 import { routesByLanguage } from "../db/seed-routes.js";
+import { routeBlockSchema } from "@cityroam/shared/validation";
+import { parseImagePlaceholder } from "@cityroam/shared/utils";
 
 type SeedEntry = { type: string; content: string };
 
@@ -84,5 +86,35 @@ describe("the seeded development route", () => {
     // it, the buyer pays, and the hunt dies on start with "Route has no groups".
     expect(dev.groups.length).toBeGreaterThan(0);
     expect(dev.groups.every((g) => g.blocks.length > 0)).toBe(true);
+  });
+});
+
+describe("seeded route content", () => {
+  const allBlocks = Object.entries(routesByLanguage).flatMap(([language, route]) =>
+    route.groups.flatMap((group) =>
+      group.blocks.map((block, i) => ({ language, group: group.name, i, block })),
+    ),
+  );
+
+  // The seed writes straight to the database, bypassing the admin API. Holding
+  // it to the same schema keeps "what the seed stores" and "what an author may
+  // POST to /admin/routes/bulk-groups" from drifting apart again.
+  it.each(allBlocks.map((b) => [`${b.language} / ${b.group} #${b.i}`, b.block] as const))(
+    "%s passes the admin block schema",
+    (_label, block) => {
+      const result = routeBlockSchema.safeParse(block);
+      expect(result.success, JSON.stringify(result.error?.issues)).toBe(true);
+    },
+  );
+
+  it("uses only well-formed {{IMAGE:slug}} placeholders for image blocks", () => {
+    const imageRefs = allBlocks
+      .filter(({ block }) => block.type === "image")
+      .map(({ block }) => (block.config as { image_url: string }).image_url);
+
+    expect(imageRefs.length).toBeGreaterThan(0);
+    for (const ref of imageRefs) {
+      if (ref.startsWith("{{")) expect(parseImagePlaceholder(ref), ref).not.toBeNull();
+    }
   });
 });

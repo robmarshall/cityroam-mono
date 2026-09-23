@@ -4,6 +4,8 @@ import {
   buildEventUrl,
   buildS3Url,
   resolveImageUrl,
+  parseImagePlaceholder,
+  routeImageKey,
   formatTimestamp,
   isValidEventCode,
 } from "./index.js";
@@ -163,5 +165,50 @@ describe("isValidEventCode", () => {
 
   it("returns false for uppercase characters", () => {
     expect(isValidEventCode("ABCDEFGH")).toBe(false);
+  });
+});
+
+describe("image placeholders", () => {
+  const CDN = "https://cdn.example.com";
+
+  it("parses the slug from a well-formed placeholder", () => {
+    expect(parseImagePlaceholder("{{IMAGE:leeds-town-hall-facade}}")).toBe(
+      "leeds-town-hall-facade",
+    );
+  });
+
+  it("rejects malformed placeholders", () => {
+    expect(parseImagePlaceholder("{{IMAGE:Bad Slug}}")).toBeNull();
+    expect(parseImagePlaceholder("{{IMAGE:}}")).toBeNull();
+    expect(parseImagePlaceholder("{{IMAGE:../x}}")).toBeNull();
+    expect(parseImagePlaceholder(`{{IMAGE:${"a".repeat(101)}}}`)).toBeNull();
+    expect(parseImagePlaceholder("https://cdn.example.com/a.jpg")).toBeNull();
+    expect(parseImagePlaceholder(null)).toBeNull();
+  });
+
+  it("maps a slug to its fixed S3 key", () => {
+    expect(routeImageKey("corn-exchange-dome")).toBe("route-images/corn-exchange-dome.jpg");
+  });
+
+  it("resolves a placeholder to the CDN route-images key", () => {
+    expect(resolveImageUrl("{{IMAGE:leeds-town-hall-facade}}", CDN)).toBe(
+      "https://cdn.example.com/route-images/leeds-town-hall-facade.jpg",
+    );
+    expect(resolveImageUrl("{{IMAGE:corn-exchange-dome}}", `${CDN}/`)).toBe(
+      "https://cdn.example.com/route-images/corn-exchange-dome.jpg",
+    );
+  });
+
+  it("returns null for a placeholder when no CDN base is configured", () => {
+    expect(resolveImageUrl("{{IMAGE:leeds-town-hall-facade}}", "")).toBeNull();
+  });
+
+  it("returns null for a malformed placeholder rather than a broken URL", () => {
+    expect(resolveImageUrl("{{IMAGE:Leeds Town Hall}}", CDN)).toBeNull();
+    expect(resolveImageUrl("{{SOMETHING}}", CDN)).toBeNull();
+  });
+
+  it("returns null for whitespace-only values", () => {
+    expect(resolveImageUrl("   ", CDN)).toBeNull();
   });
 });

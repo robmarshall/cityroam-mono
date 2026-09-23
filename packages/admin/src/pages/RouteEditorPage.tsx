@@ -37,8 +37,13 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { parseImagePlaceholder } from "@cityroam/shared/utils";
 import { api, ApiError } from "../lib/api";
 import { useAuthFetch } from "../contexts/AuthContext";
+import {
+  RouteImageFieldTools,
+  UploadToSlugButton,
+} from "../components/RouteImageTools";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -745,7 +750,7 @@ function HintSequenceEditor({
                   onChange={(e) =>
                     updateItem(idx, { image_url: e.target.value })
                   }
-                  placeholder="Image URL (optional)"
+                  placeholder="Image URL or {{IMAGE:slug}} (optional)"
                   className={INPUT_CLS}
                 />
                 <div className="flex items-center gap-1">
@@ -764,6 +769,7 @@ function HintSequenceEditor({
                   <span className="text-xs text-gray-400">ms</span>
                 </div>
               </div>
+              <RouteImageFieldTools value={item.image_url} compact />
             </div>
             {items.length > 1 && (
               <button
@@ -810,6 +816,7 @@ function BlockEditorForm({
   uploadingImage: boolean;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [slugUploadError, setSlugUploadError] = useState<string | null>(null);
 
   switch (form.type) {
     case "message":
@@ -860,7 +867,7 @@ function BlockEditorForm({
                 onChange={(e) =>
                   setForm({ ...form, image_url: e.target.value })
                 }
-                placeholder="https://..."
+                placeholder="https://... or {{IMAGE:slug}}"
                 className={INPUT_CLS}
               />
               <input
@@ -880,14 +887,32 @@ function BlockEditorForm({
                 disabled={uploadingImage}
                 className={BTN_SECONDARY + " whitespace-nowrap"}
               >
-                {uploadingImage ? "Uploading..." : "Upload"}
+                {uploadingImage ? "Uploading..." : "One-off upload"}
               </button>
+              <UploadToSlugButton
+                disabled={uploadingImage}
+                initialSlug={parseImagePlaceholder(form.image_url)}
+                onUploaded={(placeholder) => {
+                  setSlugUploadError(null);
+                  setForm({ ...form, image_url: placeholder });
+                }}
+                onError={setSlugUploadError}
+              />
             </div>
+            <p className="mt-1 text-xs text-gray-500">
+              One-off upload stores this photo for this block only. Upload to
+              slug stores a JPEG at a reusable <code>{"{{IMAGE:slug}}"}</code>{" "}
+              key shared by every block and language that uses the slug.
+            </p>
             {errors["config.image_url"] && (
               <p className="mt-1 text-sm text-red-600">
                 {errors["config.image_url"]}
               </p>
             )}
+            {slugUploadError && (
+              <p className="mt-1 text-sm text-red-600">{slugUploadError}</p>
+            )}
+            <RouteImageFieldTools value={form.image_url} />
           </div>
           <DelayInput
             value={form.delay_ms}

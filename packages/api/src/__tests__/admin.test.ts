@@ -581,6 +581,101 @@ describe("POST /admin/upload", () => {
     const body = await res.json();
     expect(body.code).toBe("INVALID_FILENAME");
   });
+
+  it("presigns the fixed route-images key for a slug upload and returns the placeholder", async () => {
+    vi.mocked(generatePresignedUploadUrl).mockResolvedValueOnce({
+      upload_url: "https://s3.test.com/presigned-slug",
+      key: "route-images/leeds-town-hall-facade.jpg",
+    });
+
+    const res = await adminRequest(app, "POST", "/admin/upload", {
+      filename: "IMG 0042.JPG",
+      content_type: "image/jpeg",
+      slug: "leeds-town-hall-facade",
+    });
+
+    expect(res.status).toBe(200);
+    expect(generatePresignedUploadUrl).toHaveBeenLastCalledWith(
+      "route-images/leeds-town-hall-facade.jpg",
+      "image/jpeg",
+    );
+    const body = await res.json();
+    expect(body).toEqual({
+      upload_url: "https://s3.test.com/presigned-slug",
+      key: "route-images/leeds-town-hall-facade.jpg",
+      url: "https://cdn.test.com/route-images/leeds-town-hall-facade.jpg",
+      slug: "leeds-town-hall-facade",
+      placeholder: "{{IMAGE:leeds-town-hall-facade}}",
+    });
+  });
+
+  it("ignores an unusable filename on a slug upload (the key comes from the slug)", async () => {
+    const res = await adminRequest(app, "POST", "/admin/upload", {
+      filename: "///",
+      content_type: "image/jpeg",
+      slug: "corn-exchange",
+    });
+
+    expect(res.status).toBe(200);
+    expect(generatePresignedUploadUrl).toHaveBeenLastCalledWith(
+      "route-images/corn-exchange.jpg",
+      "image/jpeg",
+    );
+  });
+
+  it("rejects a PNG slug upload, since the key is always .jpg", async () => {
+    vi.mocked(generatePresignedUploadUrl).mockClear();
+    const res = await adminRequest(app, "POST", "/admin/upload", {
+      filename: "photo.png",
+      content_type: "image/png",
+      slug: "corn-exchange",
+    });
+
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.code).toBe("INVALID_INPUT");
+    expect(generatePresignedUploadUrl).not.toHaveBeenCalled();
+  });
+
+  it("rejects malformed slugs without presigning anything", async () => {
+    vi.mocked(generatePresignedUploadUrl).mockClear();
+    for (const slug of ["../uploads/evil", "Town-Hall", "town_hall", "town-", ""]) {
+      const res = await adminRequest(app, "POST", "/admin/upload", {
+        filename: "photo.jpg",
+        content_type: "image/jpeg",
+        slug,
+      });
+      expect(res.status).toBe(400);
+    }
+    expect(generatePresignedUploadUrl).not.toHaveBeenCalled();
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────
+// GET /admin/route-images/:slug
+// ────────────────────────────────────────────────────────────────────
+describe("GET /admin/route-images/:slug", () => {
+  it("returns the CDN URL a placeholder resolves to", async () => {
+    const res = await adminRequest(app, "GET", "/admin/route-images/leeds-town-hall-facade");
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      slug: "leeds-town-hall-facade",
+      key: "route-images/leeds-town-hall-facade.jpg",
+      placeholder: "{{IMAGE:leeds-town-hall-facade}}",
+      url: "https://cdn.test.com/route-images/leeds-town-hall-facade.jpg",
+    });
+  });
+
+  it("rejects a malformed slug", async () => {
+    const res = await adminRequest(app, "GET", "/admin/route-images/Bad_Slug");
+    expect(res.status).toBe(400);
+  });
+
+  it("requires admin auth", async () => {
+    const res = await jsonRequest(app, "GET", "/admin/route-images/corn-exchange");
+    expect(res.status).toBe(401);
+  });
 });
 
 // ────────────────────────────────────────────────────────────────────

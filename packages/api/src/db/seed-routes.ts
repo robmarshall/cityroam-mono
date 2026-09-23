@@ -17,6 +17,12 @@ const DATABASE_URL =
 // Route data types
 // ---------------------------------------------------------------------------
 
+// Image blocks use `{{IMAGE:slug}}` placeholders (see docs/llm-authoring/
+// content-guide.md#image-urls). They are stored as-is and resolved by the API to
+// `${AWS_CDN_BASE_URL}/route-images/<slug>.jpg`, so each slug below needs a JPEG
+// uploaded at that S3 key; until then players see a neutral placeholder tile.
+// seed.test.ts holds every block here to the admin API's block schema.
+
 type BlockData = {
   type: "message" | "image" | "question" | "action" | "map";
   config: Record<string, unknown>;

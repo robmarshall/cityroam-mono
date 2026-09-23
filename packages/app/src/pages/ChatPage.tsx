@@ -1416,7 +1416,25 @@ function MessageImage({
   url: string | null;
   onClick: (url: string) => void;
 }) {
+  // A route photo that has not been uploaded yet (an {{IMAGE:slug}} placeholder
+  // resolves to a CDN key that 404s until it is) shows a neutral tile rather
+  // than the browser's broken-image icon, and is not clickable.
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
   if (!url) return null;
+  if (failedUrl === url) {
+    return (
+      <div
+        aria-hidden="true"
+        className="mt-1 flex h-32 w-[280px] max-w-full items-center justify-center rounded-xl bg-gray-200 text-gray-400"
+      >
+        <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" />
+          <circle cx="8.5" cy="8.5" r="1.5" />
+          <path d="m21 15-5-5L5 21" />
+        </svg>
+      </div>
+    );
+  }
   return (
     <button onClick={() => onClick(url)} className="mt-1 block">
       <img
@@ -1424,6 +1442,7 @@ function MessageImage({
         alt=""
         className="max-w-[280px] rounded-xl"
         loading="lazy"
+        onError={() => setFailedUrl(url)}
       />
     </button>
   );

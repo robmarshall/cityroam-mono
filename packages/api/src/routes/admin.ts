@@ -3,11 +3,11 @@ import type { Context } from "hono";
 import { createHash, timingSafeEqual } from "node:crypto";
 import { eq, sql, count, desc, and, asc, inArray, or, notInArray, type SQL } from "drizzle-orm";
 import Stripe from "stripe";
-import { adminLoginSchema, adminUpdateEventStatusSchema, adminCreateEventSchema, routeSchema, imageUploadRequestSchema, messageBankSchema, routeBlockSchema, groupUpdateSchema, bulkRouteGroupCreateSchema, groupReorderSchema, blockReorderSchema, blockMoveSchema } from "@cityroam/shared/validation";
-import { generateEventCode, buildEventUrl, buildS3Url } from "@cityroam/shared/utils";
+import { adminLoginSchema, adminUpdateEventStatusSchema, adminCreateEventSchema, routeSchema, imageUploadRequestSchema, routeImageSlugSchema, messageBankSchema, routeBlockSchema, groupUpdateSchema, bulkRouteGroupCreateSchema, groupReorderSchema, blockReorderSchema, blockMoveSchema } from "@cityroam/shared/validation";
+import { generateEventCode, buildEventUrl, buildS3Url, routeImageKey } from "@cityroam/shared/utils";
 import { EVENT_EXPIRY_DAYS } from "@cityroam/shared/constants";
 import { generatePresignedUploadUrl } from "../services/s3.js";
-import type { AdminDashboardResponse, AdminEventListResponse, AdminEventDetailResponse, AdminRouteDetailResponse, AdminRouteListResponse, AdminMessageBankListResponse, AdminRouteGroupResponse, AdminRouteFamilyListResponse, AdminRouteFamilyDetailResponse, SupportedLanguage } from "@cityroam/shared/types";
+import type { AdminDashboardResponse, AdminEventListResponse, AdminEventDetailResponse, AdminRouteDetailResponse, AdminRouteListResponse, AdminMessageBankListResponse, AdminRouteGroupResponse, AdminRouteFamilyListResponse, AdminRouteFamilyDetailResponse, AdminImageUploadResponse, AdminRouteImageResponse, SupportedLanguage } from "@cityroam/shared/types";
 import { env } from "../env.js";
 import { db } from "../db/index.js";
 import { routeFamilies, events, participants, messages, routes, messageBanks, routeGroups, routeBlocks } from "../db/schema/index.js";
@@ -515,10 +515,26 @@ adminRoutes.post("/admin/events/:id/resend-code", adminAuth, (c) =>
 
 // ── S3 Upload ───────────────────────────────────────────────────────
 
-// POST /admin/upload — generate pre-signed S3 PUT URL for image upload
+// POST /admin/upload — generate pre-signed S3 PUT URL for image upload.
+//
+// Without `slug`: a one-off upload at `uploads/<timestamp>_<filename>`.
+// With `slug`: the fixed key `route-images/<slug>.jpg` that `{{IMAGE:slug}}`
+// resolves to. That overwrites any existing photo for the slug, which is the
+// point — every block and language using the placeholder picks it up.
 adminRoutes.post("/admin/upload", adminAuth, async (c) => {
   const body = await c.req.json();
-  const { filename, content_type } = imageUploadRequestSchema.parse(body);
+  const { filename, content_type, slug } = imageUploadRequestSchema.parse(body);
+
+  if (slug) {
+    const result = await generatePresignedUploadUrl(routeImageKey(slug), content_type);
+    const response: AdminImageUploadResponse = {
+      ...result,
+      url: buildS3Url(env.AWS_CDN_BASE_URL, result.key),
+      slug,
+      placeholder: `{{IMAGE:${slug}}}`,
+    };
+    return c.json(response, 200);
+  }
 
   // Sanitize filename: strip path separators, keep only safe characters
   const sanitized = filename.replace(/[^a-zA-Z0-9._-]/g, "_").replace(/^_+|_+$/g, "");
@@ -534,7 +550,25 @@ adminRoutes.post("/admin/upload", adminAuth, async (c) => {
   const result = await generatePresignedUploadUrl(key, content_type);
   // `url` is what the admin stores on the block: a bare key would be resolved
   // against the page the image is later rendered on.
-  return c.json({ ...result, url: buildS3Url(env.AWS_CDN_BASE_URL, result.key) }, 200);
+  const response: AdminImageUploadResponse = {
+    ...result,
+    url: buildS3Url(env.AWS_CDN_BASE_URL, result.key),
+  };
+  return c.json(response, 200);
+});
+
+// GET /admin/route-images/:slug — where a `{{IMAGE:slug}}` placeholder resolves,
+// so the admin can preview it without knowing this environment's CDN base.
+adminRoutes.get("/admin/route-images/:slug", adminAuth, (c) => {
+  const slug = routeImageSlugSchema.parse(c.req.param("slug"));
+  const key = routeImageKey(slug);
+  const response: AdminRouteImageResponse = {
+    slug,
+    key,
+    placeholder: `{{IMAGE:${slug}}}`,
+    url: env.AWS_CDN_BASE_URL ? buildS3Url(env.AWS_CDN_BASE_URL, key) : null,
+  };
+  return c.json(response, 200);
 });
 
 // ── Route integrity helpers ─────────────────────────────────────────

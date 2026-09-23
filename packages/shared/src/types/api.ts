@@ -145,6 +145,28 @@ export interface AdminCreateEventResponse {
   };
 }
 
+/** POST /admin/upload */
+export interface AdminImageUploadResponse {
+  /** Pre-signed S3 PUT URL (expires after 5 minutes). */
+  upload_url: string;
+  /** S3 object key the PUT writes to. */
+  key: string;
+  /** Public CDN URL of the object once uploaded. */
+  url: string;
+  /** Present for slug uploads: the `{{IMAGE:slug}}` placeholder that resolves to `url`. */
+  slug?: string;
+  placeholder?: string;
+}
+
+/** GET /admin/route-images/:slug — where a `{{IMAGE:slug}}` placeholder resolves. */
+export interface AdminRouteImageResponse {
+  slug: string;
+  key: string;
+  placeholder: string;
+  /** CDN URL the placeholder resolves to, or null when no CDN base is configured. */
+  url: string | null;
+}
+
 export interface AdminMessageBankListResponse {
   message_banks: Array<{
     id: string;

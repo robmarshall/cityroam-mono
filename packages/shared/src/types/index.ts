@@ -64,6 +64,8 @@ export type {
   AdminRouteListResponse,
   AdminCreateEventResponse,
   AdminMessageBankListResponse,
+  AdminImageUploadResponse,
+  AdminRouteImageResponse,
   AdminRouteGroupResponse,
   AdminRouteFamilyListResponse,
   AdminRouteFamilyDetailResponse,
