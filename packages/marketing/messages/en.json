@@ -33,7 +33,8 @@
     },
     "footer": {
       "copyright": "© {year} City Roam. All rights reserved.",
-      "company": "{name}. Registered in England and Wales, company number {number}. Registered office: {address}."
+      "company": "{name}. Registered in England and Wales, company number {number}. Registered office: {address}.",
+      "audienceNav": "Who it's for"
     }
   },
   "cta": {
@@ -117,10 +118,12 @@
       "subtitle": "Solve clues around the city centre with the Owl, a guide that replies when you ask. Everyone plays in the same chat on their own phone, and there's no app to download.",
       "demoCaption": "A few messages from a game"
     },
-    "problem": {
-      "text1": "<b>No tour guide. No timetable.</b> Just your group, your phones and a trail of clues.",
-      "text2": "City Roam is a treasure hunt through the heart of Leeds, played in a group chat. The Owl sends the clues, answers questions about the route and tells you the stories behind the places you pass.",
-      "text3": "Go at your own pace, stop for a drink, and finish another day if you need to. Families, friends, hen parties and work teams all play the same way."
+    "notes": {
+      "roof": "The Victoria Quarter's roof is stained glass, fitted in 1990. Look up before you look at the shops.",
+      "briggate": "Briggate means bridge street. The bridge is still down at the bottom, doing its job.",
+      "clock": "In Thornton's Arcade, Robin Hood and three other characters from Ivanhoe strike the hours. He's never late.",
+      "carving": "The Victorians saved their best carving for the first floor. Look up, and mind the bollards.",
+      "owls": "There are gilded owls on top of the Civic Hall. I've never been invited up."
     },
     "howItWorks": {
       "title": "How it works",
@@ -133,18 +136,46 @@
       "step4Title": "Go at your own pace",
       "step4Desc": "Stop for lunch, ask for a hint, or pause and finish another day. Your link works for 90 days."
     },
-    "phone": {
-      "title": "All you need is your phone",
-      "subtitle": "No app, no kit, no printed map. The game runs in your phone's browser, in a chat that works like any other group chat. The Owl, your guide, works from our notes on the route, so you can ask it things in your own words.",
-      "features": {
-        "0": "Works on any modern smartphone",
-        "1": "Nothing to download or install",
-        "2": "Everyone in the group sees the same chat",
-        "3": "Ask for a hint whenever you're stuck"
+    "route": {
+      "title": "The route at a glance",
+      "subtitle": "One loop of the city centre, on foot. We only mark the start: finding the rest is the game.",
+      "mapLabel": "A sketch of the route: one loop through Leeds city centre with {stops} unmarked stops. Only the start is labelled.",
+      "start": "Start",
+      "note": "The walking time is the route itself. Add however long you stop for.",
+      "rows": {
+        "start": "Starts at",
+        "distance": "Distance",
+        "duration": "Walking time",
+        "stops": "Stops",
+        "stepFree": "Step-free",
+        "dogs": "Dogs",
+        "toilets": "Toilets",
+        "covered": "Under cover"
+      },
+      "values": {
+        "stops": "{stops}, and we're not saying where",
+        "stepFree": {
+          "yes": "Yes, all the way",
+          "partly": "Mostly",
+          "no": "No, there are steps"
+        },
+        "dogs": {
+          "yes": "Welcome",
+          "no": "Best left at home"
+        },
+        "toilets": {
+          "yes": "Public toilets on the way",
+          "no": "None on the route itself"
+        },
+        "covered": {
+          "most": "Most of it",
+          "some": "Some of it",
+          "little": "Not much. Bring a coat"
+        }
       }
     },
     "included": {
-      "title": "What's included",
+      "title": "What you get",
       "subtitle": "Everything you need for a few hours out in Leeds.",
       "items": {
         "0": "A route through Leeds city centre, about {distance}",
@@ -155,26 +186,6 @@
         "5": "A link that works for 90 days, so you play when it suits you"
       }
     },
-    "whyChoose": {
-      "title": "Why City Roam",
-      "subtitle": "Not a walking tour, and not an escape room. Somewhere in between, and outdoors.",
-      "localKnowledge": {
-        "title": "Written by people who know Leeds",
-        "description": "The route picks out the corners and stories most visitors walk straight past."
-      },
-      "justYourPhone": {
-        "title": "Nothing to set up",
-        "description": "No app, no account, no printed sheets. Open the link and you're playing."
-      },
-      "playYourWay": {
-        "title": "Your pace",
-        "description": "Start when you like and stop when you like. No tour group to keep up with and no clock running."
-      },
-      "builtForGroups": {
-        "title": "Made for groups",
-        "description": "Everyone plays on their own phone in the same chat, so nobody is stuck reading over someone's shoulder."
-      }
-    },
     "pricing": {
       "title": "One price for the whole group",
       "subtitle": "Up to 10 people on one booking. No per-person fees.",
@@ -183,10 +194,7 @@
       "badge": "Launch price",
       "note": "Your link works for 90 days. Full refund if you're not happy."
     },
-    "guarantee": {
-      "title": "Not happy? Get a full refund.",
-      "description": "If you didn't enjoy it, email us within 14 days of playing and we'll refund you in full. No questions asked."
-    },
+    "gift": "<b>Buying as a gift?</b> Book it and forward the email. The link works for {days} days from booking, and they start whenever they like.",
     "faqTitle": "Frequently asked questions",
     "compare": {
       "title": "How it compares",
@@ -251,7 +259,40 @@
           "tour": "Often shared with other bookings"
         }
       }
-    }
+    },
+    "audiences": {
+      "title": "Who it's for",
+      "subtitle": "One game, played three different ways.",
+      "families": {
+        "title": "Families",
+        "text": "Clues for the children, stories for the adults, and a pace set by the smallest legs."
+      },
+      "henParties": {
+        "title": "Hen parties",
+        "text": "The classy daytime bit of the weekend, with room for a drinks stop or two."
+      },
+      "teamBuilding": {
+        "title": "Team building",
+        "text": "A couple of hours out of the office, with nothing to organise except the group chat."
+      },
+      "more": "Find out more"
+    },
+    "trust": {
+      "label": "Booking with City Roam",
+      "refund": {
+        "title": "Not happy? Full refund.",
+        "text": "Email us within 14 days of playing and we'll refund you in full. No questions asked."
+      },
+      "rain": {
+        "title": "Rain? Your link lasts {days} days",
+        "text": "Pause when it pours and finish another day. Your progress is saved."
+      },
+      "local": {
+        "title": "Made in Leeds",
+        "text": "City Roam is run by {name}, company number {number}."
+      }
+    },
+    "closing": "Round up the group. The Owl will take it from there."
   },
   "families": {
     "hero": {

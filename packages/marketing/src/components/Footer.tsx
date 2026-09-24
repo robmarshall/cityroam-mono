@@ -6,6 +6,13 @@ import { COMPANY, COMPANY_ADDRESS_LINE, CONTACT_EMAIL } from "@/lib/site";
 const LINK =
   "text-stone-100 underline-offset-4 transition-colors hover:text-white hover:underline";
 
+// TODO(Phase 4): add /stag-parties here and in the header once the page exists.
+const AUDIENCE_LINKS = [
+  { href: "/families", labelKey: "header.families" },
+  { href: "/hen-parties", labelKey: "header.henParties" },
+  { href: "/team-building", labelKey: "header.teamBuilding" },
+] as const;
+
 /**
  * Navy footer. Text is stone on ink-900 (12.9:1 and up); `on-dark` flips the
  * focus ring to stone. No brick here: brick on navy is 2.93:1.
@@ -47,8 +54,20 @@ export function Footer() {
           <p>{t("footer.copyright", { year: String(new Date().getFullYear()) })}</p>
         </div>
       </div>
+      {/* Audience pages, for visitors and for internal linking. */}
+      <nav
+        aria-label={t("footer.audienceNav")}
+        className="mx-auto mt-8 flex max-w-5xl flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm sm:justify-start"
+      >
+        <span className="font-semibold text-stone-50">{t("footer.audienceNav")}</span>
+        {AUDIENCE_LINKS.map((link) => (
+          <Link key={link.href} href={link.href} className={LINK}>
+            {t(link.labelKey)}
+          </Link>
+        ))}
+      </nav>
       {/* Company details the 2015 Business Names regulations require on the site. */}
-      <p className="mx-auto mt-8 max-w-5xl border-t border-ink-700 pt-6 text-center text-xs text-stone-200 sm:text-left">
+      <p className="mx-auto mt-6 max-w-5xl border-t border-ink-700 pt-6 text-center text-xs text-stone-200 sm:text-left">
         {t("footer.company", {
           name: COMPANY.name,
           number: COMPANY.number,

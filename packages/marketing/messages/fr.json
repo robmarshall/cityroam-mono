@@ -33,7 +33,8 @@
     },
     "footer": {
       "copyright": "© {year} City Roam. Tous droits réservés.",
-      "company": "{name}. Société immatriculée en Angleterre et au pays de Galles, numéro {number}. Siège social : {address}."
+      "company": "{name}. Société immatriculée en Angleterre et au pays de Galles, numéro {number}. Siège social : {address}.",
+      "audienceNav": "Pour qui"
     }
   },
   "cta": {
@@ -117,10 +118,12 @@
       "subtitle": "Résolvez des énigmes dans le centre-ville avec le Hibou, un guide qui vous répond quand vous lui posez une question. Tout le monde joue dans la même discussion, chacun sur son téléphone, sans application à télécharger.",
       "demoCaption": "Quelques messages d'une partie"
     },
-    "problem": {
-      "text1": "<b>Pas de visite guidée. Pas d'horaires.</b> Juste votre groupe, vos téléphones et une piste d'indices.",
-      "text2": "City Roam est une chasse au trésor au cœur de Leeds, jouée dans une discussion de groupe. Le Hibou envoie les indices, répond à vos questions sur le parcours et vous raconte l'histoire des lieux que vous croisez.",
-      "text3": "Avancez à votre rythme, arrêtez-vous boire un verre, et terminez un autre jour si besoin. Familles, amis, enterrements de vie de jeune fille ou collègues : tout le monde joue de la même façon."
+    "notes": {
+      "roof": "Le toit du Victoria Quarter est un vitrail, posé en 1990. Levez les yeux avant de regarder les vitrines.",
+      "briggate": "Briggate veut dire « rue du pont ». Le pont est toujours là, en bas, et il fait son travail.",
+      "clock": "Dans Thornton's Arcade, Robin Hood et trois autres personnages d'Ivanhoé sonnent les heures. Lui n'est jamais en retard.",
+      "carving": "Les Victoriens gardaient leurs plus belles sculptures pour le premier étage. Levez les yeux, et attention aux bornes.",
+      "owls": "Il y a des hiboux dorés au sommet du Civic Hall. On ne m'a jamais invité à monter."
     },
     "howItWorks": {
       "title": "Comment ça marche",
@@ -133,14 +136,42 @@
       "step4Title": "À votre rythme",
       "step4Desc": "Arrêtez-vous déjeuner, demandez un indice, ou faites une pause et terminez un autre jour. Votre lien reste valable 90 jours."
     },
-    "phone": {
-      "title": "Votre téléphone suffit",
-      "subtitle": "Pas d'application, pas de matériel, pas de plan imprimé. Le jeu tourne dans le navigateur de votre téléphone, dans une discussion qui fonctionne comme n'importe quel groupe de messagerie. Le Hibou, votre guide, s'appuie sur nos notes sur le parcours : vous pouvez lui poser vos questions avec vos propres mots.",
-      "features": {
-        "0": "Fonctionne sur tout smartphone récent",
-        "1": "Rien à télécharger ni à installer",
-        "2": "Tout le groupe voit la même discussion",
-        "3": "Un indice dès que vous êtes coincés"
+    "route": {
+      "title": "Le parcours en bref",
+      "subtitle": "Une boucle à pied dans le centre-ville. Nous ne marquons que le départ : trouver le reste, c'est le jeu.",
+      "mapLabel": "Un croquis du parcours : une boucle dans le centre de Leeds avec {stops} étapes non signalées. Seul le départ est indiqué.",
+      "start": "Départ",
+      "note": "Le temps de marche correspond au parcours lui-même. Ajoutez-y vos pauses.",
+      "rows": {
+        "start": "Départ",
+        "distance": "Distance",
+        "duration": "Temps de marche",
+        "stops": "Étapes",
+        "stepFree": "Sans marches",
+        "dogs": "Chiens",
+        "toilets": "Toilettes",
+        "covered": "À l'abri"
+      },
+      "values": {
+        "stops": "{stops}, et nous ne dirons pas où",
+        "stepFree": {
+          "yes": "Oui, sur tout le parcours",
+          "partly": "En grande partie",
+          "no": "Non, il y a des marches"
+        },
+        "dogs": {
+          "yes": "Bienvenus",
+          "no": "Mieux vaut les laisser à la maison"
+        },
+        "toilets": {
+          "yes": "Toilettes publiques en chemin",
+          "no": "Aucune sur le parcours"
+        },
+        "covered": {
+          "most": "En grande partie",
+          "some": "En partie",
+          "little": "Peu. Prévoyez un manteau"
+        }
       }
     },
     "included": {
@@ -155,26 +186,6 @@
         "5": "Un lien valable 90 jours, pour jouer quand ça vous arrange"
       }
     },
-    "whyChoose": {
-      "title": "Pourquoi City Roam",
-      "subtitle": "Ni une visite à pied, ni un escape game. Quelque part entre les deux, et en plein air.",
-      "localKnowledge": {
-        "title": "Écrit par des gens qui connaissent Leeds",
-        "description": "Le parcours met en lumière les recoins et les histoires devant lesquels la plupart des visiteurs passent sans s'arrêter."
-      },
-      "justYourPhone": {
-        "title": "Rien à installer",
-        "description": "Pas d'application, pas de compte, pas de feuilles imprimées. Ouvrez le lien et vous jouez."
-      },
-      "playYourWay": {
-        "title": "À votre rythme",
-        "description": "Commencez quand vous voulez, arrêtez quand vous voulez. Pas de groupe à suivre, pas de chrono."
-      },
-      "builtForGroups": {
-        "title": "Pensé pour les groupes",
-        "description": "Chacun joue sur son téléphone dans la même discussion : personne n'a à lire par-dessus l'épaule d'un autre."
-      }
-    },
     "pricing": {
       "title": "Un seul prix pour tout le groupe",
       "subtitle": "Jusqu'à 10 personnes par réservation. Pas de tarif par personne.",
@@ -183,10 +194,7 @@
       "badge": "Tarif de lancement",
       "note": "Votre lien reste valable 90 jours. Remboursement intégral si le jeu ne vous plaît pas."
     },
-    "guarantee": {
-      "title": "Pas convaincus ? Remboursement intégral.",
-      "description": "Si le jeu ne vous a pas plu, écrivez-nous dans les 14 jours suivant votre partie et nous vous rembourserons intégralement. Sans poser de questions."
-    },
+    "gift": "<b>C'est pour offrir ?</b> Réservez et transférez l'e-mail. Le lien reste valable {days} jours après la réservation, et ils commencent quand ils veulent.",
     "faqTitle": "Questions fréquentes",
     "compare": {
       "title": "Face aux alternatives",
@@ -251,7 +259,40 @@
           "tour": "Souvent partagée avec d'autres réservations"
         }
       }
-    }
+    },
+    "audiences": {
+      "title": "Pour qui",
+      "subtitle": "Un seul jeu, trois façons d'y jouer.",
+      "families": {
+        "title": "Familles",
+        "text": "Des énigmes pour les enfants, des histoires pour les adultes, et un rythme dicté par les plus petites jambes."
+      },
+      "henParties": {
+        "title": "EVJF",
+        "text": "Le moment chic du week-end, en journée, avec de quoi s'arrêter boire un verre ou deux."
+      },
+      "teamBuilding": {
+        "title": "Team building",
+        "text": "Quelques heures hors du bureau, sans rien à organiser à part le groupe de discussion."
+      },
+      "more": "En savoir plus"
+    },
+    "trust": {
+      "label": "Réserver avec City Roam",
+      "refund": {
+        "title": "Pas convaincus ? Remboursement intégral.",
+        "text": "Écrivez-nous dans les 14 jours suivant votre partie et nous vous rembourserons intégralement. Sans poser de questions."
+      },
+      "rain": {
+        "title": "De la pluie ? Votre lien dure {days} jours",
+        "text": "Faites une pause quand il pleut à verse et terminez un autre jour. Votre progression est enregistrée."
+      },
+      "local": {
+        "title": "Fait à Leeds",
+        "text": "City Roam est exploité par {name}, société numéro {number}."
+      }
+    },
+    "closing": "Rassemblez le groupe. Le Hibou s'occupe du reste."
   },
   "families": {
     "hero": {

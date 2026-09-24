@@ -46,8 +46,11 @@ export function CTAButton({
   label?: string;
   segment?: CheckoutSegment;
   variant?: keyof typeof VARIANT_CLASSES;
-  /** "start-lg" left-aligns from the lg breakpoint, to sit under left-aligned hero copy. */
-  align?: "center" | "start-lg";
+  /**
+   * "start-lg" left-aligns from the lg breakpoint, to sit under left-aligned
+   * hero copy; "start" left-aligns at every width (text over the hero photo).
+   */
+  align?: "center" | "start-lg" | "start";
   /** Stretch the button across its container (the mobile booking bar). */
   fullWidth?: boolean;
   /**
@@ -95,7 +98,7 @@ export function CTAButton({
   return (
     <div
       data-book-cta={sticky ? undefined : ""}
-      className={`flex flex-col gap-2 ${fullWidth ? "items-stretch" : "items-center"} ${align === "start-lg" ? "lg:items-start" : ""}`}
+      className={`flex flex-col gap-2 ${fullWidth ? "items-stretch" : align === "start" ? "items-start" : "items-center"} ${align === "start-lg" ? "lg:items-start" : ""}`}
     >
       <button
         type="button"
@@ -109,7 +112,7 @@ export function CTAButton({
       {error && (
         <div
           role="alert"
-          className={`flex flex-col items-center gap-1 ${align === "start-lg" ? "lg:items-start" : ""}`}
+          className={`flex flex-col gap-1 ${align === "start" ? "items-start" : "items-center"} ${align === "start-lg" ? "lg:items-start" : ""}`}
         >
           <p className={`text-sm ${variant === "inverse" ? "text-stone-50" : "text-red-700"}`}>
             {t("error")}

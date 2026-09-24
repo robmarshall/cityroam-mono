@@ -33,7 +33,8 @@
     },
     "footer": {
       "copyright": "© {year} City Roam. Alle rechten voorbehouden.",
-      "company": "{name}. Ingeschreven in Engeland en Wales, bedrijfsnummer {number}. Statutair adres: {address}."
+      "company": "{name}. Ingeschreven in Engeland en Wales, bedrijfsnummer {number}. Statutair adres: {address}.",
+      "audienceNav": "Voor wie"
     }
   },
   "cta": {
@@ -117,10 +118,12 @@
       "subtitle": "Los aanwijzingen op in het stadscentrum, met de Uil als gids, die antwoord geeft als je iets vraagt. Iedereen speelt in dezelfde chat op z'n eigen telefoon, en je hoeft geen app te downloaden.",
       "demoCaption": "Een paar berichten uit een spel"
     },
-    "problem": {
-      "text1": "<b>Geen rondleider. Geen vaste tijden.</b> Alleen jullie groep, jullie telefoons en een spoor van aanwijzingen.",
-      "text2": "City Roam is een speurtocht door het hart van Leeds, gespeeld in een groepschat. De Uil stuurt de aanwijzingen, beantwoordt jullie vragen over de route en vertelt de verhalen achter de plekken waar jullie langskomen.",
-      "text3": "Ga in je eigen tempo, stop voor een drankje en maak het desnoods een andere dag af. Gezinnen, vrienden, vrijgezellenfeesten en collega's spelen allemaal op dezelfde manier."
+    "notes": {
+      "roof": "Het dak van de Victoria Quarter is van glas-in-lood, geplaatst in 1990. Eerst omhoog kijken, dan pas naar de etalages.",
+      "briggate": "Briggate betekent “brugstraat”. De brug ligt er onderaan nog steeds, en doet gewoon z'n werk.",
+      "clock": "In Thornton's Arcade slaan Robin Hood en drie andere figuren uit Ivanhoe de uren. Hij is nooit te laat.",
+      "carving": "De Victorianen bewaarden hun mooiste beeldhouwwerk voor de eerste verdieping. Kijk omhoog, en pas op voor de paaltjes.",
+      "owls": "Boven op de Civic Hall staan vergulde uilen. Mij hebben ze nog nooit uitgenodigd."
     },
     "howItWorks": {
       "title": "Hoe het werkt",
@@ -133,14 +136,42 @@
       "step4Title": "In je eigen tempo",
       "step4Desc": "Stop voor de lunch, vraag om een hint, of pauzeer en maak het een andere dag af. Je link werkt 90 dagen."
     },
-    "phone": {
-      "title": "Je telefoon is alles wat je nodig hebt",
-      "subtitle": "Geen app, geen spullen, geen uitgeprinte kaart. Het spel draait in de browser van je telefoon, in een chat die werkt als elke andere groepschat. De Uil, jullie gids, werkt met onze aantekeningen over de route, dus je kunt hem gewoon in je eigen woorden iets vragen.",
-      "features": {
-        "0": "Werkt op elke moderne smartphone",
-        "1": "Niets te downloaden of te installeren",
-        "2": "Iedereen in de groep ziet dezelfde chat",
-        "3": "Vraag om een hint als je vastzit"
+    "route": {
+      "title": "De route in het kort",
+      "subtitle": "Eén rondje te voet door het centrum. Alleen de start staat erop: de rest vinden is het spel.",
+      "mapLabel": "Een schets van de route: één rondje door het centrum van Leeds met {stops} ongemarkeerde stops. Alleen de start is aangegeven.",
+      "start": "Start",
+      "note": "De looptijd geldt voor de route zelf. Tel daar je pauzes bij op.",
+      "rows": {
+        "start": "Start",
+        "distance": "Afstand",
+        "duration": "Looptijd",
+        "stops": "Stops",
+        "stepFree": "Zonder trappen",
+        "dogs": "Honden",
+        "toilets": "Toiletten",
+        "covered": "Overdekt"
+      },
+      "values": {
+        "stops": "{stops}, en we zeggen niet waar",
+        "stepFree": {
+          "yes": "Ja, de hele route",
+          "partly": "Grotendeels",
+          "no": "Nee, er zijn trappen"
+        },
+        "dogs": {
+          "yes": "Welkom",
+          "no": "Laat ze liever thuis"
+        },
+        "toilets": {
+          "yes": "Openbare toiletten onderweg",
+          "no": "Geen op de route zelf"
+        },
+        "covered": {
+          "most": "Grotendeels",
+          "some": "Deels",
+          "little": "Weinig. Neem een jas mee"
+        }
       }
     },
     "included": {
@@ -155,26 +186,6 @@
         "5": "Een link die 90 dagen werkt, dus je speelt wanneer het jullie uitkomt"
       }
     },
-    "whyChoose": {
-      "title": "Waarom City Roam",
-      "subtitle": "Geen stadswandeling en geen escaperoom. Iets daartussenin, en dan buiten.",
-      "localKnowledge": {
-        "title": "Geschreven door mensen die Leeds kennen",
-        "description": "De route pikt de hoekjes en verhalen eruit waar de meeste bezoekers straal aan voorbijlopen."
-      },
-      "justYourPhone": {
-        "title": "Geen gedoe vooraf",
-        "description": "Geen app, geen account, geen uitgeprinte vellen. Open de link en je speelt."
-      },
-      "playYourWay": {
-        "title": "Jullie tempo",
-        "description": "Begin wanneer je wilt en stop wanneer je wilt. Geen rondleidingsgroep om bij te houden en geen klok die loopt."
-      },
-      "builtForGroups": {
-        "title": "Gemaakt voor groepen",
-        "description": "Iedereen speelt op z'n eigen telefoon in dezelfde chat, dus niemand hoeft over iemands schouder mee te lezen."
-      }
-    },
     "pricing": {
       "title": "Eén prijs voor de hele groep",
       "subtitle": "Tot 10 personen per boeking. Geen kosten per persoon.",
@@ -183,10 +194,7 @@
       "badge": "Introductieprijs",
       "note": "Je link werkt 90 dagen. Niet tevreden? Je krijgt alles terug."
     },
-    "guarantee": {
-      "title": "Niet tevreden? Je krijgt je geld terug.",
-      "description": "Vond je het niks? Mail ons binnen 14 dagen na het spelen en je krijgt het volledige bedrag terug. Zonder vragen."
-    },
+    "gift": "<b>Als cadeau?</b> Boek het en stuur de e-mail door. De link werkt {days} dagen vanaf de boeking, en zij beginnen wanneer ze willen.",
     "faqTitle": "Veelgestelde vragen",
     "compare": {
       "title": "Vergeleken met de rest",
@@ -251,7 +259,40 @@
           "tour": "Vaak samen met andere boekingen"
         }
       }
-    }
+    },
+    "audiences": {
+      "title": "Voor wie",
+      "subtitle": "Eén spel, drie manieren om het te spelen.",
+      "families": {
+        "title": "Gezinnen",
+        "text": "Aanwijzingen voor de kinderen, verhalen voor de volwassenen, en een tempo dat de kortste beentjes bepalen."
+      },
+      "henParties": {
+        "title": "Vrijgezellenfeesten",
+        "text": "Het stijlvolle deel van het weekend, overdag, met ruimte voor een drankje of twee onderweg."
+      },
+      "teamBuilding": {
+        "title": "Teambuilding",
+        "text": "Een paar uur de kantoordeur uit, en het enige wat je hoeft te regelen is de groepschat."
+      },
+      "more": "Meer lezen"
+    },
+    "trust": {
+      "label": "Boeken bij City Roam",
+      "refund": {
+        "title": "Niet tevreden? Je geld terug.",
+        "text": "Mail ons binnen 14 dagen na het spelen en je krijgt het volledige bedrag terug. Zonder vragen."
+      },
+      "rain": {
+        "title": "Regen? Je link werkt {days} dagen",
+        "text": "Pauzeer als het giet en maak het een andere dag af. Je voortgang wordt bewaard."
+      },
+      "local": {
+        "title": "Gemaakt in Leeds",
+        "text": "City Roam wordt gerund door {name}, bedrijfsnummer {number}."
+      }
+    },
+    "closing": "Trommel de groep op. De Uil doet de rest."
   },
   "families": {
     "hero": {

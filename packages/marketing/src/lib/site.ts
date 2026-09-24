@@ -51,17 +51,20 @@ export { MAX_PARTICIPANTS } from "@cityroam/shared/constants";
 export { EVENT_EXPIRY_DAYS as LINK_VALID_DAYS } from "@cityroam/shared/constants";
 
 /**
- * Duration and distance quoted on the site (hero facts strip, FAQs, audience
- * pages). Taken from the Leeds seed route in
- * packages/api/src/db/seed-routes.ts (estimated_duration_mins: 60,
- * estimated_distance_km: "2.5").
+ * Duration, distance and stop count quoted on the site (hero facts strip,
+ * route at a glance, FAQs, audience pages). Taken from the Leeds seed route
+ * in packages/api/src/db/seed-routes.ts (estimated_duration_mins: 60,
+ * estimated_distance_km: "2.5", four answer groups).
  *
- * TODO(Rob): confirm both after walking the live route. The copy reads them
- * from here, so changing these two numbers updates every page and locale.
+ * TODO(Rob): confirm duration and distance after walking the live route. The
+ * copy reads them from here, so changing a number updates every page and
+ * locale.
  */
 export const ROUTE_FACTS = {
   durationMins: 60,
   distanceKm: 2.5,
+  /** Answer stops after the introduction (4 groups in the seed route). */
+  stops: 4,
 } as const;
 
 /** "£29" style price label. Every locale shows sterling the same way. */

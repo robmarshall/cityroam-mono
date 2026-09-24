@@ -33,7 +33,8 @@
     },
     "footer": {
       "copyright": "© {year} City Roam. Todos los derechos reservados.",
-      "company": "{name}. Sociedad registrada en Inglaterra y Gales, número de sociedad {number}. Domicilio social: {address}."
+      "company": "{name}. Sociedad registrada en Inglaterra y Gales, número de sociedad {number}. Domicilio social: {address}.",
+      "audienceNav": "Para quién es"
     }
   },
   "cta": {
@@ -117,10 +118,12 @@
       "subtitle": "Resolved pistas por el centro con el Búho, un guía que os contesta cuando le preguntáis. Todos jugáis en el mismo chat, cada uno desde su móvil, y no hay que descargar ninguna app.",
       "demoCaption": "Unos mensajes de una partida"
     },
-    "problem": {
-      "text1": "<b>Sin guía turístico. Sin horarios.</b> Solo vuestro grupo, vuestros móviles y un rastro de pistas.",
-      "text2": "City Roam es una búsqueda del tesoro por el corazón de Leeds que se juega en un chat de grupo. El Búho envía las pistas, responde a vuestras preguntas sobre la ruta y os cuenta la historia de los sitios por los que pasáis.",
-      "text3": "Id a vuestro ritmo, parad a tomar algo y terminad otro día si hace falta. Familias, amigos, despedidas de soltera y equipos de trabajo juegan igual."
+    "notes": {
+      "roof": "El techo del Victoria Quarter es una vidriera, instalada en 1990. Mirad hacia arriba antes de mirar los escaparates.",
+      "briggate": "Briggate significa «calle del puente». El puente sigue ahí abajo, haciendo su trabajo.",
+      "clock": "En Thornton's Arcade, Robin Hood y otros tres personajes de Ivanhoe dan las horas. Él nunca llega tarde.",
+      "carving": "Los victorianos guardaban sus mejores tallas para el primer piso. Mirad hacia arriba, y cuidado con los bolardos.",
+      "owls": "En lo alto del Civic Hall hay búhos dorados. A mí nunca me han invitado a subir."
     },
     "howItWorks": {
       "title": "Cómo funciona",
@@ -133,14 +136,42 @@
       "step4Title": "A vuestro ritmo",
       "step4Desc": "Parad a comer, pedid una pista o pausad y terminad otro día. El enlace funciona durante 90 días."
     },
-    "phone": {
-      "title": "Solo necesitas el móvil",
-      "subtitle": "Sin app, sin material, sin mapa impreso. El juego funciona en el navegador del móvil, en un chat como cualquier otro chat de grupo. El Búho, vuestro guía, trabaja con nuestras notas sobre la ruta, así que podéis preguntarle con vuestras propias palabras.",
-      "features": {
-        "0": "Funciona en cualquier smartphone actual",
-        "1": "Nada que descargar ni instalar",
-        "2": "Todo el grupo ve el mismo chat",
-        "3": "Pistas siempre que os atasquéis"
+    "route": {
+      "title": "La ruta de un vistazo",
+      "subtitle": "Una vuelta a pie por el centro. Solo marcamos la salida: encontrar lo demás es el juego.",
+      "mapLabel": "Un esbozo de la ruta: una vuelta por el centro de Leeds con {stops} paradas sin marcar. Solo está señalada la salida.",
+      "start": "Salida",
+      "note": "El tiempo es el de la ruta en sí. Sumad lo que os entretengáis por el camino.",
+      "rows": {
+        "start": "Salida",
+        "distance": "Distancia",
+        "duration": "Tiempo a pie",
+        "stops": "Paradas",
+        "stepFree": "Sin escalones",
+        "dogs": "Perros",
+        "toilets": "Aseos",
+        "covered": "A cubierto"
+      },
+      "values": {
+        "stops": "{stops}, y no vamos a decir dónde",
+        "stepFree": {
+          "yes": "Sí, en todo el recorrido",
+          "partly": "Casi todo",
+          "no": "No, hay escalones"
+        },
+        "dogs": {
+          "yes": "Bienvenidos",
+          "no": "Mejor dejarlos en casa"
+        },
+        "toilets": {
+          "yes": "Aseos públicos por el camino",
+          "no": "Ninguno en la ruta"
+        },
+        "covered": {
+          "most": "Casi todo",
+          "some": "Una parte",
+          "little": "Poco. Traed abrigo"
+        }
       }
     },
     "included": {
@@ -155,26 +186,6 @@
         "5": "Un enlace válido durante 90 días, para jugar cuando os venga bien"
       }
     },
-    "whyChoose": {
-      "title": "Por qué City Roam",
-      "subtitle": "Ni visita guiada ni escape room. Algo entremedias, y al aire libre.",
-      "localKnowledge": {
-        "title": "Escrito por gente que conoce Leeds",
-        "description": "La ruta se fija en los rincones y las historias junto a los que casi todo el mundo pasa sin mirar."
-      },
-      "justYourPhone": {
-        "title": "Nada que configurar",
-        "description": "Sin app, sin cuenta, sin hojas impresas. Abrís el enlace y ya estáis jugando."
-      },
-      "playYourWay": {
-        "title": "A vuestro ritmo",
-        "description": "Empezad cuando queráis y parad cuando queráis. Sin grupo de turistas al que seguir y sin cronómetro."
-      },
-      "builtForGroups": {
-        "title": "Pensado para grupos",
-        "description": "Cada uno juega desde su móvil en el mismo chat, así que nadie tiene que leer por encima del hombro de otro."
-      }
-    },
     "pricing": {
       "title": "Un precio para todo el grupo",
       "subtitle": "Hasta 10 personas por reserva. Sin cobros por persona.",
@@ -183,10 +194,7 @@
       "badge": "Precio de lanzamiento",
       "note": "El enlace funciona durante 90 días. Si no te convence, te devolvemos el dinero."
     },
-    "guarantee": {
-      "title": "¿No te ha convencido? Te devolvemos el dinero.",
-      "description": "Si no te ha gustado, escríbenos en los 14 días siguientes a la partida y te devolvemos el importe íntegro. Sin preguntas."
-    },
+    "gift": "<b>¿Es un regalo?</b> Reservadlo y reenviad el correo. El enlace funciona durante {days} días desde la reserva, y pueden empezar cuando quieran.",
     "faqTitle": "Preguntas frecuentes",
     "compare": {
       "title": "Cómo se compara",
@@ -251,7 +259,40 @@
           "tour": "A menudo compartida con otras reservas"
         }
       }
-    }
+    },
+    "audiences": {
+      "title": "Para quién es",
+      "subtitle": "Un juego, tres maneras de jugarlo.",
+      "families": {
+        "title": "Familias",
+        "text": "Pistas para los niños, historias para los adultos y un ritmo que marcan las piernas más cortas."
+      },
+      "henParties": {
+        "title": "Despedidas de soltera",
+        "text": "La parte elegante y diurna del fin de semana, con sitio para una o dos paradas a tomar algo."
+      },
+      "teamBuilding": {
+        "title": "Team building",
+        "text": "Un par de horas fuera de la oficina, sin nada que organizar salvo el chat de grupo."
+      },
+      "more": "Saber más"
+    },
+    "trust": {
+      "label": "Reservar con City Roam",
+      "refund": {
+        "title": "¿No te convence? Te devolvemos el dinero.",
+        "text": "Escríbenos en los 14 días siguientes a la partida y te devolvemos el importe íntegro. Sin preguntas."
+      },
+      "rain": {
+        "title": "¿Lluvia? El enlace dura {days} días",
+        "text": "Pausad cuando diluvie y terminad otro día. Vuestro progreso se guarda."
+      },
+      "local": {
+        "title": "Hecho en Leeds",
+        "text": "City Roam es un proyecto de {name}, número de sociedad {number}."
+      }
+    },
+    "closing": "Reunid al grupo. El Búho se encarga del resto."
   },
   "families": {
     "hero": {
