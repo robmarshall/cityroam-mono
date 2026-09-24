@@ -167,9 +167,9 @@
       "done": "That was the only clue on this page. The rest are out on the route.",
       "identity": {
         "ai": {
-          "0": "Partly. AI helps me word my replies, but the route, the clues and the facts are written by people.",
-          "1": "In part. AI helps with the wording, but the walk and the clues are ours, written by hand.",
-          "2": "On this page, no: every line here was written by hand. In the game, AI helps word my replies, and people write the route and the clues."
+          "0": "Partly. AI helps me word my replies, but the route and the clues are chosen and checked by people.",
+          "1": "In part. AI helps with the wording, and people pick the walk and check every clue.",
+          "2": "On this page, no: every line here was written by hand. In the game, AI helps word my replies, and people choose and check the route and the clues."
         },
         "machine": {
           "0": "I'm the guide in your phone. That's all you need to know for this clue.",

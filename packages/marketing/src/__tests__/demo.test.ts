@@ -181,6 +181,28 @@ describe("demo identity questions", () => {
     }
   });
 
+  it("never claims the game's route or replies are all hand-written", () => {
+    // Routes may be drafted with LLM help and then checked by people, so the
+    // "are you AI?" answers say people choose and check them. Only a sentence
+    // about this page itself (whose lines really are hand-written) may say so.
+    const handWritten: Record<string, RegExp> = {
+      en: /by hand|written by people/i,
+      es: /a mano|escrit\w* por personas/i,
+      fr: /à la main|écrit\w* par des humains/i,
+      de: /von Hand|schreiben Menschen/i,
+      nl: /met de hand|door mensen geschreven/i,
+    };
+    const thisPage = /^(On this page|En esta página|Sur cette page|Auf dieser Seite|Op deze pagina)\b/;
+    for (const locale of locales) {
+      for (const reply of Object.values(demoOf(locale).owl.identity.ai) as string[]) {
+        for (const sentence of reply.split(/(?<=[.?])\s+/u)) {
+          if (thisPage.test(sentence)) continue;
+          expect(sentence, `${locale}: ${reply}`).not.toMatch(handWritten[locale]);
+        }
+      }
+    }
+  });
+
   it("mentions AI only in the answers to \"are you AI?\", which say so", () => {
     const aiWord: Record<string, RegExp> = { en: /\bAI\b/, es: /\bIA\b/, fr: /\bIA\b/, de: /\bKI\b/, nl: /\bAI\b/ };
     for (const locale of locales) {

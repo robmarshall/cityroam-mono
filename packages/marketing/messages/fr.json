@@ -167,9 +167,9 @@
       "done": "C'était la seule énigme de cette page. Les autres vous attendent sur le parcours.",
       "identity": {
         "ai": {
-          "0": "En partie. L'IA m'aide à formuler mes réponses, mais le parcours, les énigmes et les anecdotes sont écrits par des humains.",
-          "1": "En partie. L'IA aide pour la formulation, mais la balade et les énigmes sont à nous, écrites à la main.",
-          "2": "Sur cette page, non : chaque ligne a été écrite à la main. Dans le jeu, l'IA m'aide à formuler mes réponses, et des humains écrivent le parcours et les énigmes."
+          "0": "En partie. L'IA m'aide à formuler mes réponses, mais le parcours et les énigmes sont choisis et vérifiés par des humains.",
+          "1": "En partie. L'IA aide pour la formulation, et ce sont des humains qui choisissent la balade et vérifient chaque énigme.",
+          "2": "Sur cette page, non : chaque ligne a été écrite à la main. Dans le jeu, l'IA m'aide à formuler mes réponses, et des humains choisissent et vérifient le parcours et les énigmes."
         },
         "machine": {
           "0": "Je suis le guide dans votre téléphone. Pour cette énigme, vous n'avez pas besoin d'en savoir plus.",

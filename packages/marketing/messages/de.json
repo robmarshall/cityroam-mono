@@ -167,9 +167,9 @@
       "done": "Das war das einzige Rätsel auf dieser Seite. Die anderen warten auf der Route.",
       "identity": {
         "ai": {
-          "0": "Zum Teil. KI hilft mir beim Formulieren der Antworten, aber Route, Rätsel und Fakten schreiben Menschen.",
-          "1": "Teilweise. KI hilft bei der Formulierung, aber der Rundgang und die Rätsel sind von uns, von Hand geschrieben.",
-          "2": "Auf dieser Seite nicht: Hier ist jede Zeile von Hand geschrieben. Im Spiel hilft mir KI beim Formulieren, und Route und Rätsel schreiben Menschen."
+          "0": "Zum Teil. KI hilft mir beim Formulieren der Antworten, aber Route und Rätsel wählen und prüfen Menschen.",
+          "1": "Teilweise. KI hilft bei der Formulierung, und Menschen suchen den Rundgang aus und prüfen jedes Rätsel.",
+          "2": "Auf dieser Seite nicht: Hier ist jede Zeile von Hand geschrieben. Im Spiel hilft mir KI beim Formulieren, und Route und Rätsel wählen und prüfen Menschen."
         },
         "machine": {
           "0": "Ich bin die Begleiterin in euren Handys. Mehr müsst ihr für dieses Rätsel nicht wissen.",

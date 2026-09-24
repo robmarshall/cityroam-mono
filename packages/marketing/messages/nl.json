@@ -167,9 +167,9 @@
       "done": "Dat was het enige raadsel op deze pagina. De rest wacht op de route.",
       "identity": {
         "ai": {
-          "0": "Deels. AI helpt me mijn antwoorden te formuleren, maar de route, de raadsels en de weetjes zijn door mensen geschreven.",
-          "1": "Voor een deel. AI helpt met de formulering, maar de wandeling en de raadsels zijn van ons, met de hand geschreven.",
-          "2": "Op deze pagina niet: elke regel hier is met de hand geschreven. In het spel helpt AI me met formuleren, en mensen schrijven de route en de raadsels."
+          "0": "Deels. AI helpt me mijn antwoorden te formuleren, maar de route en de raadsels worden door mensen gekozen en gecontroleerd.",
+          "1": "Voor een deel. AI helpt met de formulering, en mensen kiezen de wandeling en controleren elk raadsel.",
+          "2": "Op deze pagina niet: elke regel hier is met de hand geschreven. In het spel helpt AI me met formuleren, en mensen kiezen en controleren de route en de raadsels."
         },
         "machine": {
           "0": "Ik ben de gids in je telefoon. Meer hoeven jullie voor dit raadsel niet te weten.",

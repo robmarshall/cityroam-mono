@@ -167,9 +167,9 @@
       "done": "Esa era la única pista de esta página. Las demás os esperan en la ruta.",
       "identity": {
         "ai": {
-          "0": "En parte. La IA me ayuda a redactar las respuestas, pero la ruta, las pistas y los datos los escriben personas.",
-          "1": "En parte. La IA ayuda con la redacción, pero el paseo y las pistas son nuestros, escritos a mano.",
-          "2": "En esta página, no: cada línea está escrita a mano. En el juego, la IA me ayuda a redactar las respuestas, y la ruta y las pistas las escriben personas."
+          "0": "En parte. La IA me ayuda a redactar las respuestas, pero la ruta y las pistas las eligen y revisan personas.",
+          "1": "En parte. La IA ayuda con la redacción, y son personas quienes eligen el paseo y revisan cada pista.",
+          "2": "En esta página, no: cada línea está escrita a mano. En el juego, la IA me ayuda a redactar las respuestas, y la ruta y las pistas las eligen y revisan personas."
         },
         "machine": {
           "0": "Soy el guía que llevas en el móvil. Para esta pista, no necesitas saber más.",
