@@ -41,6 +41,9 @@
       "company": "{name}. Eingetragen in England und Wales, Firmennummer {number}. Sitz der Gesellschaft: {address}.",
       "audienceNav": "Für wen",
       "gift": "Geschenkgutscheine"
+    },
+    "legalNav": {
+      "contents": "Auf dieser Seite"
     }
   },
   "cta": {
@@ -550,6 +553,9 @@
     },
     "success": {
       "title": "Alles bereit",
+      "subtitle": "Dein Spiel ist gebucht. Jetzt musst du nur noch einen Link verschicken.",
+      "forwardTitle": "Leite das an deine Gruppe weiter",
+      "forwardText": "Alle öffnen ihn auf dem eigenen Handy und steigen mit ihrem Namen ein. Eine App braucht niemand.",
       "eventLinkLabel": "Dein Spiel-Link",
       "copy": "Kopieren",
       "copied": "Kopiert",
@@ -557,7 +563,14 @@
       "share": "Mit deiner Gruppe teilen",
       "shareTitle": "Mach mit bei meinem City-Roam-Spiel",
       "whatsNext": "Wie geht's weiter",
-      "whatsNextDescription": "Schick den Link an deine Gruppe. Alle öffnen ihn auf dem Handy und geben ihren Namen ein. Wer als Erstes beitritt, leitet die Gruppe und drückt auf Start, sobald alle bereit sind.",
+      "steps": {
+        "0": "Schick den Link an deine Gruppe.",
+        "1": "Alle öffnen ihn auf dem Handy und geben ihren Namen ein.",
+        "2": "Wer als Erstes beitritt, leitet die Gruppe und drückt auf Start, sobald alle da sind."
+      },
+      "note": "Ich bin im Chat, sobald ihr so weit seid. Ich laufe nicht weg.",
+      "giftText": "Kennst du noch jemanden, der Lust darauf hätte?",
+      "giftLink": "Verschenk einen Geschenkgutschein",
       "refundNote": "Nicht zufrieden? Du bekommst dein Geld komplett zurück, ohne Nachfragen.",
       "refundLink": "Rückerstattungsbedingungen"
     }
@@ -883,6 +896,8 @@
   "notFound": {
     "title": "Seite nicht gefunden",
     "description": "Diese Seite gibt es nicht, oder sie ist umgezogen.",
+    "note": "Diese Seite liegt nicht auf der Route. Ich habe zweimal nachgesehen.",
+    "elsewhere": "Oder versucht es hier",
     "backHome": "Zurück zur Startseite"
   },
   "facts": {

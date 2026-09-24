@@ -41,6 +41,9 @@
       "company": "{name}. Ingeschreven in Engeland en Wales, bedrijfsnummer {number}. Statutair adres: {address}.",
       "audienceNav": "Voor wie",
       "gift": "Cadeaubonnen"
+    },
+    "legalNav": {
+      "contents": "Op deze pagina"
     }
   },
   "cta": {
@@ -550,6 +553,9 @@
     },
     "success": {
       "title": "Alles staat klaar",
+      "subtitle": "Jullie spel is geboekt. Nu alleen nog één link versturen.",
+      "forwardTitle": "Stuur dit door naar je groep",
+      "forwardText": "Iedereen opent hem op z'n eigen telefoon en doet mee onder een eigen naam. Er is geen app nodig.",
       "eventLinkLabel": "Jullie spellink",
       "copy": "Kopiëren",
       "copied": "Gekopieerd",
@@ -557,7 +563,14 @@
       "share": "Deel met je groep",
       "shareTitle": "Doe mee met mijn City Roam-spel",
       "whatsNext": "Hoe nu verder",
-      "whatsNextDescription": "Stuur de link naar je groep. Iedereen opent hem op de telefoon en vult een naam in. Wie als eerste meedoet, is groepsleider en drukt op start zodra iedereen klaar is.",
+      "steps": {
+        "0": "Stuur de link naar je groep.",
+        "1": "Iedereen opent hem op de telefoon en vult een naam in.",
+        "2": "Wie als eerste meedoet, is groepsleider en drukt op start zodra iedereen er is."
+      },
+      "note": "Ik zit in de chat zodra jullie klaar zijn. Ik ga nergens heen.",
+      "giftText": "Ken je nog iemand die het wil proberen?",
+      "giftLink": "Geef een cadeaubon",
       "refundNote": "Niet tevreden? Je krijgt je geld volledig terug, zonder vragen.",
       "refundLink": "Terugbetalingsbeleid"
     }
@@ -883,6 +896,8 @@
   "notFound": {
     "title": "Pagina niet gevonden",
     "description": "Die pagina bestaat niet, of is verplaatst.",
+    "note": "Deze pagina ligt niet op de route. Ik heb het twee keer gecontroleerd.",
+    "elsewhere": "Of probeer een van deze",
     "backHome": "Terug naar de homepage"
   },
   "facts": {

@@ -6,6 +6,8 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { POSTHOG_EVENTS } from "@cityroam/shared/analytics";
 import type { CheckoutSuccessResponse } from "@cityroam/shared/types";
+import { Annotation } from "@/components/Annotation";
+import { OwlMark } from "@/components/OwlMark";
 import { trackEvent } from "@/lib/analytics";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
@@ -18,8 +20,8 @@ export default function CheckoutSuccessPage() {
   return (
     <Suspense
       fallback={
-        <main className="flex min-h-screen items-center justify-center px-6 py-24">
-          <div className="mx-auto w-full max-w-lg text-center">
+        <main className="flex min-h-[70vh] items-center justify-center bg-stone-50 px-6 py-20 sm:py-24">
+          <div className="mx-auto w-full max-w-xl text-center">
             <LoadingState />
           </div>
         </main>
@@ -136,8 +138,8 @@ function CheckoutSuccessContent() {
   }, [eventUrl, eventCode, t]);
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-6 py-24">
-      <div className="mx-auto w-full max-w-lg text-center">
+    <main className="flex min-h-[70vh] items-center justify-center bg-stone-50 px-6 py-20 sm:py-24">
+      <div className="mx-auto w-full max-w-xl text-center">
         {status === "loading" && <LoadingState />}
         {status === "error" && <ErrorState onRetry={handleRetry} />}
         {status === "success" && (
@@ -184,7 +186,7 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
         </button>
         <Link
           href="/"
-          className="rounded-button border border-stone-300 px-6 py-3 font-semibold text-ink-700 transition-colors hover:bg-stone-100"
+          className="rounded-button px-6 py-3 font-semibold text-ink-900 ring-2 ring-inset ring-ink-900 transition-colors hover:bg-ink-900 hover:text-stone-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)"
         >
           {t("error.backHome")}
         </Link>
@@ -207,10 +209,23 @@ function SuccessState({
   const t = useTranslations("checkout");
   return (
     <>
-      <h1 className="font-display text-3xl font-semibold text-ink-900">{t("success.title")}</h1>
+      <OwlMark size={44} className="mx-auto text-ink-900" />
+      <h1 className="mt-6 font-display text-4xl font-semibold tracking-tight text-balance text-ink-900 sm:text-5xl">
+        {t("success.title")}
+      </h1>
+      <p className="mt-4 text-lg leading-relaxed text-ink-700">{t("success.subtitle")}</p>
 
-      <div className="mt-8 rounded-card border border-stone-200 bg-stone-100 p-4">
-        <label htmlFor="event-link" className="block text-sm font-medium text-muted">
+      {/* The one job left: get the link to the group. */}
+      <section
+        aria-labelledby="forward-title"
+        className="mt-10 rounded-card bg-white p-6 text-left ring-1 ring-stone-200 sm:p-8"
+      >
+        <h2 id="forward-title" className="font-display text-2xl font-semibold text-ink-900">
+          {t("success.forwardTitle")}
+        </h2>
+        <p className="mt-2 leading-relaxed text-muted">{t("success.forwardText")}</p>
+
+        <label htmlFor="event-link" className="mt-6 block text-sm font-medium text-ink-700">
           {t("success.eventLinkLabel")}
         </label>
         <div className="mt-2 flex items-center gap-2">
@@ -219,42 +234,63 @@ function SuccessState({
             type="text"
             readOnly
             value={eventUrl}
-            className="min-w-0 flex-1 rounded-button border border-stone-300 bg-white px-3 py-2 text-sm text-ink-900 select-all"
+            className="min-w-0 flex-1 rounded-button border border-stone-300 bg-stone-50 px-3 py-2.5 text-sm text-ink-900 select-all"
             onClick={(e) => (e.target as HTMLInputElement).select()}
           />
           <button
             type="button"
             onClick={onCopy}
             aria-live="polite"
-            className="shrink-0 rounded-button border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-ink-700 transition-colors hover:bg-stone-100"
+            className="shrink-0 rounded-button px-4 py-2.5 text-sm font-semibold text-ink-900 ring-2 ring-inset ring-ink-900 transition-colors hover:bg-ink-900 hover:text-stone-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)"
           >
             {copied ? t("success.copied") : t("success.copy")}
           </button>
         </div>
-        <p className="mt-3 text-left text-sm text-muted">{t("success.validity")}</p>
-      </div>
+        <p className="mt-3 text-sm text-muted">{t("success.validity")}</p>
 
-      <button
-        type="button"
-        onClick={onShare}
-        className="mt-6 inline-flex items-center justify-center rounded-button bg-brick-500 px-8 py-3 text-lg font-semibold text-white transition-colors hover:bg-brick-600 active:bg-brick-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)"
-      >
-        {t("success.share")}
-      </button>
+        <button
+          type="button"
+          onClick={onShare}
+          className="mt-6 inline-flex w-full items-center justify-center rounded-button bg-brick-500 px-8 py-3.5 text-lg font-semibold text-white transition-colors hover:bg-brick-600 active:bg-brick-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring) sm:w-auto"
+        >
+          {t("success.share")}
+        </button>
+      </section>
 
-      <div className="mt-8 rounded-card bg-stone-100 p-6 text-left">
-        <h2 className="font-semibold text-ink-900">{t("success.whatsNext")}</h2>
-        <p className="mt-2 text-sm text-muted leading-relaxed">
-          {t("success.whatsNextDescription")}
+      <section aria-labelledby="next-title" className="mt-10 text-left">
+        <h2 id="next-title" className="font-display text-2xl font-semibold text-ink-900">
+          {t("success.whatsNext")}
+        </h2>
+        <ol className="mt-6 space-y-5">
+          {[0, 1, 2].map((i) => (
+            <li key={i} className="flex gap-4">
+              <span
+                aria-hidden="true"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-brick-500 font-display font-semibold text-brick-600"
+              >
+                {i + 1}
+              </span>
+              <p className="pt-1 leading-relaxed text-ink-700">{t(`success.steps.${i}`)}</p>
+            </li>
+          ))}
+        </ol>
+        <Annotation text={t("success.note")} tail="top-left" className="mt-8 ml-12" />
+      </section>
+
+      <div className="mt-12 space-y-3 border-t border-stone-200 pt-8 text-sm text-muted">
+        <p>
+          {t("success.giftText")}{" "}
+          <Link href="/gift" className="font-medium text-brick-600 underline underline-offset-2 hover:text-ink-900">
+            {t("success.giftLink")}
+          </Link>
+        </p>
+        <p>
+          {t("success.refundNote")}{" "}
+          <Link href="/refunds" className="font-medium text-brick-600 underline underline-offset-2 hover:text-ink-900">
+            {t("success.refundLink")}
+          </Link>
         </p>
       </div>
-
-      <p className="mt-6 text-sm text-muted">
-        {t("success.refundNote")}{" "}
-        <Link href="/refunds" className="font-medium text-brick-600 underline underline-offset-2">
-          {t("success.refundLink")}
-        </Link>
-      </p>
     </>
   );
 }

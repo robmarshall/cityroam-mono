@@ -41,6 +41,9 @@
       "company": "{name}. Sociedad registrada en Inglaterra y Gales, número de sociedad {number}. Domicilio social: {address}.",
       "audienceNav": "Para quién es",
       "gift": "Tarjetas regalo"
+    },
+    "legalNav": {
+      "contents": "En esta página"
     }
   },
   "cta": {
@@ -550,6 +553,9 @@
     },
     "success": {
       "title": "Todo listo",
+      "subtitle": "Tu partida está reservada. Lo que queda es enviar un enlace.",
+      "forwardTitle": "Reenvíaselo a tu grupo",
+      "forwardText": "Cada persona lo abre en su propio móvil y se une con su nombre. No hay que descargar ninguna app.",
       "eventLinkLabel": "El enlace de tu partida",
       "copy": "Copiar",
       "copied": "Copiado",
@@ -557,7 +563,14 @@
       "share": "Compartir con tu grupo",
       "shareTitle": "Únete a mi partida de City Roam",
       "whatsNext": "Qué pasa ahora",
-      "whatsNextDescription": "Envía el enlace a tu grupo. Cada persona lo abre en su móvil y escribe su nombre. La primera en unirse es la líder del grupo y da a empezar cuando estéis todos listos.",
+      "steps": {
+        "0": "Envía el enlace a tu grupo.",
+        "1": "Cada persona lo abre en su móvil y escribe su nombre.",
+        "2": "La primera en unirse es la líder del grupo y da a empezar cuando estéis todos."
+      },
+      "note": "Estaré en el chat cuando estéis listos. No me voy a ninguna parte.",
+      "giftText": "¿Conoces a alguien más a quien le gustaría probarlo?",
+      "giftLink": "Regálale una tarjeta regalo",
       "refundNote": "¿No te ha convencido? Te devolvemos el dinero, sin preguntas.",
       "refundLink": "Política de reembolsos"
     }
@@ -883,6 +896,8 @@
   "notFound": {
     "title": "Página no encontrada",
     "description": "Esa página no existe o se ha movido.",
+    "note": "Esta página no está en la ruta. Lo he comprobado dos veces.",
+    "elsewhere": "O prueba una de estas",
     "backHome": "Volver al inicio"
   },
   "facts": {

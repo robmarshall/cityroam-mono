@@ -41,6 +41,9 @@
       "company": "{name}. Société immatriculée en Angleterre et au pays de Galles, numéro {number}. Siège social : {address}.",
       "audienceNav": "Pour qui",
       "gift": "Cartes cadeaux"
+    },
+    "legalNav": {
+      "contents": "Sur cette page"
     }
   },
   "cta": {
@@ -550,6 +553,9 @@
     },
     "success": {
       "title": "Tout est prêt",
+      "subtitle": "Votre partie est réservée. Il ne reste plus qu'à envoyer un lien.",
+      "forwardTitle": "Transférez-le à votre groupe",
+      "forwardText": "Chacun l'ouvre sur son téléphone et rejoint la partie avec son prénom. Pas d'application à télécharger.",
       "eventLinkLabel": "Le lien de votre partie",
       "copy": "Copier",
       "copied": "Copié",
@@ -557,7 +563,14 @@
       "share": "Partager avec votre groupe",
       "shareTitle": "Rejoignez ma partie City Roam",
       "whatsNext": "Et maintenant",
-      "whatsNextDescription": "Envoyez le lien à votre groupe. Chacun l'ouvre sur son téléphone et saisit son prénom. La première personne à rejoindre la partie en devient responsable, et la lance quand tout le monde est prêt.",
+      "steps": {
+        "0": "Envoyez le lien à votre groupe.",
+        "1": "Chacun l'ouvre sur son téléphone et saisit son prénom.",
+        "2": "La première personne à rejoindre la partie en devient responsable, et la lance quand tout le monde est là."
+      },
+      "note": "Je serai dans la discussion dès que vous serez prêts. Je ne bouge pas.",
+      "giftText": "Vous connaissez quelqu'un d'autre qui aimerait essayer ?",
+      "giftLink": "Offrez-lui une carte cadeau",
       "refundNote": "Pas convaincus ? Remboursement intégral, sans poser de questions.",
       "refundLink": "Politique de remboursement"
     }
@@ -883,6 +896,8 @@
   "notFound": {
     "title": "Page introuvable",
     "description": "Cette page n'existe pas, ou elle a été déplacée.",
+    "note": "Cette page n'est pas sur le parcours. J'ai vérifié deux fois.",
+    "elsewhere": "Ou essayez plutôt",
     "backHome": "Retour à l'accueil"
   },
   "facts": {

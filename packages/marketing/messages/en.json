@@ -41,6 +41,9 @@
       "company": "{name}. Registered in England and Wales, company number {number}. Registered office: {address}.",
       "audienceNav": "Who it's for",
       "gift": "Gift vouchers"
+    },
+    "legalNav": {
+      "contents": "On this page"
     }
   },
   "cta": {
@@ -550,6 +553,9 @@
     },
     "success": {
       "title": "You're all set",
+      "subtitle": "Your game is booked. The rest is sending one link.",
+      "forwardTitle": "Forward this to your group",
+      "forwardText": "Everyone opens it on their own phone and joins with their name. There's no app to download.",
       "eventLinkLabel": "Your game link",
       "copy": "Copy",
       "copied": "Copied",
@@ -557,7 +563,14 @@
       "share": "Share with your group",
       "shareTitle": "Join my City Roam game",
       "whatsNext": "What happens next",
-      "whatsNextDescription": "Send the link to your group. Everyone opens it on their phone and enters their name. The first person to join is the group lead, and presses start when everyone's ready.",
+      "steps": {
+        "0": "Send the link to your group.",
+        "1": "Everyone opens it on their phone and adds their name.",
+        "2": "The first person to join is the group lead, and presses start when everyone's there."
+      },
+      "note": "I'll be in the chat whenever you're ready. I'm not going anywhere.",
+      "giftText": "Know someone else who'd like a go?",
+      "giftLink": "Send them a gift voucher",
       "refundNote": "Not happy? Get a full refund, no questions asked.",
       "refundLink": "Refunds policy"
     }
@@ -883,6 +896,8 @@
   "notFound": {
     "title": "Page not found",
     "description": "That page doesn't exist, or it has moved.",
+    "note": "This page isn't on the route. I checked twice.",
+    "elsewhere": "Or try one of these",
     "backHome": "Back to home"
   },
   "facts": {
