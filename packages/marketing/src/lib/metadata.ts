@@ -9,6 +9,7 @@ export const PAGES = {
   families: { path: "/families", key: "metadata.families" },
   henParties: { path: "/hen-parties", key: "metadata.henParties" },
   teamBuilding: { path: "/team-building", key: "metadata.teamBuilding" },
+  stagParties: { path: "/stag-parties", key: "metadata.stagParties" },
   terms: { path: "/terms", key: "legal.meta.terms" },
   privacy: { path: "/privacy", key: "legal.meta.privacy" },
   refunds: { path: "/refunds", key: "legal.meta.refunds" },

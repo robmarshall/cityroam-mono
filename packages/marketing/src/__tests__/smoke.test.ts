@@ -76,10 +76,12 @@ describe("marketing smoke", () => {
         if (value && typeof value === "object") {
           for (const [k, v] of Object.entries(value)) walk(v, `${key}.${k}`);
         } else if (typeof value === "string" && !value.includes("<")) {
-          // `year` and the company details are filled in by the Footer itself.
+          // `year` and the company details are filled in by the Footer
+          // itself, `n` by the audience pages' "Game 1" / "Game 2" tickets.
           const out = t(key, {
             ...values,
             year: 2026,
+            n: 1,
             name: COMPANY.name,
             number: COMPANY.number,
             address: COMPANY_ADDRESS_LINE,

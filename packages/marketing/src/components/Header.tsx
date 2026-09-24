@@ -10,11 +10,16 @@ import { OwlMark } from "@/components/OwlMark";
 const FOCUS =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)";
 
+// Three audiences in the header, by design (docs/plans/brand-direction-a.md);
+// the stag page is linked from the footer and the home page's audience cards.
 const NAV_LINKS = [
   { href: "/families" as const, labelKey: "header.families" },
   { href: "/hen-parties" as const, labelKey: "header.henParties" },
   { href: "/team-building" as const, labelKey: "header.teamBuilding" },
 ];
+
+/** Pages with their own booking band (`#book`) and checkout segment. */
+const AUDIENCE_PATHS: string[] = [...NAV_LINKS.map((link) => link.href), "/stag-parties"];
 
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -39,13 +44,16 @@ export function Header() {
 
   // On an audience page, "Book now" goes to that page's own booking band so
   // the checkout keeps its segment. Elsewhere it goes to the homepage price.
-  const onAudiencePage = NAV_LINKS.some((link) => link.href === pathname);
+  const onAudiencePage = AUDIENCE_PATHS.includes(pathname);
   const bookHref = onAudiencePage ? `${pathname}#book` : "/#pricing";
 
   function switchLanguage(newLocale: SupportedLanguage) {
     setLangOpen(false);
     setMenuOpen(false);
-    router.replace(pathname, { locale: newLocale });
+    // Keep the query string (a voucher code on /redeem, say). Read at click
+    // time rather than with useSearchParams, which would opt every static
+    // page out of prerendering.
+    router.replace(`${pathname}${window.location.search}`, { locale: newLocale });
   }
 
   return (

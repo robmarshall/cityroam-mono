@@ -14,8 +14,21 @@ const LEGAL_LAST_MODIFIED = "2026-09-02";
 
 const LEGAL_PAGES = new Set<PageKey>(["terms", "privacy", "refunds"]);
 
+/**
+ * Indexable pages that build their own metadata outside PAGES. The gift
+ * voucher page has its own messages (messages/gift/); its redeem and
+ * success pages are private and stay out.
+ */
+const EXTRA_PATHS = ["/gift"] as const;
+
+function alternates(path: string) {
+  return {
+    languages: Object.fromEntries(locales.map((locale) => [locale, `${siteUrl}/${locale}${path}`])),
+  };
+}
+
 export default function sitemap(): MetadataRoute.Sitemap {
-  return (Object.keys(PAGES) as PageKey[]).map((page) => {
+  const pages = (Object.keys(PAGES) as PageKey[]).map((page) => {
     const path = PAGES[page].path;
     const isLegal = LEGAL_PAGES.has(page);
 
@@ -24,11 +37,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: isLegal ? LEGAL_LAST_MODIFIED : BUILD_DATE,
       changeFrequency: isLegal ? ("yearly" as const) : ("weekly" as const),
       priority: page === "home" ? 1 : isLegal ? 0.3 : 0.8,
-      alternates: {
-        languages: Object.fromEntries(
-          locales.map((locale) => [locale, `${siteUrl}/${locale}${path}`]),
-        ),
-      },
+      alternates: alternates(path),
     };
   });
+
+  const extra = EXTRA_PATHS.map((path) => ({
+    url: `${siteUrl}/${defaultLocale}${path}`,
+    lastModified: BUILD_DATE,
+    changeFrequency: "weekly" as const,
+    priority: 0.6,
+    alternates: alternates(path),
+  }));
+
+  return [...pages, ...extra];
 }

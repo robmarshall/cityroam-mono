@@ -6,11 +6,12 @@ import { COMPANY, COMPANY_ADDRESS_LINE, CONTACT_EMAIL } from "@/lib/site";
 const LINK =
   "text-stone-100 underline-offset-4 transition-colors hover:text-white hover:underline";
 
-// TODO(Phase 4): add /stag-parties here and in the header once the page exists.
+// All four audiences here; the header carries only the first three.
 const AUDIENCE_LINKS = [
   { href: "/families", labelKey: "header.families" },
   { href: "/hen-parties", labelKey: "header.henParties" },
   { href: "/team-building", labelKey: "header.teamBuilding" },
+  { href: "/stag-parties", labelKey: "header.stagParties" },
 ] as const;
 
 /**
@@ -30,6 +31,11 @@ export function Footer() {
             <span>{t("header.brand")}</span>
           </p>
           <p className="mt-3">
+            <Link href="/gift" className={LINK}>
+              {t("footer.gift")}
+            </Link>
+          </p>
+          <p className="mt-2">
             <a href={`mailto:${CONTACT_EMAIL}`} className={LINK}>
               {CONTACT_EMAIL}
             </a>

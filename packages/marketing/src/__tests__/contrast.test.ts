@@ -70,6 +70,8 @@ const USED: Pair[] = [
   { fg: "ink900", bg: "stone50", min: AA_UI, where: "focus ring on stone" },
   { fg: "ink900", bg: "white", min: AA_UI, where: "focus ring on white" },
   { fg: "stone50", bg: "ink900", min: AA_UI, where: "focus ring on navy" },
+  { fg: "stone50", bg: "ink900", min: AA_UI, where: "outline email button on the team page's navy band" },
+  { fg: "ink900", bg: "white", min: AA_UI, where: "outline copy button on the checkout success card" },
   { fg: "brick500", bg: "stone50", min: AA_UI, where: "check icons, fact markers, rules" },
   { fg: "brick500", bg: "white", min: AA_UI, where: "check icons on white" },
   { fg: "brick500", bg: "stone100", min: AA_UI, where: "route line on photo placeholders" },

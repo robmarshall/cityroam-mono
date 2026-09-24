@@ -10,15 +10,15 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return buildMetadata(locale, "teamBuilding");
+  return buildMetadata(locale, "stagParties");
 }
 
-export default async function TeamBuilding({
+export default async function StagParties({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = (await params) as { locale: SupportedLanguage };
   setRequestLocale(locale);
-  return <AudiencePage audience="teamBuilding" locale={locale} />;
+  return <AudiencePage audience="stagParties" locale={locale} />;
 }
