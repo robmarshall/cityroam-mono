@@ -2,7 +2,7 @@
   "gift": {
     "meta": {
       "title": "Ein City-Roam-Spiel verschenken | Geschenkcodes",
-      "description": "Eine Schatzsuche durch Leeds zum Verschenken: ein Spiel für bis zu {max} Personen, {price}. Die Beschenkten haben {months} Monate Zeit, den Code einzulösen, und ab dem Start {days} Tage zum Spielen.",
+      "description": "Ein Rundgang mit Rätseln durch Leeds zum Verschenken: ein Spiel für bis zu {max} Personen, {price}. Die Beschenkten haben {months} Monate Zeit, den Code einzulösen, und ab dem Start {days} Tage zum Spielen.",
       "successTitle": "Dein Geschenkcode | City Roam",
       "redeemTitle": "Geschenkcode einlösen | City Roam",
       "redeemDescription": "Du hast einen City-Roam-Geschenkcode bekommen? Gib ihn hier ein, um dein Spiel einzurichten."
@@ -18,7 +18,7 @@
     "page": {
       "eyebrow": "Geschenkcodes",
       "title": "Ein Spiel verschenken",
-      "subtitle": "Eine Schatzsuche durch Leeds, die jemand anderes spielt. Du kaufst den Code, die Beschenkten suchen sich den Tag aus.",
+      "subtitle": "Ein Rundgang mit Rätseln durch Leeds, den jemand anderes spielt. Du kaufst den Code, die Beschenkten suchen sich den Tag aus.",
       "note": "Muss nicht eingepackt werden und hat nie die falsche Größe.",
       "getTitle": "Was die Beschenkten bekommen",
       "get": {
@@ -66,7 +66,7 @@
         },
         "1": {
           "question": "Kann in einer anderen Sprache gespielt werden?",
-          "answer": "Ja. Wer den Code einlöst, wählt dabei die Sprache: Englisch, Spanisch, Französisch, Deutsch oder Niederländisch. Gibt es die Schatzsuche in dieser Sprache noch nicht, wird sie auf Englisch eingerichtet, und wir sagen Bescheid. Die Sprache beim Kauf bestimmt nur deine E-Mail und die Karte."
+          "answer": "Ja. Wer den Code einlöst, wählt dabei die Sprache: Englisch, Spanisch, Französisch, Deutsch oder Niederländisch. Gibt es die Schnitzeljagd in dieser Sprache noch nicht, wird sie auf Englisch eingerichtet, und wir sagen Bescheid. Die Sprache beim Kauf bestimmt nur deine E-Mail und die Karte."
         },
         "2": {
           "question": "Muss sofort gespielt werden?",
@@ -133,7 +133,7 @@
         "emailed": "Wir haben dir den Link auch per E-Mail geschickt.",
         "emailFailed": "Die E-Mail ließ sich nicht verschicken. Heb diesen Link also gut auf.",
         "noEmail": "Heb diesen Link gut auf: Wir haben ihn niemandem geschickt.",
-        "fallbackLanguage": "Diese Schatzsuche gibt es noch nicht auf {requested}, darum ist dein Spiel auf {language}."
+        "fallbackLanguage": "Diese Schnitzeljagd gibt es noch nicht auf {requested}, darum ist dein Spiel auf {language}."
       },
       "problems": {
         "notACode": "Das ist kein Geschenkcode. Codes haben 10 Buchstaben und Ziffern, zum Beispiel ABCD-EFGH-JK.",

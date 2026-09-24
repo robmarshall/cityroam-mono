@@ -375,7 +375,7 @@ describe("gift vouchers", () => {
       expect(email.subject).toBe("Votre bon cadeau City Roam");
       expect(email.html).toContain(v.code);
       expect(email.html).toContain(`${MARKETING}/fr/redeem?code=${v.code}`);
-      expect(email.html).toContain("guidée par le Hibou");
+      expect(email.html).toContain("guidés par le Hibou");
       expect(state.sets).toContainEqual(
         expect.objectContaining({ table: vouchers, values: expect.objectContaining({ email_sent_at: expect.any(Date) }) }),
       );

@@ -2,7 +2,7 @@
   "gift": {
     "meta": {
       "title": "Offrir une partie City Roam | Codes cadeaux",
-      "description": "Une chasse au trésor dans Leeds à offrir : une partie jusqu'à {max} joueurs, {price}. Ils ont {months} mois pour utiliser le code, puis {days} jours pour jouer à partir du jour où ils commencent.",
+      "description": "Une balade à énigmes dans Leeds à offrir : une partie jusqu'à {max} joueurs, {price}. Ils ont {months} mois pour utiliser le code, puis {days} jours pour jouer à partir du jour où ils commencent.",
       "successTitle": "Votre code cadeau | City Roam",
       "redeemTitle": "Utiliser un code cadeau | City Roam",
       "redeemDescription": "On vous a offert un code City Roam ? Saisissez-le ici pour préparer votre partie."
@@ -18,7 +18,7 @@
     "page": {
       "eyebrow": "Codes cadeaux",
       "title": "Offrir une partie",
-      "subtitle": "Une chasse au trésor dans Leeds, pour que quelqu'un d'autre y joue. Vous achetez le code, ils choisissent le jour.",
+      "subtitle": "Une balade à énigmes dans Leeds, pour que quelqu'un d'autre y joue. Vous achetez le code, ils choisissent le jour.",
       "note": "Pas besoin de papier cadeau, et ce n'est jamais la mauvaise taille.",
       "getTitle": "Ce qu'ils reçoivent",
       "get": {

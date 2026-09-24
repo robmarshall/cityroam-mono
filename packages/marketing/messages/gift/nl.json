@@ -2,7 +2,7 @@
   "gift": {
     "meta": {
       "title": "Geef een City Roam-spel cadeau | Cadeaucodes",
-      "description": "Een speurtocht door Leeds als cadeau: één spel voor maximaal {max} spelers, {price}. Ze hebben {months} maanden om de code te gebruiken, en {days} dagen om te spelen vanaf de dag dat ze beginnen.",
+      "description": "Een wandeling met raadsels door Leeds als cadeau: één spel voor maximaal {max} spelers, {price}. Ze hebben {months} maanden om de code te gebruiken, en {days} dagen om te spelen vanaf de dag dat ze beginnen.",
       "successTitle": "Je cadeaucode | City Roam",
       "redeemTitle": "Een cadeaucode verzilveren | City Roam",
       "redeemDescription": "Een City Roam-cadeaucode gekregen? Vul hem hier in om je spel klaar te zetten."
@@ -18,7 +18,7 @@
     "page": {
       "eyebrow": "Cadeaucodes",
       "title": "Geef een spel cadeau",
-      "subtitle": "Een speurtocht door Leeds, voor iemand anders om te spelen. Jij koopt de code, zij kiezen de dag.",
+      "subtitle": "Een wandeling met raadsels door Leeds, voor iemand anders om te spelen. Jij koopt de code, zij kiezen de dag.",
       "note": "Hoeft niet ingepakt te worden, en heeft nooit de verkeerde maat.",
       "getTitle": "Wat ze krijgen",
       "get": {

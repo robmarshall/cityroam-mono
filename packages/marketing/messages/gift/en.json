@@ -2,7 +2,7 @@
   "gift": {
     "meta": {
       "title": "Give a City Roam game | Gift codes",
-      "description": "A treasure hunt round Leeds as a present: one game for up to {max} players, {price}. They have {months} months to use the code, and {days} days to play from the day they start.",
+      "description": "A walk round Leeds with clues, as a present: one game for up to {max} players, {price}. They have {months} months to use the code, and {days} days to play from the day they start.",
       "successTitle": "Your gift code | City Roam",
       "redeemTitle": "Redeem a gift code | City Roam",
       "redeemDescription": "Got a City Roam gift code? Enter it here to set up your game."
@@ -18,7 +18,7 @@
     "page": {
       "eyebrow": "Gift codes",
       "title": "Give a game",
-      "subtitle": "A treasure hunt round Leeds, for someone else to play. You buy a code, they pick the day.",
+      "subtitle": "A walk round Leeds with clues, for someone else to play. You buy a code, they pick the day.",
       "note": "It needs no wrapping, and it can't be the wrong size.",
       "getTitle": "What they get",
       "get": {

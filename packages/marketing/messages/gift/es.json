@@ -2,7 +2,7 @@
   "gift": {
     "meta": {
       "title": "Regala una partida de City Roam | Códigos regalo",
-      "description": "Una búsqueda del tesoro por Leeds para regalar: una partida para hasta {max} jugadores, {price}. Tienen {months} meses para usar el código y {days} días para jugar desde el día que empiezan.",
+      "description": "Un paseo con pistas por Leeds para regalar: una partida para hasta {max} jugadores, {price}. Tienen {months} meses para usar el código y {days} días para jugar desde el día que empiezan.",
       "successTitle": "Tu código regalo | City Roam",
       "redeemTitle": "Canjear un código regalo | City Roam",
       "redeemDescription": "¿Te han regalado un código de City Roam? Escríbelo aquí para preparar tu partida."
@@ -18,7 +18,7 @@
     "page": {
       "eyebrow": "Códigos regalo",
       "title": "Regala una partida",
-      "subtitle": "Una búsqueda del tesoro por Leeds para que la juegue otra persona. Tú compras el código y ellos eligen el día.",
+      "subtitle": "Un paseo con pistas por Leeds para que lo disfrute otra persona. Tú compras el código y ellos eligen el día.",
       "note": "No hay que envolverlo y nunca es de la talla equivocada.",
       "getTitle": "Qué reciben",
       "get": {
