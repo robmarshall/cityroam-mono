@@ -1,12 +1,12 @@
 {
   "metadata": {
     "og": {
-      "tagline": "Búsquedas del tesoro guiadas por IA en Leeds"
+      "tagline": "Búsqueda del tesoro en Leeds, guiada por el Búho"
     },
     "home": {
-      "title": "City Roam — Búsquedas del tesoro guiadas por IA en Leeds",
+      "title": "City Roam — Búsqueda del tesoro en Leeds, guiada por el Búho",
       "description": "Una búsqueda del tesoro por libre en el centro de Leeds, en un chat de grupo desde el móvil. Un precio para hasta 10 personas y sin app que descargar.",
-      "ogImageAlt": "City Roam — Búsquedas del tesoro guiadas por IA en Leeds"
+      "ogImageAlt": "City Roam — Búsqueda del tesoro en Leeds, guiada por el Búho"
     },
     "families": {
       "title": "Búsqueda del tesoro en familia en Leeds — City Roam",
@@ -83,11 +83,15 @@
     "9": {
       "question": "¿Y si no nos gusta?",
       "answer": "Te devolvemos el importe íntegro, sin preguntas. Solo tienes que escribirnos en los 14 días siguientes a la partida. En nuestra página de reembolsos tienes los detalles."
+    },
+    "10": {
+      "question": "¿Quién es el Búho?",
+      "answer": "El Búho es vuestro guía en la partida, y es una IA, no una persona. Envía las pistas y las ayudas, y responde a vuestras preguntas con la pista actual, nuestras notas sobre el tramo que estáis recorriendo y la distancia que queda. El nombre es un guiño a los búhos del escudo de Leeds."
     }
   },
   "chatDemo": {
-    "guideLabel": "Guía",
-    "ariaLabel": "Un ejemplo del chat de grupo: el guía manda una pista, un jugador pregunta cuánto falta y recibe una respuesta seca, y el guía da una ayuda.",
+    "guideLabel": "El Búho",
+    "ariaLabel": "Un ejemplo del chat de grupo: el Búho manda una pista, un jugador pregunta cuánto falta y recibe una respuesta seca, y el Búho da una ayuda.",
     "hero": {
       "0": "Parada tres. En algún punto de esta calle, una cara de piedra lleva cien años mirando a la gente que va de compras.",
       "1": "¿Cuánto nos queda? A Dani ya no le responden las piernas",
@@ -98,7 +102,7 @@
       "6": "Por encima de los letreros, por debajo de las palomas."
     },
     "howItWorks": {
-      "0": "Bien. Hoy seré vuestro guía.",
+      "0": "Bien. Soy el Búho y hoy seré vuestro guía.",
       "1": "Yo mando las pistas. Vosotros averiguáis adónde ir.",
       "2": "¿Atascados? Pedid una pista. Intentaré no juzgaros.",
       "3": "¿Perdidos? Preguntadme por dónde se va. No se lo diré a los demás.",
@@ -109,12 +113,12 @@
   "home": {
     "hero": {
       "title": "Una búsqueda del tesoro por Leeds, en vuestro chat de grupo",
-      "subtitle": "Resolved pistas por el centro con un guía que os contesta cuando le preguntáis. Todos jugáis en el mismo chat, cada uno desde su móvil, y no hay que descargar ninguna app.",
+      "subtitle": "Resolved pistas por el centro con el Búho, un guía que os contesta cuando le preguntáis. Todos jugáis en el mismo chat, cada uno desde su móvil, y no hay que descargar ninguna app.",
       "demoCaption": "Unos mensajes de una partida"
     },
     "problem": {
       "text1": "<b>Sin guía turístico. Sin horarios.</b> Solo vuestro grupo, vuestros móviles y un rastro de pistas.",
-      "text2": "City Roam es una búsqueda del tesoro por el corazón de Leeds que se juega en un chat de grupo. El guía envía las pistas, responde a vuestras preguntas y os cuenta la historia de los sitios por los que pasáis.",
+      "text2": "City Roam es una búsqueda del tesoro por el corazón de Leeds que se juega en un chat de grupo. El Búho envía las pistas, responde a vuestras preguntas sobre la ruta y os cuenta la historia de los sitios por los que pasáis.",
       "text3": "Id a vuestro ritmo, parad a tomar algo y terminad otro día si hace falta. Familias, amigos, despedidas de soltera y equipos de trabajo juegan igual."
     },
     "howItWorks": {
@@ -130,7 +134,7 @@
     },
     "phone": {
       "title": "Solo necesitas el móvil",
-      "subtitle": "Sin app, sin material, sin mapa impreso. El juego funciona en el navegador del móvil, en un chat como cualquier otro chat de grupo. El guía es una IA que trabaja con nuestras notas sobre la ruta, así que podéis preguntarle con vuestras propias palabras.",
+      "subtitle": "Sin app, sin material, sin mapa impreso. El juego funciona en el navegador del móvil, en un chat como cualquier otro chat de grupo. El Búho, vuestro guía, es una IA que trabaja con nuestras notas sobre la ruta, así que podéis preguntarle con vuestras propias palabras.",
       "features": {
         "0": "Funciona en cualquier smartphone actual",
         "1": "Nada que descargar ni instalar",

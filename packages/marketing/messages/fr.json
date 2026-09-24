@@ -1,12 +1,12 @@
 {
   "metadata": {
     "og": {
-      "tagline": "Chasses au trésor guidées par IA à Leeds"
+      "tagline": "Chasse au trésor à Leeds, guidée par le Hibou"
     },
     "home": {
-      "title": "City Roam — Chasses au trésor guidées par IA à Leeds",
+      "title": "City Roam — Chasse au trésor à Leeds, guidée par le Hibou",
       "description": "Une chasse au trésor en autonomie dans le centre de Leeds, jouée dans une discussion de groupe. Un seul prix jusqu'à 10 personnes, sans application.",
-      "ogImageAlt": "City Roam — Chasses au trésor guidées par IA à Leeds"
+      "ogImageAlt": "City Roam — Chasse au trésor à Leeds, guidée par le Hibou"
     },
     "families": {
       "title": "Chasse au trésor en famille à Leeds — City Roam",
@@ -83,11 +83,15 @@
     "9": {
       "question": "Et si le jeu ne nous plaît pas ?",
       "answer": "Nous vous remboursons intégralement, sans poser de questions. Écrivez-nous simplement dans les 14 jours suivant votre partie. Tous les détails sont sur notre page consacrée aux remboursements."
+    },
+    "10": {
+      "question": "Qui est le Hibou ?",
+      "answer": "Le Hibou est votre guide pendant la partie, et c'est une IA, pas une personne. Il envoie les énigmes et les indices, et répond à vos questions à partir de l'énigme en cours, de nos notes sur le tronçon que vous parcourez et de la distance restante. Son nom est un clin d'œil aux hiboux des armoiries de Leeds."
     }
   },
   "chatDemo": {
-    "guideLabel": "Guide",
-    "ariaLabel": "Un exemple de la discussion de groupe : le guide envoie une énigme, un joueur demande combien il reste à marcher et reçoit une réponse pince-sans-rire, puis le guide donne un indice.",
+    "guideLabel": "Le Hibou",
+    "ariaLabel": "Un exemple de la discussion de groupe : le Hibou envoie une énigme, un joueur demande combien il reste à marcher et reçoit une réponse pince-sans-rire, puis le Hibou donne un indice.",
     "hero": {
       "0": "Étape trois. Quelque part dans cette rue, un visage de pierre observe les passants depuis cent ans.",
       "1": "Il reste combien ? Julien n'a plus de jambes",
@@ -98,7 +102,7 @@
       "6": "Au-dessus des enseignes, en dessous des pigeons."
     },
     "howItWorks": {
-      "0": "Bien. Je serai votre guide aujourd'hui.",
+      "0": "Bien. Je suis le Hibou, votre guide aujourd'hui.",
       "1": "J'envoie les indices. À vous de trouver où aller.",
       "2": "Coincés ? Demandez un indice. Je ne jugerai pas, ou pas trop fort.",
       "3": "Perdus ? Demandez-moi le chemin. Je ne dirai rien aux autres.",
@@ -109,12 +113,12 @@
   "home": {
     "hero": {
       "title": "Une chasse au trésor à travers Leeds, dans votre groupe de discussion",
-      "subtitle": "Résolvez des énigmes dans le centre-ville avec un guide qui vous répond quand vous lui posez une question. Tout le monde joue dans la même discussion, chacun sur son téléphone, sans application à télécharger.",
+      "subtitle": "Résolvez des énigmes dans le centre-ville avec le Hibou, un guide qui vous répond quand vous lui posez une question. Tout le monde joue dans la même discussion, chacun sur son téléphone, sans application à télécharger.",
       "demoCaption": "Quelques messages d'une partie"
     },
     "problem": {
       "text1": "<b>Pas de visite guidée. Pas d'horaires.</b> Juste votre groupe, vos téléphones et une piste d'indices.",
-      "text2": "City Roam est une chasse au trésor au cœur de Leeds, jouée dans une discussion de groupe. Le guide envoie les indices, répond à vos questions et vous raconte l'histoire des lieux que vous croisez.",
+      "text2": "City Roam est une chasse au trésor au cœur de Leeds, jouée dans une discussion de groupe. Le Hibou envoie les indices, répond à vos questions sur le parcours et vous raconte l'histoire des lieux que vous croisez.",
       "text3": "Avancez à votre rythme, arrêtez-vous boire un verre, et terminez un autre jour si besoin. Familles, amis, enterrements de vie de jeune fille ou collègues : tout le monde joue de la même façon."
     },
     "howItWorks": {
@@ -130,7 +134,7 @@
     },
     "phone": {
       "title": "Votre téléphone suffit",
-      "subtitle": "Pas d'application, pas de matériel, pas de plan imprimé. Le jeu tourne dans le navigateur de votre téléphone, dans une discussion qui fonctionne comme n'importe quel groupe de messagerie. Le guide est une IA qui s'appuie sur nos notes sur le parcours : vous pouvez lui poser vos questions avec vos propres mots.",
+      "subtitle": "Pas d'application, pas de matériel, pas de plan imprimé. Le jeu tourne dans le navigateur de votre téléphone, dans une discussion qui fonctionne comme n'importe quel groupe de messagerie. Le Hibou, votre guide, est une IA qui s'appuie sur nos notes sur le parcours : vous pouvez lui poser vos questions avec vos propres mots.",
       "features": {
         "0": "Fonctionne sur tout smartphone récent",
         "1": "Rien à télécharger ni à installer",

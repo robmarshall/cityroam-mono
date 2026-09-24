@@ -1,12 +1,12 @@
 {
   "metadata": {
     "og": {
-      "tagline": "KI-geführte Schnitzeljagden in Leeds"
+      "tagline": "Schnitzeljagd in Leeds, geführt von der Eule"
     },
     "home": {
-      "title": "City Roam — KI-geführte Schnitzeljagden in Leeds",
+      "title": "City Roam — Schnitzeljagd in Leeds, geführt von der Eule",
       "description": "Eine Schnitzeljagd auf eigene Faust durch die Innenstadt von Leeds, gespielt im Gruppenchat auf euren Handys. Ein Preis für bis zu 10 Personen, ohne App.",
-      "ogImageAlt": "City Roam — KI-geführte Schnitzeljagden in Leeds"
+      "ogImageAlt": "City Roam — Schnitzeljagd in Leeds, geführt von der Eule"
     },
     "families": {
       "title": "Schnitzeljagd für Familien in Leeds — City Roam",
@@ -83,11 +83,15 @@
     "9": {
       "question": "Und wenn es uns nicht gefällt?",
       "answer": "Dann bekommt ihr euer Geld komplett zurück, ohne Nachfragen. Schreibt uns einfach innerhalb von 14 Tagen nach dem Spiel. Details stehen auf unserer Seite zu Rückerstattungen."
+    },
+    "10": {
+      "question": "Wer ist die Eule?",
+      "answer": "Die Eule ist eure Begleiterin im Spiel, und sie ist eine KI, kein Mensch. Sie schickt die Rätsel und Tipps und beantwortet eure Fragen anhand des aktuellen Rätsels, unserer Notizen zum Wegstück, auf dem ihr gerade seid, und der restlichen Strecke. Der Name ist eine Anspielung auf die Eulen im Wappen von Leeds."
     }
   },
   "chatDemo": {
-    "guideLabel": "Guide",
-    "ariaLabel": "Ein Beispiel für den Gruppenchat: Der Guide schickt ein Rätsel, jemand fragt, wie weit es noch ist, und bekommt eine trockene Antwort, dann gibt der Guide einen Tipp.",
+    "guideLabel": "Die Eule",
+    "ariaLabel": "Ein Beispiel für den Gruppenchat: Die Eule schickt ein Rätsel, jemand fragt, wie weit es noch ist, und bekommt eine trockene Antwort, dann gibt die Eule einen Tipp.",
     "hero": {
       "0": "Station drei. Irgendwo in dieser Straße schaut seit hundert Jahren ein Steingesicht auf die Leute beim Einkaufen.",
       "1": "Wie weit ist es noch? Tobi kann nicht mehr",
@@ -98,7 +102,7 @@
       "6": "Über den Ladenschildern, unter den Tauben."
     },
     "howItWorks": {
-      "0": "So. Ich bin heute euer Guide.",
+      "0": "So. Ich bin die Eule. Heute führe ich euch.",
       "1": "Ich schicke die Hinweise. Ihr findet heraus, wohin es geht.",
       "2": "Kommt ihr nicht weiter, fragt nach einem Tipp. Ich verkneife mir jeden Kommentar.",
       "3": "Verlaufen? Fragt mich nach dem Weg. Ich sag's auch keinem.",
@@ -109,12 +113,12 @@
   "home": {
     "hero": {
       "title": "Eine Schnitzeljagd durch Leeds, direkt in eurem Gruppenchat",
-      "subtitle": "Löst Rätsel in der Innenstadt, mit einem Guide, der antwortet, wenn ihr fragt. Alle spielen im selben Chat auf dem eigenen Handy, und eine App braucht ihr nicht.",
+      "subtitle": "Löst Rätsel in der Innenstadt, mit der Eule, die antwortet, wenn ihr fragt. Alle spielen im selben Chat auf dem eigenen Handy, und eine App braucht ihr nicht.",
       "demoCaption": "Ein paar Nachrichten aus einem Spiel"
     },
     "problem": {
       "text1": "<b>Kein Stadtführer. Kein Zeitplan.</b> Nur eure Gruppe, eure Handys und eine Spur aus Hinweisen.",
-      "text2": "City Roam ist eine Schnitzeljagd mitten durch Leeds, gespielt im Gruppenchat. Der Guide schickt die Hinweise, beantwortet eure Fragen und erzählt die Geschichten hinter den Orten, an denen ihr vorbeikommt.",
+      "text2": "City Roam ist eine Schnitzeljagd mitten durch Leeds, gespielt im Gruppenchat. Die Eule schickt die Hinweise, beantwortet eure Fragen zur Route und erzählt die Geschichten hinter den Orten, an denen ihr vorbeikommt.",
       "text3": "Geht in eurem Tempo, macht Pause für einen Drink und spielt notfalls an einem anderen Tag zu Ende. Familien, Freundeskreise, Junggesellinnenabschiede und Arbeitsteams spielen alle nach denselben Regeln."
     },
     "howItWorks": {
@@ -130,7 +134,7 @@
     },
     "phone": {
       "title": "Ihr braucht nur euer Handy",
-      "subtitle": "Keine App, keine Ausrüstung, kein ausgedruckter Stadtplan. Das Spiel läuft im Browser eures Handys, in einem Chat wie jeder andere Gruppenchat auch. Der Guide ist eine KI, die mit unseren Notizen zur Route arbeitet. Ihr könnt ihn also in euren eigenen Worten fragen.",
+      "subtitle": "Keine App, keine Ausrüstung, kein ausgedruckter Stadtplan. Das Spiel läuft im Browser eures Handys, in einem Chat wie jeder andere Gruppenchat auch. Die Eule, euer Guide, ist eine KI, die mit unseren Notizen zur Route arbeitet. Ihr könnt sie also in euren eigenen Worten fragen.",
       "features": {
         "0": "Läuft auf jedem aktuellen Smartphone",
         "1": "Nichts herunterladen, nichts installieren",

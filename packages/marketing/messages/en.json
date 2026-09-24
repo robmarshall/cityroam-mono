@@ -1,12 +1,12 @@
 {
   "metadata": {
     "og": {
-      "tagline": "AI-guided treasure hunts in Leeds"
+      "tagline": "Treasure hunt in Leeds, guided by the Owl"
     },
     "home": {
-      "title": "City Roam — AI-guided treasure hunts in Leeds",
+      "title": "City Roam — Treasure hunt in Leeds, guided by the Owl",
       "description": "A self-guided treasure hunt around Leeds city centre, played in a group chat on your phones. One price for up to 10 people, and no app to download.",
-      "ogImageAlt": "City Roam — AI-guided treasure hunts in Leeds"
+      "ogImageAlt": "City Roam — Treasure hunt in Leeds, guided by the Owl"
     },
     "families": {
       "title": "Family treasure hunt in Leeds — City Roam",
@@ -83,11 +83,15 @@
     "9": {
       "question": "What if we don't enjoy it?",
       "answer": "We'll refund you in full, no questions asked. Just email us within 14 days of playing. Our refunds page has the details."
+    },
+    "10": {
+      "question": "Who's the Owl?",
+      "answer": "The Owl is your guide in the game, and it's an AI, not a person. It sends the clues and hints, and answers questions using the current clue, our notes on the stretch you're walking and the distance left to go. The name is a nod to the owls on the Leeds coat of arms."
     }
   },
   "chatDemo": {
-    "guideLabel": "Guide",
-    "ariaLabel": "An example of the group chat: the guide sends a clue, a player asks how much further there is to go and gets a dry answer, and the guide gives a hint.",
+    "guideLabel": "The Owl",
+    "ariaLabel": "An example of the group chat: the Owl sends a clue, a player asks how much further there is to go and gets a dry answer, and the Owl gives a hint.",
     "hero": {
       "0": "Stop three. Somewhere on this street, a stone face has been watching the shoppers for a hundred years.",
       "1": "How much further have we got? Dave's legs have gone",
@@ -98,7 +102,7 @@
       "6": "Above the shop signs, below the pigeons."
     },
     "howItWorks": {
-      "0": "Right. I'm your guide for today.",
+      "0": "Right. I'm the Owl. I'll be your guide today.",
       "1": "I send the clues. You work out where to go.",
       "2": "Stuck? Ask for a hint. I'll try not to judge.",
       "3": "Lost? Ask me the way. I won't tell the others.",
@@ -109,12 +113,12 @@
   "home": {
     "hero": {
       "title": "A treasure hunt round Leeds, in your group chat",
-      "subtitle": "Solve clues around the city centre with a guide who replies when you ask. Everyone plays in the same chat on their own phone, and there's no app to download.",
+      "subtitle": "Solve clues around the city centre with the Owl, a guide that replies when you ask. Everyone plays in the same chat on their own phone, and there's no app to download.",
       "demoCaption": "A few messages from a game"
     },
     "problem": {
       "text1": "<b>No tour guide. No timetable.</b> Just your group, your phones and a trail of clues.",
-      "text2": "City Roam is a treasure hunt through the heart of Leeds, played in a group chat. The guide sends the clues, answers your questions and tells you the stories behind the places you pass.",
+      "text2": "City Roam is a treasure hunt through the heart of Leeds, played in a group chat. The Owl sends the clues, answers questions about the route and tells you the stories behind the places you pass.",
       "text3": "Go at your own pace, stop for a drink, and finish another day if you need to. Families, friends, hen parties and work teams all play the same way."
     },
     "howItWorks": {
@@ -130,7 +134,7 @@
     },
     "phone": {
       "title": "All you need is your phone",
-      "subtitle": "No app, no kit, no printed map. The game runs in your phone's browser, in a chat that works like any other group chat. The guide is an AI working from our notes on the route, so you can ask it things in your own words.",
+      "subtitle": "No app, no kit, no printed map. The game runs in your phone's browser, in a chat that works like any other group chat. The Owl, your guide, is an AI working from our notes on the route, so you can ask it things in your own words.",
       "features": {
         "0": "Works on any modern smartphone",
         "1": "Nothing to download or install",

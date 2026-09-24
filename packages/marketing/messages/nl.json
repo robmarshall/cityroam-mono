@@ -1,12 +1,12 @@
 {
   "metadata": {
     "og": {
-      "tagline": "AI-begeleide speurtochten in Leeds"
+      "tagline": "Speurtocht in Leeds, met de Uil als gids"
     },
     "home": {
-      "title": "City Roam — AI-begeleide speurtochten in Leeds",
+      "title": "City Roam — Speurtocht in Leeds, met de Uil als gids",
       "description": "Een speurtocht op eigen gelegenheid door het centrum van Leeds, gespeeld in een groepschat op jullie telefoons. Eén prijs voor max. 10 personen, geen app nodig.",
-      "ogImageAlt": "City Roam — AI-begeleide speurtochten in Leeds"
+      "ogImageAlt": "City Roam — Speurtocht in Leeds, met de Uil als gids"
     },
     "families": {
       "title": "Speurtocht voor gezinnen in Leeds — City Roam",
@@ -83,11 +83,15 @@
     "9": {
       "question": "En als we het niets vinden?",
       "answer": "Dan krijg je je geld volledig terug, zonder vragen. Mail ons binnen 14 dagen na het spelen. Op onze pagina over terugbetalingen staan de details."
+    },
+    "10": {
+      "question": "Wie is de Uil?",
+      "answer": "De Uil is jullie gids in het spel, en hij is een AI, geen mens. Hij stuurt de aanwijzingen en hints, en beantwoordt vragen op basis van de huidige aanwijzing, onze aantekeningen over het stuk dat jullie lopen en de afstand die nog over is. De naam is een knipoog naar de uilen in het wapen van Leeds."
     }
   },
   "chatDemo": {
-    "guideLabel": "Gids",
-    "ariaLabel": "Een voorbeeld van de groepschat: de gids stuurt een aanwijzing, een speler vraagt hoe ver het nog is en krijgt een droog antwoord, en de gids geeft een hint.",
+    "guideLabel": "De Uil",
+    "ariaLabel": "Een voorbeeld van de groepschat: de Uil stuurt een aanwijzing, een speler vraagt hoe ver het nog is en krijgt een droog antwoord, en de Uil geeft een hint.",
     "hero": {
       "0": "Stop drie. Ergens in deze straat kijkt al honderd jaar een stenen gezicht naar het winkelend publiek.",
       "1": "Hoe ver is het nog? Daan z'n benen zijn op",
@@ -98,7 +102,7 @@
       "6": "Boven de winkelborden, onder de duiven."
     },
     "howItWorks": {
-      "0": "Goed. Ik ben vandaag jullie gids.",
+      "0": "Goed. Ik ben de Uil, vandaag jullie gids.",
       "1": "Ik stuur de aanwijzingen. Jullie zoeken uit waar je heen moet.",
       "2": "Kom je er niet uit? Vraag om een hint, ik oordeel zo min mogelijk.",
       "3": "Verdwaald? Vraag mij de weg. Ik zeg het tegen niemand.",
@@ -109,12 +113,12 @@
   "home": {
     "hero": {
       "title": "Een speurtocht door Leeds, in jullie groepschat",
-      "subtitle": "Los aanwijzingen op in het stadscentrum, met een gids die antwoord geeft als je iets vraagt. Iedereen speelt in dezelfde chat op z'n eigen telefoon, en je hoeft geen app te downloaden.",
+      "subtitle": "Los aanwijzingen op in het stadscentrum, met de Uil als gids, die antwoord geeft als je iets vraagt. Iedereen speelt in dezelfde chat op z'n eigen telefoon, en je hoeft geen app te downloaden.",
       "demoCaption": "Een paar berichten uit een spel"
     },
     "problem": {
       "text1": "<b>Geen rondleider. Geen vaste tijden.</b> Alleen jullie groep, jullie telefoons en een spoor van aanwijzingen.",
-      "text2": "City Roam is een speurtocht door het hart van Leeds, gespeeld in een groepschat. De gids stuurt de aanwijzingen, beantwoordt jullie vragen en vertelt de verhalen achter de plekken waar jullie langskomen.",
+      "text2": "City Roam is een speurtocht door het hart van Leeds, gespeeld in een groepschat. De Uil stuurt de aanwijzingen, beantwoordt jullie vragen over de route en vertelt de verhalen achter de plekken waar jullie langskomen.",
       "text3": "Ga in je eigen tempo, stop voor een drankje en maak het desnoods een andere dag af. Gezinnen, vrienden, vrijgezellenfeesten en collega's spelen allemaal op dezelfde manier."
     },
     "howItWorks": {
@@ -130,7 +134,7 @@
     },
     "phone": {
       "title": "Je telefoon is alles wat je nodig hebt",
-      "subtitle": "Geen app, geen spullen, geen uitgeprinte kaart. Het spel draait in de browser van je telefoon, in een chat die werkt als elke andere groepschat. De gids is een AI die werkt met onze aantekeningen over de route, dus je kunt hem gewoon in je eigen woorden iets vragen.",
+      "subtitle": "Geen app, geen spullen, geen uitgeprinte kaart. Het spel draait in de browser van je telefoon, in een chat die werkt als elke andere groepschat. De Uil, jullie gids, is een AI die werkt met onze aantekeningen over de route, dus je kunt hem gewoon in je eigen woorden iets vragen.",
       "features": {
         "0": "Werkt op elke moderne smartphone",
         "1": "Niets te downloaden of te installeren",
