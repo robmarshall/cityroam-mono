@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { getTranslations } from "next-intl/server";
-import { OWL_ICON_COLORS, owlIconSvg, owlSvg } from "@cityroam/shared/brand";
+import { OWL_ICON_COLORS, owlIconSvg, owlStrokeWidth, owlSvg } from "@cityroam/shared/brand";
 import { BRAND, SITE_NAME, siteUrl } from "./site";
 
 /** Shared dimensions for the Open Graph and Twitter card images. */
@@ -108,10 +108,11 @@ export async function renderShareImage(locale: string) {
 
 /**
  * Square app icon used for `apple-icon`: the same drawing as the favicon
- * (owlIconSvg, navy owl on stone), full bleed because iOS rounds it.
+ * (owlIconSvg, navy owl on stone), full bleed because iOS rounds it. At
+ * this size it takes the header's regular stroke weight.
  */
 export async function renderAppIcon(size: number) {
-  const icon = owlIconSvg({ ...OWL_ICON_COLORS, size, radius: 0 });
+  const icon = owlIconSvg({ ...OWL_ICON_COLORS, size, radius: 0, strokeWidth: owlStrokeWidth(size) });
   return new ImageResponse(
     (
       <div style={{ width: "100%", height: "100%", display: "flex" }}>

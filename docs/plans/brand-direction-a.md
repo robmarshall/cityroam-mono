@@ -23,11 +23,8 @@ place; the chrome stays out of its way.
   - Must not copy the Leeds heraldic owls (no crown, no heraldic pose).
   - Must not look like a cartoon mascot (not Duolingo).
   - No owl puns anywhere in copy.
-  - Revised 2026-09-24 after Rob found the first favicon "a bit creepy"
-    (hollow, pupil-less eyes read as a blank stare at 16–32px, and the V
-    beak blurred into a heart): the head is now softer (curved tufts, a
-    gently dipped crown), the eyes are thin rings with pupils set a touch
-    low and inwards, and the beak is a small filled triangle. The favicon,
+  - 2026-09-24: a softer redraw (pupils, filled beak) was tried and
+    reverted; Rob preferred the original mark. What stayed: the favicon,
     apple icon and app favicon are generated from the same drawing as the
     header mark (`owlIconSvg()`, navy owl on stone; `npm run icons -w
     @cityroam/shared`), and a test fails if the files drift.
