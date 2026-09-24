@@ -121,8 +121,40 @@ actually uses.
    - The Owl's margin notes (5 lines, all locales, none about a stop):
      `home.notes.*`.
    - Waiting on Rob: M1, F1, H1, T1 photos; the route walk; a start point
-     that isn't the first answer. Stag card and footer link: Phase 4.
+     that isn't the first answer. Stag card and footer link: done in Phase 4.
 4. **Audience pages v2** plus a stag page; success, 404 and legal styling.
+   - **Status (2026-09-24): built.** One layout for all four audience pages
+     (`AudiencePage`, copy under `families.*`, `henParties.*`,
+     `teamBuilding.*`, `stagParties.*` with the shared bits in
+     `audience.*`): PhotoHero with the price in it (£29 per group, about £3
+     each for 10) → three reasons that are true for that audience beside a
+     detail photo slot → "Two groups? Book two games." (two bookings of up
+     to 10, no scoreboard claims) → compact route at a glance → TrustStrip
+     → FAQ → navy closing band with the page's checkout segment. Each page
+     has two of the Owl's notes; none names a stop. The old intro,
+     "why families like it", "perfect for", features and safety bands were
+     folded into the reasons and the FAQ.
+   - Stag page at `/<locale>/stag-parties`, checkout segment `stag`. The
+     API accepts any lower-case slug and a segment without its own entry in
+     `CHECKOUT_ROUTE_FAMILY_IDS` takes the `default` family (or the single
+     active one), so stag bookings play the homepage hunt until a stag
+     family is mapped. The copy sells the daytime and never the drinking.
+   - Header keeps three audiences; the footer lists all four plus
+     "Gift vouchers" (`/gift`); the home page has a fourth audience card.
+     Sitemap: stag and `/gift` in all five locales with hreflang (not
+     `/redeem` or `/gift/success`).
+   - Checkout success: owl, "Forward this to your group" card (link, copy,
+     share), three next steps, an Owl note, a gift voucher line and the
+     refund line; polling, noindex and analytics unchanged. 404: an Owl note
+     ("This page isn't on the route. I checked twice."), home button and
+     the four audience links. Legal pages: styling only, with a numbered
+     table of contents (sticky column from lg); the text is untouched.
+   - Photos: new slots `stagParties` (S1) and `familiesDetail` (F2),
+     `henPartiesDetail` (H3), `teamBuildingDetail` (T2), all null. No stag
+     detail slot (S2 is a pint stop).
+   - Waiting on Rob: F1, H1, T1, S1 and F2, H3, T2 photos; mapping a stag
+     route family if it should ever differ; the route walk (start point,
+     step-free, dogs, toilets, cover still hidden).
 5. **Scripted "Try the Owl" demo** (canned, honest about what the Owl can
    answer).
 6. **Route facts in the database**: admin form (explicit Save, never
