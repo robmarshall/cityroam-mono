@@ -126,16 +126,84 @@
       "5": "Cuando quieras"
     }
   },
+  "demo": {
+    "title": "Prueba el Búho",
+    "subtitle": "Una pista de muestra, de fuera de la ruta, así que no desvela nada. Adivina, pide una pista o hazle una pregunta al Búho.",
+    "caption": "Una muestra de dos minutos. El día de la ruta, el Búho responde a lo que escribe vuestro grupo.",
+    "heroLink": "Prueba el Búho",
+    "chatLabel": "Chat de muestra con el Búho",
+    "logLabel": "Mensajes",
+    "inputLabel": "Tu mensaje para el Búho",
+    "placeholder": "Escribe una respuesta o una pregunta",
+    "send": "Enviar",
+    "reset": "Empezar de nuevo",
+    "chipsLabel": "Respuestas sugeridas",
+    "you": "Tú",
+    "cta": "Reserva la ruta de verdad",
+    "chips": {
+      "wrongGuess": "¿La Parca?",
+      "hint": "Una pista, por favor",
+      "distance": "¿Cuánto falta?"
+    },
+    "owl": {
+      "intro": "Bien, soy el Búho. Aquí va una pista de muestra, de fuera de la ruta, así que no desvela nada.",
+      "clue": "En Lower Briggate, un anciano con una guadaña está de pie encima de un reloj, y es más viejo que cualquiera de vuestro grupo. ¿Quién es?",
+      "wrongGuess": "Os habéis equivocado de departamento. Misma guadaña, pero a él le interesa más la hora que vosotros.",
+      "close": "Caliente. Eso es la mitad de su nombre.",
+      "wrong": {
+        "0": "No exactamente. Volved a mirar la pista.",
+        "1": "No. Fijaos bien en la guadaña.",
+        "2": "Sigue sin ser. Quizá os convenga pedir una pista."
+      },
+      "hints": {
+        "0": "Aparece cada Nochevieja, normalmente junto a un bebé.",
+        "1": "Antes llevaba un reloj de arena además de la guadaña. Su primer nombre es una forma seria de decir papá."
+      },
+      "reveal": "Esa era mi última pista, así que aquí va: el Padre Tiempo. Escribidlo y haré como que habéis llegado por vuestra cuenta.",
+      "success": "Ese es.",
+      "funFact": "La tienda de abajo era una joyería, y una bola en su tejado caía a la una en punto, con una señal desde Greenwich. Todo Briggate ponía el reloj en hora con ella.",
+      "outro": "Esto era una muestra. La ruta de verdad tiene mucho más.",
+      "fallback": "Solo conozco este tramo de la ruta. Probad con la pista.",
+      "done": "Esa era la única pista de esta página. Las demás os esperan en la ruta.",
+      "identity": {
+        "ai": {
+          "0": "En parte. La IA me ayuda a redactar las respuestas, pero la ruta y las pistas las eligen y revisan personas.",
+          "1": "En parte. La IA ayuda con la redacción, y son personas quienes eligen el paseo y revisan cada pista.",
+          "2": "En esta página, no: cada línea está escrita a mano. En el juego, la IA me ayuda a redactar las respuestas, y la ruta y las pistas las eligen y revisan personas."
+        },
+        "machine": {
+          "0": "Soy el guía que llevas en el móvil. Para esta pista, no necesitas saber más.",
+          "1": "Soy el Búho, el guía que llevas en el móvil. Lo auténtico son los edificios.",
+          "2": "Soy el guía que llevas en el móvil, y el día de la ruta respondo a lo que escribe vuestro grupo. La pista sigue esperando."
+        },
+        "person": {
+          "0": "No. Soy el guía que llevas en el móvil, y lo de Leeds es de verdad.",
+          "1": "Una persona no, no. Solo el guía que llevas en el móvil, para que no os salgáis de la ruta."
+        },
+        "who": {
+          "0": "Soy el Búho. Vivo en tu móvil y me conozco este tramo de Leeds.",
+          "1": "Soy el Búho, el guía que llevas en el móvil. El día de la ruta, respondo a lo que escribe vuestro grupo."
+        }
+      },
+      "qa": {
+        "distance": "En una partida de verdad os digo cuánto falta. Esta es una muestra, así que digamos que es un paseo corto por Briggate.",
+        "route": "No, esta es de fuera de la ruta, así que no desvela nada. Las pistas de verdad están todas en el centro.",
+        "coffee": "Parad cuando queráis, la pista os espera. Eso sí, no os recomendaré ninguna cafetería: solo conozco la ruta.",
+        "price": "{price} para todo el grupo, hasta {max} personas. Se paga una vez y cada uno juega en su propio móvil.",
+        "building": "Una fachada victoriana con un reloj enorme. Os contaré más cuando lo hayáis adivinado.",
+        "greeting": "Hola. La pista está justo arriba, cuando queráis."
+      }
+    }
+  },
   "home": {
     "hero": {
       "title": "Explora Leeds con un guía en vuestro chat de grupo",
-      "subtitle": "Mitad ruta a pie, mitad búsqueda del tesoro. El Búho os manda pistas que os hacen mirar hacia arriba, y un poco de historia sobre lo que encontráis. Cada uno juega desde su móvil y no hay que descargar ninguna app.",
-      "demoCaption": "Unos mensajes de una partida"
+      "subtitle": "Mitad ruta a pie, mitad búsqueda del tesoro. El Búho os manda pistas que os hacen mirar hacia arriba, y un poco de historia sobre lo que encontráis. Cada uno juega desde su móvil y no hay que descargar ninguna app."
     },
     "notes": {
       "roof": "El techo del Victoria Quarter es una vidriera, instalada en 1990. Mirad hacia arriba antes de mirar los escaparates.",
       "briggate": "Briggate significa «calle del puente». El puente sigue ahí abajo, haciendo su trabajo.",
-      "clock": "En Thornton's Arcade, Robin Hood y otros tres personajes de Ivanhoe dan las horas. Él nunca llega tarde.",
+      "clock": "En Thornton's Arcade, Ricardo Corazón de León y fray Tuck dan las horas. A Robin Hood solo le tocan los cuartos.",
       "carving": "Los victorianos guardaban sus mejores tallas para el primer piso. Mirad hacia arriba, y cuidado con los bolardos.",
       "owls": "En lo alto del Civic Hall hay búhos dorados. A mí nunca me han invitado a subir."
     },

@@ -18,6 +18,11 @@ export const POSTHOG_EVENTS = {
   CHECKOUT_COMPLETED: "checkout_completed",
   EVENT_LINK_COPIED: "event_link_copied",
   EVENT_LINK_SHARED: "event_link_shared",
+  // The scripted "Try the Owl" demo on the marketing site
+  DEMO_STARTED: "demo_started",
+  DEMO_ANSWERED: "demo_answered",
+  DEMO_HINT: "demo_hint",
+  DEMO_COMPLETED: "demo_completed",
 
   // App events
   GAME_JOINED: "game_joined",
@@ -43,6 +48,12 @@ export interface PostHogEventProperties {
   [POSTHOG_EVENTS.CHECKOUT_COMPLETED]: { event_code: string };
   [POSTHOG_EVENTS.EVENT_LINK_COPIED]: { event_code: string };
   [POSTHOG_EVENTS.EVENT_LINK_SHARED]: { event_code: string; share_method: string };
+  /** `location` is the page the demo sits on ("home", "treasure-hunt"). */
+  [POSTHOG_EVENTS.DEMO_STARTED]: { location: string };
+  [POSTHOG_EVENTS.DEMO_ANSWERED]: { location: string; result: "correct" | "incorrect" };
+  /** `hint` counts from 1; the one after the last hint reveals the answer. */
+  [POSTHOG_EVENTS.DEMO_HINT]: { location: string; hint: number; revealed: boolean };
+  [POSTHOG_EVENTS.DEMO_COMPLETED]: { location: string; hints: number; wrong_answers: number };
   [POSTHOG_EVENTS.GAME_JOINED]: { event_code: string; is_lead: boolean; participant_count: number };
   [POSTHOG_EVENTS.GAME_STARTED]: { event_code: string; participant_count: number };
   [POSTHOG_EVENTS.GAME_COMPLETED]: { event_code: string; participant_count: number; duration_minutes: number; stops_completed: number };

@@ -400,7 +400,7 @@ describe("handleQuestion", () => {
     expect(prompt).toContain(`You are ${name}, the guide for a city exploration game in Leeds.`);
   });
 
-  it("tells the guide to admit it is an AI when sincerely asked, and never to claim to be human", async () => {
+  it("tells the guide how to answer \"are you AI?\" if one gets past the identity pre-check", async () => {
     (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
       .mockResolvedValueOnce(makeMockQuestionBlock());
     (db.query.routes.findFirst as ReturnType<typeof vi.fn>)
@@ -412,7 +412,12 @@ describe("handleQuestion", () => {
     await handleQuestion(llm, makeCtx(), "Are you a real person?");
 
     const prompt = llm.classify.mock.calls[0][0] as string;
-    expect(prompt).toContain("sincerely asks whether you are an AI, a bot or a real person");
+    expect(prompt).toContain("asks whether you are an AI, a bot or a real person");
+    expect(prompt).toContain("AI helps you word your replies, and people choose and check the route and the clues");
     expect(prompt).toContain("Never claim to be human.");
+    expect(prompt).toContain("Never flatly deny being automated");
+    // The old line claimed the guide simply "is an AI"; routes may be
+    // LLM-assisted but are chosen and checked by people, so it now says that.
+    expect(prompt).not.toContain("I'm an AI. A well-read one.");
   });
 });

@@ -126,16 +126,84 @@
       "5": "Wat ons betreft wel"
     }
   },
+  "demo": {
+    "title": "Probeer de Uil",
+    "subtitle": "Een voorbeeldraadsel van buiten de route, dus het verklapt niets. Raad, vraag om een hint of stel de Uil een vraag.",
+    "caption": "Een voorproefje van twee minuten. Op de dag zelf reageert de Uil op wat jullie groep typt.",
+    "heroLink": "Probeer de Uil",
+    "chatLabel": "Voorbeeldchat met de Uil",
+    "logLabel": "Berichten",
+    "inputLabel": "Jouw bericht aan de Uil",
+    "placeholder": "Typ een antwoord of een vraag",
+    "send": "Versturen",
+    "reset": "Opnieuw beginnen",
+    "chipsLabel": "Voorgestelde antwoorden",
+    "you": "Jij",
+    "cta": "Boek de echte route",
+    "chips": {
+      "wrongGuess": "Magere Hein?",
+      "hint": "Een hint graag",
+      "distance": "Hoe ver is het?"
+    },
+    "owl": {
+      "intro": "Goed, ik ben de Uil. Hier is een voorbeeldraadsel van buiten de route, dus het verklapt niets.",
+      "clue": "Op Lower Briggate staat een oude man met een zeis boven op een klok, en hij is ouder dan wie dan ook in jullie groep. Wie is hij?",
+      "wrongGuess": "Verkeerde afdeling. Zelfde zeis, maar hij is meer geïnteresseerd in het uur dan in jullie.",
+      "close": "Warmer. Dat is de helft van zijn naam.",
+      "wrong": {
+        "0": "Niet helemaal. Kijk nog eens naar het raadsel.",
+        "1": "Nee. Die zeis zegt al heel veel.",
+        "2": "Nog steeds niet. Misschien moeten jullie om een hint vragen."
+      },
+      "hints": {
+        "0": "Hij duikt elke oudejaarsavond op, meestal naast een baby.",
+        "1": "Vroeger droeg hij naast de zeis ook een zandloper. Zijn voornaam is een deftig woord voor papa."
+      },
+      "reveal": "Dat was mijn laatste hint, dus hier komt het: Vader Tijd. Typ het in, dan doe ik alsof jullie er zelf op kwamen.",
+      "success": "Dat is hem.",
+      "funFact": "Beneden zat vroeger een juwelier, en een bal op het dak viel elke dag om één uur, op een signaal uit Greenwich. Heel Briggate zette zijn horloge erop gelijk.",
+      "outro": "Dat was het voorproefje. De echte route heeft hier meer van.",
+      "fallback": "Ik ken alleen dit stuk van de route. Probeer het raadsel.",
+      "done": "Dat was het enige raadsel op deze pagina. De rest wacht op de route.",
+      "identity": {
+        "ai": {
+          "0": "Deels. AI helpt me mijn antwoorden te formuleren, maar de route en de raadsels worden door mensen gekozen en gecontroleerd.",
+          "1": "Voor een deel. AI helpt met de formulering, en mensen kiezen de wandeling en controleren elk raadsel.",
+          "2": "Op deze pagina niet: elke regel hier is met de hand geschreven. In het spel helpt AI me met formuleren, en mensen kiezen en controleren de route en de raadsels."
+        },
+        "machine": {
+          "0": "Ik ben de gids in je telefoon. Meer hoeven jullie voor dit raadsel niet te weten.",
+          "1": "Ik ben de Uil, de gids in je telefoon. De gebouwen zijn het echte werk.",
+          "2": "Ik ben de gids in je telefoon, en op de dag zelf reageer ik op wat jullie groep typt. Het raadsel wacht nog."
+        },
+        "person": {
+          "0": "Nee. Ik ben de gids in je telefoon, en het Leeds-gedeelte is echt.",
+          "1": "Geen mens, nee. Gewoon de gids in je telefoon, die jullie op de route houdt."
+        },
+        "who": {
+          "0": "Ik ben de Uil. Ik woon in je telefoon en ken dit stuk van Leeds.",
+          "1": "Ik ben de Uil, de gids in je telefoon. Op de dag zelf reageer ik op wat jullie groep typt."
+        }
+      },
+      "qa": {
+        "distance": "In een echt spel vertel ik jullie hoe ver het nog is. Dit is een voorbeeld, dus zeg maar een kort stukje Briggate af.",
+        "route": "Nee, dit raadsel komt van buiten de route, dus het verklapt niets. De echte raadsels liggen allemaal in het centrum.",
+        "coffee": "Stop wanneer jullie willen, het raadsel wacht wel. Een café raad ik niet aan: ik ken alleen de route.",
+        "price": "{price} voor de hele groep, tot {max} personen. Eén keer betalen, en iedereen speelt op z'n eigen telefoon.",
+        "building": "Een Victoriaanse winkelpui met een heel grote klok. Ik zeg meer als jullie geraden hebben.",
+        "greeting": "Hallo. Het raadsel staat hierboven, wanneer jullie maar willen."
+      }
+    }
+  },
   "home": {
     "hero": {
       "title": "Ontdek Leeds met een gids in jullie groepschat",
-      "subtitle": "Half stadswandeling, half speurtocht. De Uil stuurt aanwijzingen waardoor je omhoog gaat kijken, en een stukje geschiedenis over wat je vindt. Iedereen speelt op z'n eigen telefoon, en je hoeft geen app te downloaden.",
-      "demoCaption": "Een paar berichten uit een spel"
+      "subtitle": "Half stadswandeling, half speurtocht. De Uil stuurt aanwijzingen waardoor je omhoog gaat kijken, en een stukje geschiedenis over wat je vindt. Iedereen speelt op z'n eigen telefoon, en je hoeft geen app te downloaden."
     },
     "notes": {
       "roof": "Het dak van de Victoria Quarter is van glas-in-lood, geplaatst in 1990. Eerst omhoog kijken, dan pas naar de etalages.",
       "briggate": "Briggate betekent “brugstraat”. De brug ligt er onderaan nog steeds, en doet gewoon z'n werk.",
-      "clock": "In Thornton's Arcade slaan Robin Hood en drie andere figuren uit Ivanhoe de uren. Hij is nooit te laat.",
+      "clock": "In Thornton's Arcade slaan Richard Leeuwenhart en broeder Tuck de uren. Robin Hood krijgt alleen de kwartieren.",
       "carving": "De Victorianen bewaarden hun mooiste beeldhouwwerk voor de eerste verdieping. Kijk omhoog, en pas op voor de paaltjes.",
       "owls": "Boven op de Civic Hall staan vergulde uilen. Mij hebben ze nog nooit uitgenodigd."
     },

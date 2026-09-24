@@ -126,16 +126,84 @@
       "5": "Von uns aus kann's losgehen"
     }
   },
+  "demo": {
+    "title": "Probiert die Eule aus",
+    "subtitle": "Ein Beispielrätsel abseits der Route, es verrät also nichts. Ratet, fragt nach einem Hinweis oder stellt der Eule eine Frage.",
+    "caption": "Ein Vorgeschmack von zwei Minuten. Am Tag selbst antwortet die Eule auf das, was eure Gruppe schreibt.",
+    "heroLink": "Probiert die Eule aus",
+    "chatLabel": "Beispiel-Chat mit der Eule",
+    "logLabel": "Nachrichten",
+    "inputLabel": "Eure Nachricht an die Eule",
+    "placeholder": "Eine Antwort oder eine Frage",
+    "send": "Senden",
+    "reset": "Neu starten",
+    "chipsLabel": "Antwortvorschläge",
+    "you": "Du",
+    "cta": "Die echte Route buchen",
+    "chips": {
+      "wrongGuess": "Der Sensenmann?",
+      "hint": "Einen Hinweis bitte",
+      "distance": "Wie weit ist es?"
+    },
+    "owl": {
+      "intro": "Also, ich bin die Eule. Hier ist ein Beispielrätsel abseits der Route, es verrät also nichts.",
+      "clue": "In Lower Briggate steht ein alter Mann mit einer Sense auf einer Uhr, und er ist älter als alle in eurer Gruppe. Wer ist er?",
+      "wrongGuess": "Falsche Abteilung. Gleiche Sense, aber ihn interessiert die Uhrzeit mehr als ihr.",
+      "close": "Wärmer. Das ist die Hälfte seines Namens.",
+      "wrong": {
+        "0": "Nicht ganz. Lest das Rätsel noch einmal.",
+        "1": "Nein. Die Sense verrät schon eine Menge.",
+        "2": "Immer noch nicht. Vielleicht wäre ein Hinweis eine gute Idee."
+      },
+      "hints": {
+        "0": "Er taucht jedes Silvester auf, meistens neben einem Baby.",
+        "1": "Früher trug er neben der Sense auch eine Sanduhr. Sein Vorname ist ein förmliches Wort für Papa."
+      },
+      "reveal": "Das war mein letzter Hinweis, also bitte: Vater Zeit. Tippt es ein, und ich tue so, als wärt ihr selbst draufgekommen.",
+      "success": "Genau der.",
+      "funFact": "Unten war früher ein Juwelier, und eine Kugel auf dem Dach fiel jeden Tag um ein Uhr, ausgelöst durch ein Signal aus Greenwich. Ganz Briggate stellte danach die Uhren.",
+      "outro": "Das war der Vorgeschmack. Auf der echten Route gibt es mehr davon.",
+      "fallback": "Ich kenne nur dieses Stück der Route. Versucht es mit dem Rätsel.",
+      "done": "Das war das einzige Rätsel auf dieser Seite. Die anderen warten auf der Route.",
+      "identity": {
+        "ai": {
+          "0": "Zum Teil. KI hilft mir beim Formulieren der Antworten, aber Route und Rätsel wählen und prüfen Menschen.",
+          "1": "Teilweise. KI hilft bei der Formulierung, und Menschen suchen den Rundgang aus und prüfen jedes Rätsel.",
+          "2": "Auf dieser Seite nicht: Hier ist jede Zeile von Hand geschrieben. Im Spiel hilft mir KI beim Formulieren, und Route und Rätsel wählen und prüfen Menschen."
+        },
+        "machine": {
+          "0": "Ich bin die Begleiterin in euren Handys. Mehr müsst ihr für dieses Rätsel nicht wissen.",
+          "1": "Ich bin die Eule, eure Begleiterin im Handy. Das Echte daran sind die Gebäude.",
+          "2": "Ich bin die Begleiterin in euren Handys, und am Tag selbst antworte ich auf das, was eure Gruppe schreibt. Das Rätsel wartet noch."
+        },
+        "person": {
+          "0": "Nein. Ich bin die Begleiterin in euren Handys, und der Teil mit Leeds ist echt.",
+          "1": "Kein Mensch, nein. Nur die Begleiterin in euren Handys, die euch auf der Route hält."
+        },
+        "who": {
+          "0": "Ich bin die Eule. Ich wohne in euren Handys und kenne dieses Stück Leeds.",
+          "1": "Ich bin die Eule, eure Begleiterin im Handy. Am Tag selbst antworte ich auf das, was eure Gruppe schreibt."
+        }
+      },
+      "qa": {
+        "distance": "In einem echten Spiel sage ich euch, wie weit es noch ist. Das hier ist ein Beispiel, also sagen wir: ein kurzes Stück Briggate hinunter.",
+        "route": "Nein, das hier stammt nicht von der Route, es verrät also nichts. Die echten Rätsel liegen alle in der Innenstadt.",
+        "coffee": "Macht Pause, wann ihr wollt, das Rätsel wartet. Ein Café empfehle ich euch allerdings nicht: Ich kenne nur die Route.",
+        "price": "{price} für die ganze Gruppe, bis zu {max} Personen. Einmal zahlen, und alle spielen auf dem eigenen Handy.",
+        "building": "Eine viktorianische Ladenfront mit einer sehr großen Uhr. Mehr verrate ich, wenn ihr geraten habt.",
+        "greeting": "Hallo. Das Rätsel steht direkt darüber, wann immer ihr so weit seid."
+      }
+    }
+  },
   "home": {
     "hero": {
       "title": "Entdeckt Leeds mit einem Guide im Gruppenchat",
-      "subtitle": "Halb Stadtführung, halb Schnitzeljagd. Die Eule schickt Rätsel, bei denen ihr nach oben schaut, und ein bisschen Geschichte zu dem, was ihr findet. Alle spielen auf dem eigenen Handy, und eine App braucht ihr nicht.",
-      "demoCaption": "Ein paar Nachrichten aus einem Spiel"
+      "subtitle": "Halb Stadtführung, halb Schnitzeljagd. Die Eule schickt Rätsel, bei denen ihr nach oben schaut, und ein bisschen Geschichte zu dem, was ihr findet. Alle spielen auf dem eigenen Handy, und eine App braucht ihr nicht."
     },
     "notes": {
       "roof": "Das Dach des Victoria Quarter ist aus Buntglas, eingesetzt 1990. Erst nach oben schauen, dann in die Schaufenster.",
       "briggate": "Briggate heißt „Brückenstraße“. Die Brücke ist immer noch unten am Ende und tut ihren Job.",
-      "clock": "In der Thornton's Arcade schlagen Robin Hood und drei weitere Figuren aus Ivanhoe die Stunden. Er ist nie zu spät.",
+      "clock": "In der Thornton's Arcade schlagen Richard Löwenherz und Bruder Tuck die Stunden. Robin Hood bleiben nur die Viertelstunden.",
       "carving": "Die Viktorianer haben sich ihre schönsten Steinmetzarbeiten für den ersten Stock aufgehoben. Schaut nach oben, und Vorsicht vor den Pollern.",
       "owls": "Auf dem Civic Hall sitzen vergoldete Eulen. Mich hat noch nie jemand hinaufgebeten."
     },

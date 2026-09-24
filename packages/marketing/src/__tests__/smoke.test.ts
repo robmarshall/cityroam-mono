@@ -6,6 +6,16 @@ import { createTranslator } from "next-intl";
 import { locales, defaultLocale } from "../i18n/config";
 import { factValues } from "../lib/facts";
 import { COMPANY, COMPANY_ADDRESS_LINE } from "../lib/site";
+import { AI_EXEMPT_MESSAGE_KEYS, IDENTITY_REPLY_COUNTS } from "../lib/demo/engine";
+
+/** Every string in a message tree, with its dotted key. */
+function leaves(value: unknown, prefix = ""): [string, string][] {
+  if (typeof value === "string") return [[prefix, value]];
+  if (!value || typeof value !== "object") return [];
+  return Object.entries(value as Record<string, unknown>).flatMap(([k, v]) =>
+    leaves(v, prefix ? `${prefix}.${k}` : k),
+  );
+}
 
 const messagesDir = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -136,12 +146,28 @@ describe("marketing smoke", () => {
       de: [...shared, /\bKI\b/, /künstliche[nr]? Intelligenz/i],
       nl: [...shared, /kunstmatige intelligentie/i],
     };
+    // The one exemption: the demo's honest answers to "are you AI?" (owner
+    // decision, 2026-09-24), listed key by key in AI_EXEMPT_MESSAGE_KEYS.
     for (const locale of locales) {
       const { legal: _legal, ...marketing } = load(locale);
-      const text = JSON.stringify(marketing);
-      for (const term of terms[locale] ?? shared) {
-        expect(text.match(term)?.[0], `${locale} ${term}`).toBeUndefined();
+      for (const [key, value] of leaves(marketing)) {
+        if (AI_EXEMPT_MESSAGE_KEYS.includes(key)) continue;
+        for (const term of terms[locale] ?? shared) {
+          expect(value.match(term)?.[0], `${locale} ${key} ${term}`).toBeUndefined();
+        }
       }
+    }
+  });
+
+  it("exempts only the demo's answers to \"are you AI?\" from the no-AI rule", () => {
+    expect(AI_EXEMPT_MESSAGE_KEYS).toHaveLength(IDENTITY_REPLY_COUNTS.ai);
+    for (const key of AI_EXEMPT_MESSAGE_KEYS) expect(key).toMatch(/^demo\.owl\.identity\.ai\.\d+$/);
+    for (const locale of locales) {
+      const keys = leaves(load(locale)).map(([key]) => key);
+      for (const key of AI_EXEMPT_MESSAGE_KEYS) expect(keys, `${locale} ${key}`).toContain(key);
+      expect(keys.filter((k) => k.startsWith("demo.owl.identity.ai.")).sort(), locale).toEqual(
+        [...AI_EXEMPT_MESSAGE_KEYS].sort(),
+      );
     }
   });
 

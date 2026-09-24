@@ -217,8 +217,14 @@ Follow the same recommended counts as for English (see guide-personality.md):
 | completion | 2 | 3 |
 | guide-degraded | 2 | 3 |
 | guide-busy | 2 | 3 |
+| guide-identity-ai | 2 | 3 |
+| guide-identity-machine | 2 | 3 |
+| guide-identity-person | 2 | 3 |
+| guide-identity-who | 2 | 3 |
 
 Message bank entries must maintain the guide's personality in the target language. The same rules apply: brief, dry, no exclamation marks, no emoji. Template variables (`{{ANSWER}}`, `{{TOTAL_STOPS}}`, etc.) stay as-is.
+
+The `guide-identity-*` banks keep their rules in every language (guide-personality.md > Honest about being an AI): `guide-identity-machine` and `guide-identity-who` lines never open with a negation (no / nein / non / nee …), `guide-identity-person` lines may ("Una persona no, no", "Pas une personne, non", "Kein Mensch, nein", "Geen mens, nee"), and `guide-identity-ai` lines say AI helps word the replies while people choose and check the route (IA in Spanish and French, KI in German, AI in Dutch). Use `{{GUIDE_NAME}}` rather than the name, and make first-person lines agree with its gender: "el guía" for el Búho, "le guide" for le Hibou, "die Begleiterin" for die Eule.
 
 ---
 

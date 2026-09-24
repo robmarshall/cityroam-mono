@@ -747,6 +747,128 @@ describe("processIncomingMessage", () => {
     expect(updateIdleTimestamp).toHaveBeenCalledWith("ABCD1234", "event-1", "en");
   });
 
+  // ── Identity questions ─────────────────────────────────────────────
+  //
+  // "are you a bot?" and friends get a canned bank reply before the LLM
+  // classifier runs (services/pipeline/identity.ts). Conservative: anything
+  // that could be an answer still goes through classification.
+
+  describe("identity questions", () => {
+    const cases: [string, "en" | "es" | "fr" | "de" | "nl", string][] = [
+      ["are you AI?", "en", "guide-identity-ai"],
+      ["are you a bot?", "en", "guide-identity-machine"],
+      ["are you a real person?", "en", "guide-identity-person"],
+      ["who are you?", "en", "guide-identity-who"],
+      ["¿eres una IA?", "es", "guide-identity-ai"],
+      ["¿eres un robot?", "es", "guide-identity-machine"],
+      ["es-tu une IA ?", "fr", "guide-identity-ai"],
+      ["tu es un robot ?", "fr", "guide-identity-machine"],
+      ["bist du eine KI?", "de", "guide-identity-ai"],
+      ["bist du ein Mensch?", "de", "guide-identity-person"],
+      ["ben je een bot?", "nl", "guide-identity-machine"],
+      ["wie ben jij?", "nl", "guide-identity-who"],
+    ];
+
+    it.each(cases)("%s (%s) gets the %s bank reply and no LLM call", async (text, language, bankType) => {
+      (db.query.events.findFirst as any).mockResolvedValue({ ...eventRow, language });
+
+      await processIncomingMessage({ ...basePayload, text });
+
+      expect(classifyIntent).not.toHaveBeenCalled();
+      expect(handleQuestion).not.toHaveBeenCalled();
+      expect(handleAnswerAttempt).not.toHaveBeenCalled();
+      expect(getRandomMessageBank).toHaveBeenCalledWith(bankType, language);
+      // Bank text: never counted against the guide response cap
+      expect(writeGuideMessage).toHaveBeenCalledWith(
+        "event-1",
+        "ABCD1234",
+        1,
+        "Bank message",
+        null,
+        undefined,
+        { countsTowardCap: false },
+      );
+      expect(updateIdleTimestamp).toHaveBeenCalledWith("ABCD1234", "event-1", language);
+    });
+
+    it("substitutes {{GUIDE_NAME}} in the guide's language", async () => {
+      (db.query.events.findFirst as any).mockResolvedValue({ ...eventRow, language: "de" });
+      (getRandomMessageBank as any).mockResolvedValue("{{GUIDE_NAME}}, zu Diensten.");
+
+      await processIncomingMessage({ ...basePayload, text: "bist du ein Bot?" });
+
+      expect(writeGuideMessage).toHaveBeenCalledWith(
+        "event-1", "ABCD1234", 1, "Die Eule, zu Diensten.", null, undefined, { countsTowardCap: false },
+      );
+    });
+
+    it("falls back to built-in wording when the bank has no entry yet", async () => {
+      (getRandomMessageBank as any).mockResolvedValue(null);
+
+      await processIncomingMessage({ ...basePayload, text: "are you a person?" });
+
+      expect(writeGuideMessage).toHaveBeenCalledWith(
+        "event-1", "ABCD1234", 1, "Not a person, no. I'm the Owl, the guide in your phone.", null, undefined,
+        { countsTowardCap: false },
+      );
+    });
+
+    it.each([
+      "is it the robot statue?",
+      "who built this?",
+      "is this the real one?",
+      "how far is the next stop?",
+      "are you sure it's the computer shop?",
+      "what are you doing?",
+    ])("%s still goes through normal classification", async (text) => {
+      await processIncomingMessage({ ...basePayload, text });
+
+      expect(classifyIntent).toHaveBeenCalled();
+      expect(getRandomMessageBank).not.toHaveBeenCalledWith(expect.stringMatching(/^guide-identity-/), "en");
+    });
+
+    it("an identity-looking message that matches the clue's answer is treated as an answer", async () => {
+      (db.query.routeBlocks.findFirst as any).mockResolvedValue({
+        type: "question",
+        config: { type: "question", clue: "What stands on the plinth?", accepted_answers: ["robot"], hints: [] },
+      });
+
+      await processIncomingMessage({ ...basePayload, text: "are you the robot?" });
+
+      expect(classifyIntent).toHaveBeenCalled();
+      expect(handleAnswerAttempt).toHaveBeenCalled();
+    });
+
+    it("keeps the shared guide rate limit, answering with the busy notice", async () => {
+      (checkGuideRateLimit as any).mockResolvedValue({ allowed: false, current: 2, limit: 1 });
+
+      await processIncomingMessage({ ...basePayload, text: "are you a bot?" });
+
+      expect(classifyIntent).not.toHaveBeenCalled();
+      expect(getRandomMessageBank).not.toHaveBeenCalledWith("guide-identity-machine", "en");
+      expect(getRandomMessageBank).toHaveBeenCalledWith("guide-busy", "en");
+    });
+
+    it("still answers on a capped event, instead of the cap notice", async () => {
+      (isGuideResponseCapReached as any).mockResolvedValue(true);
+
+      await processIncomingMessage({ ...basePayload, text: "are you AI?" });
+
+      expect(getRandomMessageBank).toHaveBeenCalledWith("guide-identity-ai", "en");
+      expect(sendCapReachedMessage).not.toHaveBeenCalled();
+      expect(classifyIntent).not.toHaveBeenCalled();
+    });
+
+    it("on a capped event, a correct answer still wins", async () => {
+      (isGuideResponseCapReached as any).mockResolvedValue(true);
+      (handleAnswerAttemptWithoutLLM as any).mockResolvedValue(true);
+
+      await processIncomingMessage({ ...basePayload, text: "are you thinking of the fountain?" });
+
+      expect(getRandomMessageBank).not.toHaveBeenCalledWith(expect.stringMatching(/^guide-identity-/), "en");
+    });
+  });
+
   it("guide typing off fires even when handler throws", async () => {
     (handleAnswerAttempt as any).mockRejectedValue(new Error("handler error"));
 

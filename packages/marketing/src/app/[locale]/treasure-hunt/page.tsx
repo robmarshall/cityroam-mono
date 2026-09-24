@@ -7,11 +7,10 @@ import { ComparisonTable } from "@/components/ComparisonTable";
 import { CTAButton } from "@/components/CTAButton";
 import { FAQ } from "@/components/FAQ";
 import { GiftLine } from "@/components/GiftLine";
-import ChatSnippet from "@/components/IphoneDemo/ChatSnippet";
-import IphoneDemo from "@/components/IphoneDemo/IphoneDemo";
 import { KeyFacts } from "@/components/KeyFacts";
 import { Card, CardGrid, CtaBand, PageHero, Section, SectionHeading } from "@/components/Section";
 import { StickyBookBar } from "@/components/StickyBookBar";
+import { TryTheOwl } from "@/components/TryTheOwl";
 import { factValues } from "@/lib/facts";
 import { buildMetadata } from "@/lib/metadata";
 
@@ -32,7 +31,7 @@ export async function generateMetadata({
  * review: the home page leads with exploring the city, and keeps the term
  * only in its "part walking tour, part treasure hunt" line). It has to earn
  * its place with content the home page doesn't have: how this differs from
- * a traditional hunt, a sample clue from the demo (never a real stop), the
+ * a traditional hunt, the playable sample clue (never a real stop), the
  * four audiences, the comparison and its own questions.
  *
  * Checkout segment `treasure-hunt`: without a family of its own the API
@@ -77,18 +76,15 @@ export default async function TreasureHunt({
         </CardGrid>
       </Section>
 
-      {/* A sample clue, from the demo conversation rather than the route. */}
-      <Section>
-        <div className="grid items-center gap-12 md:grid-cols-[minmax(0,1fr)_auto] md:gap-16">
+      {/* A sample clue, playable: the "Try the Owl" demo, never a real stop. */}
+      <Section id="try-the-owl" className="scroll-mt-4">
+        <div className="grid items-center gap-12 md:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] md:gap-16">
           <div>
             <SectionHeading align="left" title={t("clue.title")} subtitle={t("clue.text")} />
             <p className="mt-6 text-base leading-relaxed text-ink-700">{t("clue.note")}</p>
             <Annotation text={t("notes.clue")} tail="top-left" delay={300} className="mt-8" />
           </div>
-          <div className="relative mx-auto hidden shrink-0 rotate-2 sm:block">
-            <IphoneDemo variant="hero" />
-          </div>
-          <ChatSnippet className="sm:hidden" />
+          <TryTheOwl location="treasure-hunt" segment={SEGMENT} />
         </div>
       </Section>
 

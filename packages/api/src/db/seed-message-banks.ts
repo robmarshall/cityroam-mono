@@ -4,6 +4,7 @@ import postgres from "postgres";
 import { messageBanks } from "./schema/message-banks.js";
 import type { SupportedLanguage } from "@cityroam/shared/types";
 import { SUPPORTED_LANGUAGES, LANGUAGE_NAMES } from "@cityroam/shared/constants";
+import { pathToFileURL } from "node:url";
 import { messageBankSeedData } from "./seed.js";
 
 const DATABASE_URL =
@@ -18,7 +19,7 @@ const DATABASE_URL =
 
 type MessageBankSeedEntry = { type: string; content: string };
 
-const translations: Record<
+export const translations: Record<
   Exclude<SupportedLanguage, "en">,
   MessageBankSeedEntry[]
 > = {
@@ -90,6 +91,26 @@ const translations: Record<
     { type: "guide-busy", content: "De uno en uno. Dame un momento y vuelve a preguntar." },
     { type: "guide-busy", content: "Estáis hablando todos a la vez. Pregúntame otra vez en un segundo." },
     { type: "guide-busy", content: "Demasiados a la vez. Inténtalo de nuevo en un momento." },
+
+    // Guide identity, asked directly about AI: an honest, partial answer
+    { type: "guide-identity-ai", content: "En parte. La IA me ayuda a redactar las respuestas, pero la ruta y las pistas las eligen y revisan personas." },
+    { type: "guide-identity-ai", content: "En parte. La IA ayuda con la redacción, y son personas quienes eligen la ruta y revisan cada pista." },
+    { type: "guide-identity-ai", content: "Sí y no. La IA me ayuda a expresarme, pero las paradas y las pistas las eligen y comprueban personas antes de que os lleguen." },
+
+    // Guide identity, bot / robot / computer: never opens with a negation
+    { type: "guide-identity-machine", content: "Soy {{GUIDE_NAME}}, el guía que lleváis en el móvil. La pista sigue esperando." },
+    { type: "guide-identity-machine", content: "Soy el guía que lleváis en el móvil y respondo a lo que escribe vuestro grupo. Lo auténtico son las calles." },
+    { type: "guide-identity-machine", content: "{{GUIDE_NAME}}, a vuestro servicio desde el móvil. Volvemos a la pista cuando queráis." },
+
+    // Guide identity, real person / human: may open with "not a person, no"
+    { type: "guide-identity-person", content: "Una persona no, no. Soy {{GUIDE_NAME}}, el guía que lleváis en el móvil." },
+    { type: "guide-identity-person", content: "Una persona no, no. Solo el guía del móvil, para que no os salgáis de la ruta." },
+    { type: "guide-identity-person", content: "No, soy el guía que lleváis en el móvil. Lo auténtico es la ciudad que tenéis alrededor." },
+
+    // Guide identity, who are you / what's your name: never opens with a negation
+    { type: "guide-identity-who", content: "Soy {{GUIDE_NAME}}, vuestro guía de hoy. Me conozco estas calles y os voy dando las pistas." },
+    { type: "guide-identity-who", content: "Soy {{GUIDE_NAME}}, el guía que lleváis en el móvil. Respondo a lo que escribe vuestro grupo y os mantengo en la ruta." },
+    { type: "guide-identity-who", content: "{{GUIDE_NAME}}. Vivo en vuestro móvil y me conozco esta ruta mejor que casi nadie." },
   ],
 
   // -------------------------------------------------------------------------
@@ -160,6 +181,26 @@ const translations: Record<
     { type: "guide-busy", content: "Un à la fois. Laissez-moi un instant, puis redemandez." },
     { type: "guide-busy", content: "Vous parlez tous en même temps. Redemandez-moi dans une seconde." },
     { type: "guide-busy", content: "Trop de monde à la fois. Réessayez dans un moment." },
+
+    // Guide identity, asked directly about AI: an honest, partial answer
+    { type: "guide-identity-ai", content: "En partie. L'IA m'aide à formuler mes réponses, mais le parcours et les énigmes sont choisis et vérifiés par des humains." },
+    { type: "guide-identity-ai", content: "En partie. L'IA aide pour la formulation, et ce sont des humains qui choisissent le parcours et vérifient chaque énigme." },
+    { type: "guide-identity-ai", content: "Oui et non. L'IA m'aide à tourner mes phrases, mais des humains choisissent les étapes et vérifient les énigmes avant qu'elles vous arrivent." },
+
+    // Guide identity, bot / robot / computer: never opens with a negation
+    { type: "guide-identity-machine", content: "Je suis {{GUIDE_NAME}}, le guide dans votre téléphone. L'énigme vous attend toujours." },
+    { type: "guide-identity-machine", content: "Je suis le guide dans votre téléphone, et je réponds à ce que votre groupe écrit. Le vrai, ce sont les rues." },
+    { type: "guide-identity-machine", content: "{{GUIDE_NAME}}, à votre service depuis votre téléphone. On reprend l'énigme quand vous voulez." },
+
+    // Guide identity, real person / human: may open with "not a person, no"
+    { type: "guide-identity-person", content: "Pas une personne, non. Je suis {{GUIDE_NAME}}, le guide dans votre téléphone." },
+    { type: "guide-identity-person", content: "Pas une personne, non. Juste le guide dans votre téléphone, pour vous garder sur le parcours." },
+    { type: "guide-identity-person", content: "Non, je suis le guide dans votre téléphone. Le vrai, c'est la ville autour de vous." },
+
+    // Guide identity, who are you / what's your name: never opens with a negation
+    { type: "guide-identity-who", content: "Je suis {{GUIDE_NAME}}, votre guide du jour. Je connais ces rues et je vous donne les énigmes." },
+    { type: "guide-identity-who", content: "Je suis {{GUIDE_NAME}}, le guide dans votre téléphone. Je réponds à ce que votre groupe écrit et je vous garde sur le parcours." },
+    { type: "guide-identity-who", content: "{{GUIDE_NAME}}. J'habite dans votre téléphone et je connais ce parcours mieux que personne." },
   ],
 
   // -------------------------------------------------------------------------
@@ -230,6 +271,26 @@ const translations: Record<
     { type: "guide-busy", content: "Einer nach dem anderen. Gib mir einen Moment und frag noch mal." },
     { type: "guide-busy", content: "Ihr redet alle gleichzeitig. Frag mich gleich noch einmal." },
     { type: "guide-busy", content: "Zu viele auf einmal. Versuch es in einem Moment noch mal." },
+
+    // Guide identity, asked directly about AI: an honest, partial answer
+    { type: "guide-identity-ai", content: "Zum Teil. KI hilft mir beim Formulieren der Antworten, aber Route und Rätsel wählen und prüfen Menschen." },
+    { type: "guide-identity-ai", content: "Teilweise. KI hilft bei der Formulierung, und Menschen suchen die Route aus und prüfen jedes Rätsel." },
+    { type: "guide-identity-ai", content: "Ja und nein. KI hilft mir beim Formulieren, aber die Stationen und Rätsel wählen und prüfen Menschen, bevor sie bei euch ankommen." },
+
+    // Guide identity, bot / robot / computer: never opens with a negation
+    { type: "guide-identity-machine", content: "Ich bin {{GUIDE_NAME}}, eure Begleiterin im Handy. Das Rätsel wartet noch." },
+    { type: "guide-identity-machine", content: "Ich bin die Begleiterin in euren Handys und antworte auf das, was eure Gruppe schreibt. Das Echte daran sind die Straßen." },
+    { type: "guide-identity-machine", content: "{{GUIDE_NAME}}, zu Diensten aus eurem Handy. Zurück zum Rätsel, wenn ihr so weit seid." },
+
+    // Guide identity, real person / human: may open with "not a person, no"
+    { type: "guide-identity-person", content: "Kein Mensch, nein. Ich bin {{GUIDE_NAME}}, eure Begleiterin im Handy." },
+    { type: "guide-identity-person", content: "Kein Mensch, nein. Nur die Begleiterin in euren Handys, die euch auf der Route hält." },
+    { type: "guide-identity-person", content: "Nein, ich bin die Begleiterin in euren Handys. Echt ist die Stadt um euch herum." },
+
+    // Guide identity, who are you / what's your name: never opens with a negation
+    { type: "guide-identity-who", content: "Ich bin {{GUIDE_NAME}}, eure Begleiterin für heute. Ich kenne diese Straßen und liefere die Rätsel." },
+    { type: "guide-identity-who", content: "Ich bin {{GUIDE_NAME}}, eure Begleiterin im Handy. Ich antworte auf das, was eure Gruppe schreibt, und halte euch auf der Route." },
+    { type: "guide-identity-who", content: "{{GUIDE_NAME}}. Ich wohne in euren Handys und kenne diese Route besser als die meisten." },
   ],
 
   // -------------------------------------------------------------------------
@@ -300,6 +361,26 @@ const translations: Record<
     { type: "guide-busy", content: "Een tegelijk. Geef me even, vraag het dan opnieuw." },
     { type: "guide-busy", content: "Jullie praten allemaal tegelijk. Vraag het zo nog eens." },
     { type: "guide-busy", content: "Te veel tegelijk. Probeer het zo nog eens." },
+
+    // Guide identity, asked directly about AI: an honest, partial answer
+    { type: "guide-identity-ai", content: "Deels. AI helpt me mijn antwoorden te formuleren, maar de route en de raadsels worden door mensen gekozen en gecontroleerd." },
+    { type: "guide-identity-ai", content: "Voor een deel. AI helpt met de formulering, en mensen kiezen de route en controleren elk raadsel." },
+    { type: "guide-identity-ai", content: "Ja en nee. AI helpt me met formuleren, maar mensen kiezen de stops en controleren de raadsels voordat jullie ze krijgen." },
+
+    // Guide identity, bot / robot / computer: never opens with a negation
+    { type: "guide-identity-machine", content: "Ik ben {{GUIDE_NAME}}, de gids in je telefoon. Het raadsel wacht nog." },
+    { type: "guide-identity-machine", content: "Ik ben de gids in je telefoon en reageer op wat jullie groep typt. De straten zijn het echte werk." },
+    { type: "guide-identity-machine", content: "{{GUIDE_NAME}}, tot jullie dienst vanuit je telefoon. We gaan verder met het raadsel als jullie er klaar voor zijn." },
+
+    // Guide identity, real person / human: may open with "not a person, no"
+    { type: "guide-identity-person", content: "Geen mens, nee. Ik ben {{GUIDE_NAME}}, de gids in je telefoon." },
+    { type: "guide-identity-person", content: "Geen mens, nee. Gewoon de gids in je telefoon, die jullie op de route houdt." },
+    { type: "guide-identity-person", content: "Nee, ik ben de gids in je telefoon. De stad om jullie heen is het echte werk." },
+
+    // Guide identity, who are you / what's your name: never opens with a negation
+    { type: "guide-identity-who", content: "Ik ben {{GUIDE_NAME}}, jullie gids voor vandaag. Ik ken deze straten en geef jullie de raadsels." },
+    { type: "guide-identity-who", content: "Ik ben {{GUIDE_NAME}}, de gids in je telefoon. Ik reageer op wat jullie groep typt en houd jullie op de route." },
+    { type: "guide-identity-who", content: "{{GUIDE_NAME}}. Ik woon in je telefoon en ken deze route beter dan de meesten." },
   ],
 };
 
@@ -439,7 +520,15 @@ async function main(): Promise<void> {
   }
 }
 
-main().catch((err) => {
-  console.error("Seed failed:", err);
-  process.exit(1);
-});
+// Only run when invoked directly, so a test can import the translations
+// without opening a database connection (same guard as seed.ts).
+const invokedDirectly =
+  process.argv[1] !== undefined &&
+  import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (invokedDirectly) {
+  main().catch((err) => {
+    console.error("Seed failed:", err);
+    process.exit(1);
+  });
+}

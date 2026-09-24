@@ -197,6 +197,10 @@ describe("Message bank seed translations", () => {
     "over-length",
     "guide-degraded",
     "guide-busy",
+    "guide-identity-ai",
+    "guide-identity-machine",
+    "guide-identity-person",
+    "guide-identity-who",
   ];
 
   const nonEnLanguages = SUPPORTED_LANGUAGES.filter((l) => l !== "en");
@@ -570,10 +574,10 @@ describe("Per-language word lists", () => {
 
 describe("Language-aware article stripping", () => {
   const matchFile = readFileText(
-    "packages/api/src/services/pipeline/deterministic-match.ts",
+    "packages/shared/src/utils/answer-match.ts",
   );
 
-  it("deterministic-match.ts exists", () => {
+  it("answer-match.ts (the matcher behind deterministic-match.ts) exists", () => {
     expect(matchFile).not.toBeNull();
   });
 

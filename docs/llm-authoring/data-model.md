@@ -186,6 +186,10 @@ Player message
   ↓
 Pre-filter (length checks, rate limits)
   ↓
+Identity pre-check (no LLM): a short question addressed to the guide
+  ("are you a bot?", "is this AI?", "who are you?") that doesn't match the
+  clue's answers → guide-identity-{ai,machine,person,who} bank, and stop
+  ↓
 Intent Classifier (LLM)
   ├── "answer-attempt" → Answer Matcher (LLM checks against accepted_answers)
   │     ├── Correct → success bank + remaining blocks in group + next group
@@ -273,6 +277,10 @@ Template variables in message block `content` fields (and in hint text) are repl
 | completion | 2 | 3 |
 | guide-degraded | 2 | 3 |
 | guide-busy | 2 | 3 |
+| guide-identity-ai | 2 | 3 |
+| guide-identity-machine | 2 | 3 |
+| guide-identity-person | 2 | 3 |
+| guide-identity-who | 2 | 3 |
 
 ---
 

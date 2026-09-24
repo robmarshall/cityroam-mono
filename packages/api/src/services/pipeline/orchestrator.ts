@@ -59,6 +59,11 @@ import {
 } from "./degraded-mode.js";
 import { withHealthTracking } from "./llm-health.js";
 import { getRandomMessageBank } from "./handlers/answer-attempt.js";
+import {
+  detectIdentityQuestion,
+  sendIdentityReply,
+  type IdentityQuestionKind,
+} from "./identity.js";
 import { buildEnRouteContext, type EnRouteContext } from "../enroute.js";
 
 const log = createLogger("pipeline");
@@ -88,6 +93,7 @@ const RATE_LIMITED_INTENTS: ReadonlySet<string> = new Set([
   "question",
   "clarification",
   "degraded-notice",
+  "identity",
 ]);
 
 const HINT_DECLINE_FALLBACK: Record<SupportedLanguage, string> = {
@@ -118,7 +124,8 @@ interface CappedEventContext {
  * reveals the answer and advances. Without the second route a group that
  * simply doesn't know the answer would still be stuck for good.
  *
- * Anything neither of those recognises gets the cap notice. Without
+ * An identity question ("are you a bot?") still gets its canned bank reply.
+ * Anything else neither of those recognises gets the cap notice. Without
  * classification we can't tell an answer attempt from chatter, so nothing is
  * counted as a wrong attempt.
  */
@@ -149,10 +156,20 @@ async function handleMessageWhileCapped(
     return;
   }
 
-  // The notice is the only noisy branch here, so it alone keeps the shared
-  // guide rate limit. The two escape hatches above must never be dropped.
+  // The notices are the only noisy branches here, so they alone keep the
+  // shared guide rate limit. The two escape hatches above must never be dropped.
   const rateLimit = await checkGuideRateLimit(eventCode);
   if (!rateLimit.allowed) return;
+
+  // Identity replies are bank text, so the cap doesn't stop them: "are you
+  // AI?" still gets its honest answer on a capped event. The answer matcher
+  // above has already had its go, so no answer check is repeated here.
+  const identity = detectIdentityQuestion(text, language);
+  if (identity) {
+    await sendIdentityReply(event.id, eventCode, event.current_stop, identity, language);
+    log.info("identity question answered from bank", { eventCode, kind: identity, capped: true });
+    return;
+  }
 
   await sendCapReachedMessage(event.id, eventCode, event.current_stop, language);
 }
@@ -401,23 +418,38 @@ export async function processIncomingMessage(
       acceptedAnswers = enRoute.nextQuestionConfig.accepted_answers;
     }
 
-    // Step 9: Run Layer 2 intent classification
-    const classification = await classifyIntent(llm, currentClue, text, language);
+    // Step 9a: Identity questions ("are you a bot?", "is this AI?", "who are
+    // you?") get a canned bank reply instead of the LLM, so the rules for
+    // those replies hold every time (see identity.ts). Conservative: only
+    // short questions addressed to the guide that don't match the answer.
+    const identityKind: IdentityQuestionKind | null = detectIdentityQuestion(
+      text,
+      language,
+      acceptedAnswers,
+    );
 
-    // Classifier unavailable → degraded mode. The keyword matchers keep the
-    // two scripted routes out of a block open (answer, hint/skip); anything
-    // else gets a notice saying so, rather than a clarification line that
-    // would repeat forever while the provider is down.
+    // Step 9b: Run Layer 2 intent classification
     let intent: string;
-    if (classification !== null) {
-      intent = classification.type;
+    if (identityKind) {
+      intent = "identity";
     } else {
-      intent = classifyWithoutLLM(text, acceptedAnswers, language);
-      log.warn("classifier unavailable, using degraded intent", { eventCode, intent });
+      const classification = await classifyIntent(llm, currentClue, text, language);
+
+      // Classifier unavailable → degraded mode. The keyword matchers keep the
+      // two scripted routes out of a block open (answer, hint/skip); anything
+      // else gets a notice saying so, rather than a clarification line that
+      // would repeat forever while the provider is down.
+      if (classification !== null) {
+        intent = classification.type;
+      } else {
+        intent = classifyWithoutLLM(text, acceptedAnswers, language);
+        log.warn("classifier unavailable, using degraded intent", { eventCode, intent });
+      }
     }
 
-    // Step 10: Re-check cap before sending handler response
-    if (intent !== "off-topic-chat" && intent !== "contextual-comment") {
+    // Step 10: Re-check cap before sending handler response. The identity
+    // step made no LLM call, so nothing can have changed since step 6.
+    if (intent !== "off-topic-chat" && intent !== "contextual-comment" && intent !== "identity") {
       if (await isGuideResponseCapReached(eventId)) {
         await handleMessageWhileCapped(event, eventCode, text, language, enRoute);
         updateIdleTimestamp(eventCode, eventId, language);
@@ -534,6 +566,13 @@ export async function processIncomingMessage(
 
       case "clarification": {
         await handleClarification(silentCtx);
+        break;
+      }
+
+      case "identity": {
+        // Bank text: no LLM call, and it doesn't count towards the cap.
+        await sendIdentityReply(eventId, eventCode, event.current_stop, identityKind!, language);
+        log.info("identity question answered from bank", { eventCode, kind: identityKind });
         break;
       }
 

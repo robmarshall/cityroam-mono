@@ -3,6 +3,7 @@ import type { CallToolResult, ToolAnnotations } from "@modelcontextprotocol/sdk/
 import { SUPPORTED_LANGUAGES } from "@cityroam/shared/constants";
 import type { SupportedLanguage } from "@cityroam/shared/types";
 import { messageBankSchema } from "@cityroam/shared/validation";
+import { opensWithNegation } from "@cityroam/shared/utils";
 import { z } from "zod";
 import { errorResult, guard, okResult } from "../result.js";
 import type { ToolContext } from "./context.js";
@@ -22,7 +23,7 @@ const common = {
   language: languageEnum.describe("Language of the entry"),
   content: z
     .string()
-    .describe("The guide's line. {{ANSWER}} is substituted only in hint-exhausted entries."),
+    .describe("The guide's line. {{ANSWER}} is substituted only in hint-exhausted entries, {{GUIDE_NAME}} only in guide-identity-* entries. guide-identity-machine and guide-identity-who lines must never open with a negation (no false denial of being automated); guide-identity-ai lines say AI helps word the replies and people choose and check the route."),
 };
 
 export const messageBankToolInputShapes = {
@@ -65,9 +66,15 @@ function validate(input: unknown): { ok: true; body: z.output<typeof messageBank
   return { ok: false, message: `Error: invalid message bank entry — ${issues}. Nothing was sent.` };
 }
 
-function answerWarning(type: string, content: string): string | undefined {
+function contentWarning(type: string, content: string): string | undefined {
   if (type !== "hint-exhausted" && content.includes("{{ANSWER}}")) {
     return `Warning: {{ANSWER}} is only substituted in hint-exhausted entries; in a ${type} entry players would see it literally.`;
+  }
+  if (!type.startsWith("guide-identity-") && content.includes("{{GUIDE_NAME}}")) {
+    return `Warning: {{GUIDE_NAME}} is only substituted in guide-identity-* entries; in a ${type} entry players would see it literally.`;
+  }
+  if ((type === "guide-identity-machine" || type === "guide-identity-who") && opensWithNegation(content)) {
+    return `Warning: ${type} lines must never open with a negation; a leading "no" to "are you a bot?" reads as a false denial of being automated. Only guide-identity-person lines may ("Not a person, no").`;
   }
   return undefined;
 }
@@ -88,7 +95,7 @@ function write(
     const checked = validate(input);
     if (!checked.ok) return errorResult(env, checked.message);
     const body = checked.body;
-    const warning = answerWarning(body.type, body.content);
+    const warning = contentWarning(body.type, body.content);
     const prefix = warning ? `${warning}\n` : "";
 
     if (dryRun) {

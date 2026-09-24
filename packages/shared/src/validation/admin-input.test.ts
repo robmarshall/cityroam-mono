@@ -937,6 +937,10 @@ describe("messageBankSchema", () => {
       "over-length",
       "guide-degraded",
       "guide-busy",
+      "guide-identity-ai",
+      "guide-identity-machine",
+      "guide-identity-person",
+      "guide-identity-who",
     ] as const;
     for (const t of types) {
       expect(messageBankSchema.parse({ type: t, content: "msg" }).type).toBe(t);
