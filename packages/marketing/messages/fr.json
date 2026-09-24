@@ -32,7 +32,8 @@
       "changeLanguage": "Changer de langue"
     },
     "footer": {
-      "copyright": "© {year} City Roam. Tous droits réservés."
+      "copyright": "© {year} City Roam. Tous droits réservés.",
+      "company": "{name}. Société immatriculée en Angleterre et au pays de Galles, numéro {number}. Siège social : {address}."
     }
   },
   "cta": {
@@ -620,7 +621,7 @@
           ],
           "bullets": [
             "Nom commercial : City Roam",
-            "Dénomination sociale et adresse du siège : [à compléter avant le lancement]",
+            "Dénomination sociale et adresse du siège : PRL Digital Ltd, société immatriculée en Angleterre et au pays de Galles, numéro 13705806, siège social 61 Bridge Street, Kington, HR5 3DJ",
             "E-mail : hello@cityroam.co.uk"
           ]
         },
@@ -739,7 +740,7 @@
             "City Roam est responsable du traitement des données décrites ici. Pour toute question sur cette notice ou pour exercer un droit, écrivez-nous."
           ],
           "bullets": [
-            "Dénomination sociale et adresse du siège : [à compléter avant le lancement]",
+            "Dénomination sociale et adresse du siège : PRL Digital Ltd, société immatriculée en Angleterre et au pays de Galles, numéro 13705806, siège social 61 Bridge Street, Kington, HR5 3DJ",
             "E-mail : hello@cityroam.co.uk"
           ]
         },

@@ -32,7 +32,8 @@
       "changeLanguage": "Change language"
     },
     "footer": {
-      "copyright": "© {year} City Roam. All rights reserved."
+      "copyright": "© {year} City Roam. All rights reserved.",
+      "company": "{name}. Registered in England and Wales, company number {number}. Registered office: {address}."
     }
   },
   "cta": {
@@ -620,7 +621,7 @@
           ],
           "bullets": [
             "Trading name: City Roam",
-            "Registered business name and address: [complete before launch]",
+            "Registered business name and address: PRL Digital Ltd, registered in England and Wales, company number 13705806, registered office 61 Bridge Street, Kington, HR5 3DJ",
             "Email: hello@cityroam.co.uk"
           ]
         },
@@ -739,7 +740,7 @@
             "City Roam is the controller of the personal data described here. If you have a question about this notice, or want to exercise a right, email us."
           ],
           "bullets": [
-            "Registered business name and address: [complete before launch]",
+            "Registered business name and address: PRL Digital Ltd, registered in England and Wales, company number 13705806, registered office 61 Bridge Street, Kington, HR5 3DJ",
             "Email: hello@cityroam.co.uk"
           ]
         },

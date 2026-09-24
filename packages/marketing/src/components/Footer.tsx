@@ -1,7 +1,7 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { OwlMark } from "@/components/OwlMark";
-import { CONTACT_EMAIL } from "@/lib/site";
+import { COMPANY, COMPANY_ADDRESS_LINE, CONTACT_EMAIL } from "@/lib/site";
 
 const LINK =
   "text-stone-100 underline-offset-4 transition-colors hover:text-white hover:underline";
@@ -47,6 +47,14 @@ export function Footer() {
           <p>{t("footer.copyright", { year: String(new Date().getFullYear()) })}</p>
         </div>
       </div>
+      {/* Company details the 2015 Business Names regulations require on the site. */}
+      <p className="mx-auto mt-8 max-w-5xl border-t border-ink-700 pt-6 text-center text-xs text-stone-200 sm:text-left">
+        {t("footer.company", {
+          name: COMPANY.name,
+          number: COMPANY.number,
+          address: COMPANY_ADDRESS_LINE,
+        })}
+      </p>
     </footer>
   );
 }

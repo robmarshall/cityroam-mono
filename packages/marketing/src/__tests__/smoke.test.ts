@@ -5,6 +5,7 @@ import { describe, it, expect } from "vitest";
 import { createTranslator } from "next-intl";
 import { locales, defaultLocale } from "../i18n/config";
 import { factValues } from "../lib/facts";
+import { COMPANY, COMPANY_ADDRESS_LINE } from "../lib/site";
 
 const messagesDir = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -75,8 +76,14 @@ describe("marketing smoke", () => {
         if (value && typeof value === "object") {
           for (const [k, v] of Object.entries(value)) walk(v, `${key}.${k}`);
         } else if (typeof value === "string" && !value.includes("<")) {
-          // `year` is the footer copyright, filled in by the Footer itself.
-          const out = t(key, { ...values, year: 2026 });
+          // `year` and the company details are filled in by the Footer itself.
+          const out = t(key, {
+            ...values,
+            year: 2026,
+            name: COMPANY.name,
+            number: COMPANY.number,
+            address: COMPANY_ADDRESS_LINE,
+          });
           expect(out, `${locale} ${key}`).not.toMatch(/[{}]/);
         }
       };
@@ -84,6 +91,24 @@ describe("marketing smoke", () => {
         if (ns !== "legal") walk(value, ns);
       }
       expect(errors, locale).toEqual([]);
+    }
+  });
+
+  it("names the company in the terms and privacy notice of every locale", () => {
+    // The legal pages are rendered with t.raw, so the details are plain text
+    // there rather than interpolated from COMPANY; this keeps the two in step.
+    for (const locale of locales) {
+      const legal = load(locale).legal as Record<string, { sections: { bullets?: string[] }[] }>;
+      for (const page of ["terms", "privacy"]) {
+        const text = JSON.stringify(legal[page].sections);
+        expect(text, `${locale} ${page}`).toContain(COMPANY.name);
+        expect(text, `${locale} ${page}`).toContain(COMPANY.number);
+        expect(text, `${locale} ${page}`).toContain(COMPANY_ADDRESS_LINE);
+      }
+      // The pre-launch placeholders ("[complete before launch]" and its translations).
+      expect(JSON.stringify(legal), locale).not.toMatch(
+        /\[(complete before launch|completar antes del lanzamiento|à compléter avant le lancement|vor dem Start ergänzen|aanvullen vóór de lancering)\]/,
+      );
     }
   });
 

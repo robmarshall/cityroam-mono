@@ -32,7 +32,8 @@
       "changeLanguage": "Taal wijzigen"
     },
     "footer": {
-      "copyright": "© {year} City Roam. Alle rechten voorbehouden."
+      "copyright": "© {year} City Roam. Alle rechten voorbehouden.",
+      "company": "{name}. Ingeschreven in Engeland en Wales, bedrijfsnummer {number}. Statutair adres: {address}."
     }
   },
   "cta": {
@@ -620,7 +621,7 @@
           ],
           "bullets": [
             "Handelsnaam: City Roam",
-            "Statutaire naam en geregistreerd adres: [aanvullen vóór de lancering]",
+            "Statutaire naam en geregistreerd adres: PRL Digital Ltd, ingeschreven in Engeland en Wales, bedrijfsnummer 13705806, statutair adres 61 Bridge Street, Kington, HR5 3DJ",
             "E-mail: hello@cityroam.co.uk"
           ]
         },
@@ -739,7 +740,7 @@
             "City Roam is verwerkingsverantwoordelijke voor de hier beschreven persoonsgegevens. Heb je een vraag over deze verklaring of wil je een recht uitoefenen, mail ons dan."
           ],
           "bullets": [
-            "Statutaire naam en geregistreerd adres: [aanvullen vóór de lancering]",
+            "Statutaire naam en geregistreerd adres: PRL Digital Ltd, ingeschreven in Engeland en Wales, bedrijfsnummer 13705806, statutair adres 61 Bridge Street, Kington, HR5 3DJ",
             "E-mail: hello@cityroam.co.uk"
           ]
         },

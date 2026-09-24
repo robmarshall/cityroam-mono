@@ -8,7 +8,7 @@ import { PostHogProvider } from "@/components/PostHogProvider";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { locales } from "@/i18n/config";
-import { PRICE_GBP, SITE_NAME, siteUrl } from "@/lib/site";
+import { COMPANY, CONTACT_EMAIL, PRICE_GBP, SITE_NAME, siteUrl } from "@/lib/site";
 
 // Fraunces for display (variable weight plus the optical size axis; WONK is
 // left out so the default, non-wonky forms are used) and Inter for body text.
@@ -70,8 +70,29 @@ export default async function LocaleLayout({
   const messages = await getMessages();
   const t = await getTranslations({ locale, namespace: "metadata" });
 
-  const jsonLd = {
-    "@context": "https://schema.org",
+  const organizationId = `${siteUrl}/#organization`;
+  const organization = {
+    "@type": "Organization",
+    "@id": organizationId,
+    name: SITE_NAME,
+    legalName: COMPANY.name,
+    url: siteUrl,
+    email: CONTACT_EMAIL,
+    identifier: {
+      "@type": "PropertyValue",
+      propertyID: "Companies House company number",
+      value: COMPANY.number,
+    },
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: COMPANY.address.street,
+      addressLocality: COMPANY.address.locality,
+      postalCode: COMPANY.address.postalCode,
+      addressCountry: COMPANY.address.country,
+    },
+  };
+
+  const product = {
     "@type": "Product",
     name: t("home.title"),
     description: t("home.description"),
@@ -85,6 +106,7 @@ export default async function LocaleLayout({
       priceCurrency: "GBP",
       availability: "https://schema.org/InStock",
       url: `${siteUrl}/${locale}`,
+      seller: { "@id": organizationId },
     },
     areaServed: {
       "@type": "City",
@@ -94,6 +116,11 @@ export default async function LocaleLayout({
         name: "United Kingdom",
       },
     },
+  };
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [organization, product],
   };
 
   return (

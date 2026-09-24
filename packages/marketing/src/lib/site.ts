@@ -11,6 +11,32 @@ export const SITE_NAME = "City Roam";
 export const CONTACT_EMAIL = "hello@cityroam.co.uk";
 
 /**
+ * The legal entity behind City Roam. UK company law (the Company, LLP and
+ * Business Names (Miscellaneous Provisions) Regulations 2015) requires the
+ * name, place of registration, number and registered office on the website.
+ * The footer and the JSON-LD read them from here; the legal pages carry the
+ * same details as plain text in messages/*.json (a test keeps them in step).
+ */
+export const COMPANY = {
+  name: "PRL Digital Ltd",
+  registeredIn: "England and Wales",
+  number: "13705806",
+  address: {
+    street: "61 Bridge Street",
+    locality: "Kington",
+    postalCode: "HR5 3DJ",
+    country: "GB",
+  },
+} as const;
+
+/** "61 Bridge Street, Kington, HR5 3DJ": the registered office on one line. */
+export const COMPANY_ADDRESS_LINE = [
+  COMPANY.address.street,
+  COMPANY.address.locality,
+  COMPANY.address.postalCode,
+].join(", ");
+
+/**
  * Launch price in pounds, per group. The charge itself comes from the Stripe
  * price configured on the API (STRIPE_PRICE_ID); this copy feeds the JSON-LD
  * offer and analytics, and must be kept in step with it and with the
