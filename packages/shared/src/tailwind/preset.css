@@ -22,6 +22,26 @@
   --color-bubble-guide: #F2F2F7;
   --color-system-text: #8E8E93;
 
+  /*
+   * City Roam brand palette (Direction A, "Leeds, annotated"). See
+   * docs/plans/brand-direction-a.md for the contrast rules: brick text or
+   * buttons never go on ink-900 (2.93:1).
+   */
+  --color-stone-50: #F5F1EA;
+  --color-stone-100: #ECE6DB;
+  --color-stone-200: #DDD5C6;
+  --color-stone-300: #C9BEAB;
+  --color-ink-500: #4A5670;
+  --color-ink-700: #2A3654;
+  --color-ink-900: #14213D;
+  --color-brick-100: #F3DDD5;
+  --color-brick-500: #B5452B;
+  --color-brick-600: #9A3A24;
+  --color-muted: #5C5A55;
+
+  /* Display face. Consumers that load Fraunces override this variable. */
+  --font-display: Georgia, serif;
+
   /* Font family — system font stack */
   --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 

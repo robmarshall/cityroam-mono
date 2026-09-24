@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Fraunces, Inter } from "next/font/google";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
@@ -8,6 +9,23 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { locales } from "@/i18n/config";
 import { PRICE_GBP, SITE_NAME, siteUrl } from "@/lib/site";
+
+// Fraunces for display (variable weight plus the optical size axis; WONK is
+// left out so the default, non-wonky forms are used) and Inter for body text.
+// Both self-hosted by next/font; globals.css maps the variables to
+// font-display and font-sans.
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  axes: ["opsz"],
+  display: "swap",
+  variable: "--font-fraunces",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+});
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -79,7 +97,7 @@ export default async function LocaleLayout({
   };
 
   return (
-    <html lang={locale}>
+    <html lang={locale} className={`${fraunces.variable} ${inter.variable}`}>
       <head>
         <script
           type="application/ld+json"

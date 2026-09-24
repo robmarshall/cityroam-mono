@@ -43,11 +43,23 @@ export function formatGBP(amount: number): string {
   return `£${amount}`;
 }
 
-/** Brand palette, mirrored from packages/shared/src/tailwind/preset.css. */
+/**
+ * Brand palette, mirrored from packages/shared/src/tailwind/preset.css for
+ * code that can't use Tailwind classes (share images, icons, the contrast
+ * test). Never put brick text or buttons on ink900 (2.93:1); see
+ * docs/plans/brand-direction-a.md.
+ */
 export const BRAND = {
-  blue500: "#007AFF",
-  blue600: "#0062CC",
-  blue900: "#001833",
-  ink: "#111827",
+  stone50: "#F5F1EA",
+  stone100: "#ECE6DB",
+  stone200: "#DDD5C6",
+  stone300: "#C9BEAB",
+  ink500: "#4A5670",
+  ink700: "#2A3654",
+  ink900: "#14213D",
+  brick100: "#F3DDD5",
+  brick500: "#B5452B",
+  brick600: "#9A3A24",
+  muted: "#5C5A55",
   white: "#FFFFFF",
 } as const;
