@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db, schema } from "../db/index.js";
+import { guideNameFor } from "@cityroam/shared/constants";
 import { env } from "../env.js";
 
 /**
@@ -18,10 +19,15 @@ export function applyTemplateVars(
 
 /**
  * Build the standard template variables for a route.
- * Used by completion messages and message blocks.
+ * Used by completion messages, message blocks, hint text and en-route directions.
+ *
+ * `{{GUIDE_NAME}}` is the guide's name in the event's language. Pass the
+ * event's language when the caller has it; otherwise the route's own language
+ * is used (an event is always assigned a route in its language).
  */
 export async function buildRouteTemplateVars(
   routeId: string,
+  language?: string,
 ): Promise<Record<string, string>> {
   const route = await db.query.routes.findFirst({
     where: eq(schema.routes.id, routeId),
@@ -29,6 +35,7 @@ export async function buildRouteTemplateVars(
       route_family_id: true,
       total_stops: true,
       estimated_distance_km: true,
+      language: true,
     },
   });
 
@@ -45,5 +52,6 @@ export async function buildRouteTemplateVars(
     TOTAL_STOPS: String(route.total_stops),
     DISTANCE_KM: String(route.estimated_distance_km),
     REVIEW_LINK: env.REVIEW_LINK,
+    GUIDE_NAME: guideNameFor(language ?? route.language),
   };
 }

@@ -487,7 +487,7 @@ describe("handleHintRequest", () => {
     const ctx = makeCtx({ hintsGiven: 0 });
     await handleHintRequest(ctx);
 
-    expect(buildRouteTemplateVars).toHaveBeenCalledWith("route-1");
+    expect(buildRouteTemplateVars).toHaveBeenCalledWith("route-1", "en");
     expect(sendSequence).toHaveBeenCalledWith(
       "evt-1",
       "ABC123",

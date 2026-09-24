@@ -21,4 +21,5 @@ export const CITATIONS = {
   enRoute: "content-guide.md > En-Route Commentary > Rules",
   acceptedAnswers: "content-guide.md > Accepted Answers",
   mapBlocks: "content-guide.md > Map Blocks",
+  owl: "guide-personality.md > The Owl",
 } as const;

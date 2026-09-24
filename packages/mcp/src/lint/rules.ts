@@ -3,7 +3,7 @@ import { CITATIONS } from "./citations.js";
 import { makeIssue, type PathSegment } from "./issue.js";
 import { isObj, type NBlock, type NormalizedRoute } from "./normalize.js";
 import { ROUTE_TEMPLATE_VARIABLES, templateProblems } from "./templates.js";
-import { countSentences, successOpener } from "./text.js";
+import { countSentences, owlPun, successOpener } from "./text.js";
 import type { Issue, LintOptions } from "./types.js";
 
 /** Thresholds, with the doc text each comes from. */
@@ -241,6 +241,11 @@ export function warningRules(route: NormalizedRoute, options: LintOptions, emit:
             : `${chars} characters (max ~${THRESHOLDS.maxMessageChars})`;
           emit(makeIssue(route, "message-too-long", [...at, ...seg],
             `Wall of text: ${what}. Split it into several short blocks with delays`, CITATIONS.wallOfText));
+        }
+        const pun = owlPun(text);
+        if (pun) {
+          emit(makeIssue(route, "guide-pun", [...at, ...seg],
+            `"${pun}" is an owl pun or cliché; the Owl is dry and never plays on its own name`, CITATIONS.owl));
         }
       }
 

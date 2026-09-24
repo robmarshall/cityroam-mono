@@ -38,6 +38,26 @@ export const LANGUAGE_NAMES: Record<SupportedLanguage, string> = {
   nl: "Dutch",
 };
 
+// The guide
+/**
+ * The AI guide's name as players see it, per language. It is translated, not
+ * transliterated: first-person copy must agree with it (El Búho and Le Hibou
+ * are masculine, Die Eule is feminine, De Uil takes "de").
+ */
+export const GUIDE_NAMES = {
+  en: "The Owl",
+  es: "El Búho",
+  fr: "Le Hibou",
+  de: "Die Eule",
+  nl: "De Uil",
+} as const satisfies Record<SupportedLanguage, string>;
+export type GuideName = (typeof GUIDE_NAMES)[SupportedLanguage];
+
+/** The guide's name for a language code, falling back to English for unknown codes. */
+export function guideNameFor(language: string): GuideName {
+  return (GUIDE_NAMES as Record<string, GuideName>)[language] ?? GUIDE_NAMES.en;
+}
+
 // Admin API keys
 /**
  * Scopes an admin API key can carry. A session JWT implicitly holds all of

@@ -117,3 +117,25 @@ describe("constants", () => {
     });
   });
 });
+
+describe("GUIDE_NAMES", () => {
+  it("names the guide in every supported language", async () => {
+    const { GUIDE_NAMES, SUPPORTED_LANGUAGES } = await import("./index.js");
+    for (const lang of SUPPORTED_LANGUAGES) {
+      expect(GUIDE_NAMES[lang]).toBeTruthy();
+    }
+    expect(GUIDE_NAMES).toEqual({
+      en: "The Owl",
+      es: "El Búho",
+      fr: "Le Hibou",
+      de: "Die Eule",
+      nl: "De Uil",
+    });
+  });
+
+  it("guideNameFor falls back to English for an unknown language", async () => {
+    const { guideNameFor } = await import("./index.js");
+    expect(guideNameFor("fr")).toBe("Le Hibou");
+    expect(guideNameFor("xx")).toBe("The Owl");
+  });
+});

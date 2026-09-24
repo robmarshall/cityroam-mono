@@ -146,7 +146,7 @@ export async function handleHintRequest(
       where: eq(schema.events.id, ctx.eventId),
       columns: { route_id: true },
     });
-    const templateVars = event ? await buildRouteTemplateVars(event.route_id) : {};
+    const templateVars = event ? await buildRouteTemplateVars(event.route_id, ctx.language) : {};
 
     await sendSequence(
       ctx.eventId,
@@ -181,7 +181,7 @@ async function sendEnRouteHelp(
     where: eq(schema.events.id, ctx.eventId),
     columns: { route_id: true },
   });
-  const templateVars = event ? await buildRouteTemplateVars(event.route_id) : {};
+  const templateVars = event ? await buildRouteTemplateVars(event.route_id, ctx.language) : {};
 
   const bankLine = await getRandomMessageBank(EN_ROUTE_HELP_BANK_TYPE, ctx.language);
 

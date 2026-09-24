@@ -94,3 +94,40 @@ export function successOpener(content: string, language: string): string | null 
   }
   return null;
 }
+
+/**
+ * Owl puns and clichés the guide never uses (guide-personality.md > The Owl:
+ * no "hoot", no "twit-twoo", no "wise old owl"). Matched on normalized text
+ * (lowercase, accents stripped) at word boundaries. Every list is checked
+ * whatever the route language: a pun is a pun.
+ */
+export const OWL_PUNS: readonly RegExp[] = [
+  // English
+  /\bhoot(?:s|ing|ed|er)?\b/,
+  /\btwit[\s-]*twoo+\b/,
+  /\btu[\s-]*whit\b/,
+  /\bto[\s-]*whoo+\b/,
+  /\bwhoo+\b/,
+  /\bwise old owl\b/,
+  /\bowl[\s-]?some\b/,
+  /\bowl[\s-]right\b/,
+  // Spanish, French, German, Dutch: owl calls and the "wise owl" cliché
+  /\bbuho sabio\b/,
+  /\bsabio buho\b/,
+  /\bhou[\s-]hou\b/,
+  /\bhibou sage\b/,
+  /\bschuhu\b/,
+  /\bweise eule\b/,
+  /\boehoe\b/,
+  /\bwijze uil\b/,
+];
+
+/** Returns the first owl pun or cliché found in the text, or null. */
+export function owlPun(content: string): string | null {
+  const text = normalizeForMatch(content);
+  for (const re of OWL_PUNS) {
+    const m = re.exec(text);
+    if (m) return m[0];
+  }
+  return null;
+}

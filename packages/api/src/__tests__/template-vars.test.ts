@@ -85,11 +85,12 @@ describe("buildRouteTemplateVars", () => {
     vi.clearAllMocks();
   });
 
-  it("returns vars with CITY_NAME, TOTAL_STOPS, DISTANCE_KM, REVIEW_LINK when route and family exist", async () => {
+  it("returns vars with CITY_NAME, TOTAL_STOPS, DISTANCE_KM, REVIEW_LINK, GUIDE_NAME when route and family exist", async () => {
     mockedDb.query.routes.findFirst.mockResolvedValueOnce({
       route_family_id: "family-1",
       total_stops: 5,
       estimated_distance_km: "3.2",
+      language: "en",
     });
     mockedDb.query.routeFamilies.findFirst.mockResolvedValueOnce({
       city: "Amsterdam",
@@ -102,6 +103,7 @@ describe("buildRouteTemplateVars", () => {
       TOTAL_STOPS: "5",
       DISTANCE_KM: "3.2",
       REVIEW_LINK: "https://review.test.com",
+      GUIDE_NAME: "The Owl",
     });
   });
 
@@ -120,6 +122,7 @@ describe("buildRouteTemplateVars", () => {
       route_family_id: "missing-family",
       total_stops: 3,
       estimated_distance_km: "1.5",
+      language: "en",
     });
     mockedDb.query.routeFamilies.findFirst.mockResolvedValueOnce(undefined);
 
@@ -130,6 +133,45 @@ describe("buildRouteTemplateVars", () => {
       TOTAL_STOPS: "3",
       DISTANCE_KM: "1.5",
       REVIEW_LINK: "https://review.test.com",
+      GUIDE_NAME: "The Owl",
     });
+  });
+
+  it.each([
+    ["en", "The Owl"],
+    ["es", "El Búho"],
+    ["fr", "Le Hibou"],
+    ["de", "Die Eule"],
+    ["nl", "De Uil"],
+  ])("resolves GUIDE_NAME for an event in %s", async (language, name) => {
+    mockedDb.query.routes.findFirst.mockResolvedValueOnce({
+      route_family_id: "family-1",
+      total_stops: 5,
+      estimated_distance_km: "3.2",
+      language: "en",
+    });
+    mockedDb.query.routeFamilies.findFirst.mockResolvedValueOnce({ city: "Leeds" });
+
+    const vars = await buildRouteTemplateVars("route-1", language);
+
+    expect(vars.GUIDE_NAME).toBe(name);
+  });
+
+  it("falls back to the route's language when no event language is given", async () => {
+    mockedDb.query.routes.findFirst.mockResolvedValueOnce({
+      route_family_id: "family-1",
+      total_stops: 5,
+      estimated_distance_km: "3.2",
+      language: "de",
+    });
+    mockedDb.query.routeFamilies.findFirst.mockResolvedValueOnce({ city: "Leeds" });
+
+    const vars = await buildRouteTemplateVars("route-1");
+
+    expect(vars.GUIDE_NAME).toBe("Die Eule");
+  });
+
+  it("substitutes GUIDE_NAME into an intro block", () => {
+    expect(applyTemplateVars("I'm {{GUIDE_NAME}}.", { GUIDE_NAME: "The Owl" })).toBe("I'm The Owl.");
   });
 });
