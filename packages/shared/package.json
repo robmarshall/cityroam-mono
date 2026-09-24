@@ -10,6 +10,7 @@
     "./constants": "./src/constants/index.ts",
     "./utils": "./src/utils/index.ts",
     "./answer-match": "./src/utils/answer-match.ts",
+    "./identity-question": "./src/utils/identity-question.ts",
     "./tailwind": "./src/tailwind/preset.css",
     "./tailwind/values": "./src/tailwind/preset.ts",
     "./analytics": "./src/analytics/index.ts",

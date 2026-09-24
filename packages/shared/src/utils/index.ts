@@ -233,3 +233,6 @@ export function buildVoucherRedeemUrl(
 // Also exported on its own as `@cityroam/shared/answer-match`, which has no
 // runtime imports, for bundles that only need the matcher.
 export * from "./answer-match.js";
+// "Are you a bot?" detection (the API pipeline and the marketing demo). Also
+// exported on its own as `@cityroam/shared/identity-question`.
+export * from "./identity-question.js";
