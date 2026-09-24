@@ -7,7 +7,6 @@ import { ComparisonTable } from "@/components/ComparisonTable";
 import { CTAButton } from "@/components/CTAButton";
 import { FAQ } from "@/components/FAQ";
 import { GiftLine } from "@/components/GiftLine";
-import ChatSnippet from "@/components/IphoneDemo/ChatSnippet";
 import IphoneDemo from "@/components/IphoneDemo/IphoneDemo";
 import { KeyFacts, PerHead } from "@/components/KeyFacts";
 import { LineMap } from "@/components/LineMap";
@@ -16,6 +15,7 @@ import { RouteAtAGlance } from "@/components/RouteAtAGlance";
 import { CheckList, CtaBand, Section, SectionHeading, Steps } from "@/components/Section";
 import { StickyBookBar } from "@/components/StickyBookBar";
 import { TrustStrip } from "@/components/TrustStrip";
+import { TryTheOwl } from "@/components/TryTheOwl";
 import { Link } from "@/i18n/navigation";
 import { factValues } from "@/lib/facts";
 import { buildMetadata } from "@/lib/metadata";
@@ -33,9 +33,10 @@ export async function generateMetadata({
 }
 
 /**
- * The home page, in the order of docs/plans/brand-direction-a.md (Phase 3):
- * hero, how it works, the route, what you get and the price, the comparison,
- * who it's for, why it's safe to book, questions, and a closing band.
+ * The home page, in the order of docs/plans/brand-direction-a.md (Phases 3
+ * and 5): hero, how it works, "Try the Owl", the route, what you get and the
+ * price, the comparison, who it's for, why it's safe to book, questions, and
+ * a closing band.
  *
  * The mobile booking bar appears once the hero button has scrolled away and
  * hides while the price section or the closing band is on screen (both are
@@ -50,6 +51,7 @@ export default async function Home({
   setRequestLocale(locale);
 
   const t = await getTranslations("home");
+  const td = await getTranslations("demo");
   const tc = await getTranslations("cta");
   const tf = await getTranslations("facts");
   const facts = factValues(tf);
@@ -92,12 +94,26 @@ export default async function Home({
               >
                 {t("hero.subtitle")}
               </p>
-              <div className="mt-10">
+              {/* Book now, with the demo as the quieter second option. */}
+              <div
+                className={`mt-10 flex flex-wrap items-center gap-x-8 gap-y-4 ${
+                  onPhoto ? "justify-start" : "justify-center lg:justify-start"
+                }`}
+              >
                 <CTAButton
                   location="hero"
                   align={onPhoto ? "start" : "start-lg"}
                   variant={onPhoto ? "inverse" : "primary"}
                 />
+                <a
+                  href="#try-the-owl"
+                  className={`py-2 text-lg font-semibold underline decoration-2 underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring) ${
+                    onPhoto ? "text-stone-50 hover:text-white" : "text-ink-900 hover:text-brick-600"
+                  }`}
+                >
+                  {td("heroLink")}
+                  <span aria-hidden="true"> ›</span>
+                </a>
               </div>
               <KeyFacts align={onPhoto ? "start" : "start-lg"} tone={onPhoto ? "dark" : "light"} />
             </>
@@ -118,17 +134,26 @@ export default async function Home({
               }))}
             />
           </div>
-          {/* The 700px mock is too tall for phones; they get a few lines of
-              the same conversation. */}
+          {/* The 700px mock is too tall for phones. They go straight on to
+              "Try the Owl" below, which is the same chat and playable. */}
           <div className="relative mx-auto hidden shrink-0 rotate-2 sm:block">
             <IphoneDemo variant="hero" />
           </div>
-          <ChatSnippet className="sm:hidden" />
         </div>
       </Section>
 
-      {/* The route at a glance: facts on the left, the sketch map on the right. */}
-      <Section>
+      {/* Try the Owl: one scripted sample clue from off the route. The hero's
+          second link jumps here. */}
+      <Section id="try-the-owl" className="scroll-mt-4">
+        <div className="grid items-center gap-10 md:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] md:gap-16">
+          <SectionHeading align="left" title={td("title")} subtitle={td("subtitle")} />
+          <TryTheOwl location="home" />
+        </div>
+      </Section>
+
+      {/* The route at a glance: facts on the left, the sketch map on the right.
+          Stone like the demo above it, so a rule separates the two. */}
+      <Section className="border-t border-stone-200">
         <div className="grid items-center gap-12 md:grid-cols-2 md:gap-16">
           <div>
             <SectionHeading align="left" title={t("route.title")} subtitle={t("route.subtitle")} />

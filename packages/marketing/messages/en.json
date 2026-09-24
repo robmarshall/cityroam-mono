@@ -126,11 +126,79 @@
       "5": "Ready when you are"
     }
   },
+  "demo": {
+    "title": "Try the Owl",
+    "subtitle": "A sample clue from off the route, so it gives nothing away. Have a guess, ask for a hint, or ask the Owl a question.",
+    "caption": "A two-minute taste. On the day, the Owl replies to what your group types.",
+    "heroLink": "Try the Owl",
+    "chatLabel": "Sample chat with the Owl",
+    "logLabel": "Messages",
+    "inputLabel": "Your message to the Owl",
+    "placeholder": "Type a guess or a question",
+    "send": "Send",
+    "reset": "Start again",
+    "chipsLabel": "Suggested replies",
+    "you": "You",
+    "cta": "Book the real route",
+    "chips": {
+      "wrongGuess": "The Grim Reaper?",
+      "hint": "Hint please",
+      "distance": "How far is it?"
+    },
+    "owl": {
+      "intro": "Right, I'm the Owl. Here's a sample clue from off the route, so it spoils nothing.",
+      "clue": "On Lower Briggate, an old man with a scythe stands on top of a clock, and he's older than anyone in your group. Who is he?",
+      "wrongGuess": "Wrong department. Same scythe, but he's more interested in the hour than in you.",
+      "close": "Warmer. That's half of his name.",
+      "wrong": {
+        "0": "Not quite. Have another look at the clue.",
+        "1": "Nope. The scythe is doing a lot of the work in that clue.",
+        "2": "Still no. You might want to ask for a hint."
+      },
+      "hints": {
+        "0": "He turns up every New Year's Eve, usually next to a baby.",
+        "1": "He carries an hourglass as well as the scythe. His first name is a formal word for dad."
+      },
+      "reveal": "That was my last hint, so here it is: Father Time. Type it in and I'll pretend you got there on your own.",
+      "success": "That's the one.",
+      "funFact": "The shop below was a jeweller's, and a ball on its roof used to drop at one o'clock, set by a signal from Greenwich. Briggate set its watches by it.",
+      "outro": "That's the taste. The real route has more of this.",
+      "fallback": "I only know this stretch of the route. Try the clue.",
+      "done": "That was the only clue on this page. The rest are out on the route.",
+      "identity": {
+        "ai": {
+          "0": "Partly. AI helps me word my replies, but the route, the clues and the facts are written by people.",
+          "1": "In part. AI helps with the wording, but the walk and the clues are ours, written by hand.",
+          "2": "On this page, no: every line here was written by hand. In the game, AI helps word my replies, and people write the route and the clues."
+        },
+        "machine": {
+          "0": "I'm the guide in your phone. That's all you need to know for this clue.",
+          "1": "I'm the Owl, the guide in your phone. The buildings are the real bit.",
+          "2": "I'm the guide in your phone, and on the day I reply to what your group types. The clue's still waiting."
+        },
+        "person": {
+          "0": "No. I'm the guide in your phone, and the Leeds bit is real.",
+          "1": "Not a person, no. Just the guide in your phone, keeping you on route."
+        },
+        "who": {
+          "0": "I'm the Owl. I live in your phone and know this stretch of Leeds.",
+          "1": "I'm the Owl, the guide in your phone. On the day, I reply to what your group types."
+        }
+      },
+      "qa": {
+        "distance": "In a real game I tell you how far there is to go. This one's a sample, so call it a short walk down Briggate.",
+        "route": "No, this one's from off the route, so it gives nothing away. The real clues are all in the city centre.",
+        "coffee": "Stop whenever you like, the clue will wait. I won't recommend a café, though: I only know the route.",
+        "price": "{price} for the whole group, up to {max} people. You pay once, and everyone plays on their own phone.",
+        "building": "A Victorian shopfront with a very large clock. I'll say more once you've guessed.",
+        "greeting": "Hello. The clue's just above, whenever you're ready."
+      }
+    }
+  },
   "home": {
     "hero": {
       "title": "Explore Leeds with a guide in your group chat",
-      "subtitle": "Part walking tour, part treasure hunt. The Owl sends clues that make you look up, and a bit of history about what you find. Everyone plays on their own phone, and there's no app to download.",
-      "demoCaption": "A few messages from a game"
+      "subtitle": "Part walking tour, part treasure hunt. The Owl sends clues that make you look up, and a bit of history about what you find. Everyone plays on their own phone, and there's no app to download."
     },
     "notes": {
       "roof": "The Victoria Quarter's roof is stained glass, fitted in 1990. Look up before you look at the shops.",

@@ -126,11 +126,79 @@
       "5": "Quand vous voulez"
     }
   },
+  "demo": {
+    "title": "Essayez le Hibou",
+    "subtitle": "Une énigme d'exemple, prise hors du parcours : elle ne dévoile rien. Tentez une réponse, demandez un indice ou posez une question au Hibou.",
+    "caption": "Un avant-goût de deux minutes. Le jour J, le Hibou répond à ce que votre groupe écrit.",
+    "heroLink": "Essayez le Hibou",
+    "chatLabel": "Discussion d'exemple avec le Hibou",
+    "logLabel": "Messages",
+    "inputLabel": "Votre message au Hibou",
+    "placeholder": "Une réponse ou une question",
+    "send": "Envoyer",
+    "reset": "Recommencer",
+    "chipsLabel": "Réponses suggérées",
+    "you": "Vous",
+    "cta": "Réserver le vrai parcours",
+    "chips": {
+      "wrongGuess": "La Faucheuse ?",
+      "hint": "Un indice, svp",
+      "distance": "C'est loin ?"
+    },
+    "owl": {
+      "intro": "Bon, je suis le Hibou. Voici une énigme d'exemple, prise hors du parcours : elle ne gâche rien.",
+      "clue": "Sur Lower Briggate, un vieil homme armé d'une faux se tient au-dessus d'une horloge, et il est plus âgé que n'importe qui dans votre groupe. Qui est-il ?",
+      "wrongGuess": "Mauvais service. Même faux, mais c'est l'heure qui l'intéresse, pas vous.",
+      "close": "Vous chauffez. C'est la moitié de son nom.",
+      "wrong": {
+        "0": "Pas tout à fait. Relisez l'énigme.",
+        "1": "Non. La faux vous en dit déjà beaucoup.",
+        "2": "Toujours pas. Un indice ne serait peut-être pas de trop."
+      },
+      "hints": {
+        "0": "Il se montre chaque soir du Nouvel An, souvent à côté d'un bébé.",
+        "1": "Il porte un sablier en plus de sa faux. Son prénom est une façon solennelle de dire papa."
+      },
+      "reveal": "C'était mon dernier indice, alors le voici : le Père Temps. Tapez-le, et je ferai comme si vous l'aviez trouvé tout seuls.",
+      "success": "C'est bien lui.",
+      "funFact": "La boutique du dessous était une bijouterie, et une boule sur son toit tombait à une heure pile, déclenchée par un signal venu de Greenwich. Tout Briggate réglait sa montre dessus.",
+      "outro": "Voilà pour l'avant-goût. Le vrai parcours en a bien plus.",
+      "fallback": "Je ne connais que ce tronçon du parcours. Essayez l'énigme.",
+      "done": "C'était la seule énigme de cette page. Les autres vous attendent sur le parcours.",
+      "identity": {
+        "ai": {
+          "0": "En partie. L'IA m'aide à formuler mes réponses, mais le parcours, les énigmes et les anecdotes sont écrits par des humains.",
+          "1": "En partie. L'IA aide pour la formulation, mais la balade et les énigmes sont à nous, écrites à la main.",
+          "2": "Sur cette page, non : chaque ligne a été écrite à la main. Dans le jeu, l'IA m'aide à formuler mes réponses, et des humains écrivent le parcours et les énigmes."
+        },
+        "machine": {
+          "0": "Je suis le guide dans votre téléphone. Pour cette énigme, vous n'avez pas besoin d'en savoir plus.",
+          "1": "Je suis le Hibou, le guide dans votre téléphone. Le vrai, ce sont les bâtiments.",
+          "2": "Je suis le guide dans votre téléphone, et le jour J je réponds à ce que votre groupe écrit. L'énigme vous attend toujours."
+        },
+        "person": {
+          "0": "Non. Je suis le guide dans votre téléphone, et la partie Leeds est bien réelle.",
+          "1": "Pas une personne, non. Juste le guide dans votre téléphone, pour vous garder sur le parcours."
+        },
+        "who": {
+          "0": "Je suis le Hibou. J'habite dans votre téléphone et je connais ce tronçon de Leeds.",
+          "1": "Je suis le Hibou, le guide dans votre téléphone. Le jour J, je réponds à ce que votre groupe écrit."
+        }
+      },
+      "qa": {
+        "distance": "Dans une vraie partie, je vous dis combien il reste à parcourir. Ici, c'est un exemple, alors disons une courte marche le long de Briggate.",
+        "route": "Non, celle-ci vient d'en dehors du parcours, elle ne dévoile donc rien. Les vraies énigmes sont toutes dans le centre-ville.",
+        "coffee": "Arrêtez-vous quand vous voulez, l'énigme attendra. Je ne vous conseillerai pas de café, en revanche : je ne connais que le parcours.",
+        "price": "{price} pour tout le groupe, jusqu'à {max} personnes. On paie une fois, et chacun joue sur son propre téléphone.",
+        "building": "Une devanture victorienne avec une très grande horloge. J'en dirai plus quand vous aurez trouvé.",
+        "greeting": "Bonjour. L'énigme est juste au-dessus, quand vous voulez."
+      }
+    }
+  },
   "home": {
     "hero": {
       "title": "Explorez Leeds avec un guide dans votre discussion de groupe",
-      "subtitle": "Entre visite guidée et jeu de piste. Le Hibou envoie des énigmes qui vous font lever les yeux, et un peu d'histoire sur ce que vous trouvez. Chacun joue sur son téléphone, sans application à télécharger.",
-      "demoCaption": "Quelques messages d'une partie"
+      "subtitle": "Entre visite guidée et jeu de piste. Le Hibou envoie des énigmes qui vous font lever les yeux, et un peu d'histoire sur ce que vous trouvez. Chacun joue sur son téléphone, sans application à télécharger."
     },
     "notes": {
       "roof": "Le toit du Victoria Quarter est un vitrail, posé en 1990. Levez les yeux avant de regarder les vitrines.",

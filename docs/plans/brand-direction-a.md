@@ -157,6 +157,34 @@ actually uses.
      step-free, dogs, toilets, cover still hidden).
 5. **Scripted "Try the Owl" demo** (canned, honest about what the Owl can
    answer).
+   - **Status (2026-09-24): built.** `TryTheOwl` (client-side, nothing sent
+     to a server) on home, in its own "Try the Owl" band after How it works
+     (`#try-the-owl`, linked from "Try the Owl ›" beside the hero's Book
+     now), and on `/treasure-hunt` in "What a clue looks like" in place of
+     the static phone. On phones the home page drops the static chat snippet
+     (the playable demo follows straight after); from `sm` the phone mock
+     stays beside How it works. `ChatSnippet` is gone.
+   - One sample clue from off the route: Father Time on the Time Ball
+     Buildings clock, Lower Briggate (not a stop). Answers use the game's
+     own matcher, moved to `packages/shared/src/utils/answer-match.ts`
+     (the API re-exports it, behaviour unchanged). Two hints then the
+     reveal, a Q&A bank (distance, "is this the real route", coffee, price,
+     the building, hello), a fallback ("I only know this stretch of the
+     route. Try the clue."), then the fun fact, "That's the taste. The real
+     route has more of this." and a booking button (`cta_clicked`, location
+     `demo`). Copy under `demo.*` in all five locales; matching lists in
+     `src/lib/demo/script.ts`; the state machine in `src/lib/demo/engine.ts`.
+   - "Are you a bot?": `classifyIdentityQuestion` in shared (ai / machine /
+     person / who), run before answer matching, with rotating replies per
+     kind. Machine and who replies never open with a no; only "are you a
+     person?" may. The three `demo.owl.identity.ai.*` replies are the only
+     marketing strings allowed to say AI (explicit key list in
+     `AI_EXEMPT_MESSAGE_KEYS`, enforced by the no-AI tests).
+   - Analytics: `demo_started`, `demo_answered` (correct/incorrect),
+     `demo_hint`, `demo_completed`, each with the page as `location`.
+   - Waiting on Rob: confirm the Time Ball facts (Father Time on the clock,
+     the one o'clock ball from Greenwich) and the "written by people / by
+     hand" wording in the AI replies.
 6. **Route facts in the database**: admin form (explicit Save, never
    autosave) and a public endpoint feeding the marketing facts.
 
