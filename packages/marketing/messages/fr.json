@@ -1,24 +1,32 @@
 {
   "metadata": {
     "og": {
-      "tagline": "Chasse au trésor à Leeds, guidée par le Hibou"
+      "tagline": "Explorez Leeds, guidés par le Hibou"
     },
     "home": {
-      "title": "City Roam — Chasse au trésor à Leeds, guidée par le Hibou",
-      "description": "Une chasse au trésor en autonomie dans le centre de Leeds, jouée dans une discussion de groupe. Un seul prix jusqu'à 10 personnes, sans application.",
-      "ogImageAlt": "City Roam — Chasse au trésor à Leeds, guidée par le Hibou"
+      "title": "Visite de Leeds à pied en autonomie, avec énigmes — City Roam",
+      "description": "Explorez le centre de Leeds à pied, entre visite guidée et jeu de piste, dans une discussion de groupe sur vos téléphones. Un seul prix jusqu'à 10, sans appli.",
+      "ogImageAlt": "City Roam — Explorez Leeds, guidés par le Hibou"
     },
     "families": {
       "title": "Chasse au trésor en famille à Leeds — City Roam",
-      "description": "Une chasse au trésor dans le centre de Leeds pour les familles avec enfants dès 8 ans. À votre rythme, avec des pauses, et à finir un autre jour si besoin."
+      "description": "Une balade à énigmes dans le centre de Leeds, pour les familles avec enfants dès 8 ans. À votre rythme, avec des pauses, et à finir un autre jour si besoin."
     },
     "henParties": {
-      "title": "Chasse au trésor pour EVJF à Leeds — City Roam",
-      "description": "Une activité d'EVJF en journée à Leeds : des énigmes en groupe dans le centre-ville, avec des pauses pour boire un verre. Un seul prix jusqu'à 10 personnes."
+      "title": "Activités EVJF à Leeds : une balade à énigmes — City Roam",
+      "description": "Une activité d'EVJF en journée à Leeds : des énigmes dans le centre-ville, jouées dans une discussion de groupe sur vos téléphones. Un seul prix jusqu'à 10 personnes, sans date à réserver."
     },
     "teamBuilding": {
       "title": "Chasse au trésor team building à Leeds — City Roam",
       "description": "Sortez votre équipe du bureau quelques heures. Une chasse au trésor en autonomie dans le centre de Leeds, jusqu'à 10 personnes, sans animateur."
+    },
+    "stagParties": {
+      "title": "Activités EVG à Leeds : une balade à énigmes — City Roam",
+      "description": "Une activité d'enterrement de vie de garçon en journée à Leeds : des énigmes dans le centre-ville, jouées dans une discussion de groupe. Un seul prix jusqu'à 10 personnes, sans date à réserver."
+    },
+    "treasureHunt": {
+      "title": "Chasse au trésor dans le centre de Leeds — City Roam",
+      "description": "Une chasse au trésor dans le centre de Leeds où les indices sont sur les bâtiments, jouée dans une discussion de groupe. Un seul prix jusqu'à 10, sans appli."
     }
   },
   "common": {
@@ -27,6 +35,7 @@
       "families": "Familles",
       "henParties": "EVJF",
       "teamBuilding": "Team building",
+      "stagParties": "EVG",
       "bookNow": "Réserver",
       "toggleMenu": "Menu",
       "changeLanguage": "Changer de langue"
@@ -34,7 +43,12 @@
     "footer": {
       "copyright": "© {year} City Roam. Tous droits réservés.",
       "company": "{name}. Société immatriculée en Angleterre et au pays de Galles, numéro {number}. Siège social : {address}.",
-      "audienceNav": "Pour qui"
+      "audienceNav": "Pour qui",
+      "treasureHunt": "Chasse au trésor",
+      "gift": "Cartes cadeaux"
+    },
+    "legalNav": {
+      "contents": "Sur cette page"
     }
   },
   "cta": {
@@ -114,8 +128,8 @@
   },
   "home": {
     "hero": {
-      "title": "Une chasse au trésor à travers Leeds, dans votre groupe de discussion",
-      "subtitle": "Résolvez des énigmes dans le centre-ville avec le Hibou, un guide qui vous répond quand vous lui posez une question. Tout le monde joue dans la même discussion, chacun sur son téléphone, sans application à télécharger.",
+      "title": "Explorez Leeds avec un guide dans votre discussion de groupe",
+      "subtitle": "Entre visite guidée et jeu de piste. Le Hibou envoie des énigmes qui vous font lever les yeux, et un peu d'histoire sur ce que vous trouvez. Chacun joue sur son téléphone, sans application à télécharger.",
       "demoCaption": "Quelques messages d'une partie"
     },
     "notes": {
@@ -194,7 +208,6 @@
       "badge": "Tarif de lancement",
       "note": "Votre lien reste valable 90 jours. Remboursement intégral si le jeu ne vous plaît pas."
     },
-    "gift": "<b>C'est pour offrir ?</b> Réservez et transférez l'e-mail. Le lien reste valable {days} jours après la réservation, et ils commencent quand ils veulent.",
     "faqTitle": "Questions fréquentes",
     "compare": {
       "title": "Face aux alternatives",
@@ -260,20 +273,28 @@
         }
       }
     },
+    "treasureBand": {
+      "text": "Vous cherchez une chasse au trésor à Leeds ? C'en est une, avec simplement plus de nez en l'air.",
+      "link": "Comment ça marche, côté chasse au trésor"
+    },
     "audiences": {
       "title": "Pour qui",
-      "subtitle": "Un seul jeu, trois façons d'y jouer.",
+      "subtitle": "Un seul jeu, quatre façons d'y jouer.",
       "families": {
         "title": "Familles",
         "text": "Des énigmes pour les enfants, des histoires pour les adultes, et un rythme dicté par les plus petites jambes."
       },
       "henParties": {
         "title": "EVJF",
-        "text": "Le moment chic du week-end, en journée, avec de quoi s'arrêter boire un verre ou deux."
+        "text": "La partie de jour du week-end, chacun sur son téléphone et sans date à réserver."
       },
       "teamBuilding": {
         "title": "Team building",
         "text": "Quelques heures hors du bureau, sans rien à organiser à part le groupe de discussion."
+      },
+      "stagParties": {
+        "title": "EVG",
+        "text": "La partie en journée du week-end, et toute l'organisation du témoin tient dans un lien."
       },
       "more": "En savoir plus"
     },
@@ -296,75 +317,30 @@
   },
   "families": {
     "hero": {
-      "title": "Des sorties en famille, en toute simplicité",
-      "subtitle": "Transformez une balade dans Leeds en chasse au trésor. Des énigmes pour les enfants, des histoires pour les adultes, et plus personne pour demander si c'est encore loin."
+      "title": "Une journée en famille dans Leeds, avec des énigmes",
+      "subtitle": "Des énigmes pour les enfants, des histoires pour les adultes, et un rythme dicté par les plus petites jambes. Tout le monde joue dans la même discussion de groupe, sans application à télécharger."
     },
-    "problem": {
-      "text1": "<b>Marre d'entendre « On arrive bientôt ? »</b> City Roam transforme une balade en ville en un jeu auquel toute la famille joue ensemble.",
-      "text2": "Au lieu de traîner les enfants d'un monument à l'autre, laissez-les filer devant pour résoudre l'indice suivant. Et tout le monde glane quelques histoires sur la ville en chemin.",
-      "text3": "Ça marche pour tous les âges, des curieux de 8 ans aux ados et aux grands-parents. Chacun peut apporter sa pierre."
+    "notes": {
+      "hero": "Demandez-moi si c'est encore loin aussi souvent que vous voulez. Je réponds à chaque fois, et sans soupirer.",
+      "proof": "Il n'y a pas de chrono dans ce jeu. S'arrêter pour déjeuner ne vous coûte rien."
     },
-    "whyLove": {
-      "title": "Pourquoi les familles aiment",
-      "engaged": {
-        "title": "Tout le monde reste dans le jeu",
-        "description": "Il y a toujours un prochain indice à résoudre, ce qui fait des merveilles sur les jambes fatiguées."
+    "proof": {
+      "0": {
+        "title": "Les enfants peuvent répondre aussi",
+        "text": "Tout le monde dans la discussion peut taper une réponse. Passez-leur le téléphone, ou laissez les plus grands rejoindre la partie sur le leur et vous devancer."
       },
-      "educational": {
-        "title": "On apprend, l'air de rien",
-        "description": "Histoire, architecture et anecdotes locales, sans que ça ressemble à une sortie scolaire."
+      "1": {
+        "title": "Votre rythme, pas celui d'une visite",
+        "text": "Pas de guide à suivre, pas de limite de temps. Arrêtez-vous pour regarder de plus près, revenez sur vos pas, ou flânez. Le jeu vous attend."
       },
-      "allAges": {
-        "title": "Pour tous les âges",
-        "description": "Les plus jeunes repèrent les détails, les ados tapent les réponses, et les adultes se disputent sur l'histoire."
+      "2": {
+        "title": "Une pause pour déjeuner",
+        "text": "Faites une pause quand vous voulez et reprenez après un sandwich, ou un autre jour. Votre progression est enregistrée et le lien reste valable {days} jours."
       },
-      "bonding": {
-        "title": "Une seule équipe",
-        "description": "Tout le monde cherche le même indice en même temps. Un effort collectif, pas une visite."
-      }
+      "title": "Pourquoi ça marche avec des enfants"
     },
-    "perfectFor": {
-      "title": "Idéal pour",
-      "subtitle": "Que vous habitiez Leeds ou que vous y passiez le week-end.",
-      "grandparents": {
-        "title": "La visite des grands-parents",
-        "description": "Une balade tranquille pour eux, un jeu pour les enfants, et des histoires pour tout le monde."
-      },
-      "weekend": {
-        "title": "Le week-end",
-        "description": "Faites d'un samedi ordinaire une vraie sortie, et découvrez des coins de votre propre ville que vous ne soupçonniez pas."
-      },
-      "holidays": {
-        "title": "Les vacances scolaires",
-        "description": "Une activité qui ne se passe pas devant un écran à la maison. Bon, il y a bien un écran, mais vous êtes dehors."
-      }
-    },
-    "howItWorks": {
-      "title": "Comment ça se passe avec des enfants",
-      "step1Title": "Commencez quand vous êtes prêts",
-      "step1Desc": "Pas de rendez-vous à heure fixe. Commencez une fois que tout le monde a mangé et est passé aux toilettes.",
-      "step2Title": "Chacun son tour",
-      "step2Desc": "Confiez chaque indice à une personne différente, pour que chacun ait l'occasion d'avoir raison.",
-      "step3Title": "Prenez votre temps",
-      "step3Desc": "Arrêtez-vous pour une glace ou pour vous dégourdir les jambes. Le jeu vous attend."
-    },
-    "features": {
-      "title": "Côté pratique",
-      "subtitle": "Pensé pour de vraies sorties en famille.",
-      "items": {
-        "0": "Un parcours en grande partie plat sur les trottoirs du centre-ville, praticable en poussette",
-        "1": "Des énigmes pensées pour les 8 ans et plus, les plus jeunes avec de l'aide",
-        "2": "De nombreux endroits pour un goûter ou une pause toilettes",
-        "3": "De l'histoire et des anecdotes qui n'ont rien de devoirs",
-        "4": "Chiens bienvenus",
-        "5": "Pause possible, pour terminer un autre jour"
-      }
-    },
-    "safety": {
-      "title": "Sécurité et informations pratiques",
-      "text1": "Le parcours reste dans des quartiers animés du centre-ville, avec des commerces et des cafés à proximité tout du long.",
-      "text2": "Il fait environ {distance}, en grande partie à plat : il convient aux petites jambes comme aux poussettes. Les enfants doivent rester avec un adulte, et gardez un œil sur la circulation quand tout le monde a le nez sur un téléphone.",
-      "text3": "Si le temps tourne ou si quelqu'un n'a plus d'énergie, mettez le jeu en pause et terminez-le un autre jour. Votre lien reste valable 90 jours."
+    "twoGroups": {
+      "text": "Vous venez avec une autre famille, ou avec les cousins ? Réservez une partie chacun. Chaque famille a sa propre discussion, et vous pouvez partir ensemble pour voir qui finit en premier."
     },
     "faq": {
       "0": {
@@ -391,6 +367,10 @@
         "question": "Les enfants ont-ils besoin de leur propre téléphone ?",
         "answer": "Non. Un téléphone par famille suffit, et se serrer autour pour résoudre un indice fait partie du plaisir. Les plus grands peuvent rejoindre la partie sur leur propre téléphone s'ils le souhaitent."
       },
+      "6": {
+        "question": "Est-ce sûr pour les enfants ?",
+        "answer": "Le parcours reste dans des quartiers animés du centre-ville, avec des commerces et des cafés tout du long. Les enfants doivent rester avec un adulte, et gardez un œil sur la circulation quand tout le monde a le nez sur un téléphone."
+      },
       "title": "Les questions des familles"
     },
     "cta": {
@@ -399,80 +379,30 @@
   },
   "henParties": {
     "hero": {
-      "title": "Une chasse au trésor pour votre EVJF à Leeds",
-      "subtitle": "Résolvez des énigmes en groupe à travers la ville, arrêtez-vous boire un verre en route, et offrez à la future mariée quelque chose d'un peu différent."
+      "title": "Une activité d'EVJF en journée à Leeds",
+      "subtitle": "Le moment en journée du week-end : des énigmes dans le centre-ville, tout le monde dans la même discussion de groupe sur son propre téléphone, et la soirée exactement là où vous l'aviez prévue."
     },
-    "problem": {
-      "text1": "<b>Oubliez les activités d'EVJF habituelles.</b> City Roam fait travailler tout le monde ensemble, qu'on connaisse la future mariée depuis vingt ans ou depuis vingt minutes.",
-      "text2": "Pas de jeux imposés. Juste votre groupe, une piste d'indices dans Leeds, et plein de bonnes excuses pour s'arrêter boire un verre et prendre une photo.",
-      "text3": "Jusqu'à 10 personnes par réservation, chacune sur son téléphone. Un groupe plus grand ? Réservez deux parties et formez deux équipes."
+    "notes": {
+      "hero": "Je ne fais pas les écharpes. Je fais les énigmes, et un indice si la future mariée a l'air inquiète.",
+      "proof": "Tout le monde reçoit l'énigme au même moment, donc personne ne se serre autour du seul téléphone qui a encore de la batterie."
     },
-    "whyLove": {
-      "title": "Pourquoi ça marche pour un EVJF",
-      "different": {
-        "title": "Quelque chose de différent",
-        "description": "Ça change du programme habituel, et ça fait une histoire à raconter après."
+    "proof": {
+      "0": {
+        "title": "Pas de date à réserver",
+        "text": "Réservez maintenant et jouez le jour de votre choix dans les {days} prochains jours. Si le programme bouge, la partie suit."
       },
-      "group": {
-        "title": "Pour briser la glace",
-        "description": "Amis d'école, de travail ou de fac : tout le monde se retrouve dans la même équipe, sur le même indice."
+      "1": {
+        "title": "Chacune sur son téléphone",
+        "text": "Jusqu'à {max} personnes dans une même discussion, et tout le monde peut répondre. Les amies d'école, du travail et de la fac sont dans la même équipe dès la première énigme."
       },
-      "instagram": {
-        "title": "De beaux arrêts photo",
-        "description": "Vous passerez par certaines des plus belles rues et des plus beaux bâtiments de Leeds : les photos de groupe se font toutes seules."
+      "2": {
+        "title": "S'intègre au reste de la journée",
+        "text": "Nous comptons {duration} pour le parcours, plus le temps de vos pauses. Commencez après le brunch et vous aurez fini bien avant le dîner."
       },
-      "timing": {
-        "title": "S'adapte à votre programme",
-        "description": "Jouez en journée avant le dîner et les verres, ou pour commencer le week-end en douceur."
-      }
+      "title": "Pourquoi ça marche pour un EVJF"
     },
-    "styles": {
-      "title": "Quel que soit votre EVJF",
-      "subtitle": "Après-midi tranquille ou week-end complet, ça trouve sa place.",
-      "daytime": {
-        "title": "En journée",
-        "description": "Une bonne façon de lancer le week-end : réunir tout le monde, briser la glace et se mettre en appétit."
-      },
-      "alternative": {
-        "title": "Pour changer",
-        "description": "Pour les futures mariées qui préfèrent éviter le circuit habituel des EVJF."
-      },
-      "mixed": {
-        "title": "Groupes mélangés",
-        "description": "Idéal quand les invités ne se connaissent pas encore tous. Les indices donnent à chacun un sujet de conversation."
-      }
-    },
-    "organise": {
-      "title": "Simple à organiser",
-      "perfectSize": {
-        "title": "Jusqu'à 10 par réservation",
-        "description": "Assez petit pour rester ensemble et s'entendre parler. Pour les groupes plus grands, réservez une partie par équipe."
-      },
-      "simple": {
-        "title": "Une réservation, un lien",
-        "description": "Payez une fois, partagez le lien dans la discussion de groupe, et c'est réglé. Personne n'a rien à télécharger."
-      },
-      "special": {
-        "title": "Tout pour la future mariée",
-        "description": "Une attention un peu différente, avec toutes ses personnes préférées dans la même équipe."
-      }
-    },
-    "special": {
-      "title": "Au programme",
-      "items": {
-        "0": "Des arrêts photo dans quelques-uns des plus beaux coins de Leeds",
-        "1": "Des indices qui font travailler tout le groupe ensemble",
-        "2": "Départ à l'heure qui vous arrange",
-        "3": "Une anecdote pour les discours du mariage",
-        "4": "Des pubs et des bars en chemin pour un verre en cours de partie",
-        "5": "Simple pour qui organise : une réservation, un lien"
-      }
-    },
-    "safety": {
-      "title": "Informations pratiques",
-      "text1": "Le parcours reste dans des quartiers animés du centre-ville, avec des pubs, des cafés et des commerces en chemin.",
-      "text2": "Commencez quand ça vous arrange : une partie le matin avant le déjeuner, ou l'après-midi, qui enchaîne sur le dîner et les verres.",
-      "text3": "Les groupes restent en général ensemble pour résoudre les indices. Faites attention à la circulation, et ménagez-vous sur les verres : les énigmes se corsent au fil de la partie, pas l'inverse."
+    "twoGroups": {
+      "text": "Plus de {max} personnes ? Formez deux équipes et réservez une partie chacune. Partez ensemble et voyez quelle équipe boucle le parcours en premier."
     },
     "faq": {
       "0": {
@@ -489,7 +419,7 @@
       },
       "3": {
         "question": "Peut-on s'arrêter boire un verre ?",
-        "answer": "Oui. Le parcours passe devant de nombreux pubs et bars, et beaucoup de groupes font une halte en cours de route."
+        "answer": "Oui, si vous le souhaitez. Le parcours traverse le centre-ville : cafés, pubs et bars ne manquent pas en chemin. Mettez le jeu en pause le temps de votre halte et reprenez ensuite."
       },
       "4": {
         "question": "Et si certaines personnes du groupe ne se connaissent pas ?",
@@ -507,80 +437,30 @@
   },
   "teamBuilding": {
     "hero": {
-      "title": "Le team building, loin de la salle de réunion",
-      "subtitle": "Sortez votre équipe du bureau pour résoudre des problèmes ensemble, ailleurs. Pas d'animateur, pas d'exercices de confiance, et c'est vraiment amusant."
+      "title": "Un team building dans Leeds, sans animateur",
+      "subtitle": "Quelques heures hors du bureau, sans animateur et sans paperboard. Réservez, partagez le lien, et le Hibou envoie les énigmes."
     },
-    "problem": {
-      "text1": "<b>Oubliez les brise-glace gênants et les exercices de confiance.</b> Avec City Roam, les gens travaillent ensemble parce que les indices l'exigent.",
-      "text2": "Des collègues qui se parlent à peine en réunion finissent par débattre d'une énigme. Les plus discrets trouvent l'indice qui a échappé à tout le monde.",
-      "text3": "Une réservation couvre jusqu'à 10 personnes. Pour les groupes plus grands, réservez une partie par équipe et démarrez en même temps."
+    "notes": {
+      "hero": "Pas de badges, pas de paperboard. Juste l'énigme, et celui qui la lit à voix haute en premier.",
+      "proof": "Deux parties ne savent rien l'une de l'autre. Comparez vos temps après coup ; je ne prendrai pas parti."
     },
-    "whyChoose": {
-      "title": "Pourquoi les équipes choisissent City Roam",
-      "collaboration": {
-        "title": "Une vraie collaboration",
-        "description": "Le groupe doit partager ses idées, se répartir la réflexion et s'accorder sur une réponse. Et ça se fait sans que personne n'ait à l'orchestrer."
+    "proof": {
+      "0": {
+        "title": "Pas besoin d'animateur",
+        "text": "Personne n'a à l'animer. Réservez en ligne, partagez le lien dans la discussion de l'équipe, et le Hibou envoie les énigmes et les indices de la première étape à la dernière."
       },
-      "perspective": {
-        "title": "Un changement de décor",
-        "description": "Quelques heures hors du bureau, dans un lieu nouveau, avec un autre genre de problème à résoudre."
+      "1": {
+        "title": "Grande équipe ? Deux parties",
+        "text": "Formez des groupes de {max} personnes maximum et réservez une partie chacun. Partez ensemble, puis comparez vos temps autour d'un café."
       },
-      "inclusive": {
-        "title": "Tout le monde peut participer",
-        "description": "Une balade à votre rythme, avec de nombreuses pauses. Rien d'éprouvant, et personne n'est mis sur la sellette."
+      "2": {
+        "title": "Équipes multilingues",
+        "text": "Le jeu fonctionne en anglais, espagnol, français, allemand ou néerlandais, et chaque groupe choisit sa langue avant de commencer. Deux parties peuvent se jouer dans deux langues."
       },
-      "energised": {
-        "title": "De quoi parler après",
-        "description": "Une expérience commune dont l'équipe parlera encore des semaines plus tard."
-      }
+      "title": "Pourquoi ça marche pour les équipes"
     },
-    "perfectFor": {
-      "title": "Idéal pour",
-      "subtitle": "Que vous formiez une nouvelle équipe ou que vous offriez une pause à une équipe existante.",
-      "newTeam": {
-        "title": "Les nouveaux arrivants",
-        "description": "Aidez les nouveaux à faire connaissance avec l'équipe dans un cadre détendu, loin de leur bureau."
-      },
-      "crossDept": {
-        "title": "Journées inter-équipes",
-        "description": "Mélangez des personnes de services différents qui ne travaillent pas d'habitude ensemble."
-      },
-      "morale": {
-        "title": "Un remerciement",
-        "description": "Une activité vraiment agréable pour dire merci après un trimestre chargé."
-      }
-    },
-    "sizes": {
-      "title": "Taille des équipes",
-      "sweetSpot": {
-        "title": "De 4 à 10 personnes",
-        "description": "Assez pour une diversité d'idées, assez peu pour que chacun ait voix au chapitre."
-      },
-      "multiple": {
-        "title": "Plus de 10",
-        "description": "Formez des équipes et réservez une partie pour chacune. Tout le monde peut commencer en même temps."
-      },
-      "competition": {
-        "title": "Rivalité amicale",
-        "description": "Plusieurs équipes sur le même parcours, qui partent ensemble. Pas de classement officiel : la première équipe arrivée s'octroie le droit de fanfaronner."
-      }
-    },
-    "benefits": {
-      "title": "Ce que votre équipe y gagne",
-      "items": {
-        "0": "S'exercer à communiquer et à écouter",
-        "1": "Des problèmes résolus en groupe",
-        "2": "Le temps de vraiment connaître ses collègues",
-        "3": "Une pause loin des écrans, des réunions et des e-mails",
-        "4": "L'occasion pour les plus discrets de briller",
-        "5": "Des histoires communes et des blagues entre soi"
-      }
-    },
-    "practical": {
-      "title": "Informations pratiques",
-      "text1": "Réservez en ligne et payez par carte. Si vous avez besoin d'une facture pour vos notes de frais, ou si vous voulez réserver pour plusieurs équipes à la fois, écrivez-nous.",
-      "text2": "Nous comptons {duration} pour le parcours, plus vos pauses, ce qui tient dans une matinée ou un après-midi. Commencez quand ça vous arrange.",
-      "text3": "Chacun a besoin de chaussures confortables et d'un smartphone chargé avec des données mobiles. Il n'y a rien d'autre à organiser."
+    "twoGroups": {
+      "text": "Une réservation couvre jusqu'à {max} personnes. Pour une équipe plus grande, formez des groupes et réservez une partie pour chacun : le même parcours, des discussions séparées. Il n'y a pas de classement officiel, alors la première équipe revenue décide de la version officielle de l'histoire."
     },
     "faq": {
       "0": {
@@ -599,11 +479,150 @@
         "question": "Proposez-vous des tarifs de groupe ?",
         "answer": "Chaque réservation couvre jusqu'à 10 personnes pour un prix unique. Si vous réservez pour un groupe plus grand, écrivez-nous et nous en discuterons."
       },
+      "4": {
+        "question": "Combien de temps faut-il ?",
+        "answer": "Nous comptons {duration} pour le parcours, plus vos pauses, ce qui tient dans une matinée ou un après-midi. Commencez quand ça vous arrange."
+      },
+      "5": {
+        "question": "De quoi chacun a-t-il besoin ?",
+        "answer": "De chaussures confortables et d'un téléphone chargé avec des données mobiles. Pas d'application à télécharger, et rien d'autre à organiser."
+      },
       "title": "Questions des équipes sur la réservation"
     },
     "cta": {
       "text": "Du vrai travail d'équipe, un changement de décor et quelques heures loin du bureau.",
       "contactLabel": "Nous écrire pour les grands groupes"
+    }
+  },
+  "stagParties": {
+    "hero": {
+      "title": "Une activité d'EVG en journée à Leeds",
+      "subtitle": "De quoi occuper la journée de l'enterrement de vie de garçon, avant que la soirée ne prenne le relais. Des énigmes dans le centre-ville, jusqu'à {max} personnes dans une même discussion de groupe, et rien à organiser pour le témoin à part un lien."
+    },
+    "notes": {
+      "hero": "Le futur marié n'a droit à aucun traitement de faveur. Le témoin non plus.",
+      "proof": "Chahuter celui qui lit l'énigme à voix haute est autorisé. Ça ne le fera pas lire plus vite."
+    },
+    "proof": {
+      "0": {
+        "title": "La journée, c'est réglé",
+        "text": "Nous comptons {duration} pour le parcours, plus les pauses. Commencez en fin de matinée ou après le déjeuner et vous aurez fini avec de la marge avant la soirée."
+      },
+      "1": {
+        "title": "Rien à organiser",
+        "text": "Une réservation, un lien dans la discussion de groupe. Pas de date à réserver non plus : jouez le jour de votre choix dans les {days} prochains jours."
+      },
+      "2": {
+        "title": "Chacun sur son téléphone",
+        "text": "Jusqu'à {max} personnes dans la même discussion, et tout le monde peut répondre. Le futur marié ne reçoit pas les énigmes en premier. Ni en dernier."
+      },
+      "title": "Pourquoi ça marche pour un EVG"
+    },
+    "twoGroups": {
+      "text": "Plus de {max} ? Réservez deux parties et formez deux équipes. Partez ensemble, voyez quelle équipe boucle le parcours en premier, puis disputez-vous à ce sujet."
+    },
+    "faq": {
+      "0": {
+        "question": "Combien peut-on être ?",
+        "answer": "Jusqu'à {max} personnes par réservation, chacune sur son téléphone. Pour un groupe plus grand, formez des équipes et réservez une partie pour chacune."
+      },
+      "1": {
+        "question": "À quelle heure commencer ?",
+        "answer": "Quand vous voulez. Nous comptons {duration} pour le parcours, plus les pauses : en fin de matinée ou en début d'après-midi, la soirée reste libre."
+      },
+      "2": {
+        "question": "Faut-il réserver une date ?",
+        "answer": "Non. Votre lien reste valable {days} jours après la réservation, et vous commencez dès que le groupe est prêt."
+      },
+      "3": {
+        "question": "Peut-on faire des pauses en route ?",
+        "answer": "Oui. Le parcours traverse le centre-ville : cafés, pubs et endroits où s'asseoir ne manquent pas. Mettez le jeu en pause et reprenez quand vous êtes prêts."
+      },
+      "4": {
+        "question": "Et s'il fait mauvais ?",
+        "answer": "Il y a de quoi s'abriter en chemin, et vous pouvez mettre le jeu en pause pour le terminer plus tard ou un autre jour."
+      },
+      "5": {
+        "question": "Et si ça ne nous plaît pas ?",
+        "answer": "Nous vous remboursons intégralement, sans poser de questions. Écrivez-nous simplement dans les 14 jours suivant votre partie."
+      },
+      "title": "Questions sur les EVG"
+    },
+    "cta": {
+      "text": "Réglez la journée. La soirée se débrouillera toute seule."
+    }
+  },
+  "treasureHunt": {
+    "hero": {
+      "title": "Une chasse au trésor dont le trésor, c'est Leeds",
+      "subtitle": "Des énigmes qui vous font parcourir le centre-ville à pied, le nez levé vers des bâtiments devant lesquels presque tout le monde passe sans les voir. Le Hibou les envoie dans votre discussion de groupe, avec des indices quand vous séchez et le chemin quand vous êtes perdus."
+    },
+    "differs": {
+      "title": "Pas la chasse au trésor habituelle",
+      "intro": "Dans une chasse au trésor classique, quelqu'un cache quelque chose et vous suivez une piste d'indices pour le trouver. Ici, c'est l'inverse. Rien n'est caché. Les réponses sont déjà là, sur les bâtiments et dans les rues, et les énigmes consistent à les remarquer. C'est plutôt un jeu de piste.",
+      "items": {
+        "0": {
+          "title": "Rien à déterrer",
+          "text": "Ni coffre, ni accessoires, rien à porter. Chaque réponse est à la vue de tous, dans la rue. Tapez-la dans la discussion et l'énigme suivante arrive."
+        },
+        "1": {
+          "title": "Des énigmes qui font lever les yeux",
+          "text": "Leeds a gardé une partie de ses plus beaux détails pour le dessus des enseignes. Les énigmes vous y mènent, et le Hibou ajoute un peu d'histoire à chaque trouvaille."
+        },
+        "2": {
+          "title": "Un guide dans la discussion",
+          "text": "Le Hibou envoie chaque énigme, donne un indice quand vous le demandez et répond aux questions sur l'énigme, le tronçon que vous parcourez et la distance qui reste."
+        },
+        "3": {
+          "title": "Ni chrono ni classement",
+          "text": "Personne ne vous chronomètre et il n'y a pas de prix à la fin. Arrêtez-vous pour déjeuner, faites une pause et finissez un autre jour, ou prenez simplement votre temps."
+        }
+      }
+    },
+    "clue": {
+      "title": "À quoi ressemble une énigme",
+      "text": "Celle-ci vient de notre démo, pas du vrai parcours : elle ne dévoile rien. L'énigme arrive dans la discussion de groupe, tout le monde peut proposer une réponse et, si vous séchez, un indice resserre les recherches sans vous donner la solution.",
+      "note": "Chacun voit la même énigme au même moment, sur son propre téléphone. Pas d'application à télécharger : tout se passe dans le navigateur."
+    },
+    "notes": {
+      "clue": "Rien n'est enterré sur ce parcours. Tout est à la vue de tous, en général un étage ou deux plus haut."
+    },
+    "audiences": {
+      "title": "Quatre façons d'y jouer",
+      "subtitle": "Les mêmes énigmes, avec qui que vous veniez."
+    },
+    "compare": {
+      "title": "Face aux autres chasses et visites"
+    },
+    "faq": {
+      "0": {
+        "question": "Y a-t-il un prix à gagner ?",
+        "answer": "Non. Il n'y a ni prix ni classement. Ce que vous y gagnez, c'est quelques heures dans Leeds et deux ou trois choses à montrer à ceux qui n'ont jamais levé les yeux."
+      },
+      "1": {
+        "question": "Deux équipes peuvent-elles faire la course ?",
+        "answer": "Oui. Réservez une partie par équipe, jusqu'à {max} joueurs chacune, et partez ensemble. Les parties ne se connaissent pas : qui a bouclé le parcours en premier, c'est à vous de trancher."
+      },
+      "2": {
+        "question": "Est-ce un rallye photo ?",
+        "answer": "Pas vraiment. Vous trouvez des choses sans les ramasser : pas de photos à envoyer, pas de liste à cocher. Vous repérez la réponse, vous la tapez dans la discussion, et l'énigme suivante arrive."
+      },
+      "3": {
+        "question": "C'est seulement pour les enfants ?",
+        "answer": "Non. Des familles y jouent, mais aussi des EVJF, des EVG et des équipes de collègues. Les énigmes conviennent aux adultes, et les enfants dès 8 ans peuvent participer."
+      },
+      "4": {
+        "question": "Est-ce le Leeds Owl Trail ?",
+        "answer": "Non, et nous n'avons aucun lien avec lui. Le Leeds Owl Trail est un parcours distinct et gratuit à la découverte des hiboux disséminés dans la ville, et il vaut le détour. Notre Hibou, c'est le guide de votre discussion de groupe, baptisé d'après les hiboux des armoiries de Leeds."
+      },
+      "5": {
+        "question": "Combien de temps faut-il ?",
+        "answer": "Nous estimons {duration} pour le parcours, plus le temps de vos arrêts. Il n'y a pas de limite de temps, et votre lien reste valable {days} jours : vous pouvez finir un autre jour."
+      },
+      "title": "Questions sur la chasse au trésor"
+    },
+    "cta": {
+      "text": "Rassemblez le groupe. Les énigmes vous attendent déjà dehors."
     }
   },
   "checkout": {
@@ -616,6 +635,9 @@
     },
     "success": {
       "title": "Tout est prêt",
+      "subtitle": "Votre partie est réservée. Il ne reste plus qu'à envoyer un lien.",
+      "forwardTitle": "Transférez-le à votre groupe",
+      "forwardText": "Chacun l'ouvre sur son téléphone et rejoint la partie avec son prénom. Pas d'application à télécharger.",
       "eventLinkLabel": "Le lien de votre partie",
       "copy": "Copier",
       "copied": "Copié",
@@ -623,7 +645,14 @@
       "share": "Partager avec votre groupe",
       "shareTitle": "Rejoignez ma partie City Roam",
       "whatsNext": "Et maintenant",
-      "whatsNextDescription": "Envoyez le lien à votre groupe. Chacun l'ouvre sur son téléphone et saisit son prénom. La première personne à rejoindre la partie en devient responsable, et la lance quand tout le monde est prêt.",
+      "steps": {
+        "0": "Envoyez le lien à votre groupe.",
+        "1": "Chacun l'ouvre sur son téléphone et saisit son prénom.",
+        "2": "La première personne à rejoindre la partie en devient responsable, et la lance quand tout le monde est là."
+      },
+      "note": "Je serai dans la discussion dès que vous serez prêts. Je ne bouge pas.",
+      "giftText": "Vous connaissez quelqu'un d'autre qui aimerait essayer ?",
+      "giftLink": "Offrez-lui une carte cadeau",
       "refundNote": "Pas convaincus ? Remboursement intégral, sans poser de questions.",
       "refundLink": "Politique de remboursement"
     }
@@ -949,6 +978,8 @@
   "notFound": {
     "title": "Page introuvable",
     "description": "Cette page n'existe pas, ou elle a été déplacée.",
+    "note": "Cette page n'est pas sur le parcours. J'ai vérifié deux fois.",
+    "elsewhere": "Ou essayez plutôt",
     "backHome": "Retour à l'accueil"
   },
   "facts": {
@@ -960,5 +991,24 @@
     "distance": "{km, number} km",
     "validity": "Jouez le jour de votre choix : le lien reste valable {days} jours",
     "perHead": "Environ {perHead} par personne pour un groupe de {max}"
+  },
+  "audience": {
+    "heroPrice": "<b>{price}</b> par groupe",
+    "twoGroups": {
+      "title": "Deux groupes ? Réservez deux parties.",
+      "points": {
+        "0": "Chaque partie accueille jusqu'à {max} joueurs, chacun sur son téléphone",
+        "1": "Chaque groupe a son propre lien et sa propre discussion",
+        "2": "Partez ensemble, ou à des heures différentes"
+      },
+      "ticket": "Partie {n}",
+      "ticketPlayers": "Jusqu'à {max} joueurs",
+      "note": "Il n'y a pas de classement entre les parties. Qui a bouclé le parcours en premier, c'est à vous de trancher."
+    },
+    "treasureLink": "Comment ça marche, côté chasse au trésor",
+    "route": {
+      "title": "Le parcours",
+      "subtitle": "Une boucle à pied dans le centre de Leeds. Les étapes restent secrètes jusqu'à ce que vous les trouviez."
+    }
   }
 }

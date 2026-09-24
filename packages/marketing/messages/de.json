@@ -1,24 +1,32 @@
 {
   "metadata": {
     "og": {
-      "tagline": "Schnitzeljagd in Leeds, geführt von der Eule"
+      "tagline": "Entdeckt Leeds, geführt von der Eule"
     },
     "home": {
-      "title": "City Roam — Schnitzeljagd in Leeds, geführt von der Eule",
-      "description": "Eine Schnitzeljagd auf eigene Faust durch die Innenstadt von Leeds, gespielt im Gruppenchat auf euren Handys. Ein Preis für bis zu 10 Personen, ohne App.",
-      "ogImageAlt": "City Roam — Schnitzeljagd in Leeds, geführt von der Eule"
+      "title": "Leeds auf eigene Faust: Stadtrundgang mit Rätseln — City Roam",
+      "description": "Entdeckt die Innenstadt von Leeds zu Fuß: halb Stadtführung, halb Schnitzeljagd, gespielt im Gruppenchat auf euren Handys. Ein Preis für bis zu 10, ohne App.",
+      "ogImageAlt": "City Roam — Entdeckt Leeds, geführt von der Eule"
     },
     "families": {
       "title": "Schnitzeljagd für Familien in Leeds — City Roam",
-      "description": "Schnitzeljagd durch die Innenstadt von Leeds für Familien mit Kindern ab 8. In eurem Tempo, mit Pausen nach Belieben und notfalls an einem anderen Tag."
+      "description": "Ein Rundgang mit Rätseln durch die Innenstadt von Leeds, für Familien mit Kindern ab 8. In eurem Tempo, mit Pausen nach Belieben und notfalls an einem anderen Tag."
     },
     "henParties": {
-      "title": "Schnitzeljagd zum Junggesellinnenabschied in Leeds — City Roam",
-      "description": "JGA-Programm für tagsüber in Leeds. Löst gemeinsam Rätsel in der Innenstadt und macht unterwegs Halt für Drinks. Ein Preis für bis zu 10 Personen."
+      "title": "Aktivitäten zum Junggesellinnenabschied in Leeds — City Roam",
+      "description": "JGA-Programm für tagsüber in Leeds: Rätsel in der Innenstadt, gespielt im Gruppenchat auf euren Handys. Ein Preis für bis zu 10 Personen, ohne festen Termin."
     },
     "teamBuilding": {
       "title": "Teambuilding-Schnitzeljagd in Leeds — City Roam",
       "description": "Holt euer Team für ein paar Stunden aus dem Büro. Eine Schnitzeljagd auf eigene Faust durch Leeds für Teams bis 10 Personen, ganz ohne Moderation."
+    },
+    "stagParties": {
+      "title": "Aktivitäten zum Junggesellenabschied in Leeds — City Roam",
+      "description": "JGA-Programm für tagsüber in Leeds: Rätsel in der Innenstadt, gespielt im Gruppenchat auf euren Handys. Ein Preis für bis zu 10 Personen, ohne festen Termin."
+    },
+    "treasureHunt": {
+      "title": "Schnitzeljagd durch die Innenstadt von Leeds — City Roam",
+      "description": "Eine Schnitzeljagd durch die Innenstadt von Leeds, bei der die Hinweise an den Gebäuden stecken, gespielt im Gruppenchat. Ein Preis für bis zu 10, ohne App."
     }
   },
   "common": {
@@ -27,6 +35,7 @@
       "families": "Familien",
       "henParties": "Junggesellinnenabschied",
       "teamBuilding": "Teambuilding",
+      "stagParties": "Junggesellenabschied",
       "bookNow": "Jetzt buchen",
       "toggleMenu": "Menü",
       "changeLanguage": "Sprache wechseln"
@@ -34,7 +43,12 @@
     "footer": {
       "copyright": "© {year} City Roam. Alle Rechte vorbehalten.",
       "company": "{name}. Eingetragen in England und Wales, Firmennummer {number}. Sitz der Gesellschaft: {address}.",
-      "audienceNav": "Für wen"
+      "audienceNav": "Für wen",
+      "treasureHunt": "Schnitzeljagd",
+      "gift": "Geschenkgutscheine"
+    },
+    "legalNav": {
+      "contents": "Auf dieser Seite"
     }
   },
   "cta": {
@@ -114,8 +128,8 @@
   },
   "home": {
     "hero": {
-      "title": "Eine Schnitzeljagd durch Leeds, direkt in eurem Gruppenchat",
-      "subtitle": "Löst Rätsel in der Innenstadt, mit der Eule, die antwortet, wenn ihr fragt. Alle spielen im selben Chat auf dem eigenen Handy, und eine App braucht ihr nicht.",
+      "title": "Entdeckt Leeds mit einem Guide im Gruppenchat",
+      "subtitle": "Halb Stadtführung, halb Schnitzeljagd. Die Eule schickt Rätsel, bei denen ihr nach oben schaut, und ein bisschen Geschichte zu dem, was ihr findet. Alle spielen auf dem eigenen Handy, und eine App braucht ihr nicht.",
       "demoCaption": "Ein paar Nachrichten aus einem Spiel"
     },
     "notes": {
@@ -194,7 +208,6 @@
       "badge": "Einführungspreis",
       "note": "Euer Link gilt 90 Tage. Volle Rückerstattung, wenn es euch nicht gefällt."
     },
-    "gift": "<b>Als Geschenk?</b> Bucht einfach und leitet die E-Mail weiter. Der Link gilt {days} Tage ab der Buchung, und die Beschenkten starten, wann sie wollen.",
     "faqTitle": "Häufige Fragen",
     "compare": {
       "title": "Im Vergleich",
@@ -260,20 +273,28 @@
         }
       }
     },
+    "treasureBand": {
+      "text": "Ihr sucht eine Schnitzeljagd in Leeds? Das hier ist eine, nur mit mehr Nach-oben-Schauen.",
+      "link": "So funktioniert es als Schnitzeljagd"
+    },
     "audiences": {
       "title": "Für wen",
-      "subtitle": "Ein Spiel, drei Arten, es zu spielen.",
+      "subtitle": "Ein Spiel, vier Arten, es zu spielen.",
       "families": {
         "title": "Familien",
         "text": "Rätsel für die Kinder, Geschichten für die Erwachsenen und ein Tempo, das die kürzesten Beine bestimmen."
       },
       "henParties": {
         "title": "Junggesellinnenabschied",
-        "text": "Der stilvolle Teil des Wochenendes, bei Tageslicht und mit Platz für ein, zwei Drinks unterwegs."
+        "text": "Der Teil des Wochenendes bei Tageslicht, alle auf dem eigenen Handy und ohne festen Termin."
       },
       "teamBuilding": {
         "title": "Teambuilding",
         "text": "Ein paar Stunden raus aus dem Büro, und organisieren müsst ihr nur den Gruppenchat."
+      },
+      "stagParties": {
+        "title": "Junggesellenabschied",
+        "text": "Der Teil des Wochenendes bei Tageslicht, und der Trauzeuge hat mit einem Link alles organisiert."
       },
       "more": "Mehr erfahren"
     },
@@ -296,75 +317,30 @@
   },
   "families": {
     "hero": {
-      "title": "Familienausflug ganz ohne Aufwand",
-      "subtitle": "Macht aus einem Spaziergang durch Leeds eine Schnitzeljagd. Rätsel für die Kinder, Geschichten für die Erwachsenen, und keiner fragt, wie weit es noch ist."
+      "title": "Ein Familienausflug durch Leeds, mit Rätseln",
+      "subtitle": "Rätsel für die Kinder, Geschichten für die Erwachsenen und ein Tempo, das die kürzesten Beine bestimmen. Alle spielen im selben Gruppenchat, und eine App braucht ihr nicht."
     },
-    "problem": {
-      "text1": "<b>Genug von „Sind wir bald da?“</b> City Roam macht aus einem Stadtbummel ein Spiel, das die ganze Familie gemeinsam spielt.",
-      "text2": "Statt die Kinder von Sehenswürdigkeit zu Sehenswürdigkeit zu schleifen, lasst sie vorauslaufen und den nächsten Hinweis knacken. Nebenbei schnappen alle ein paar Geschichten über die Stadt auf.",
-      "text3": "Es funktioniert für gemischte Altersgruppen, von neugierigen Achtjährigen über Teenager bis zu den Großeltern. Jeder kann etwas beitragen."
+    "notes": {
+      "hero": "Fragt mich ruhig ständig, wie weit es noch ist. Ich antworte jedes Mal, und ich seufze nicht.",
+      "proof": "Bei diesem Spiel läuft keine Uhr. Eine Mittagspause kostet euch gar nichts."
     },
-    "whyLove": {
-      "title": "Warum Familien es mögen",
-      "engaged": {
-        "title": "Alle bleiben dabei",
-        "description": "Es gibt immer einen nächsten Hinweis, und das wirkt Wunder bei müden Beinen."
+    "proof": {
+      "0": {
+        "title": "Auch Kinder können antworten",
+        "text": "Jeder im Chat kann eine Antwort eintippen. Gebt das Handy weiter, oder lasst ältere Kinder mit dem eigenen Handy mitspielen und euch zuvorkommen."
       },
-      "educational": {
-        "title": "Lernen, ganz nebenbei",
-        "description": "Geschichte, Architektur und Anekdoten aus der Stadt, ohne dass es sich wie ein Schulausflug anfühlt."
+      "1": {
+        "title": "Euer Tempo, nicht das einer Führung",
+        "text": "Kein Guide, mit dem ihr Schritt halten müsst, und kein Zeitlimit. Bleibt stehen, geht noch mal zurück oder trödelt. Das Spiel wartet."
       },
-      "allAges": {
-        "title": "Für alle Altersstufen",
-        "description": "Die Kleinen entdecken Dinge, die Teenager tippen die Antworten, und die Erwachsenen streiten über die Geschichte."
+      "2": {
+        "title": "Pause fürs Mittagessen",
+        "text": "Pausiert, wann ihr wollt, und macht nach einem Brötchen weiter, oder an einem anderen Tag. Euer Fortschritt bleibt gespeichert, und der Link gilt {days} Tage."
       },
-      "bonding": {
-        "title": "Ein Team",
-        "description": "Alle knobeln zur selben Zeit am selben Hinweis. Eine gemeinsame Sache, keine Führung."
-      }
+      "title": "Warum es mit Kindern funktioniert"
     },
-    "perfectFor": {
-      "title": "Gut für",
-      "subtitle": "Ob ihr in Leeds wohnt oder nur übers Wochenende zu Besuch seid.",
-      "grandparents": {
-        "title": "Besuch von den Großeltern",
-        "description": "Ein gemütlicher Spaziergang für sie, ein Spiel für die Kinder und Geschichten für alle."
-      },
-      "weekend": {
-        "title": "Wochenenden",
-        "description": "Macht aus einem gewöhnlichen Samstag einen Ausflug und entdeckt Ecken eurer eigenen Stadt, von denen ihr nichts wusstet."
-      },
-      "holidays": {
-        "title": "Schulferien",
-        "description": "Mal etwas anderes als der Bildschirm zu Hause. Gut, es ist auch ein Bildschirm, aber immerhin an der frischen Luft."
-      }
-    },
-    "howItWorks": {
-      "title": "So läuft es mit Kindern",
-      "step1Title": "Startet, wenn ihr so weit seid",
-      "step1Desc": "Keine Reisegruppe, die zu einer festen Zeit wartet. Legt los, wenn alle gegessen haben und noch mal auf dem Klo waren.",
-      "step2Title": "Abwechseln",
-      "step2Desc": "Lasst bei jedem Hinweis jemand anderen vorangehen. So darf jeder mal recht haben.",
-      "step3Title": "Lasst euch Zeit",
-      "step3Desc": "Macht Pause für ein Eis oder zum Toben. Das Spiel wartet auf euch."
-    },
-    "features": {
-      "title": "Das Praktische",
-      "subtitle": "Geplant für echte Familienausflüge.",
-      "items": {
-        "0": "Überwiegend flache Route auf Gehwegen in der Innenstadt, gut mit Kinderwagen",
-        "1": "Hinweise für Kinder ab 8, Jüngere mit Hilfe",
-        "2": "Viele Gelegenheiten für Snacks und Toilettenpausen",
-        "3": "Geschichte und Geschichten, die sich nicht nach Hausaufgaben anfühlen",
-        "4": "Hunde willkommen",
-        "5": "Pausieren und an einem anderen Tag zu Ende spielen"
-      }
-    },
-    "safety": {
-      "title": "Sicherheit und Praktisches",
-      "text1": "Die Route bleibt in belebten Teilen der Innenstadt, mit Geschäften und Cafés immer in der Nähe.",
-      "text2": "Sie ist rund {distance} lang und größtenteils flach, also gut für kurze Beine und Kinderwagen. Kinder sollten bei einem Erwachsenen bleiben, und achtet auf den Verkehr, wenn alle aufs Handy schauen.",
-      "text3": "Wenn das Wetter umschlägt oder jemandem die Puste ausgeht, pausiert das Spiel und spielt es an einem anderen Tag zu Ende. Euer Link gilt 90 Tage."
+    "twoGroups": {
+      "text": "Ihr kommt mit einer anderen Familie oder den Cousins? Bucht jeder ein Spiel. Jede Familie hat ihren eigenen Chat, und ihr könnt gemeinsam loslaufen und schauen, wer zuerst fertig ist."
     },
     "faq": {
       "0": {
@@ -391,6 +367,10 @@
         "question": "Brauchen die Kinder ein eigenes Handy?",
         "answer": "Nein. Ein Handy pro Familie reicht, und gemeinsam darüber gebeugt zu rätseln ist der halbe Spaß. Ältere Kinder können auf Wunsch mit dem eigenen Handy einsteigen."
       },
+      "6": {
+        "question": "Ist es sicher für Kinder?",
+        "answer": "Die Route bleibt in belebten Teilen der Innenstadt, mit Geschäften und Cafés auf dem ganzen Weg. Kinder sollten bei einem Erwachsenen bleiben, und achtet auf den Verkehr, wenn alle aufs Handy schauen."
+      },
       "title": "Fragen von Familien"
     },
     "cta": {
@@ -399,80 +379,30 @@
   },
   "henParties": {
     "hero": {
-      "title": "Der JGA als Schnitzeljagd durch Leeds",
-      "subtitle": "Löst gemeinsam Rätsel in der Stadt, macht unterwegs Halt für Drinks und schenkt der Braut mal etwas anderes."
+      "title": "Tagesprogramm für den Junggesellinnenabschied in Leeds",
+      "subtitle": "Der Teil des Wochenendes bei Tageslicht: Rätsel in der Innenstadt, alle im selben Gruppenchat auf dem eigenen Handy, und der Abend bleibt genau da, wo ihr ihn geplant habt."
     },
-    "problem": {
-      "text1": "<b>Lasst das übliche JGA-Programm ausfallen.</b> Bei City Roam arbeiten alle zusammen, ob sie die Braut seit zwanzig Jahren kennen oder seit zwanzig Minuten.",
-      "text2": "Keine aufgezwungenen Partyspiele. Nur eure Gruppe, eine Spur aus Hinweisen durch Leeds und reichlich Ausreden für einen Drink und ein Foto.",
-      "text3": "Bis zu 10 Personen spielen mit einer Buchung, jede auf dem eigenen Handy. Ihr seid mehr? Bucht zwei Spiele und teilt euch in Teams auf."
+    "notes": {
+      "hero": "Schärpen sind nicht mein Fach. Ich mache Rätsel, und einen Tipp, wenn die Braut besorgt aussieht.",
+      "proof": "Alle bekommen das Rätsel im selben Moment. Niemand muss sich um das eine Handy drängen, das noch Akku hat."
     },
-    "whyLove": {
-      "title": "Warum es zum JGA passt",
-      "different": {
-        "title": "Mal etwas anderes",
-        "description": "Eine Abwechslung zum üblichen JGA-Programm, und hinterher habt ihr etwas zu erzählen."
+    "proof": {
+      "0": {
+        "title": "Kein fester Termin",
+        "text": "Jetzt buchen und an einem beliebigen Tag in den nächsten {days} Tagen spielen. Wenn sich die Pläne ändern, zieht das Spiel einfach mit."
       },
-      "group": {
-        "title": "Ein natürlicher Eisbrecher",
-        "description": "Leute aus Schule, Job und Uni landen im selben Team und knobeln am selben Hinweis."
+      "1": {
+        "title": "Alle auf dem eigenen Handy",
+        "text": "Bis zu {max} Personen in einem Gruppenchat, und jede kann antworten. Leute aus Schule, Job und Uni sind ab dem ersten Rätsel im selben Team."
       },
-      "instagram": {
-        "title": "Gute Fotomotive",
-        "description": "Ihr kommt an einigen der schönsten Straßen und Gebäude von Leeds vorbei. Die Gruppenfotos ergeben sich von selbst."
+      "2": {
+        "title": "Passt zum Rest des Tages",
+        "text": "Für die Route rechnen wir mit {duration}, plus die Zeit für eure Pausen. Startet nach dem Brunch, und ihr seid lange vor dem Abendessen fertig."
       },
-      "timing": {
-        "title": "Passt in euren Plan",
-        "description": "Spielt tagsüber vor Abendessen und Drinks oder als entspannten Start ins Wochenende."
-      }
+      "title": "Warum es zum JGA passt"
     },
-    "styles": {
-      "title": "Egal, wie ihr feiert",
-      "subtitle": "Ob entspannter Nachmittag oder ganzes Wochenende, es passt rein.",
-      "daytime": {
-        "title": "Tagsüber",
-        "description": "Ein guter Start ins Wochenende: alle zusammenbringen, das Eis brechen und Appetit holen."
-      },
-      "alternative": {
-        "title": "Mal anders",
-        "description": "Für Bräute, die auf die übliche JGA-Runde lieber verzichten."
-      },
-      "mixed": {
-        "title": "Gemischte Gruppen",
-        "description": "Ideal, wenn sich noch nicht alle Gäste kennen. Über die Rätsel kommt jeder mit jedem ins Gespräch."
-      }
-    },
-    "organise": {
-      "title": "Einfach zu organisieren",
-      "perfectSize": {
-        "title": "Bis zu 10 pro Buchung",
-        "description": "Klein genug, um zusammenzubleiben und sich zu verstehen. Für größere Gruppen bucht ihr ein Spiel pro Team."
-      },
-      "simple": {
-        "title": "Eine Buchung, ein Link",
-        "description": "Einmal zahlen, den Link in den Gruppenchat stellen, fertig. Niemand muss etwas herunterladen."
-      },
-      "special": {
-        "title": "Alles für die Braut",
-        "description": "Etwas Durchdachtes, ein bisschen anders, mit all ihren Lieblingsmenschen im selben Team."
-      }
-    },
-    "special": {
-      "title": "Was drin ist",
-      "items": {
-        "0": "Fotostopps an einigen der schönsten Ecken von Leeds",
-        "1": "Rätsel, bei denen die ganze Gruppe mitdenkt",
-        "2": "Start, wann es in euren Plan passt",
-        "3": "Eine Geschichte für die Hochzeitsreden",
-        "4": "Pubs und Bars am Weg für einen Drink zwischendurch",
-        "5": "Einfach für die Organisatorin: eine Buchung, ein Link"
-      }
-    },
-    "safety": {
-      "title": "Praktische Informationen",
-      "text1": "Die Route bleibt in belebten Teilen der Innenstadt, mit Pubs, Cafés und Geschäften am Weg.",
-      "text2": "Startet, wann es euch passt: vormittags vor dem Mittagessen oder nachmittags, sodass es nahtlos in Abendessen und Drinks übergeht.",
-      "text3": "Beim Rätseln bleibt die Gruppe meist von selbst zusammen. Achtet auf den Verkehr und teilt euch die Drinks ein: Die Rätsel werden schwerer, nicht leichter."
+    "twoGroups": {
+      "text": "Mehr als {max} dabei? Teilt euch in zwei Teams auf und bucht für jedes ein Spiel. Lauft gemeinsam los und schaut, welches Team zuerst durch ist."
     },
     "faq": {
       "0": {
@@ -489,7 +419,7 @@
       },
       "3": {
         "question": "Können wir zwischendurch etwas trinken gehen?",
-        "answer": "Ja. Die Route führt an vielen Pubs und Bars vorbei, und viele Gruppen kehren unterwegs auf einen Drink ein."
+        "answer": "Ja, wenn ihr mögt. Die Route führt durch die Innenstadt, da gibt es unterwegs Cafés, Pubs und Bars. Pausiert das Spiel, solange ihr drin seid, und macht danach weiter."
       },
       "4": {
         "question": "Was, wenn sich einige in der Gruppe nicht kennen?",
@@ -507,80 +437,30 @@
   },
   "teamBuilding": {
     "hero": {
-      "title": "Teambuilding jenseits des Konferenzraums",
-      "subtitle": "Holt euer Team aus dem Büro und lasst es an einem neuen Ort gemeinsam knobeln. Ohne Moderation, ohne Vertrauensübungen, und es macht tatsächlich Spaß."
+      "title": "Teambuilding in Leeds, ganz ohne Moderation",
+      "subtitle": "Ein paar Stunden raus aus dem Büro, ohne Moderation und ohne Flipchart. Buchen, Link teilen, und die Eule schickt die Rätsel."
     },
-    "problem": {
-      "text1": "<b>Vergesst peinliche Eisbrecher und Vertrauensübungen.</b> Bei City Roam arbeiten alle zusammen, weil die Rätsel es verlangen.",
-      "text2": "Kollegen, die in Meetings kaum etwas sagen, streiten plötzlich über ein Rätsel. Und die Stillen im Team knacken den Hinweis, den alle anderen übersehen haben.",
-      "text3": "Eine Buchung gilt für bis zu 10 Personen. Bei größeren Gruppen bucht ihr ein Spiel pro Team und startet gleichzeitig."
+    "notes": {
+      "hero": "Keine Namensschilder, kein Flipchart. Nur das Rätsel, und wer es als Erstes vorliest.",
+      "proof": "Zwei Spiele wissen nichts voneinander. Vergleicht eure Zeiten hinterher, ich halte mich raus."
     },
-    "whyChoose": {
-      "title": "Warum Teams City Roam wählen",
-      "collaboration": {
-        "title": "Echte Zusammenarbeit",
-        "description": "Die Gruppe muss Ideen teilen, das Nachdenken aufteilen und sich auf eine Antwort einigen. Das passiert, ohne dass jemand es anleitet."
+    "proof": {
+      "0": {
+        "title": "Keine Moderation nötig",
+        "text": "Niemand muss etwas leiten. Online buchen, den Link im Team-Chat teilen, und die Eule schickt Rätsel und Tipps von der ersten bis zur letzten Station."
       },
-      "perspective": {
-        "title": "Tapetenwechsel",
-        "description": "Ein paar Stunden raus aus dem Büro, an einem neuen Ort, mit einer ganz anderen Art von Problem."
+      "1": {
+        "title": "Großes Team? Zwei Spiele",
+        "text": "Teilt euch in Gruppen von bis zu {max} Personen auf und bucht für jede ein Spiel. Startet gemeinsam und vergleicht die Zeiten danach beim Kaffee."
       },
-      "inclusive": {
-        "title": "Alle können mitmachen",
-        "description": "Ein Spaziergang im eigenen Tempo mit vielen Pausen. Nichts Anstrengendes, und niemand wird vorgeführt."
+      "2": {
+        "title": "Teams mit mehreren Sprachen",
+        "text": "Das Spiel läuft auf Englisch, Spanisch, Französisch, Deutsch oder Niederländisch, und jede Gruppe wählt ihre Sprache vor dem Start. Zwei Spiele können in zwei Sprachen laufen."
       },
-      "energised": {
-        "title": "Gesprächsstoff",
-        "description": "Ein gemeinsames Erlebnis, auf das das Team noch Wochen später zu sprechen kommt."
-      }
+      "title": "Warum es für Teams funktioniert"
     },
-    "perfectFor": {
-      "title": "Gut für",
-      "subtitle": "Ob ihr ein neues Team aufbaut oder einem bestehenden eine Pause gönnt.",
-      "newTeam": {
-        "title": "Neue im Team",
-        "description": "Neue Leute lernen das Team in entspannter Atmosphäre kennen, weit weg vom Schreibtisch."
-      },
-      "crossDept": {
-        "title": "Abteilungsübergreifend",
-        "description": "Bringt Leute aus verschiedenen Abteilungen zusammen, die sonst kaum miteinander arbeiten."
-      },
-      "morale": {
-        "title": "Ein Dankeschön",
-        "description": "Etwas, das wirklich Spaß macht, als Dank nach einem vollen Quartal."
-      }
-    },
-    "sizes": {
-      "title": "Teamgrößen",
-      "sweetSpot": {
-        "title": "4 bis 10 Personen",
-        "description": "Groß genug für unterschiedliche Ideen, klein genug, dass alle zu Wort kommen."
-      },
-      "multiple": {
-        "title": "Mehr als 10",
-        "description": "Teilt euch in Teams auf und bucht für jedes ein eigenes Spiel. Alle können gleichzeitig starten."
-      },
-      "competition": {
-        "title": "Freundschaftlicher Wettstreit",
-        "description": "Mehrere Teams auf derselben Route, alle starten gemeinsam. Eine offizielle Rangliste gibt es nicht, also darf das Team, das zuerst fertig ist, damit angeben."
-      }
-    },
-    "benefits": {
-      "title": "Was euer Team davon hat",
-      "items": {
-        "0": "Übung im Kommunizieren und Zuhören",
-        "1": "Probleme, gemeinsam gelöst",
-        "2": "Zeit, Kolleginnen und Kollegen richtig kennenzulernen",
-        "3": "Eine Pause von Bildschirmen, Meetings und E-Mails",
-        "4": "Eine Chance für die Stilleren im Team, zu glänzen",
-        "5": "Gemeinsame Geschichten und Insiderwitze"
-      }
-    },
-    "practical": {
-      "title": "Praktische Informationen",
-      "text1": "Bucht online und zahlt per Karte. Wenn ihr eine Rechnung für die Spesenabrechnung braucht oder mehrere Teams auf einmal buchen wollt, schreibt uns.",
-      "text2": "Die Route dauert {duration}, dazu kommen Pausen. Das passt in einen Vormittag oder Nachmittag. Startet, wann es euch passt.",
-      "text3": "Alle brauchen bequeme Schuhe und ein aufgeladenes Smartphone mit mobilen Daten. Mehr gibt es nicht zu organisieren."
+    "twoGroups": {
+      "text": "Eine Buchung gilt für bis zu {max} Personen. Für ein größeres Team teilt ihr euch in Gruppen auf und bucht für jede ein Spiel: dieselbe Route, getrennte Chats. Eine offizielle Rangliste gibt es nicht, also bestimmt das Team, das zuerst zurück ist, wie die Geschichte erzählt wird."
     },
     "faq": {
       "0": {
@@ -599,11 +479,150 @@
         "question": "Gibt es Gruppenpreise?",
         "answer": "Jede Buchung gilt für bis zu 10 Personen zu einem Festpreis. Wenn ihr für eine größere Gruppe bucht, schreibt uns, dann besprechen wir das."
       },
+      "4": {
+        "question": "Wie lange dauert es?",
+        "answer": "Für die Route rechnen wir mit {duration}, plus eventuelle Pausen. Das passt in einen Vormittag oder Nachmittag. Startet, wann es euch passt."
+      },
+      "5": {
+        "question": "Was braucht jeder?",
+        "answer": "Bequeme Schuhe und ein geladenes Handy mit mobilen Daten. Es gibt keine App zum Herunterladen und sonst nichts zu organisieren."
+      },
       "title": "Buchungsfragen von Teams"
     },
     "cta": {
       "text": "Echtes Teamwork, ein Tapetenwechsel und ein paar Stunden raus aus dem Büro.",
       "contactLabel": "Größere Gruppe? Schreibt uns"
+    }
+  },
+  "stagParties": {
+    "hero": {
+      "title": "Tagesprogramm für den Junggesellenabschied in Leeds",
+      "subtitle": "Etwas für tagsüber, bevor der Abend übernimmt. Rätsel in der Innenstadt, bis zu {max} Leute in einem Gruppenchat, und der Trauzeuge muss nur einen Link verschicken."
+    },
+    "notes": {
+      "hero": "Der Bräutigam bekommt keine Sonderbehandlung. Der Trauzeuge auch nicht.",
+      "proof": "Wer das Rätsel vorliest, darf ausgebuht werden. Schneller liest er deshalb nicht."
+    },
+    "proof": {
+      "0": {
+        "title": "Der Tag ist geregelt",
+        "text": "Für die Route rechnen wir mit {duration}, plus Pausen. Startet am späten Vormittag oder nach dem Mittagessen, und ihr seid lange vor dem Abend fertig."
+      },
+      "1": {
+        "title": "Nichts zu organisieren",
+        "text": "Eine Buchung, ein Link im Gruppenchat. Einen festen Termin gibt es auch nicht: Spielt an einem beliebigen Tag in den nächsten {days} Tagen."
+      },
+      "2": {
+        "title": "Alle auf dem eigenen Handy",
+        "text": "Bis zu {max} Leute im selben Chat, und jeder kann antworten. Der Bräutigam bekommt die Rätsel nicht als Erster. Und auch nicht als Letzter."
+      },
+      "title": "Warum es zum Junggesellenabschied passt"
+    },
+    "twoGroups": {
+      "text": "Mehr als {max} Leute? Bucht zwei Spiele und teilt euch in Teams auf. Lauft gemeinsam los, schaut, welches Team zuerst durch ist, und streitet euch danach darüber."
+    },
+    "faq": {
+      "0": {
+        "question": "Wie viele von uns können mitspielen?",
+        "answer": "Bis zu {max} pro Buchung, jeder auf dem eigenen Handy. Für eine größere Gruppe teilt ihr euch in Teams auf und bucht für jedes ein Spiel."
+      },
+      "1": {
+        "question": "Wann sollten wir starten?",
+        "answer": "Wann ihr wollt. Für die Route rechnen wir mit {duration}, plus Pausen. Wer am späten Vormittag oder frühen Nachmittag startet, hat den Abend frei."
+      },
+      "2": {
+        "question": "Müssen wir einen Termin buchen?",
+        "answer": "Nein. Euer Link gilt {days} Tage ab Buchung, und ihr startet, wann die Gruppe so weit ist."
+      },
+      "3": {
+        "question": "Können wir unterwegs Pause machen?",
+        "answer": "Ja. Die Route führt durch die Innenstadt, da gibt es Cafés, Pubs und Sitzgelegenheiten. Pausiert das Spiel und macht weiter, wenn ihr so weit seid."
+      },
+      "4": {
+        "question": "Und wenn das Wetter schlecht ist?",
+        "answer": "Unterwegs gibt es Stellen zum Unterstellen, und ihr könnt das Spiel pausieren und später oder an einem anderen Tag zu Ende spielen."
+      },
+      "5": {
+        "question": "Was, wenn es uns nicht gefällt?",
+        "answer": "Dann bekommt ihr den vollen Betrag zurück, ohne Nachfragen. Schreibt uns einfach innerhalb von 14 Tagen nach dem Spiel."
+      },
+      "title": "Fragen zum Junggesellenabschied"
+    },
+    "cta": {
+      "text": "Der Tag ist geregelt. Der Abend kümmert sich um sich selbst."
+    }
+  },
+  "treasureHunt": {
+    "hero": {
+      "title": "Eine Schnitzeljagd, bei der Leeds der Schatz ist",
+      "subtitle": "Rätsel, die euch zu Fuß durch die Innenstadt schicken, zu Gebäuden, an denen die meisten achtlos vorbeigehen. Die Eule schickt sie in euren Gruppenchat, mit Tipps, wenn ihr festhängt, und dem Weg, wenn ihr euch verlaufen habt."
+    },
+    "differs": {
+      "title": "Keine gewöhnliche Schnitzeljagd",
+      "intro": "Bei einer klassischen Schnitzeljagd hat jemand etwas versteckt, und ihr folgt einer Spur aus Hinweisen, bis ihr es findet. Hier ist es umgekehrt. Versteckt ist nichts. Die Antworten sind längst da, an den Gebäuden und in den Straßen, und bei den Rätseln geht es darum, sie zu bemerken.",
+      "items": {
+        "0": {
+          "title": "Nichts auszugraben",
+          "text": "Keine Schatzkiste, keine Requisiten, nichts zu tragen. Jede Antwort ist offen sichtbar, auf öffentlichen Straßen. Tippt sie in den Chat, und das nächste Rätsel kommt."
+        },
+        "1": {
+          "title": "Rätsel, die den Blick nach oben lenken",
+          "text": "Leeds hat sich einiges vom Schönsten für oberhalb der Ladenschilder aufgehoben. Die Rätsel führen euch hin, und die Eule erzählt zu jedem Fund ein bisschen Geschichte."
+        },
+        "2": {
+          "title": "Ein Guide im Chat",
+          "text": "Die Eule schickt jedes Rätsel, gibt einen Tipp, wenn ihr fragt, und beantwortet Fragen zum Rätsel, zum Wegstück, auf dem ihr gerade seid, und zur restlichen Strecke."
+        },
+        "3": {
+          "title": "Keine Uhr, keine Rangliste",
+          "text": "Niemand stoppt die Zeit, und am Ende gibt es keinen Preis. Macht Mittagspause, spielt an einem anderen Tag weiter oder lasst euch einfach Zeit."
+        }
+      }
+    },
+    "clue": {
+      "title": "So sieht ein Rätsel aus",
+      "text": "Dieses stammt aus unserer Demo, nicht von der echten Route, verrät also nichts. Das Rätsel kommt in den Gruppenchat, alle können eine Antwort tippen, und wenn ihr festhängt, grenzt ein Tipp die Suche ein, ohne die Lösung zu verraten.",
+      "note": "Alle sehen dasselbe Rätsel im selben Moment, jeder auf dem eigenen Handy. Eine App braucht ihr nicht: Es läuft im Browser."
+    },
+    "notes": {
+      "clue": "Auf dieser Route ist nichts vergraben. Alles liegt offen da, meistens ein, zwei Stockwerke höher."
+    },
+    "audiences": {
+      "title": "Vier Arten, es zu spielen",
+      "subtitle": "Dieselben Rätsel, egal mit wem ihr unterwegs seid."
+    },
+    "compare": {
+      "title": "Im Vergleich mit anderen Rallyes und Führungen"
+    },
+    "faq": {
+      "0": {
+        "question": "Gibt es einen Preis?",
+        "answer": "Nein. Es gibt keinen Preis und keine Rangliste. Was ihr bekommt, sind ein paar Stunden in Leeds und einiges, das ihr Leuten zeigen könnt, die noch nie nach oben geschaut haben."
+      },
+      "1": {
+        "question": "Können zwei Teams gegeneinander antreten?",
+        "answer": "Ja. Bucht für jedes Team ein Spiel mit bis zu {max} Personen und startet gemeinsam. Die Spiele wissen nichts voneinander, also macht ihr unter euch aus, wer zuerst durch war."
+      },
+      "2": {
+        "question": "Ist das eine Stadtrallye?",
+        "answer": "So ähnlich, nur ohne Fragebogen. Ihr findet Dinge, statt sie einzusammeln: keine Fotos zum Hochladen, keine Liste zum Abhaken. Ihr entdeckt die Antwort, tippt sie in den Chat, und das nächste Rätsel kommt."
+      },
+      "3": {
+        "question": "Ist das nur etwas für Kinder?",
+        "answer": "Nein. Familien spielen es, aber auch Junggesellinnen- und Junggesellenabschiede und Teams aus dem Büro. Die Rätsel funktionieren für Erwachsene, und Kinder ab 8 können mitmachen."
+      },
+      "4": {
+        "question": "Ist das der Leeds Owl Trail?",
+        "answer": "Nein, und wir haben nichts mit ihm zu tun. Der Leeds Owl Trail ist ein eigener, kostenloser Rundgang zu den Eulen, die man überall in der Stadt entdecken kann, und er lohnt sich. Unsere Eule ist der Guide in eurem Gruppenchat, benannt nach den Eulen im Wappen von Leeds."
+      },
+      "5": {
+        "question": "Wie lange dauert es?",
+        "answer": "Wir schätzen {duration} für die Route, plus eure Pausen. Es gibt kein Zeitlimit, und euer Link gilt {days} Tage, ihr könnt also an einem anderen Tag fertig spielen."
+      },
+      "title": "Fragen zur Schnitzeljagd"
+    },
+    "cta": {
+      "text": "Trommelt die Gruppe zusammen. Die Rätsel warten schon draußen."
     }
   },
   "checkout": {
@@ -616,6 +635,9 @@
     },
     "success": {
       "title": "Alles bereit",
+      "subtitle": "Dein Spiel ist gebucht. Jetzt musst du nur noch einen Link verschicken.",
+      "forwardTitle": "Leite das an deine Gruppe weiter",
+      "forwardText": "Alle öffnen ihn auf dem eigenen Handy und steigen mit ihrem Namen ein. Eine App braucht niemand.",
       "eventLinkLabel": "Dein Spiel-Link",
       "copy": "Kopieren",
       "copied": "Kopiert",
@@ -623,7 +645,14 @@
       "share": "Mit deiner Gruppe teilen",
       "shareTitle": "Mach mit bei meinem City-Roam-Spiel",
       "whatsNext": "Wie geht's weiter",
-      "whatsNextDescription": "Schick den Link an deine Gruppe. Alle öffnen ihn auf dem Handy und geben ihren Namen ein. Wer als Erstes beitritt, leitet die Gruppe und drückt auf Start, sobald alle bereit sind.",
+      "steps": {
+        "0": "Schick den Link an deine Gruppe.",
+        "1": "Alle öffnen ihn auf dem Handy und geben ihren Namen ein.",
+        "2": "Wer als Erstes beitritt, leitet die Gruppe und drückt auf Start, sobald alle da sind."
+      },
+      "note": "Ich bin im Chat, sobald ihr so weit seid. Ich laufe nicht weg.",
+      "giftText": "Kennst du noch jemanden, der Lust darauf hätte?",
+      "giftLink": "Verschenk einen Geschenkgutschein",
       "refundNote": "Nicht zufrieden? Du bekommst dein Geld komplett zurück, ohne Nachfragen.",
       "refundLink": "Rückerstattungsbedingungen"
     }
@@ -949,6 +978,8 @@
   "notFound": {
     "title": "Seite nicht gefunden",
     "description": "Diese Seite gibt es nicht, oder sie ist umgezogen.",
+    "note": "Diese Seite liegt nicht auf der Route. Ich habe zweimal nachgesehen.",
+    "elsewhere": "Oder versucht es hier",
     "backHome": "Zurück zur Startseite"
   },
   "facts": {
@@ -960,5 +991,24 @@
     "distance": "{km, number} km",
     "validity": "Spielt an jedem beliebigen Tag: Der Link gilt {days} Tage",
     "perHead": "Rund {perHead} pro Kopf bei {max} Personen"
+  },
+  "audience": {
+    "heroPrice": "<b>{price}</b> pro Gruppe",
+    "twoGroups": {
+      "title": "Zwei Gruppen? Bucht zwei Spiele.",
+      "points": {
+        "0": "Jedes Spiel für bis zu {max} Personen, alle auf dem eigenen Handy",
+        "1": "Jede Gruppe bekommt ihren eigenen Link und ihren eigenen Chat",
+        "2": "Startet gemeinsam oder zu verschiedenen Zeiten"
+      },
+      "ticket": "Spiel {n}",
+      "ticketPlayers": "Bis zu {max} Personen",
+      "note": "Eine Rangliste zwischen den Spielen gibt es nicht. Wer zuerst durch war, macht ihr unter euch aus."
+    },
+    "treasureLink": "So funktioniert es als Schnitzeljagd",
+    "route": {
+      "title": "Die Route",
+      "subtitle": "Eine Runde durch die Innenstadt von Leeds, zu Fuß. Die Stationen bleiben geheim, bis ihr sie findet."
+    }
   }
 }

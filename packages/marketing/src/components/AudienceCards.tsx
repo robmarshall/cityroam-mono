@@ -5,28 +5,26 @@ import { PhotoSlot } from "@/components/PhotoSlot";
 import type { PhotoSlotName } from "@/lib/photos";
 
 /**
- * One card per audience page, each with its photo slot (the same shot will
- * lead that page in Phase 4). The whole card is the link.
- *
- * TODO(Phase 4): add a stag card once /stag-parties exists, with its own
- * photo slot (S1 in the shot list).
+ * One card per audience page, each with its photo slot (the same shot leads
+ * that page's hero). The whole card is the link.
  */
 const AUDIENCES: {
-  key: "families" | "henParties" | "teamBuilding";
-  href: "/families" | "/hen-parties" | "/team-building";
+  key: "families" | "henParties" | "teamBuilding" | "stagParties";
+  href: "/families" | "/hen-parties" | "/team-building" | "/stag-parties";
   slot: PhotoSlotName;
-  crop: "north" | "east" | "south";
+  crop: "north" | "east" | "south" | "full";
 }[] = [
   { key: "families", href: "/families", slot: "families", crop: "north" },
   { key: "henParties", href: "/hen-parties", slot: "henParties", crop: "east" },
   { key: "teamBuilding", href: "/team-building", slot: "teamBuilding", crop: "south" },
+  { key: "stagParties", href: "/stag-parties", slot: "stagParties", crop: "full" },
 ];
 
 export function AudienceCards({ locale }: { locale: SupportedLanguage }) {
   const t = useTranslations("home.audiences");
 
   return (
-    <ul className="mt-12 grid gap-6 sm:grid-cols-3">
+    <ul className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
       {AUDIENCES.map(({ key, href, slot, crop }) => (
         <li key={key}>
           <Link
@@ -37,7 +35,7 @@ export function AudienceCards({ locale }: { locale: SupportedLanguage }) {
               slot={slot}
               locale={locale}
               crop={crop}
-              sizes="(min-width: 64rem) 20rem, (min-width: 40rem) 33vw, 100vw"
+              sizes="(min-width: 64rem) 15rem, (min-width: 40rem) 50vw, 100vw"
               className="aspect-[16/9] sm:aspect-[4/3]"
             />
             <div className="flex flex-1 flex-col p-6">

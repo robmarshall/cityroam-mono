@@ -1,24 +1,32 @@
 {
   "metadata": {
     "og": {
-      "tagline": "Treasure hunt in Leeds, guided by the Owl"
+      "tagline": "Explore Leeds, guided by the Owl"
     },
     "home": {
-      "title": "City Roam — Treasure hunt in Leeds, guided by the Owl",
-      "description": "A self-guided treasure hunt around Leeds city centre, played in a group chat on your phones. One price for up to 10 people, and no app to download.",
-      "ogImageAlt": "City Roam — Treasure hunt in Leeds, guided by the Owl"
+      "title": "Self-guided walking tour of Leeds, with clues — City Roam",
+      "description": "Explore Leeds city centre on foot: part walking tour, part treasure hunt, played in a group chat on your phones. One price for up to 10, no app to download.",
+      "ogImageAlt": "City Roam — Explore Leeds, guided by the Owl"
     },
     "families": {
       "title": "Family treasure hunt in Leeds — City Roam",
-      "description": "A treasure hunt around Leeds city centre for families with children aged 8 and up. Go at your own pace, stop when you like, and finish another day if you need to."
+      "description": "A walk round Leeds city centre with clues, for families with children aged 8 and up. Go at your own pace, stop when you like, and finish another day if you need to."
     },
     "henParties": {
-      "title": "Hen party treasure hunt in Leeds — City Roam",
-      "description": "A daytime hen do activity in Leeds. Solve clues around the city centre as a group and stop for drinks on the way. One price for up to 10 people."
+      "title": "Hen do activities in Leeds: a walk with clues — City Roam",
+      "description": "A daytime hen do activity in Leeds: clues round the city centre, played in a group chat on your phones. One price for up to 10 people, and no date to book."
     },
     "teamBuilding": {
       "title": "Team building treasure hunt in Leeds — City Roam",
       "description": "Get your team out of the office for a couple of hours. A self-guided treasure hunt around Leeds city centre for teams of up to 10, with no facilitator needed."
+    },
+    "stagParties": {
+      "title": "Stag do activities in Leeds: a walk with clues — City Roam",
+      "description": "A daytime stag do activity in Leeds: clues round the city centre, played in a group chat on your phones. One price for up to 10 people, and no date to book."
+    },
+    "treasureHunt": {
+      "title": "Treasure hunt in Leeds city centre — City Roam",
+      "description": "A treasure hunt round Leeds city centre where the clues are on the buildings, played in a group chat on your phones. One price for up to 10, no app to download."
     }
   },
   "common": {
@@ -27,6 +35,7 @@
       "families": "Families",
       "henParties": "Hen parties",
       "teamBuilding": "Team building",
+      "stagParties": "Stag parties",
       "bookNow": "Book now",
       "toggleMenu": "Menu",
       "changeLanguage": "Change language"
@@ -34,7 +43,12 @@
     "footer": {
       "copyright": "© {year} City Roam. All rights reserved.",
       "company": "{name}. Registered in England and Wales, company number {number}. Registered office: {address}.",
-      "audienceNav": "Who it's for"
+      "audienceNav": "Who it's for",
+      "treasureHunt": "Treasure hunt",
+      "gift": "Gift vouchers"
+    },
+    "legalNav": {
+      "contents": "On this page"
     }
   },
   "cta": {
@@ -114,8 +128,8 @@
   },
   "home": {
     "hero": {
-      "title": "A treasure hunt round Leeds, in your group chat",
-      "subtitle": "Solve clues around the city centre with the Owl, a guide that replies when you ask. Everyone plays in the same chat on their own phone, and there's no app to download.",
+      "title": "Explore Leeds with a guide in your group chat",
+      "subtitle": "Part walking tour, part treasure hunt. The Owl sends clues that make you look up, and a bit of history about what you find. Everyone plays on their own phone, and there's no app to download.",
       "demoCaption": "A few messages from a game"
     },
     "notes": {
@@ -194,7 +208,6 @@
       "badge": "Launch price",
       "note": "Your link works for 90 days. Full refund if you're not happy."
     },
-    "gift": "<b>Buying as a gift?</b> Book it and forward the email. The link works for {days} days from booking, and they start whenever they like.",
     "faqTitle": "Frequently asked questions",
     "compare": {
       "title": "How it compares",
@@ -260,20 +273,28 @@
         }
       }
     },
+    "treasureBand": {
+      "text": "Looking for a treasure hunt in Leeds? This is one, just with more looking up.",
+      "link": "How it works as a treasure hunt"
+    },
     "audiences": {
       "title": "Who it's for",
-      "subtitle": "One game, played three different ways.",
+      "subtitle": "One game, played four different ways.",
       "families": {
         "title": "Families",
         "text": "Clues for the children, stories for the adults, and a pace set by the smallest legs."
       },
       "henParties": {
         "title": "Hen parties",
-        "text": "The classy daytime bit of the weekend, with room for a drinks stop or two."
+        "text": "The daytime bit of the weekend, with everyone on their own phone and no date to book."
       },
       "teamBuilding": {
         "title": "Team building",
         "text": "A couple of hours out of the office, with nothing to organise except the group chat."
+      },
+      "stagParties": {
+        "title": "Stag parties",
+        "text": "The daytime part of the weekend, with the best man's organising done in one link."
       },
       "more": "Find out more"
     },
@@ -296,75 +317,30 @@
   },
   "families": {
     "hero": {
-      "title": "Family adventures made easy",
-      "subtitle": "Turn a walk round Leeds into a treasure hunt. Clues for the children, stories for the adults, and nobody asking how much further."
+      "title": "A family day out round Leeds, with clues",
+      "subtitle": "Clues for the children, stories for the adults, and a pace set by the smallest legs. Everyone plays in the same group chat, and there's no app to download."
     },
-    "problem": {
-      "text1": "<b>Tired of hearing “Are we nearly there yet?”</b> City Roam turns a walk round town into a game the whole family plays together.",
-      "text2": "Instead of dragging the children from sight to sight, let them race ahead to crack the next clue. Everyone picks up a few stories about the city on the way.",
-      "text3": "It works for mixed ages, from curious 8-year-olds to teenagers and grandparents. Everyone can chip in."
+    "notes": {
+      "hero": "Ask me how much further as often as you like. I'll answer every time, and I won't sigh.",
+      "proof": "There's no clock on this game. Stopping for lunch costs you nothing."
     },
-    "whyLove": {
-      "title": "Why families like it",
-      "engaged": {
-        "title": "Keeps everyone involved",
-        "description": "There's always a next clue to solve, which does wonders for tired legs."
+    "proof": {
+      "0": {
+        "title": "Children can answer too",
+        "text": "Anyone in the chat can type an answer. Hand the phone over, or let older children join on their own and race you to it."
       },
-      "educational": {
-        "title": "Learning, quietly",
-        "description": "History, architecture and local stories, without it feeling like a school trip."
+      "1": {
+        "title": "Your pace, not a tour's",
+        "text": "No guide to keep up with and no time limit. Stop for a closer look, double back, or dawdle. The game waits."
       },
-      "allAges": {
-        "title": "Works across the ages",
-        "description": "Younger children spot things, teenagers type the answers, and the adults argue about the history."
+      "2": {
+        "title": "Stop for lunch",
+        "text": "Pause whenever you like and carry on after a sandwich, or on another day. Your progress is saved and the link lasts {days} days."
       },
-      "bonding": {
-        "title": "One team",
-        "description": "Everyone works on the same clue at the same time. It's a shared effort, not a tour."
-      }
+      "title": "Why it works with children"
     },
-    "perfectFor": {
-      "title": "Good for",
-      "subtitle": "Whether you live in Leeds or you're visiting for the weekend.",
-      "grandparents": {
-        "title": "Visiting grandparents",
-        "description": "A gentle walk for them, a game for the children, and stories everyone can enjoy."
-      },
-      "weekend": {
-        "title": "Weekends",
-        "description": "Turn an ordinary Saturday into a day out, and find corners of your own city you didn't know were there."
-      },
-      "holidays": {
-        "title": "School holidays",
-        "description": "Something to do that isn't a screen at home. Well, it is a screen, but you're outside."
-      }
-    },
-    "howItWorks": {
-      "title": "How it works with children",
-      "step1Title": "Start when you're ready",
-      "step1Desc": "No tour group to meet at a set time. Start once everyone's fed and has been to the loo.",
-      "step2Title": "Take turns",
-      "step2Desc": "Let a different person lead each clue, so everyone gets a turn at being right.",
-      "step3Title": "Take your time",
-      "step3Desc": "Stop for an ice cream or a run around. The game waits for you."
-    },
-    "features": {
-      "title": "The practical bits",
-      "subtitle": "Planned with real family outings in mind.",
-      "items": {
-        "0": "A mostly flat route on city-centre pavements, fine for pushchairs",
-        "1": "Clues pitched at ages 8 and up, younger with help",
-        "2": "Plenty of places for snacks and toilet stops",
-        "3": "History and stories that don't feel like homework",
-        "4": "Dogs welcome",
-        "5": "Pause and finish another day"
-      }
-    },
-    "safety": {
-      "title": "Safety and practical information",
-      "text1": "The route stays in busy parts of the city centre, with shops and cafés close by throughout.",
-      "text2": "It's about {distance} and mostly flat, so it suits little legs and pushchairs. Children should stay with an adult, and keep an eye on traffic when heads are down over a phone.",
-      "text3": "If the weather turns or someone runs out of energy, pause the game and finish it another day. Your link works for 90 days."
+    "twoGroups": {
+      "text": "Coming with another family, or the cousins? Book a game each. You each get your own chat, and you can set off together and see who finishes first."
     },
     "faq": {
       "0": {
@@ -391,6 +367,10 @@
         "question": "Do children need their own phones?",
         "answer": "No. One phone per family works fine, and gathering round it to solve a clue is half the fun. Older children can join on their own phones if they like."
       },
+      "6": {
+        "question": "Is it safe for children?",
+        "answer": "The route stays in busy parts of the city centre, with shops and cafés throughout. Children should stay with an adult, and keep an eye on the traffic when heads are down over a phone."
+      },
       "title": "Questions from families"
     },
     "cta": {
@@ -399,80 +379,30 @@
   },
   "henParties": {
     "hero": {
-      "title": "A hen do treasure hunt in Leeds",
-      "subtitle": "Solve clues around the city as a group, stop for drinks on the way, and give the bride-to-be something a bit different."
+      "title": "A daytime hen do activity in Leeds",
+      "subtitle": "The daytime bit of the weekend: clues round the city centre, everyone in the same group chat on their own phone, and the evening left exactly where you planned it."
     },
-    "problem": {
-      "text1": "<b>Skip the usual hen do activities.</b> City Roam gets everyone working together, whether they've known the bride for twenty years or twenty minutes.",
-      "text2": "No forced party games. Just your group, a trail of clues around Leeds, and plenty of excuses to stop for a drink and a photo.",
-      "text3": "Up to 10 people play on one booking, each on their own phone. Bigger group? Book two games and split into teams."
+    "notes": {
+      "hero": "I don't do sashes. I do clues, and a hint if the bride looks worried.",
+      "proof": "Everyone gets the clue at the same moment, so nobody's crowded round the one phone that still has battery."
     },
-    "whyLove": {
-      "title": "Why it works for a hen do",
-      "different": {
-        "title": "Something different",
-        "description": "A change from the usual hen do line-up, and a story to tell afterwards."
+    "proof": {
+      "0": {
+        "title": "No date to book",
+        "text": "Book now and play any day in the next {days} days. If the plans move, the game moves with them."
       },
-      "group": {
-        "title": "A natural icebreaker",
-        "description": "Friends from school, work and university all end up on the same team, working on the same clue."
+      "1": {
+        "title": "Everyone on their own phone",
+        "text": "Up to {max} of you in one group chat, and anyone can answer. Friends from school, work and university are on the same team from the first clue."
       },
-      "instagram": {
-        "title": "Good photo stops",
-        "description": "You'll pass some of the best-looking streets and buildings in Leeds, so the group photos take care of themselves."
+      "2": {
+        "title": "Fits round the rest of the day",
+        "text": "We estimate {duration} for the route, plus however long you stop. Start after brunch and you're done well before dinner."
       },
-      "timing": {
-        "title": "Fits around your plans",
-        "description": "Play in the daytime before dinner and drinks, or as a gentle start to the weekend."
-      }
+      "title": "Why it works for a hen do"
     },
-    "styles": {
-      "title": "Whatever kind of hen do",
-      "subtitle": "Low-key afternoon or full weekend, it fits in.",
-      "daytime": {
-        "title": "Daytime",
-        "description": "A good way to start the weekend: get everyone together, break the ice and build up an appetite."
-      },
-      "alternative": {
-        "title": "Something alternative",
-        "description": "For brides who'd rather skip the usual hen party circuit."
-      },
-      "mixed": {
-        "title": "Mixed groups",
-        "description": "Ideal when the guests don't all know each other yet. The clues give everyone something to talk about."
-      }
-    },
-    "organise": {
-      "title": "Easy to organise",
-      "perfectSize": {
-        "title": "Up to 10 per booking",
-        "description": "Small enough to stay together and hear each other. For bigger groups, book one game per team."
-      },
-      "simple": {
-        "title": "One booking, one link",
-        "description": "Pay once, share the link in the group chat, and you're done. Nobody has to download anything."
-      },
-      "special": {
-        "title": "All about the bride",
-        "description": "Something thoughtful and a bit different, with all her favourite people on the same team."
-      }
-    },
-    "special": {
-      "title": "What's in it",
-      "items": {
-        "0": "Photo stops at some of the best-looking spots in Leeds",
-        "1": "Clues that get the whole group working together",
-        "2": "Start whenever suits your plans",
-        "3": "A story for the wedding speeches",
-        "4": "Pubs and bars along the way for a drink mid-game",
-        "5": "Easy for the organiser: one booking, one link"
-      }
-    },
-    "safety": {
-      "title": "Practical information",
-      "text1": "The route stays in busy parts of the city centre, with pubs, cafés and shops along the way.",
-      "text2": "Start whenever suits you: a morning game before lunch, or an afternoon one that runs into dinner and drinks.",
-      "text3": "Groups tend to stick together while they solve clues. Keep an eye on the traffic, and pace the drinks: the clues get harder, not easier."
+    "twoGroups": {
+      "text": "More than {max} coming? Split into two teams and book a game each. Set off together and see which team gets round first."
     },
     "faq": {
       "0": {
@@ -489,7 +419,7 @@
       },
       "3": {
         "question": "Can we stop for a drink?",
-        "answer": "Yes. The route goes past plenty of pubs and bars, and lots of groups stop for one partway round."
+        "answer": "Yes, if you like. The route runs through the city centre, so there are cafés, pubs and bars along the way. Pause the game while you're in and carry on afterwards."
       },
       "4": {
         "question": "What if some of the group don't know each other?",
@@ -507,80 +437,30 @@
   },
   "teamBuilding": {
     "hero": {
-      "title": "Team building beyond the boardroom",
-      "subtitle": "Get your team out of the office and solving problems together somewhere new. No facilitator, no trust falls, and it's genuinely good fun."
+      "title": "Team building round Leeds, with no facilitator",
+      "subtitle": "A couple of hours out of the office, with no facilitator and no flipchart. Book it, share the link, and the Owl sends the clues."
     },
-    "problem": {
-      "text1": "<b>Forget awkward icebreakers and trust falls.</b> City Roam gets people working together because the clues need it.",
-      "text2": "Colleagues who barely speak in meetings end up arguing over a riddle. Quiet team members crack the clue everyone else missed.",
-      "text3": "One booking covers up to 10 people. For larger groups, book one game per team and start at the same time."
+    "notes": {
+      "hero": "No lanyards, no flipchart. Just the clue, and whoever reads it out first.",
+      "proof": "Two games don't know about each other. Compare your times afterwards; I won't take sides."
     },
-    "whyChoose": {
-      "title": "Why teams choose City Roam",
-      "collaboration": {
-        "title": "Real collaboration",
-        "description": "The group has to share ideas, split up the thinking and agree on an answer. That happens without anyone running it."
+    "proof": {
+      "0": {
+        "title": "No facilitator needed",
+        "text": "Nobody has to run it. Book online, share the link in the team chat, and the Owl sends the clues and hints from the first stop to the last."
       },
-      "perspective": {
-        "title": "A change of scene",
-        "description": "A few hours out of the office, somewhere new, with a different sort of problem to solve."
+      "1": {
+        "title": "Big team? Two games",
+        "text": "Split into groups of up to {max} and book a game each. Start together, then compare finish times over coffee."
       },
-      "inclusive": {
-        "title": "Everyone can take part",
-        "description": "A walk at your own pace with plenty of stops. Nothing strenuous, and nobody put on the spot."
+      "2": {
+        "title": "Mixed-language teams",
+        "text": "The game runs in English, Spanish, French, German or Dutch, and each group picks its language before it starts. Two games can run in two languages."
       },
-      "energised": {
-        "title": "Something to talk about",
-        "description": "A shared experience the team will still be bringing up weeks later."
-      }
+      "title": "Why it works for teams"
     },
-    "perfectFor": {
-      "title": "Good for",
-      "subtitle": "Whether you're building a new team or giving an existing one a break.",
-      "newTeam": {
-        "title": "New starters",
-        "description": "Help new people get to know the team somewhere relaxed, away from their desks."
-      },
-      "crossDept": {
-        "title": "Cross-team days",
-        "description": "Mix people from different departments who don't usually work together."
-      },
-      "morale": {
-        "title": "A thank you",
-        "description": "Something genuinely enjoyable to say thanks after a busy quarter."
-      }
-    },
-    "sizes": {
-      "title": "Team sizes",
-      "sweetSpot": {
-        "title": "4 to 10 people",
-        "description": "Big enough for a spread of ideas, small enough that everyone gets a say."
-      },
-      "multiple": {
-        "title": "More than 10",
-        "description": "Split into teams and book one game for each. Everyone can start at the same time."
-      },
-      "competition": {
-        "title": "Friendly rivalry",
-        "description": "Several teams on the same route, starting together. There's no official scoreboard, so the first team to finish claims the bragging rights."
-      }
-    },
-    "benefits": {
-      "title": "What your team gets out of it",
-      "items": {
-        "0": "Practice at communicating and listening",
-        "1": "Problems solved as a group",
-        "2": "Time to get to know colleagues properly",
-        "3": "A break from screens, meetings and email",
-        "4": "A chance for quieter team members to shine",
-        "5": "Shared stories and in-jokes"
-      }
-    },
-    "practical": {
-      "title": "Practical information",
-      "text1": "Book online and pay by card. If you need an invoice for expenses, or want to book several teams at once, email us.",
-      "text2": "We estimate {duration} for the route, plus any stops, so it fits into a morning or an afternoon. Start whenever suits you.",
-      "text3": "Everyone needs comfortable shoes and a charged smartphone with mobile data. There's nothing else to organise."
+    "twoGroups": {
+      "text": "One booking covers up to {max}. For a bigger team, split into groups and book a game for each: the same route, separate chats. There's no official scoreboard, so the first team back decides how the story gets told."
     },
     "faq": {
       "0": {
@@ -599,11 +479,150 @@
         "question": "Do you offer group pricing?",
         "answer": "Each booking covers up to 10 people at a single price. If you're booking for a larger group, email us and we'll talk it through."
       },
+      "4": {
+        "question": "How long does it take?",
+        "answer": "We estimate {duration} for the route, plus any stops, so it fits into a morning or an afternoon. Start whenever suits you."
+      },
+      "5": {
+        "question": "What does everyone need?",
+        "answer": "Comfortable shoes and a charged phone with mobile data. There's no app to download and nothing else to organise."
+      },
       "title": "Booking questions from teams"
     },
     "cta": {
       "text": "Real teamwork, a change of scene, and a few hours out of the office.",
       "contactLabel": "Email us about larger groups"
+    }
+  },
+  "stagParties": {
+    "hero": {
+      "title": "A daytime stag do activity in Leeds",
+      "subtitle": "Something for the daytime, before the evening takes over. Clues round the city centre, up to {max} of you in one group chat, and nothing for the best man to organise beyond a link."
+    },
+    "notes": {
+      "hero": "The groom gets no special treatment. Neither does the best man.",
+      "proof": "Heckling whoever reads the clue out is allowed. It won't make them read any faster."
+    },
+    "proof": {
+      "0": {
+        "title": "The daytime bit, sorted",
+        "text": "We estimate {duration} for the route, plus stops. Start late morning or after lunch and you're done with time to spare before the evening."
+      },
+      "1": {
+        "title": "Nothing to organise",
+        "text": "One booking, one link in the group chat. No date to book either: play any day in the next {days} days."
+      },
+      "2": {
+        "title": "Everyone on their own phone",
+        "text": "Up to {max} of you in the same chat, and anyone can answer. The groom doesn't get the clues first. Or last."
+      },
+      "title": "Why it works for a stag do"
+    },
+    "twoGroups": {
+      "text": "More than {max} of you? Book two games and split into teams. Set off together, see which team gets round first, then argue about it."
+    },
+    "faq": {
+      "0": {
+        "question": "How many of us can play?",
+        "answer": "Up to {max} on one booking, each on their own phone. For a bigger group, split into teams and book a game for each."
+      },
+      "1": {
+        "question": "What time should we start?",
+        "answer": "Whenever you like. We estimate {duration} for the route, plus stops, so late morning or early afternoon leaves the evening free."
+      },
+      "2": {
+        "question": "Do we have to book a date?",
+        "answer": "No. Your link works for {days} days from booking, and you start whenever the group is ready."
+      },
+      "3": {
+        "question": "Can we stop along the way?",
+        "answer": "Yes. The route runs through the city centre, so there are cafés, pubs and places to sit. Pause the game and carry on when you're ready."
+      },
+      "4": {
+        "question": "What if the weather's bad?",
+        "answer": "There are places to shelter along the way, and you can pause the game and finish it later or on another day."
+      },
+      "5": {
+        "question": "What if we don't enjoy it?",
+        "answer": "We'll refund you in full, no questions asked. Just email us within 14 days of playing."
+      },
+      "title": "Stag do questions"
+    },
+    "cta": {
+      "text": "Sort the daytime. The evening can look after itself."
+    }
+  },
+  "treasureHunt": {
+    "hero": {
+      "title": "A treasure hunt where the treasure is Leeds",
+      "subtitle": "Clues that send you round the city centre on foot, looking at buildings most people walk straight past. The Owl sends them to your group chat, with hints when you're stuck and directions when you're lost."
+    },
+    "differs": {
+      "title": "Not the usual treasure hunt",
+      "intro": "A traditional treasure hunt means someone has hidden something, and you follow a trail of clues to find it. This one works the other way round. Nothing is hidden. The answers are already out there, on the buildings and in the streets, and the clues are about noticing them.",
+      "items": {
+        "0": {
+          "title": "Nothing to dig up",
+          "text": "No chest, no props and nothing to carry. Every answer is out in the open on public streets. Type it into the chat and the next clue arrives."
+        },
+        "1": {
+          "title": "Clues that make you look up",
+          "text": "Leeds saved some of its best work for above the shop signs. The clues send you to it, and the Owl adds a bit of history once you've found each one."
+        },
+        "2": {
+          "title": "A guide in the chat",
+          "text": "The Owl sends each clue, gives a hint when you ask, and answers questions about the clue, the stretch you're walking and how far there is to go."
+        },
+        "3": {
+          "title": "No clock and no scoreboard",
+          "text": "Nobody is timing you and there's no prize at the end. Stop for lunch, pause and finish another day, or just take your time."
+        }
+      }
+    },
+    "clue": {
+      "title": "What a clue looks like",
+      "text": "This one is from our demo rather than the real route, so it gives nothing away. The clue arrives in the group chat, anyone can type a guess, and if you're stuck a hint narrows it down without handing you the answer.",
+      "note": "Everyone sees the same clue at the same moment, on their own phone. There's no app to download: it runs in your browser."
+    },
+    "notes": {
+      "clue": "Nothing on this route is buried. It's all in plain sight, usually a floor or two up."
+    },
+    "audiences": {
+      "title": "Played four ways",
+      "subtitle": "The same clues, whoever you're with."
+    },
+    "compare": {
+      "title": "Against other hunts and tours"
+    },
+    "faq": {
+      "0": {
+        "question": "Is there a prize?",
+        "answer": "No. There's no prize and no scoreboard. What you get is a couple of hours in Leeds, and a few things to point out to people who've never looked up."
+      },
+      "1": {
+        "question": "Can two teams race each other?",
+        "answer": "Yes. Book a game for each team, of up to {max} each, and set off together. The games don't know about each other, so who got round first is for you to settle."
+      },
+      "2": {
+        "question": "Is it a scavenger hunt?",
+        "answer": "Close. You find things rather than collect them: there are no photos to upload and no list to tick off. You spot the answer, type it into the chat, and the next clue arrives."
+      },
+      "3": {
+        "question": "Is it just for children?",
+        "answer": "No. Families play it, and so do hen parties, stag dos and teams from work. The clues work for adults, and children aged 8 and up can join in."
+      },
+      "4": {
+        "question": "Is it the Leeds Owl Trail?",
+        "answer": "No, and we're not connected to it. The Leeds Owl Trail is a separate, free walk round the owls you can spot across the city, and it's worth doing. Our Owl is the guide in your group chat, named after the owls on the Leeds coat of arms."
+      },
+      "5": {
+        "question": "How long does it take?",
+        "answer": "We estimate {duration} for the route, plus however long you stop for. There's no time limit, and your link works for {days} days, so you can finish another day."
+      },
+      "title": "Treasure hunt questions"
+    },
+    "cta": {
+      "text": "Round up the group. The clues are already out there."
     }
   },
   "checkout": {
@@ -616,6 +635,9 @@
     },
     "success": {
       "title": "You're all set",
+      "subtitle": "Your game is booked. The rest is sending one link.",
+      "forwardTitle": "Forward this to your group",
+      "forwardText": "Everyone opens it on their own phone and joins with their name. There's no app to download.",
       "eventLinkLabel": "Your game link",
       "copy": "Copy",
       "copied": "Copied",
@@ -623,7 +645,14 @@
       "share": "Share with your group",
       "shareTitle": "Join my City Roam game",
       "whatsNext": "What happens next",
-      "whatsNextDescription": "Send the link to your group. Everyone opens it on their phone and enters their name. The first person to join is the group lead, and presses start when everyone's ready.",
+      "steps": {
+        "0": "Send the link to your group.",
+        "1": "Everyone opens it on their phone and adds their name.",
+        "2": "The first person to join is the group lead, and presses start when everyone's there."
+      },
+      "note": "I'll be in the chat whenever you're ready. I'm not going anywhere.",
+      "giftText": "Know someone else who'd like a go?",
+      "giftLink": "Send them a gift voucher",
       "refundNote": "Not happy? Get a full refund, no questions asked.",
       "refundLink": "Refunds policy"
     }
@@ -949,6 +978,8 @@
   "notFound": {
     "title": "Page not found",
     "description": "That page doesn't exist, or it has moved.",
+    "note": "This page isn't on the route. I checked twice.",
+    "elsewhere": "Or try one of these",
     "backHome": "Back to home"
   },
   "facts": {
@@ -960,5 +991,24 @@
     "distance": "{km, number} km ({miles, number} miles)",
     "validity": "Play any day: the link lasts {days} days",
     "perHead": "About {perHead} each for a group of {max}"
+  },
+  "audience": {
+    "heroPrice": "<b>{price}</b> per group",
+    "twoGroups": {
+      "title": "Two groups? Book two games.",
+      "points": {
+        "0": "Each game takes up to {max} players, each on their own phone",
+        "1": "Each group gets its own link and its own chat",
+        "2": "Start together, or at different times"
+      },
+      "ticket": "Game {n}",
+      "ticketPlayers": "Up to {max} players",
+      "note": "There's no scoreboard between games. Who got round first is for you to settle."
+    },
+    "treasureLink": "How it works as a treasure hunt",
+    "route": {
+      "title": "The route",
+      "subtitle": "One loop of Leeds city centre, on foot. The stops stay secret until you find them."
+    }
   }
 }

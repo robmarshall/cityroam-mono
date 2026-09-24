@@ -1,24 +1,32 @@
 {
   "metadata": {
     "og": {
-      "tagline": "Búsqueda del tesoro en Leeds, guiada por el Búho"
+      "tagline": "Explora Leeds con el Búho como guía"
     },
     "home": {
-      "title": "City Roam — Búsqueda del tesoro en Leeds, guiada por el Búho",
-      "description": "Una búsqueda del tesoro por libre en el centro de Leeds, en un chat de grupo desde el móvil. Un precio para hasta 10 personas y sin app que descargar.",
-      "ogImageAlt": "City Roam — Búsqueda del tesoro en Leeds, guiada por el Búho"
+      "title": "Ruta a pie autoguiada por Leeds, con pistas — City Roam",
+      "description": "Recorre el centro de Leeds: mitad ruta a pie, mitad búsqueda del tesoro, jugada en un chat de grupo desde el móvil. Un solo precio para hasta 10 y sin app que descargar.",
+      "ogImageAlt": "City Roam — Explora Leeds con el Búho como guía"
     },
     "families": {
       "title": "Búsqueda del tesoro en familia en Leeds — City Roam",
-      "description": "Búsqueda del tesoro por el centro de Leeds para familias con niños a partir de 8 años. A vuestro ritmo, con pausas y la opción de terminar otro día."
+      "description": "Un paseo con pistas por el centro de Leeds para familias con niños a partir de 8 años. A vuestro ritmo, con pausas y la opción de terminar otro día."
     },
     "henParties": {
-      "title": "Búsqueda del tesoro para despedidas de soltera en Leeds — City Roam",
-      "description": "Un plan de día para despedidas de soltera en Leeds: pistas por el centro en grupo y paradas para tomar algo. Un solo precio para hasta 10 personas."
+      "title": "Actividades para despedidas de soltera en Leeds — City Roam",
+      "description": "Un plan de día para despedidas de soltera en Leeds: pistas por el centro, en un chat de grupo desde el móvil. Un solo precio para hasta 10 personas y sin fecha que reservar."
     },
     "teamBuilding": {
       "title": "Búsqueda del tesoro de team building en Leeds — City Roam",
       "description": "Saca a tu equipo de la oficina un par de horas. Una búsqueda del tesoro por libre en el centro de Leeds para equipos de hasta 10, sin dinamizador."
+    },
+    "stagParties": {
+      "title": "Actividades para despedidas de soltero en Leeds — City Roam",
+      "description": "Un plan de día para despedidas de soltero en Leeds: pistas por el centro, en un chat de grupo desde el móvil. Un solo precio para hasta 10 personas y sin fecha que reservar."
+    },
+    "treasureHunt": {
+      "title": "Búsqueda del tesoro en el centro de Leeds — City Roam",
+      "description": "Una búsqueda del tesoro por el centro de Leeds en la que las pistas están en los edificios, jugada en un chat de grupo desde el móvil. Un precio para hasta 10 y sin app."
     }
   },
   "common": {
@@ -27,6 +35,7 @@
       "families": "Familias",
       "henParties": "Despedidas de soltera",
       "teamBuilding": "Team building",
+      "stagParties": "Despedidas de soltero",
       "bookNow": "Reservar",
       "toggleMenu": "Menú",
       "changeLanguage": "Cambiar idioma"
@@ -34,7 +43,12 @@
     "footer": {
       "copyright": "© {year} City Roam. Todos los derechos reservados.",
       "company": "{name}. Sociedad registrada en Inglaterra y Gales, número de sociedad {number}. Domicilio social: {address}.",
-      "audienceNav": "Para quién es"
+      "audienceNav": "Para quién es",
+      "treasureHunt": "Búsqueda del tesoro",
+      "gift": "Tarjetas regalo"
+    },
+    "legalNav": {
+      "contents": "En esta página"
     }
   },
   "cta": {
@@ -114,8 +128,8 @@
   },
   "home": {
     "hero": {
-      "title": "Una búsqueda del tesoro por Leeds, en vuestro chat de grupo",
-      "subtitle": "Resolved pistas por el centro con el Búho, un guía que os contesta cuando le preguntáis. Todos jugáis en el mismo chat, cada uno desde su móvil, y no hay que descargar ninguna app.",
+      "title": "Explora Leeds con un guía en vuestro chat de grupo",
+      "subtitle": "Mitad ruta a pie, mitad búsqueda del tesoro. El Búho os manda pistas que os hacen mirar hacia arriba, y un poco de historia sobre lo que encontráis. Cada uno juega desde su móvil y no hay que descargar ninguna app.",
       "demoCaption": "Unos mensajes de una partida"
     },
     "notes": {
@@ -194,7 +208,6 @@
       "badge": "Precio de lanzamiento",
       "note": "El enlace funciona durante 90 días. Si no te convence, te devolvemos el dinero."
     },
-    "gift": "<b>¿Es un regalo?</b> Reservadlo y reenviad el correo. El enlace funciona durante {days} días desde la reserva, y pueden empezar cuando quieran.",
     "faqTitle": "Preguntas frecuentes",
     "compare": {
       "title": "Cómo se compara",
@@ -260,20 +273,28 @@
         }
       }
     },
+    "treasureBand": {
+      "text": "¿Os apetece una búsqueda del tesoro en Leeds? Esto es una, solo que aquí se mira mucho más hacia arriba.",
+      "link": "Cómo funciona como búsqueda del tesoro"
+    },
     "audiences": {
       "title": "Para quién es",
-      "subtitle": "Un juego, tres maneras de jugarlo.",
+      "subtitle": "Un juego, cuatro maneras de jugarlo.",
       "families": {
         "title": "Familias",
         "text": "Pistas para los niños, historias para los adultos y un ritmo que marcan las piernas más cortas."
       },
       "henParties": {
         "title": "Despedidas de soltera",
-        "text": "La parte elegante y diurna del fin de semana, con sitio para una o dos paradas a tomar algo."
+        "text": "La parte de día del fin de semana, cada cual con su móvil y sin fecha que reservar."
       },
       "teamBuilding": {
         "title": "Team building",
         "text": "Un par de horas fuera de la oficina, sin nada que organizar salvo el chat de grupo."
+      },
+      "stagParties": {
+        "title": "Despedidas de soltero",
+        "text": "La parte diurna del fin de semana, con todo lo que tiene que organizar el padrino resuelto en un enlace."
       },
       "more": "Saber más"
     },
@@ -296,75 +317,30 @@
   },
   "families": {
     "hero": {
-      "title": "Aventuras en familia sin complicaciones",
-      "subtitle": "Convertid un paseo por Leeds en una búsqueda del tesoro. Pistas para los niños, historias para los mayores y nadie preguntando cuánto falta."
+      "title": "Un día en familia por Leeds, con pistas",
+      "subtitle": "Pistas para los niños, historias para los adultos y un ritmo que marcan las piernas más cortas. Todos jugáis en el mismo chat de grupo, y no hay que descargar ninguna app."
     },
-    "problem": {
-      "text1": "<b>¿Hartos de oír «¿falta mucho?»?</b> City Roam convierte un paseo por la ciudad en un juego al que juega toda la familia junta.",
-      "text2": "En lugar de arrastrar a los niños de monumento en monumento, dejad que se adelanten corriendo para resolver la siguiente pista. Por el camino, todos os lleváis alguna historia de la ciudad.",
-      "text3": "Funciona con edades mezcladas, desde curiosos de 8 años hasta adolescentes y abuelos. Todos pueden aportar algo."
+    "notes": {
+      "hero": "Preguntadme cuánto falta todas las veces que queráis. Contestaré siempre, y sin suspirar.",
+      "proof": "Este juego no tiene reloj. Parar a comer no os cuesta nada."
     },
-    "whyLove": {
-      "title": "Por qué gusta a las familias",
-      "engaged": {
-        "title": "Todos participan",
-        "description": "Siempre hay otra pista por resolver, y eso obra milagros con las piernas cansadas."
+    "proof": {
+      "0": {
+        "title": "Los niños también pueden responder",
+        "text": "Cualquiera en el chat puede escribir una respuesta. Pasadles el móvil, o dejad que los mayores se unan desde el suyo y os ganen por la mano."
       },
-      "educational": {
-        "title": "Se aprende sin darse cuenta",
-        "description": "Historia, arquitectura y anécdotas locales, sin que parezca una excursión del colegio."
+      "1": {
+        "title": "A vuestro ritmo, no al de un tour",
+        "text": "Sin guía al que seguir y sin límite de tiempo. Parad a mirar algo de cerca, volved sobre vuestros pasos o id sin prisa. El juego espera."
       },
-      "allAges": {
-        "title": "Para todas las edades",
-        "description": "Los pequeños encuentran cosas, los adolescentes escriben las respuestas y los adultos discuten sobre la historia."
+      "2": {
+        "title": "Parad a comer",
+        "text": "Pausad cuando queráis y seguid después de un bocadillo, u otro día. Vuestro progreso se guarda y el enlace dura {days} días."
       },
-      "bonding": {
-        "title": "Un solo equipo",
-        "description": "Todos trabajan en la misma pista a la vez. Es un esfuerzo compartido, no una visita guiada."
-      }
+      "title": "Por qué funciona con niños"
     },
-    "perfectFor": {
-      "title": "Ideal para",
-      "subtitle": "Tanto si vivís en Leeds como si estáis de visita el fin de semana.",
-      "grandparents": {
-        "title": "Visita de los abuelos",
-        "description": "Un paseo tranquilo para ellos, un juego para los niños e historias para todos."
-      },
-      "weekend": {
-        "title": "Fines de semana",
-        "description": "Convertid un sábado cualquiera en un día de excursión y descubrid rincones de vuestra propia ciudad que no sabíais que existían."
-      },
-      "holidays": {
-        "title": "Vacaciones escolares",
-        "description": "Un plan que no consiste en mirar una pantalla en casa. Vale, hay pantalla, pero al aire libre."
-      }
-    },
-    "howItWorks": {
-      "title": "Cómo funciona con niños",
-      "step1Title": "Empezad cuando estéis listos",
-      "step1Desc": "No hay que llegar a ninguna hora para unirse a un grupo. Empezad cuando todos hayan comido y pasado por el baño.",
-      "step2Title": "Por turnos",
-      "step2Desc": "Que cada pista la lleve una persona distinta, para que todos tengan su turno de acertar.",
-      "step3Title": "Tomaos vuestro tiempo",
-      "step3Desc": "Parad a por un helado o a correr un rato. El juego os espera."
-    },
-    "features": {
-      "title": "Lo práctico",
-      "subtitle": "Pensado para cómo son de verdad las salidas en familia.",
-      "items": {
-        "0": "Ruta casi llana por las aceras del centro, sin problema para carritos",
-        "1": "Pistas pensadas para mayores de 8 años; los más pequeños, con ayuda",
-        "2": "Muchos sitios para picar algo o ir al baño",
-        "3": "Historia y anécdotas que no parecen deberes",
-        "4": "Se admiten perros",
-        "5": "Pausad y terminad otro día"
-      }
-    },
-    "safety": {
-      "title": "Seguridad e información práctica",
-      "text1": "La ruta va por zonas concurridas del centro, con tiendas y cafeterías cerca en todo momento.",
-      "text2": "Son unos {distance}, casi todo llano, así que va bien para piernas pequeñas y carritos. Los niños deben ir con un adulto, y ojo con el tráfico cuando todo el mundo va mirando el móvil.",
-      "text3": "Si cambia el tiempo o alguien se queda sin energía, pausad el juego y terminadlo otro día. El enlace funciona durante 90 días."
+    "twoGroups": {
+      "text": "¿Venís con otra familia, o con los primos? Reservad una partida cada uno. Cada familia tiene su propio chat, y podéis salir a la vez y ver quién termina antes."
     },
     "faq": {
       "0": {
@@ -391,6 +367,10 @@
         "question": "¿Los niños necesitan su propio móvil?",
         "answer": "No. Con un móvil por familia basta, y juntarse alrededor para resolver una pista es la mitad de la gracia. Los niños mayores pueden unirse desde su propio móvil si quieren."
       },
+      "6": {
+        "question": "¿Es seguro para los niños?",
+        "answer": "La ruta va por zonas concurridas del centro, con tiendas y cafeterías por todas partes. Los niños deben ir con un adulto, y ojo con el tráfico cuando todo el mundo va mirando el móvil."
+      },
       "title": "Preguntas de las familias"
     },
     "cta": {
@@ -399,80 +379,30 @@
   },
   "henParties": {
     "hero": {
-      "title": "Búsqueda del tesoro para despedidas de soltera en Leeds",
-      "subtitle": "Resolved pistas por la ciudad en grupo, parad a tomar algo por el camino y regaladle a la novia algo un poco distinto."
+      "title": "Un plan de día para despedidas de soltera en Leeds",
+      "subtitle": "La parte diurna del fin de semana: pistas por el centro, todas en el mismo chat de grupo desde su propio móvil, y la noche justo donde la teníais planeada."
     },
-    "problem": {
-      "text1": "<b>Olvidaos de los planes de despedida de siempre.</b> Con City Roam todo el grupo acaba trabajando junto, conozca a la novia desde hace veinte años o desde hace veinte minutos.",
-      "text2": "Nada de juegos de fiesta forzados. Solo vuestro grupo, un rastro de pistas por Leeds y excusas de sobra para parar a tomar algo y hacer una foto.",
-      "text3": "Hasta 10 personas juegan con una sola reserva, cada una desde su móvil. ¿Sois más? Reservad dos partidas y dividíos en equipos."
+    "notes": {
+      "hero": "Yo no llevo banda. Llevo pistas, y alguna ayuda si veo a la novia preocupada.",
+      "proof": "Todas reciben la pista a la vez, así que nadie tiene que apiñarse alrededor del único móvil que aún tiene batería."
     },
-    "whyLove": {
-      "title": "Por qué funciona en una despedida",
-      "different": {
-        "title": "Algo distinto",
-        "description": "Un cambio respecto al plan típico de despedida, y una anécdota para contar después."
+    "proof": {
+      "0": {
+        "title": "Sin fecha que reservar",
+        "text": "Reservad ahora y jugad cualquier día de los próximos {days} días. Si cambian los planes, la partida cambia con ellos."
       },
-      "group": {
-        "title": "Rompe el hielo solo",
-        "description": "Las amigas del colegio, del trabajo y de la universidad acaban en el mismo equipo, con la misma pista."
+      "1": {
+        "title": "Cada una desde su móvil",
+        "text": "Hasta {max} en el mismo chat de grupo, y cualquiera puede responder. Las amigas del colegio, del trabajo y de la universidad están en el mismo equipo desde la primera pista."
       },
-      "instagram": {
-        "title": "Buenas paradas para fotos",
-        "description": "Pasaréis por algunas de las calles y edificios más bonitos de Leeds, así que las fotos de grupo salen solas."
+      "2": {
+        "title": "Encaja con el resto del día",
+        "text": "Calculamos {duration} para la ruta, más lo que os entretengáis. Empezad después del brunch y habréis terminado mucho antes de la cena."
       },
-      "timing": {
-        "title": "Encaja con vuestros planes",
-        "description": "Jugad de día antes de la cena y las copas, o como arranque tranquilo del fin de semana."
-      }
+      "title": "Por qué funciona para una despedida"
     },
-    "styles": {
-      "title": "Sea como sea la despedida",
-      "subtitle": "Una tarde tranquila o un fin de semana entero: encaja igual.",
-      "daytime": {
-        "title": "De día",
-        "description": "Una buena forma de empezar el fin de semana: juntad al grupo, romped el hielo y abrid el apetito."
-      },
-      "alternative": {
-        "title": "Algo alternativo",
-        "description": "Para novias que prefieren saltarse el circuito típico de despedidas."
-      },
-      "mixed": {
-        "title": "Grupos variados",
-        "description": "Ideal cuando no todas las invitadas se conocen todavía. Las pistas dan a todo el mundo algo de lo que hablar."
-      }
-    },
-    "organise": {
-      "title": "Fácil de organizar",
-      "perfectSize": {
-        "title": "Hasta 10 por reserva",
-        "description": "Lo bastante pequeño para ir juntas y oíros bien. Para grupos más grandes, reservad una partida por equipo."
-      },
-      "simple": {
-        "title": "Una reserva, un enlace",
-        "description": "Pagas una vez, compartes el enlace en el chat del grupo y listo. Nadie tiene que descargar nada."
-      },
-      "special": {
-        "title": "Todo gira en torno a la novia",
-        "description": "Algo pensado para ella y un poco distinto, con todas sus personas favoritas en el mismo equipo."
-      }
-    },
-    "special": {
-      "title": "Qué incluye",
-      "items": {
-        "0": "Paradas para fotos en algunos de los rincones más bonitos de Leeds",
-        "1": "Pistas que ponen a trabajar a todo el grupo",
-        "2": "Empezad cuando mejor os venga",
-        "3": "Una anécdota para los discursos de la boda",
-        "4": "Pubs y bares por el camino para tomar algo a mitad de partida",
-        "5": "Fácil para quien organiza: una reserva, un enlace"
-      }
-    },
-    "safety": {
-      "title": "Información práctica",
-      "text1": "La ruta va por zonas concurridas del centro, con pubs, cafeterías y tiendas por el camino.",
-      "text2": "Empezad cuando os venga bien: una partida por la mañana antes de comer o una por la tarde que enlace con la cena y las copas.",
-      "text3": "Los grupos suelen ir juntos mientras resuelven pistas. Ojo con el tráfico, y dosificad las copas: las pistas se complican, no al revés."
+    "twoGroups": {
+      "text": "¿Sois más de {max}? Dividíos en dos equipos y reservad una partida cada uno. Salid a la vez y a ver qué equipo termina antes."
     },
     "faq": {
       "0": {
@@ -489,7 +419,7 @@
       },
       "3": {
         "question": "¿Podemos parar a tomar algo?",
-        "answer": "Sí. La ruta pasa por muchos pubs y bares, y bastantes grupos paran a tomar algo a mitad del recorrido."
+        "answer": "Sí, si os apetece. La ruta pasa por el centro, así que hay cafeterías, pubs y bares por el camino. Pausad la partida mientras estáis dentro y seguid después."
       },
       "4": {
         "question": "¿Y si algunas del grupo no se conocen?",
@@ -507,80 +437,30 @@
   },
   "teamBuilding": {
     "hero": {
-      "title": "Team building más allá de la sala de reuniones",
-      "subtitle": "Saca a tu equipo de la oficina a resolver problemas juntos en un sitio nuevo. Sin dinamizador, sin caídas de confianza, y es divertido de verdad."
+      "title": "Team building por Leeds, sin dinamizador",
+      "subtitle": "Un par de horas fuera de la oficina, sin dinamizador y sin rotafolios. Reservad, compartid el enlace y el Búho manda las pistas."
     },
-    "problem": {
-      "text1": "<b>Olvida los rompehielos incómodos y las caídas de confianza.</b> Con City Roam la gente colabora porque las pistas lo exigen.",
-      "text2": "Compañeros que apenas abren la boca en las reuniones acaban discutiendo por un acertijo. Los más callados resuelven la pista que al resto se le había escapado.",
-      "text3": "Una reserva cubre hasta 10 personas. Para grupos más grandes, reserva una partida por equipo y que todos empiecen a la vez."
+    "notes": {
+      "hero": "Sin acreditaciones ni rotafolios. Solo la pista, y quien la lea en voz alta primero.",
+      "proof": "Las partidas no saben nada unas de otras. Comparad tiempos después; yo no tomo partido."
     },
-    "whyChoose": {
-      "title": "Por qué los equipos eligen City Roam",
-      "collaboration": {
-        "title": "Colaboración real",
-        "description": "El grupo tiene que compartir ideas, repartirse el trabajo mental y ponerse de acuerdo en una respuesta. Y eso ocurre sin que nadie lo dirija."
+    "proof": {
+      "0": {
+        "title": "Sin dinamizador",
+        "text": "Nadie tiene que llevarlo. Reservad online, compartid el enlace en el chat del equipo y el Búho manda las pistas y las ayudas de la primera parada a la última."
       },
-      "perspective": {
-        "title": "Un cambio de aires",
-        "description": "Unas horas fuera de la oficina, en un sitio nuevo, con otro tipo de problema que resolver."
+      "1": {
+        "title": "¿Equipo grande? Dos partidas",
+        "text": "Dividíos en grupos de hasta {max} y reservad una partida para cada uno. Empezad a la vez y comparad tiempos después con un café."
       },
-      "inclusive": {
-        "title": "Todos pueden participar",
-        "description": "Un paseo a vuestro ritmo con muchas paradas. Nada agotador y sin poner a nadie en un aprieto."
+      "2": {
+        "title": "Equipos de varios idiomas",
+        "text": "El juego está en inglés, español, francés, alemán o neerlandés, y cada grupo elige su idioma antes de empezar. Dos partidas pueden ir en dos idiomas."
       },
-      "energised": {
-        "title": "Tema de conversación",
-        "description": "Una experiencia compartida de la que el equipo seguirá hablando semanas después."
-      }
+      "title": "Por qué funciona para equipos"
     },
-    "perfectFor": {
-      "title": "Ideal para",
-      "subtitle": "Tanto si estás formando un equipo nuevo como si quieres darle un respiro a uno que ya existe.",
-      "newTeam": {
-        "title": "Nuevas incorporaciones",
-        "description": "Ayuda a los recién llegados a conocer al equipo en un ambiente relajado, lejos de la mesa."
-      },
-      "crossDept": {
-        "title": "Jornadas entre equipos",
-        "description": "Mezcla a gente de distintos departamentos que no suele trabajar junta."
-      },
-      "morale": {
-        "title": "Un agradecimiento",
-        "description": "Algo agradable de verdad para dar las gracias después de un trimestre movido."
-      }
-    },
-    "sizes": {
-      "title": "Tamaños de equipo",
-      "sweetSpot": {
-        "title": "De 4 a 10 personas",
-        "description": "Lo bastante grande para que haya ideas variadas y lo bastante pequeño para que todos opinen."
-      },
-      "multiple": {
-        "title": "Más de 10",
-        "description": "Dividíos en equipos y reservad una partida para cada uno. Todos pueden empezar a la vez."
-      },
-      "competition": {
-        "title": "Rivalidad amistosa",
-        "description": "Varios equipos en la misma ruta, saliendo a la vez. No hay marcador oficial, así que el primer equipo en terminar se gana el derecho a presumir."
-      }
-    },
-    "benefits": {
-      "title": "Lo que se lleva tu equipo",
-      "items": {
-        "0": "Práctica de comunicación y escucha",
-        "1": "Problemas resueltos en grupo",
-        "2": "Tiempo para conocer de verdad a los compañeros",
-        "3": "Un descanso de pantallas, reuniones y correos",
-        "4": "Una oportunidad para que brillen los más callados",
-        "5": "Anécdotas compartidas y bromas internas"
-      }
-    },
-    "practical": {
-      "title": "Información práctica",
-      "text1": "Reserva online y paga con tarjeta. Si necesitas factura para justificar gastos o quieres reservar varios equipos a la vez, escríbenos.",
-      "text2": "Calculamos {duration} para la ruta, más las paradas que hagáis, así que cabe en una mañana o una tarde. Empezad cuando os venga bien.",
-      "text3": "Cada persona necesita calzado cómodo y un smartphone cargado con datos móviles. No hay nada más que organizar."
+    "twoGroups": {
+      "text": "Una reserva cubre hasta {max} personas. Para un equipo más grande, dividíos en grupos y reservad una partida para cada uno: la misma ruta, chats separados. No hay marcador oficial, así que el primer equipo en volver decide cómo se cuenta la historia."
     },
     "faq": {
       "0": {
@@ -599,11 +479,150 @@
         "question": "¿Tenéis precios para grupos?",
         "answer": "Cada reserva cubre hasta 10 personas por un único precio. Si reservas para un grupo más grande, escríbenos y lo vemos."
       },
+      "4": {
+        "question": "¿Cuánto se tarda?",
+        "answer": "Calculamos {duration} para la ruta, más las paradas que hagáis, así que cabe en una mañana o una tarde. Empezad cuando os venga bien."
+      },
+      "5": {
+        "question": "¿Qué necesita cada persona?",
+        "answer": "Calzado cómodo y un móvil cargado con datos móviles. No hay que descargar ninguna app ni organizar nada más."
+      },
       "title": "Dudas sobre reservas para equipos"
     },
     "cta": {
       "text": "Trabajo en equipo de verdad, un cambio de aires y unas horas fuera de la oficina.",
       "contactLabel": "Escríbenos para grupos más grandes"
+    }
+  },
+  "stagParties": {
+    "hero": {
+      "title": "Un plan de día para despedidas de soltero en Leeds",
+      "subtitle": "Algo para el día, antes de que llegue la noche. Pistas por el centro, hasta {max} en el mismo chat de grupo, y nada que organizar para el padrino más allá de un enlace."
+    },
+    "notes": {
+      "hero": "El novio no tiene trato especial. El padrino tampoco.",
+      "proof": "Se permite abuchear a quien lea la pista en voz alta. No por eso leerá más rápido."
+    },
+    "proof": {
+      "0": {
+        "title": "La parte del día, resuelta",
+        "text": "Calculamos {duration} para la ruta, más las paradas. Empezad a media mañana o después de comer y terminaréis con tiempo de sobra antes de la noche."
+      },
+      "1": {
+        "title": "Nada que organizar",
+        "text": "Una reserva, un enlace en el chat de grupo. Y sin fecha que reservar: jugad cualquier día de los próximos {days} días."
+      },
+      "2": {
+        "title": "Cada uno desde su móvil",
+        "text": "Hasta {max} en el mismo chat, y cualquiera puede responder. El novio no recibe las pistas antes que nadie. Ni después."
+      },
+      "title": "Por qué funciona para una despedida de soltero"
+    },
+    "twoGroups": {
+      "text": "¿Sois más de {max}? Reservad dos partidas y dividíos en equipos. Salid a la vez, a ver qué equipo termina antes, y luego discutidlo."
+    },
+    "faq": {
+      "0": {
+        "question": "¿Cuántos podemos jugar?",
+        "answer": "Hasta {max} por reserva, cada uno desde su móvil. Para un grupo más grande, dividíos en equipos y reservad una partida para cada uno."
+      },
+      "1": {
+        "question": "¿A qué hora deberíamos empezar?",
+        "answer": "Cuando queráis. Calculamos {duration} para la ruta, más las paradas, así que a media mañana o a primera hora de la tarde os queda la noche libre."
+      },
+      "2": {
+        "question": "¿Hay que reservar fecha?",
+        "answer": "No. El enlace funciona durante {days} días desde la reserva, y empezáis cuando el grupo esté listo."
+      },
+      "3": {
+        "question": "¿Podemos parar por el camino?",
+        "answer": "Sí. La ruta pasa por el centro, así que hay cafeterías, pubs y sitios donde sentarse. Pausad la partida y seguid cuando queráis."
+      },
+      "4": {
+        "question": "¿Y si hace mal tiempo?",
+        "answer": "Hay sitios donde refugiarse por el camino, y podéis pausar el juego y terminarlo más tarde u otro día."
+      },
+      "5": {
+        "question": "¿Y si no nos gusta?",
+        "answer": "Os devolvemos el importe íntegro, sin preguntas. Solo tenéis que escribirnos en los 14 días siguientes a la partida."
+      },
+      "title": "Preguntas sobre la despedida de soltero"
+    },
+    "cta": {
+      "text": "Resolved el día. La noche ya se apañará sola."
+    }
+  },
+  "treasureHunt": {
+    "hero": {
+      "title": "Una búsqueda del tesoro en la que el tesoro es Leeds",
+      "subtitle": "Pistas que os llevan a pie por el centro, fijándoos en edificios por delante de los que casi todo el mundo pasa sin mirar. El Búho os las manda al chat de grupo, con ayudas cuando os atascáis e indicaciones cuando os perdéis."
+    },
+    "differs": {
+      "title": "No es la búsqueda del tesoro de siempre",
+      "intro": "En una búsqueda del tesoro tradicional, alguien esconde algo y vosotros seguís un rastro de pistas hasta encontrarlo. Esta funciona al revés. No hay nada escondido. Las respuestas ya están ahí, en los edificios y en las calles, y las pistas consisten en fijarse en ellas.",
+      "items": {
+        "0": {
+          "title": "Nada que desenterrar",
+          "text": "Ni cofre, ni accesorios, ni nada que cargar. Cada respuesta está a la vista, en la vía pública. Escribidla en el chat y llega la siguiente pista."
+        },
+        "1": {
+          "title": "Pistas que os hacen mirar hacia arriba",
+          "text": "Leeds guardó parte de lo mejor para encima de los rótulos de las tiendas. Las pistas os llevan hasta ello, y el Búho añade un poco de historia cada vez que encontráis algo."
+        },
+        "2": {
+          "title": "Un guía en el chat",
+          "text": "El Búho envía cada pista, os da una ayuda cuando la pedís y responde a preguntas sobre la pista, el tramo que estáis recorriendo y lo que queda de camino."
+        },
+        "3": {
+          "title": "Sin reloj y sin marcador",
+          "text": "Nadie os cronometra y no hay premio al final. Parad a comer, haced una pausa y terminad otro día, o simplemente tomáoslo con calma."
+        }
+      }
+    },
+    "clue": {
+      "title": "Así es una pista",
+      "text": "Esta es de nuestra demo, no de la ruta real, así que no desvela nada. La pista llega al chat de grupo, cualquiera puede escribir una respuesta y, si os atascáis, una ayuda acota la búsqueda sin daros la solución.",
+      "note": "Todos veis la misma pista a la vez, cada uno en su móvil. No hay que descargar ninguna app: funciona en el navegador."
+    },
+    "notes": {
+      "clue": "En esta ruta no hay nada enterrado. Todo está a la vista, casi siempre un piso o dos más arriba."
+    },
+    "audiences": {
+      "title": "Cuatro maneras de jugarla",
+      "subtitle": "Las mismas pistas, vayáis con quien vayáis."
+    },
+    "compare": {
+      "title": "Frente a otras búsquedas y visitas"
+    },
+    "faq": {
+      "0": {
+        "question": "¿Hay premio?",
+        "answer": "No. No hay premio ni marcador. Lo que os lleváis es un par de horas por Leeds y unas cuantas cosas que señalar a quien nunca ha mirado hacia arriba."
+      },
+      "1": {
+        "question": "¿Pueden competir dos equipos?",
+        "answer": "Sí. Reservad una partida por equipo, de hasta {max} personas cada una, y salid a la vez. Las partidas no saben nada la una de la otra, así que quién terminó antes es cosa vuestra."
+      },
+      "2": {
+        "question": "¿Es como una gymkana?",
+        "answer": "Se parece. Aquí se encuentran cosas, no se recogen: no hay fotos que subir ni lista que ir tachando. Veis la respuesta, la escribís en el chat y llega la siguiente pista."
+      },
+      "3": {
+        "question": "¿Es solo para niños?",
+        "answer": "No. La juegan familias, pero también despedidas de soltera y de soltero y equipos de trabajo. Las pistas funcionan para adultos, y los niños a partir de 8 años pueden participar."
+      },
+      "4": {
+        "question": "¿Es el Leeds Owl Trail?",
+        "answer": "No, y no tenemos ninguna relación con él. El Leeds Owl Trail es una ruta aparte y gratuita para ver los búhos repartidos por la ciudad, y merece la pena. Nuestro Búho es el guía de vuestro chat de grupo, y su nombre viene de los búhos del escudo de Leeds."
+      },
+      "5": {
+        "question": "¿Cuánto se tarda?",
+        "answer": "Calculamos {duration} para la ruta, más lo que paréis. No hay límite de tiempo, y vuestro enlace funciona durante {days} días, así que podéis terminar otro día."
+      },
+      "title": "Preguntas sobre la búsqueda del tesoro"
+    },
+    "cta": {
+      "text": "Reunid al grupo. Las pistas ya están ahí fuera."
     }
   },
   "checkout": {
@@ -616,6 +635,9 @@
     },
     "success": {
       "title": "Todo listo",
+      "subtitle": "Tu partida está reservada. Lo que queda es enviar un enlace.",
+      "forwardTitle": "Reenvíaselo a tu grupo",
+      "forwardText": "Cada persona lo abre en su propio móvil y se une con su nombre. No hay que descargar ninguna app.",
       "eventLinkLabel": "El enlace de tu partida",
       "copy": "Copiar",
       "copied": "Copiado",
@@ -623,7 +645,14 @@
       "share": "Compartir con tu grupo",
       "shareTitle": "Únete a mi partida de City Roam",
       "whatsNext": "Qué pasa ahora",
-      "whatsNextDescription": "Envía el enlace a tu grupo. Cada persona lo abre en su móvil y escribe su nombre. La primera en unirse es la líder del grupo y da a empezar cuando estéis todos listos.",
+      "steps": {
+        "0": "Envía el enlace a tu grupo.",
+        "1": "Cada persona lo abre en su móvil y escribe su nombre.",
+        "2": "La primera en unirse es la líder del grupo y da a empezar cuando estéis todos."
+      },
+      "note": "Estaré en el chat cuando estéis listos. No me voy a ninguna parte.",
+      "giftText": "¿Conoces a alguien más a quien le gustaría probarlo?",
+      "giftLink": "Regálale una tarjeta regalo",
       "refundNote": "¿No te ha convencido? Te devolvemos el dinero, sin preguntas.",
       "refundLink": "Política de reembolsos"
     }
@@ -949,6 +978,8 @@
   "notFound": {
     "title": "Página no encontrada",
     "description": "Esa página no existe o se ha movido.",
+    "note": "Esta página no está en la ruta. Lo he comprobado dos veces.",
+    "elsewhere": "O prueba una de estas",
     "backHome": "Volver al inicio"
   },
   "facts": {
@@ -960,5 +991,24 @@
     "distance": "{km, number} km",
     "validity": "Jugad cualquier día: el enlace dura {days} días",
     "perHead": "Sale a unos {perHead} por persona en un grupo de {max}"
+  },
+  "audience": {
+    "heroPrice": "<b>{price}</b> por grupo",
+    "twoGroups": {
+      "title": "¿Dos grupos? Reservad dos partidas.",
+      "points": {
+        "0": "Cada partida admite hasta {max} jugadores, cada uno desde su móvil",
+        "1": "Cada grupo tiene su propio enlace y su propio chat",
+        "2": "Empezad a la vez, o a distintas horas"
+      },
+      "ticket": "Partida {n}",
+      "ticketPlayers": "Hasta {max} jugadores",
+      "note": "No hay marcador entre partidas. Quién terminó antes es cosa vuestra."
+    },
+    "treasureLink": "Cómo funciona como búsqueda del tesoro",
+    "route": {
+      "title": "La ruta",
+      "subtitle": "Una vuelta a pie por el centro de Leeds. Las paradas siguen siendo un secreto hasta que las encontréis."
+    }
   }
 }

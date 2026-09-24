@@ -1,14 +1,13 @@
 import { useTranslations } from "next-intl";
-import { factValues } from "@/lib/facts";
+import { VOUCHER_EXPIRY_MONTHS } from "@cityroam/shared/constants";
+import { Link } from "@/i18n/navigation";
 
 /**
- * One line for gift buyers, under the price. It only promises what the
- * product does today: the booking email carries the game link, and the link
- * lasts LINK_VALID_DAYS from booking. Proper vouchers are a separate project.
+ * One line for gift buyers, under the price, pointing at the gift code page
+ * (/gift). The copy lives in messages/gift/*.json with the voucher pages.
  */
 export function GiftLine({ className = "" }: { className?: string }) {
-  const t = useTranslations("home");
-  const values = factValues(useTranslations("facts"));
+  const t = useTranslations("gift");
 
   return (
     <p className={`flex items-start gap-3 text-base leading-relaxed text-ink-700 ${className}`}>
@@ -28,9 +27,17 @@ export function GiftLine({ className = "" }: { className?: string }) {
         <path d="M2.5 9h19M12 9v11.5M12 9c-1.5-3.5-5.5-4.5-5.5-2 0 1.6 2.8 2 5.5 2Zm0 0c1.5-3.5 5.5-4.5 5.5-2 0 1.6-2.8 2-5.5 2Z" />
       </svg>
       <span>
-        {t.rich("gift", {
-          ...values,
+        {t.rich("line", {
+          months: VOUCHER_EXPIRY_MONTHS,
           b: (chunks) => <strong className="font-semibold text-ink-900">{chunks}</strong>,
+          link: (chunks) => (
+            <Link
+              href="/gift"
+              className="font-medium text-brick-600 underline underline-offset-2 hover:text-ink-900"
+            >
+              {chunks}
+            </Link>
+          ),
         })}
       </span>
     </p>

@@ -9,15 +9,18 @@ import { factValues } from "@/lib/facts";
 export function KeyFacts({
   align = "center",
   tone = "light",
+  hidePrice = false,
 }: {
   align?: "center" | "start-lg" | "start";
   /** "dark" for text over the hero photo's navy fade: stone text, no brick. */
   tone?: "light" | "dark";
+  /** Leave the price out where the hero already shows it (audience pages). */
+  hidePrice?: boolean;
 }) {
   const t = useTranslations("facts");
   const values = factValues(t);
   const items = [
-    t("price", values),
+    ...(hidePrice ? [] : [t("price", values)]),
     t("players", values),
     t("duration", values),
     t("validity", values),

@@ -1,0 +1,154 @@
+{
+  "gift": {
+    "meta": {
+      "title": "Geef een City Roam-spel cadeau | Cadeaucodes",
+      "description": "Een wandeling met raadsels door Leeds als cadeau: één spel voor maximaal {max} spelers, {price}. Ze hebben {months} maanden om de code te gebruiken, en {days} dagen om te spelen vanaf de dag dat ze beginnen.",
+      "successTitle": "Je cadeaucode | City Roam",
+      "redeemTitle": "Een cadeaucode verzilveren | City Roam",
+      "redeemDescription": "Een City Roam-cadeaucode gekregen? Vul hem hier in om je spel klaar te zetten."
+    },
+    "languages": {
+      "en": "het Engels",
+      "es": "het Spaans",
+      "fr": "het Frans",
+      "de": "het Duits",
+      "nl": "het Nederlands"
+    },
+    "line": "<b>Als cadeau?</b> <link>Geef dan een cadeaucode</link> — ze hebben {months} maanden om hem te gebruiken.",
+    "page": {
+      "eyebrow": "Cadeaucodes",
+      "title": "Geef een spel cadeau",
+      "subtitle": "Een wandeling met raadsels door Leeds, voor iemand anders om te spelen. Jij koopt de code, zij kiezen de dag.",
+      "note": "Hoeft niet ingepakt te worden, en heeft nooit de verkeerde maat.",
+      "getTitle": "Wat ze krijgen",
+      "get": {
+        "0": "Een code die ze de komende {months} maanden kunnen gebruiken wanneer ze willen",
+        "1": "{days} dagen om te spelen, vanaf het moment dat ze de code verzilveren, niet vanaf je aankoop",
+        "2": "Eén spel voor maximaal {max} spelers, ieder op de eigen telefoon",
+        "3": "Het spel in maximaal vijf talen: Engels, Spaans, Frans, Duits en Nederlands. Ze kiezen bij het verzilveren",
+        "4": "{price}, hetzelfde als een gewone boeking"
+      },
+      "form": {
+        "title": "Koop het cadeau",
+        "perGroup": "voor maximaal {max} spelers",
+        "nameLabel": "Hun naam",
+        "messageLabel": "Jouw bericht",
+        "optional": "optioneel",
+        "nameHint": "Staat op de kaart.",
+        "messageHint": "Staat op de kaart, onder hun naam.",
+        "counter": "{count} van {max} tekens",
+        "nameTooLong": "De naam mag maximaal {max} tekens zijn.",
+        "messageTooLong": "Het bericht mag maximaal {max} tekens zijn.",
+        "languageNote": "We mailen je de code en een kaart om te printen, in {language}.",
+        "submit": "Koop het cadeau",
+        "loading": "Je gaat naar de betaalpagina…",
+        "secure": "Je betaalt op de beveiligde betaalpagina van Stripe.",
+        "errors": {
+          "noHunt": "We kunnen vandaag geen cadeaucodes verkopen, omdat er geen spel beschikbaar is om ze voor te verzilveren. Probeer het morgen opnieuw, of mail ons op {email}.",
+          "invalid": "Er ging iets mis met de naam of het bericht. Controleer ze en probeer het opnieuw.",
+          "generic": "We konden de betaalpagina niet openen. Probeer het opnieuw."
+        }
+      },
+      "how": {
+        "title": "Zo werkt het",
+        "step1Title": "Jij koopt de code",
+        "step1Desc": "We mailen je de code en een kaart om te printen, met hun naam en jouw bericht als je die invult.",
+        "step2Title": "Jij geeft hem cadeau",
+        "step2Desc": "Print de kaart of stuur de e-mail door. De code is {months} maanden geldig.",
+        "step3Title": "Zij verzilveren hem wanneer het uitkomt",
+        "step3Desc": "Ze vullen de code in op onze site en krijgen een spellink om met hun groep te delen. Dan beginnen de {days} dagen om te spelen."
+      },
+      "faqTitle": "Vragen",
+      "faq": {
+        "0": {
+          "question": "En als ze hem niet op tijd gebruiken?",
+          "answer": "De code werkt niet meer {months} maanden na de aankoop. De uiterste datum staat op de kaart en in je e-mail, dus je kunt ze er makkelijk aan herinneren."
+        },
+        "1": {
+          "question": "Kunnen ze in een andere taal spelen?",
+          "answer": "Ja. Wie de code verzilvert, kiest dan de taal: Engels, Spaans, Frans, Duits of Nederlands. Is de speurtocht nog niet beschikbaar in die taal, dan zetten we hem in het Engels klaar en laten we dat weten. De taal waarin jij koopt, bepaalt alleen je e-mail en de kaart."
+        },
+        "2": {
+          "question": "Moeten ze meteen spelen?",
+          "answer": "Nee. Er begint niets tot ze de code verzilveren. Daarna werkt de spellink {days} dagen, en ze kunnen pauzeren en op een andere dag verdergaan."
+        },
+        "3": {
+          "question": "Wie krijgt de e-mail?",
+          "answer": "Jij. We sturen de code en de kaart naar het adres dat je bij het betalen opgeeft, dus jij kiest hoe en wanneer je hem geeft."
+        }
+      },
+      "refunds": "Voor terugbetalingen van cadeaucodes geldt ons <link>terugbetalingsbeleid</link>.",
+      "redeemPrompt": "Een code gekregen? <link>Verzilver hem hier</link>."
+    },
+    "success": {
+      "loading": "Je cadeaucode wordt opgehaald…",
+      "title": "Je cadeau is klaar",
+      "codeLabel": "Cadeaucode",
+      "redeemBy": "Te verzilveren tot {date}",
+      "linkLabel": "Link om te verzilveren",
+      "copyCode": "Code kopiëren",
+      "copyLink": "Link kopiëren",
+      "copied": "Gekopieerd",
+      "emailed": "We hebben je de code ook gemaild, met een kaart om te printen.",
+      "nextTitle": "Cadeau geven",
+      "nextText": "Print de kaart uit de e-mail of stuur ze de link. Als ze er klaar voor zijn, vullen ze de code in en beginnen hun {days} dagen om te spelen.",
+      "pending": {
+        "title": "Je code is onderweg",
+        "text": "Als je betaling gelukt is, komen de code en een kaart om te printen per e-mail, meestal binnen een paar minuten. Deze pagina loopt alleen nog wat achter.",
+        "help": "Na een uur nog niets? Mail ons op {email}, dan lossen we het op.",
+        "checkAgain": "Opnieuw controleren",
+        "backHome": "Terug naar home"
+      }
+    },
+    "redeem": {
+      "title": "Verzilver een cadeaucode",
+      "subtitle": "Vul de code van je kaart of uit je e-mail in. Hoofdletters en streepjes maken niet uit.",
+      "codeLabel": "Cadeaucode",
+      "codeHint": "10 letters en cijfers, zoals ABCD-EFGH-JK.",
+      "check": "Code controleren",
+      "checking": "Bezig met controleren…",
+      "valid": {
+        "title": "Deze code is goed voor één spel",
+        "redeemBy": "Te verzilveren tot {date}.",
+        "family": "Voor {name} in {city}.",
+        "window": "Je {days} dagen om te spelen beginnen zodra je hem verzilvert."
+      },
+      "form": {
+        "emailLabel": "Je e-mailadres",
+        "optional": "optioneel",
+        "emailHint": "We sturen de spellink ook hierheen.",
+        "languageLabel": "Speeltaal",
+        "submit": "Start mijn spel",
+        "submitting": "Je spel wordt klaargezet…"
+      },
+      "done": {
+        "title": "Je spel staat klaar",
+        "codeLabel": "Spelcode",
+        "open": "Open het spel",
+        "share": "Deel deze link met je groep. Iedereen opent hem op de eigen telefoon, en wie als eerste meedoet, drukt op start.",
+        "linkLabel": "Spellink",
+        "copy": "Link kopiëren",
+        "copied": "Gekopieerd",
+        "expires": "De link werkt tot {date}.",
+        "emailed": "We hebben je de link ook gemaild.",
+        "emailFailed": "We konden de e-mail niet versturen, dus bewaar deze link goed.",
+        "noEmail": "Bewaar deze link goed: we hebben hem naar niemand gemaild.",
+        "fallbackLanguage": "Deze speurtocht is nog niet beschikbaar in {requested}, dus je spel is in {language}."
+      },
+      "problems": {
+        "notACode": "Dat is geen cadeaucode. Codes hebben 10 letters en cijfers, zoals ABCD-EFGH-JK.",
+        "notFound": "We kunnen die code niet vinden. Vergelijk hem met de kaart: codes gebruiken nooit de letters O, I of L, of de cijfers 0 of 1.",
+        "alreadyRedeemed": "Deze code is al gebruikt. Als er bij het verzilveren een e-mailadres is opgegeven, staat de spellink in die inbox. Kom je er niet uit? Mail ons op {email}.",
+        "expired": "De uiterste datum van deze code is voorbij, dus hij kan niet meer gebruikt worden.",
+        "refunded": "Deze code is terugbetaald en werkt niet meer.",
+        "void": "Deze code is geannuleerd. Denk je dat dat een vergissing is? Mail ons op {email}.",
+        "rateLimited": "Te veel pogingen vanaf hier. Wacht {minutes, plural, =1 {een minuut} other {# minuten}} en probeer het opnieuw.",
+        "noHunt": "We kunnen nu geen spel klaarzetten. Je code is niet gebruikt, dus probeer het later opnieuw.",
+        "badEmail": "Dat e-mailadres lijkt niet te kloppen. Controleer het, of laat het leeg.",
+        "unavailable": "We konden onze server niet bereiken. Controleer je verbinding en probeer het opnieuw."
+      },
+      "tryAgain": "Opnieuw proberen",
+      "another": "Andere code controleren"
+    }
+  }
+}
