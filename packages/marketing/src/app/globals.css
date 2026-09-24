@@ -67,6 +67,43 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/*
+ * One-time entrances for the Owl's annotations (.reveal) and the line map
+ * (.draw), switched on by `data-seen` from useSeenOnce. The hidden starting
+ * state only applies with motion allowed and scripting on, so reduced motion
+ * or no JavaScript shows everything in place from the first paint.
+ */
+@media (prefers-reduced-motion: no-preference) and (scripting: enabled) {
+  .reveal {
+    transition:
+      opacity 600ms ease-out,
+      translate 600ms ease-out;
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  .reveal:not([data-seen]) {
+    opacity: 0;
+    translate: 0 0.75rem;
+  }
+
+  .draw .draw-path {
+    transition: stroke-dashoffset 1800ms cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  .draw:not([data-seen]) .draw-path {
+    stroke-dashoffset: 1;
+  }
+
+  .draw .draw-dot {
+    transition: opacity 400ms ease-out;
+    transition-delay: var(--dot-delay, 0ms);
+  }
+
+  .draw:not([data-seen]) .draw-dot {
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .typing-dot {
     animation: none;
