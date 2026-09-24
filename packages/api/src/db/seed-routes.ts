@@ -74,7 +74,7 @@ const enRoute: RouteData = {
           config: {
             type: "message",
             content:
-              "I know these streets better than most. You just need to keep up.",
+              "I'm {{GUIDE_NAME}}. I know these streets better than most — you just need to keep up.",
           },
           delay_ms: 1500,
         },
@@ -511,7 +511,7 @@ const esRoute: RouteData = {
           type: "message",
           config: {
             type: "message",
-            content: "Conozco estas calles mejor que la mayoría. Vosotros solo tenéis que seguir el ritmo.",
+            content: "Soy {{GUIDE_NAME}}. Conozco estas calles mejor que la mayoría; vosotros solo tenéis que seguir el ritmo.",
           },
           delay_ms: 1500,
         },
@@ -821,7 +821,7 @@ const frRoute: RouteData = {
           type: "message",
           config: {
             type: "message",
-            content: "Je connais ces rues mieux que la plupart. Vous n'avez qu'à suivre.",
+            content: "Je suis {{GUIDE_NAME}}. Je connais ces rues mieux que la plupart ; vous n'avez qu'à suivre.",
           },
           delay_ms: 1500,
         },
@@ -1131,7 +1131,7 @@ const deRoute: RouteData = {
           type: "message",
           config: {
             type: "message",
-            content: "Ich kenne diese Straßen besser als die meisten. Ihr müsst nur mithalten.",
+            content: "Ich bin {{GUIDE_NAME}}. Ich kenne diese Straßen besser als die meisten – ihr müsst nur mithalten.",
           },
           delay_ms: 1500,
         },
@@ -1147,7 +1147,7 @@ const deRoute: RouteData = {
           type: "message",
           config: {
             type: "message",
-            content: "{{TOTAL_STOPS}} Stationen, ungefähr {{DISTANCE_KM}}km. Sollte etwa eine Stunde dauern, wenn ihr euch nicht trödelt.",
+            content: "{{TOTAL_STOPS}} Stationen, ungefähr {{DISTANCE_KM}}km. Sollte etwa eine Stunde dauern, wenn ihr nicht trödelt.",
           },
           delay_ms: 2000,
         },
@@ -1441,7 +1441,7 @@ const nlRoute: RouteData = {
           type: "message",
           config: {
             type: "message",
-            content: "Ik ken deze straten beter dan de meesten. Jullie hoeven alleen maar bij te houden.",
+            content: "Ik ben {{GUIDE_NAME}}. Ik ken deze straten beter dan de meesten – jullie hoeven alleen maar bij te houden.",
           },
           delay_ms: 1500,
         },

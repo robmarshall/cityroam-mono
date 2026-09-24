@@ -18,7 +18,7 @@ vi.mock("../db/index.js", () => {
 });
 
 import { db } from "../db/index.js";
-import { sendEventCodeEmail, emailRetryPolicy } from "../services/email.js";
+import { sendEventCodeEmail, emailRetryPolicy, getEmailSubject, buildConfirmationEmail } from "../services/email.js";
 
 const originalBackoff = emailRetryPolicy.backoffMs;
 
@@ -137,5 +137,23 @@ describe("sendEventCodeEmail", () => {
 
     expect(outcome.sent).toBe(true);
     expect((db as any).update).not.toHaveBeenCalled();
+  });
+});
+
+describe("confirmation email copy", () => {
+  const languages = ["en", "es", "fr", "de", "nl"] as const;
+  const owl = { en: "the Owl", es: "el Búho", fr: "le Hibou", de: "die Eule", nl: "de Uil" };
+
+  it.each(languages)("%s subject and body use the guide's dry voice (no exclamation marks)", (language) => {
+    const subject = getEmailSubject(language);
+    const html = buildConfirmationEmail("https://cityroam.test/app/event/ABCD1234", "ABCD1234", language);
+    expect(subject).toContain("City Roam");
+    expect(subject).not.toMatch(/[!¡]/);
+    expect(html).not.toMatch(/[!¡](?!DOCTYPE)/);
+  });
+
+  it.each(languages)("%s intro mentions the Owl", (language) => {
+    const html = buildConfirmationEmail("https://cityroam.test/app/event/ABCD1234", "ABCD1234", language);
+    expect(html).toContain(owl[language]);
   });
 });

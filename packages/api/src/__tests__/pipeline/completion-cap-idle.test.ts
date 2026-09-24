@@ -192,6 +192,21 @@ describe("guide-response-cap", () => {
     realSendCapReached = actual.sendCapReachedMessage;
   });
 
+  it.each([
+    ["en", "The Owl"],
+    ["es", "El Búho"],
+    ["fr", "Le Hibou"],
+    ["de", "Die Eule"],
+    ["nl", "De Uil"],
+  ])("the %s cap notice names the guide and says answers and hints still work", async (language, name) => {
+    const actual = await vi.importActual<typeof import("../../services/pipeline/guide-response-cap.js")>(
+      "../../services/pipeline/guide-response-cap.js",
+    );
+    const text = actual.capReachedMessage(language);
+    expect(text.startsWith(name)).toBe(true);
+    expect(text).not.toMatch(/[!¡]/);
+  });
+
   it("returns false when guide_response_count < MAX", async () => {
     (db.query.events.findFirst as any).mockResolvedValue({ guide_response_count: 50 });
     expect(await realIsCapReached("event-1")).toBe(false);
@@ -208,7 +223,7 @@ describe("guide-response-cap", () => {
       sender_type: "system",
       sender_name: "System",
       participant_id: null,
-      content: "The guide has reached its message limit for this event.",
+      content: "The Owl has reached its message limit for this game. Answers and hint requests still work.",
       image_url: null,
       step_number: 3,
       created_at: new Date().toISOString(),
@@ -220,11 +235,11 @@ describe("guide-response-cap", () => {
     expect((db as any).values).toHaveBeenCalledWith(
       expect.objectContaining({
         sender_type: "system",
-        content: "The guide has reached its message limit for this event.",
+        content: "The Owl has reached its message limit for this game. Answers and hint requests still work.",
       }),
     );
     expect(appendMessage).toHaveBeenCalledWith("CODE1234", expect.objectContaining({
-      content: "The guide has reached its message limit for this event.",
+      content: "The Owl has reached its message limit for this game. Answers and hint requests still work.",
     }));
     expect(publishMessage).toHaveBeenCalledWith("CODE1234", expect.objectContaining({
       sender_type: "system",

@@ -377,5 +377,42 @@ describe("handleQuestion", () => {
 
     const prompt = llm.classify.mock.calls[0][0] as string;
     expect(prompt).toContain("Respond in Spanish");
+    expect(prompt).toContain("You are El Búho, the guide");
+  });
+
+  it.each([
+    ["en", "The Owl"],
+    ["fr", "Le Hibou"],
+    ["de", "Die Eule"],
+    ["nl", "De Uil"],
+  ] as const)("names the guide in the event's language (%s)", async (language, name) => {
+    (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(makeMockQuestionBlock());
+    (db.query.routes.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(makeMockRoute());
+    (db.query.routeFamilies.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({ city: "Leeds" });
+
+    const llm = makeLlm({ type: "answer", text: "Yes." });
+    await handleQuestion(llm, makeCtx({ language }), "Who are you?");
+
+    const prompt = llm.classify.mock.calls[0][0] as string;
+    expect(prompt).toContain(`You are ${name}, the guide for a city exploration game in Leeds.`);
+  });
+
+  it("tells the guide to admit it is an AI when sincerely asked, and never to claim to be human", async () => {
+    (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(makeMockQuestionBlock());
+    (db.query.routes.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(makeMockRoute());
+    (db.query.routeFamilies.findFirst as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({ city: "Leeds" });
+
+    const llm = makeLlm({ type: "answer", text: "I'm an AI. A well-read one." });
+    await handleQuestion(llm, makeCtx(), "Are you a real person?");
+
+    const prompt = llm.classify.mock.calls[0][0] as string;
+    expect(prompt).toContain("sincerely asks whether you are an AI, a bot or a real person");
+    expect(prompt).toContain("Never claim to be human.");
   });
 });

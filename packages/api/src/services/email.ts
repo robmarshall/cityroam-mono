@@ -173,7 +173,11 @@ async function recordOutcome(
 // ---------------------------------------------------------------------------
 // Email content
 // ---------------------------------------------------------------------------
-/** Per-language email content. */
+/**
+ * Per-language email content. The guide's voice: dry, no exclamation marks.
+ * In running prose the guide's name takes a lowercase article ("the Owl",
+ * "el Búho", "le Hibou", "die Eule", "de Uil").
+ */
 const EMAIL_CONTENT: Record<SupportedLanguage, {
   subject: string;
   title: string;
@@ -187,9 +191,9 @@ const EMAIL_CONTENT: Record<SupportedLanguage, {
   refund: string;
 }> = {
   en: {
-    subject: "Your City Roam experience is booked!",
-    title: "Your experience is booked!",
-    intro: "Your City Roam event is ready. Share the link below with your group to get started:",
+    subject: "Your City Roam game is booked",
+    title: "You're booked",
+    intro: "Your City Roam game is ready, and the Owl knows the route. Share the link below with your group to start:",
     linkIntro: "Your event link:",
     linkLabel: "Open Event",
     codeLabel: "Event code",
@@ -199,9 +203,9 @@ const EMAIL_CONTENT: Record<SupportedLanguage, {
     refund: "Not happy? Reply to this email for a full refund, no questions asked.",
   },
   es: {
-    subject: "¡Tu experiencia City Roam está reservada!",
-    title: "¡Tu experiencia está reservada!",
-    intro: "Tu evento City Roam está listo. Comparte el enlace con tu grupo para empezar:",
+    subject: "Tu partida de City Roam está reservada",
+    title: "Reserva hecha",
+    intro: "Tu partida de City Roam está lista y el Búho ya conoce la ruta. Comparte el enlace con tu grupo para empezar:",
     linkIntro: "Tu enlace del evento:",
     linkLabel: "Abrir Evento",
     codeLabel: "Código del evento",
@@ -211,9 +215,9 @@ const EMAIL_CONTENT: Record<SupportedLanguage, {
     refund: "¿No estás contento? Responde a este email para un reembolso completo, sin preguntas.",
   },
   fr: {
-    subject: "Votre expérience City Roam est réservée !",
-    title: "Votre expérience est réservée !",
-    intro: "Votre événement City Roam est prêt. Partagez le lien ci-dessous avec votre groupe pour commencer :",
+    subject: "Votre partie City Roam est réservée",
+    title: "C'est réservé",
+    intro: "Votre partie City Roam est prête, et le Hibou connaît déjà le parcours. Partagez le lien ci-dessous avec votre groupe pour commencer :",
     linkIntro: "Votre lien d'événement :",
     linkLabel: "Ouvrir l'événement",
     codeLabel: "Code de l'événement",
@@ -223,9 +227,9 @@ const EMAIL_CONTENT: Record<SupportedLanguage, {
     refund: "Pas satisfait ? Répondez à cet email pour un remboursement complet, sans questions.",
   },
   de: {
-    subject: "Dein City Roam Erlebnis ist gebucht!",
-    title: "Dein Erlebnis ist gebucht!",
-    intro: "Dein City Roam Event ist bereit. Teile den Link mit deiner Gruppe, um loszulegen:",
+    subject: "Dein Spiel bei City Roam ist gebucht",
+    title: "Gebucht",
+    intro: "Dein Spiel bei City Roam ist bereit, und die Eule kennt die Route schon. Teile den Link mit deiner Gruppe, um loszulegen:",
     linkIntro: "Dein Event-Link:",
     linkLabel: "Event öffnen",
     codeLabel: "Event-Code",
@@ -235,9 +239,9 @@ const EMAIL_CONTENT: Record<SupportedLanguage, {
     refund: "Nicht zufrieden? Antworte auf diese E-Mail für eine vollständige Rückerstattung, ohne Fragen.",
   },
   nl: {
-    subject: "Je City Roam ervaring is geboekt!",
-    title: "Je ervaring is geboekt!",
-    intro: "Je City Roam evenement is klaar. Deel de link hieronder met je groep om te beginnen:",
+    subject: "Je City Roam-spel is geboekt",
+    title: "Geboekt",
+    intro: "Je City Roam-spel staat klaar en de Uil kent de route al. Deel de link hieronder met je groep om te beginnen:",
     linkIntro: "Je evenementlink:",
     linkLabel: "Open Evenement",
     codeLabel: "Evenementcode",

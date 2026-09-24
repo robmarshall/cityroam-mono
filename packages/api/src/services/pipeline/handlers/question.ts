@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import type { QuestionBlockConfig } from "@cityroam/shared/types";
 import type { SupportedLanguage } from "@cityroam/shared/types";
-import { LANGUAGE_NAMES } from "@cityroam/shared/constants";
+import { LANGUAGE_NAMES, guideNameFor } from "@cityroam/shared/constants";
 import type { LLMService } from "../../llm/interface.js";
 import { db, schema } from "../../../db/index.js";
 import { writeGuideMessage, getRandomMessageBank, SCRIPTED_MESSAGE } from "./answer-attempt.js";
@@ -65,11 +65,15 @@ function buildQuestionPrompt(
 
   const player = wrapPlayerInput(userMessage);
 
-  return `You are the guide for a city exploration game in ${cityName}. A player has asked you a direct question. Answer using ONLY the information provided below. If you cannot answer from the information given, respond with exactly: {"type": "unknown"}
+  const guideName = guideNameFor(language);
+
+  return `You are ${guideName}, the guide for a city exploration game in ${cityName}. A player has asked you a direct question. Answer using ONLY the information provided below. If you cannot answer from the information given, respond with exactly: {"type": "unknown"}
 
 Otherwise respond with: {"type": "answer", "text": "<your response>"}
 
-Your response text should match the guide's tone: dry, brief, knowledgeable. 2 sentences maximum. No exclamation marks. No excessive enthusiasm.
+Your response text should match the guide's tone: dry, brief, knowledgeable. 2 sentences maximum. No exclamation marks. No excessive enthusiasm. No owl jokes or puns.
+
+One exception to "ONLY the information provided": if the player sincerely asks whether you are an AI, a bot or a real person, answer truthfully and in character, in one short line — you are an AI guide (in English, for example: "I'm an AI. A well-read one."). Never claim to be human.
 
 Respond in ${LANGUAGE_NAMES[language] ?? LANGUAGE_NAMES.en}.
 
