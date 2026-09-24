@@ -33,6 +33,8 @@ export function CTAButton({
   segment = "general",
   variant = "primary",
   align = "center",
+  fullWidth = false,
+  sticky = false,
 }: {
   location: string;
   label?: string;
@@ -40,6 +42,13 @@ export function CTAButton({
   variant?: keyof typeof VARIANT_CLASSES;
   /** "start-lg" left-aligns from the lg breakpoint, to sit under left-aligned hero copy. */
   align?: "center" | "start-lg";
+  /** Stretch the button across its container (the mobile booking bar). */
+  fullWidth?: boolean;
+  /**
+   * Set on the sticky booking bar's own button. Every other CTA is marked with
+   * `data-book-cta` so the bar can hide while one of them is on screen.
+   */
+  sticky?: boolean;
 }) {
   const t = useTranslations("cta");
   const locale = useLocale();
@@ -79,14 +88,15 @@ export function CTAButton({
 
   return (
     <div
-      className={`flex flex-col items-center gap-2 ${align === "start-lg" ? "lg:items-start" : ""}`}
+      data-book-cta={sticky ? undefined : ""}
+      className={`flex flex-col gap-2 ${fullWidth ? "items-stretch" : "items-center"} ${align === "start-lg" ? "lg:items-start" : ""}`}
     >
       <button
         type="button"
         onClick={handleClick}
         disabled={loading}
         aria-busy={loading}
-        className={`inline-flex items-center justify-center rounded-button px-8 py-4 text-lg font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-70 ${VARIANT_CLASSES[variant]}`}
+        className={`inline-flex items-center justify-center rounded-button font-semibold ${fullWidth ? "w-full px-6 py-3 text-base" : "px-8 py-4 text-lg"} transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-70 ${VARIANT_CLASSES[variant]}`}
       >
         {loading ? t("loading") : displayLabel}
       </button>

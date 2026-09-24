@@ -40,7 +40,8 @@
     "loading": "Redirection vers le paiement…",
     "error": "Impossible d'ouvrir la page de paiement. Veuillez réessayer.",
     "retry": "Réessayer",
-    "priceNote": "£29 jusqu'à 10 personnes. Remboursement intégral si le jeu ne vous plaît pas."
+    "priceNote": "{price} jusqu'à {max} personnes. Remboursement intégral si le jeu ne vous plaît pas.",
+    "sticky": "Réserver · {price}"
   },
   "faq": {
     "0": {
@@ -49,7 +50,7 @@
     },
     "1": {
       "question": "Combien de temps faut-il ?",
-      "answer": "La plupart des groupes mettent 2 à 3 heures, pauses comprises. Il n'y a pas de chrono, alors prenez le temps qu'il vous faut."
+      "answer": "Nous comptons {duration} pour le parcours lui-même, plus le temps de vos pauses. Il n'y a pas de chrono, alors prenez le temps qu'il vous faut."
     },
     "2": {
       "question": "De quoi avons-nous besoin ?",
@@ -57,7 +58,7 @@
     },
     "3": {
       "question": "Est-ce accessible ?",
-      "answer": "Le parcours fait environ 4 km sur les trottoirs du centre-ville, en grande partie à plat. Si vous vous déplacez en fauteuil roulant ou avez d'autres besoins d'accessibilité, écrivez-nous avant de réserver et nous vous dirons précisément à quoi vous attendre."
+      "answer": "Le parcours fait environ {distance} sur les trottoirs du centre-ville, en grande partie à plat. Si vous vous déplacez en fauteuil roulant ou avez d'autres besoins d'accessibilité, écrivez-nous avant de réserver et nous vous dirons précisément à quoi vous attendre."
     },
     "4": {
       "question": "Est-ce adapté aux enfants ?",
@@ -86,28 +87,30 @@
   },
   "chatDemo": {
     "guideLabel": "Guide",
-    "ariaLabel": "Exemple de discussion de groupe : le guide envoie un indice, un joueur répond, puis le guide confirme et envoie le groupe vers l'étape suivante.",
+    "ariaLabel": "Un exemple de la discussion de groupe : le guide envoie une énigme, un joueur demande combien il reste à marcher et reçoit une réponse pince-sans-rire, puis le guide donne un indice.",
     "hero": {
-      "0": "Le Corn Exchange",
-      "1": "C'est bien ça.",
-      "2": "Signé Cuthbert Brodrick. Le même architecte que l'hôtel de ville.",
-      "3": "La prochaine étape n'est pas loin.",
-      "4": "Il y a un café correct en chemin, si quelqu'un commence à flancher.",
-      "initial": "Bâtiment ovale, toit en dôme. Construit pour le commerce du grain, il vend aujourd'hui des vinyles et des gâteaux."
+      "0": "Étape trois. Quelque part dans cette rue, un visage de pierre observe les passants depuis cent ans.",
+      "1": "Il reste combien ? Julien n'a plus de jambes",
+      "2": "Environ un kilomètre jusqu'à l'arrivée. Julien survivra.",
+      "3": "C'est celui au-dessus de la banque ?",
+      "4": "Pas tout à fait. Regardez plus haut.",
+      "5": "Un indice, svp",
+      "6": "Au-dessus des enseignes, en dessous des pigeons."
     },
     "howItWorks": {
       "0": "Bien. Je serai votre guide aujourd'hui.",
       "1": "J'envoie les indices. À vous de trouver où aller.",
       "2": "Coincés ? Demandez un indice. Je ne jugerai pas, ou pas trop fort.",
-      "3": "Posez-moi des questions sur tout ce que vous croisez en chemin.",
+      "3": "Perdus ? Demandez-moi le chemin. Je ne dirai rien aux autres.",
       "4": "Tout le monde est prêt ?",
       "5": "Quand vous voulez"
     }
   },
   "home": {
     "hero": {
-      "title": "Chasses au trésor guidées par IA à Leeds",
-      "subtitle": "Résolvez des énigmes et explorez le centre-ville ensemble, avec un guide dans votre discussion de groupe. Un seul prix jusqu'à 10 personnes, sans application à télécharger."
+      "title": "Une chasse au trésor à travers Leeds, dans votre groupe de discussion",
+      "subtitle": "Résolvez des énigmes dans le centre-ville avec un guide qui vous répond quand vous lui posez une question. Tout le monde joue dans la même discussion, chacun sur son téléphone, sans application à télécharger.",
+      "demoCaption": "Quelques messages d'une partie"
     },
     "problem": {
       "text1": "<b>Pas de visite guidée. Pas d'horaires.</b> Juste votre groupe, vos téléphones et une piste d'indices.",
@@ -127,7 +130,7 @@
     },
     "phone": {
       "title": "Votre téléphone suffit",
-      "subtitle": "Pas d'application, pas de matériel, pas de plan imprimé. Le jeu tourne dans le navigateur de votre téléphone, dans une discussion qui fonctionne comme n'importe quel groupe de messagerie.",
+      "subtitle": "Pas d'application, pas de matériel, pas de plan imprimé. Le jeu tourne dans le navigateur de votre téléphone, dans une discussion qui fonctionne comme n'importe quel groupe de messagerie. Le guide est une IA qui s'appuie sur nos notes sur le parcours : vous pouvez lui poser vos questions avec vos propres mots.",
       "features": {
         "0": "Fonctionne sur tout smartphone récent",
         "1": "Rien à télécharger ni à installer",
@@ -139,7 +142,7 @@
       "title": "Ce qui est inclus",
       "subtitle": "Tout ce qu'il faut pour quelques heures dehors à Leeds.",
       "items": {
-        "0": "Un parcours dans le centre de Leeds, environ 4 km",
+        "0": "Un parcours dans le centre de Leeds, environ {distance}",
         "1": "Des indices et des énigmes qui vous mènent d'une étape à l'autre",
         "2": "Des anecdotes et l'histoire locale des lieux que vous croisez",
         "3": "Des indices quand il en faut, et la réponse si vraiment il le faut",
@@ -170,8 +173,6 @@
     "pricing": {
       "title": "Un seul prix pour tout le groupe",
       "subtitle": "Jusqu'à 10 personnes par réservation. Pas de tarif par personne.",
-      "originalPriceLabel": "Au lieu de",
-      "originalPrice": "£49",
       "price": "£29",
       "perGroup": "par groupe",
       "badge": "Tarif de lancement",
@@ -181,7 +182,71 @@
       "title": "Pas convaincus ? Remboursement intégral.",
       "description": "Si le jeu ne vous a pas plu, écrivez-nous dans les 14 jours suivant votre partie et nous vous rembourserons intégralement. Sans poser de questions."
     },
-    "faqTitle": "Questions fréquentes"
+    "faqTitle": "Questions fréquentes",
+    "compare": {
+      "title": "Face aux alternatives",
+      "subtitle": "Comparé aux options habituelles, dans les grandes lignes. Les autres offres varient : lisez ces colonnes comme ce qui est courant, pas comme une règle.",
+      "caption": "City Roam comparé à un parcours imprimé, une chasse au trésor sur appli payée par personne et une visite guidée à pied",
+      "scrollHint": "Faites défiler sur le côté pour voir toutes les colonnes",
+      "columns": {
+        "feature": "Critère",
+        "cityRoam": "City Roam",
+        "printed": "Parcours imprimé",
+        "appHunt": "Appli payante par personne",
+        "tour": "Visite guidée à pied"
+      },
+      "rows": {
+        "0": {
+          "label": "Prix",
+          "cityRoam": "{price} pour tout le groupe, jusqu'à {max} personnes",
+          "printed": "En général par parcours, à partager à quelques-uns",
+          "appHunt": "Par joueur",
+          "tour": "En général par personne"
+        },
+        "1": {
+          "label": "Faut-il réserver une date ?",
+          "cityRoam": "Non. Commencez le jour de votre choix dans les {days} jours suivant la réservation",
+          "printed": "Non",
+          "appHunt": "Parfois",
+          "tour": "Oui, à horaires fixes"
+        },
+        "2": {
+          "label": "Application à télécharger ?",
+          "cityRoam": "Non. Tout se passe dans le navigateur",
+          "printed": "Non. C'est sur papier",
+          "appHunt": "Souvent",
+          "tour": "Non"
+        },
+        "3": {
+          "label": "Poser des questions en route ?",
+          "cityRoam": "Oui. Écrivez avec vos mots, le guide répond",
+          "printed": "Non",
+          "appHunt": "En général des indices prévus d'avance",
+          "tour": "Oui, si vous arrivez à attirer l'attention du guide"
+        },
+        "4": {
+          "label": "À votre rythme ?",
+          "cityRoam": "Oui. Faites une pause et finissez un autre jour",
+          "printed": "Oui",
+          "appHunt": "En général",
+          "tour": "Non. Il faut suivre le groupe"
+        },
+        "5": {
+          "label": "Langues",
+          "cityRoam": "Jusqu'à cinq : anglais, espagnol, français, allemand et néerlandais",
+          "printed": "En général l'anglais seulement",
+          "appHunt": "Variable",
+          "tour": "En général une par visite"
+        },
+        "6": {
+          "label": "Groupe",
+          "cityRoam": "Jusqu'à {max} par réservation, chacun sur son téléphone",
+          "printed": "En général un exemplaire pour tout le monde",
+          "appHunt": "En général de petites équipes",
+          "tour": "Souvent partagée avec d'autres réservations"
+        }
+      }
+    }
   },
   "families": {
     "hero": {
@@ -252,7 +317,7 @@
     "safety": {
       "title": "Sécurité et informations pratiques",
       "text1": "Le parcours reste dans des quartiers animés du centre-ville, avec des commerces et des cafés à proximité tout du long.",
-      "text2": "Il fait environ 4 km, en grande partie à plat : il convient aux petites jambes comme aux poussettes. Les enfants doivent rester avec un adulte, et gardez un œil sur la circulation quand tout le monde a le nez sur un téléphone.",
+      "text2": "Il fait environ {distance}, en grande partie à plat : il convient aux petites jambes comme aux poussettes. Les enfants doivent rester avec un adulte, et gardez un œil sur la circulation quand tout le monde a le nez sur un téléphone.",
       "text3": "Si le temps tourne ou si quelqu'un n'a plus d'énergie, mettez le jeu en pause et terminez-le un autre jour. Votre lien reste valable 90 jours."
     },
     "faq": {
@@ -266,7 +331,7 @@
       },
       "2": {
         "question": "Combien de temps faut-il avec des enfants ?",
-        "answer": "La plupart des familles mettent entre 2 h 30 et 3 h 30, pauses comprises. Il n'y a pas de limite de temps, et vous pouvez faire une pause quand vous voulez."
+        "answer": "Nous comptons {duration} pour le parcours lui-même. Avec des enfants et des pauses, prévoyez plus. Il n'y a pas de limite de temps, et vous pouvez faire une pause quand vous voulez."
       },
       "3": {
         "question": "Et s'il pleut ou si les enfants fatiguent ?",
@@ -468,7 +533,7 @@
     "practical": {
       "title": "Informations pratiques",
       "text1": "Réservez en ligne et payez par carte. Si vous avez besoin d'une facture pour vos notes de frais, ou si vous voulez réserver pour plusieurs équipes à la fois, écrivez-nous.",
-      "text2": "La plupart des équipes mettent 2 à 3 heures, ce qui tient dans une matinée ou un après-midi. Commencez quand ça vous arrange.",
+      "text2": "Nous comptons {duration} pour le parcours, plus vos pauses, ce qui tient dans une matinée ou un après-midi. Commencez quand ça vous arrange.",
       "text3": "Chacun a besoin de chaussures confortables et d'un smartphone chargé avec des données mobiles. Il n'y a rien d'autre à organiser."
     },
     "faq": {
@@ -839,5 +904,15 @@
     "title": "Page introuvable",
     "description": "Cette page n'existe pas, ou elle a été déplacée.",
     "backHome": "Retour à l'accueil"
+  },
+  "facts": {
+    "label": "En bref",
+    "price": "{price} par groupe",
+    "players": "Jusqu'à {max} joueurs",
+    "duration": "{hours, plural, =1 {Environ une heure} other {Environ # heures}}",
+    "durationInline": "{hours, plural, =1 {environ une heure} other {environ # heures}}",
+    "distance": "{km, number} km",
+    "validity": "Jouez le jour de votre choix : le lien reste valable {days} jours",
+    "perHead": "Environ {perHead} par personne pour un groupe de {max}"
   }
 }

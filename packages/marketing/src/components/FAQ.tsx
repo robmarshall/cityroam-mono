@@ -10,7 +10,16 @@ import { trackEvent } from "@/lib/analytics";
  * `<namespace>.<i>.answer`. Answers stay in the HTML when collapsed (`hidden`)
  * so they are still indexed and findable with in-page search.
  */
-export function FAQ({ namespace, count }: { namespace: string; count: number }) {
+export function FAQ({
+  namespace,
+  count,
+  values,
+}: {
+  namespace: string;
+  count: number;
+  /** Placeholder values for answers that quote facts, e.g. `{duration}`. */
+  values?: Record<string, string | number>;
+}) {
   const t = useTranslations(namespace);
   const baseId = useId();
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -58,7 +67,7 @@ export function FAQ({ namespace, count }: { namespace: string; count: number }) 
               </button>
             </h3>
             <div id={panelId} role="region" aria-labelledby={buttonId} hidden={!open}>
-              <p className="pb-5 leading-relaxed text-gray-600">{t(`${index}.answer`)}</p>
+              <p className="pb-5 leading-relaxed text-gray-600">{t(`${index}.answer`, values)}</p>
             </div>
           </div>
         );

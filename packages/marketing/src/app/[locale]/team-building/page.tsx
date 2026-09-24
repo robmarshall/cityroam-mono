@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { CTAButton } from "@/components/CTAButton";
 import { FAQ } from "@/components/FAQ";
+import { KeyFacts } from "@/components/KeyFacts";
+import { StickyBookBar } from "@/components/StickyBookBar";
 import {
   Card,
   CardGrid,
@@ -12,6 +14,7 @@ import {
   Section,
   SectionHeading,
 } from "@/components/Section";
+import { factValues } from "@/lib/facts";
 import { buildMetadata } from "@/lib/metadata";
 import { CONTACT_EMAIL } from "@/lib/site";
 
@@ -34,11 +37,14 @@ export default async function TeamBuilding({
 
   const t = await getTranslations("teamBuilding");
   const tc = await getTranslations("cta");
+  const tf = await getTranslations("facts");
+  const facts = factValues(tf);
 
   return (
     <main className="min-h-screen bg-white">
       <PageHero title={t("hero.title")} subtitle={t("hero.subtitle")}>
         <CTAButton location="team-hero" segment="team-building" />
+        <KeyFacts />
       </PageHero>
 
       <Intro>
@@ -99,7 +105,7 @@ export default async function TeamBuilding({
         <SectionHeading align="left" title={t("practical.title")} />
         <div className="mt-8 space-y-6 text-lg leading-relaxed text-gray-700">
           <p>{t("practical.text1")}</p>
-          <p>{t("practical.text2")}</p>
+          <p>{t("practical.text2", facts)}</p>
           <p>{t("practical.text3")}</p>
         </div>
       </Section>
@@ -109,7 +115,11 @@ export default async function TeamBuilding({
         <FAQ namespace="teamBuilding.faq" count={4} />
       </Section>
 
-      <CtaBand text={t("cta.text")} note={tc("priceNote")}>
+      <CtaBand
+        text={t("cta.text")}
+        note={tc("priceNote", facts)}
+        subnote={tf("perHead", facts)}
+      >
         <div className="flex flex-col items-center justify-center gap-4 sm:flex-row sm:items-start">
           <CTAButton location="team-cta" segment="team-building" variant="inverse" />
           <a
@@ -120,6 +130,8 @@ export default async function TeamBuilding({
           </a>
         </div>
       </CtaBand>
+
+      <StickyBookBar location="team-building-sticky-bar" segment="team-building" />
     </main>
   );
 }

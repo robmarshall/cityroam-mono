@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { ComparisonTable } from "@/components/ComparisonTable";
 import { CTAButton } from "@/components/CTAButton";
 import { FAQ } from "@/components/FAQ";
+import ChatSnippet from "@/components/IphoneDemo/ChatSnippet";
 import IphoneDemo from "@/components/IphoneDemo/IphoneDemo";
+import { KeyFacts, PerHead } from "@/components/KeyFacts";
 import {
   Card,
   CardGrid,
@@ -11,6 +14,8 @@ import {
   SectionHeading,
   Steps,
 } from "@/components/Section";
+import { StickyBookBar } from "@/components/StickyBookBar";
+import { factValues } from "@/lib/facts";
 import { buildMetadata } from "@/lib/metadata";
 
 const HOME_FAQ_COUNT = 10;
@@ -33,8 +38,9 @@ export default async function Home({
   setRequestLocale(locale);
 
   const t = await getTranslations("home");
+  const facts = factValues(await getTranslations("facts"));
   const list = (key: string, count: number) =>
-    Array.from({ length: count }, (_, i) => t(`${key}.${i}`));
+    Array.from({ length: count }, (_, i) => t(`${key}.${i}`, facts));
 
   return (
     <main className="min-h-screen bg-white">
@@ -49,9 +55,12 @@ export default async function Home({
             <div className="mt-10">
               <CTAButton location="hero" align="start-lg" />
             </div>
+            <KeyFacts align="start-lg" />
+            {/* Phones get a few lines of the chat instead of the tall mock. */}
+            <ChatSnippet className="mt-10 sm:hidden" />
           </div>
-          {/* On phones the 700px-tall mock pushed everything below the fold, so
-              it starts at the sm breakpoint. The demo lower down still shows. */}
+          {/* The 700px-tall mock would push everything below the fold on
+              phones, so it starts at the sm breakpoint. */}
           <div className="relative hidden shrink-0 rotate-3 sm:block lg:rotate-6">
             <IphoneDemo variant="hero" />
           </div>
@@ -121,20 +130,29 @@ export default async function Home({
         </CardGrid>
       </Section>
 
+      {/* How it compares */}
+      <Section>
+        <SectionHeading title={t("compare.title")} subtitle={t("compare.subtitle")} />
+        <ComparisonTable />
+      </Section>
+
       {/* Pricing */}
-      <Section id="pricing" width="narrow" className="scroll-mt-4 text-center">
+      <Section
+        id="pricing"
+        tone="muted"
+        width="narrow"
+        bookZone
+        className="scroll-mt-4 text-center"
+      >
         <SectionHeading title={t("pricing.title")} subtitle={t("pricing.subtitle")} />
-        <div className="mt-10 inline-block rounded-card bg-white px-10 py-8 ring-1 ring-gray-200 shadow-sm">
-          <p className="text-sm font-medium text-gray-600">
-            <span className="sr-only">{t("pricing.originalPriceLabel")} </span>
-            <s>{t("pricing.originalPrice")}</s>
-          </p>
-          <p className="mt-1 text-5xl font-bold tracking-tight text-gray-900">
+        <div className="mt-10 inline-block rounded-card bg-white px-6 py-8 ring-1 ring-gray-200 shadow-sm sm:px-10">
+          <p className="text-5xl font-bold tracking-tight text-gray-900">
             {t("pricing.price")}
             <span className="ml-2 text-lg font-medium tracking-normal text-gray-600">
               {t("pricing.perGroup")}
             </span>
           </p>
+          <PerHead className="mt-2 text-base text-gray-700" />
           <p className="mt-2 text-sm font-medium text-brand-700">{t("pricing.badge")}</p>
           <div className="mt-8">
             <CTAButton location="pricing" />
@@ -154,11 +172,13 @@ export default async function Home({
       {/* FAQ */}
       <Section>
         <SectionHeading title={t("faqTitle")} />
-        <FAQ namespace="faq" count={HOME_FAQ_COUNT} />
+        <FAQ namespace="faq" count={HOME_FAQ_COUNT} values={facts} />
         <div className="mt-12 text-center">
           <CTAButton location="faq" />
         </div>
       </Section>
+
+      <StickyBookBar location="sticky-bar" />
     </main>
   );
 }

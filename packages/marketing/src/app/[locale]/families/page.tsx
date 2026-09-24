@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { CTAButton } from "@/components/CTAButton";
 import { FAQ } from "@/components/FAQ";
+import { KeyFacts } from "@/components/KeyFacts";
+import { StickyBookBar } from "@/components/StickyBookBar";
 import {
   Card,
   CardGrid,
@@ -13,6 +15,7 @@ import {
   SectionHeading,
   Steps,
 } from "@/components/Section";
+import { factValues } from "@/lib/facts";
 import { buildMetadata } from "@/lib/metadata";
 
 export async function generateMetadata({
@@ -34,11 +37,14 @@ export default async function Families({
 
   const t = await getTranslations("families");
   const tc = await getTranslations("cta");
+  const tf = await getTranslations("facts");
+  const facts = factValues(tf);
 
   return (
     <main className="min-h-screen bg-white">
       <PageHero title={t("hero.title")} subtitle={t("hero.subtitle")}>
         <CTAButton location="families-hero" segment="families" />
+        <KeyFacts />
       </PageHero>
 
       <Intro>
@@ -97,19 +103,25 @@ export default async function Families({
         <SectionHeading align="left" title={t("safety.title")} />
         <div className="mt-8 space-y-6 text-lg leading-relaxed text-gray-700">
           <p>{t("safety.text1")}</p>
-          <p>{t("safety.text2")}</p>
+          <p>{t("safety.text2", facts)}</p>
           <p>{t("safety.text3")}</p>
         </div>
       </Section>
 
       <Section tone="muted">
         <SectionHeading title={t("faq.title")} />
-        <FAQ namespace="families.faq" count={6} />
+        <FAQ namespace="families.faq" count={6} values={facts} />
       </Section>
 
-      <CtaBand text={t("cta.text")} note={tc("priceNote")}>
+      <CtaBand
+        text={t("cta.text")}
+        note={tc("priceNote", facts)}
+        subnote={tf("perHead", facts)}
+      >
         <CTAButton location="families-cta" segment="families" variant="inverse" />
       </CtaBand>
+
+      <StickyBookBar location="families-sticky-bar" segment="families" />
     </main>
   );
 }

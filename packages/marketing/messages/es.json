@@ -40,7 +40,8 @@
     "loading": "Te llevamos al pago…",
     "error": "No hemos podido abrir el pago. Inténtalo de nuevo.",
     "retry": "Reintentar",
-    "priceNote": "£29 para hasta 10 personas. Si no te convence, te devolvemos el dinero."
+    "priceNote": "{price} para hasta {max} personas. Si no te convence, te devolvemos el dinero.",
+    "sticky": "Reservar · {price}"
   },
   "faq": {
     "0": {
@@ -49,7 +50,7 @@
     },
     "1": {
       "question": "¿Cuánto dura?",
-      "answer": "La mayoría de los grupos tardan entre 2 y 3 horas, contando alguna parada. No hay cronómetro, así que tomaos el tiempo que queráis."
+      "answer": "Calculamos {duration} para la ruta en sí, más lo que tardéis en las paradas. No hay cronómetro, así que tomaos el tiempo que queráis."
     },
     "2": {
       "question": "¿Qué necesitamos?",
@@ -57,7 +58,7 @@
     },
     "3": {
       "question": "¿Es accesible?",
-      "answer": "La ruta tiene unos 4 km por las aceras del centro y es casi toda llana. Si alguien del grupo va en silla de ruedas o tiene otras necesidades de accesibilidad, escríbenos antes de reservar y te contamos exactamente qué esperar."
+      "answer": "La ruta tiene unos {distance} por las aceras del centro y es casi toda llana. Si alguien del grupo va en silla de ruedas o tiene otras necesidades de accesibilidad, escríbenos antes de reservar y te contamos exactamente qué esperar."
     },
     "4": {
       "question": "¿Es apta para niños?",
@@ -86,28 +87,30 @@
   },
   "chatDemo": {
     "guideLabel": "Guía",
-    "ariaLabel": "Ejemplo del chat de grupo: el guía envía una pista, un jugador responde y el guía lo confirma y hace avanzar al grupo.",
+    "ariaLabel": "Un ejemplo del chat de grupo: el guía manda una pista, un jugador pregunta cuánto falta y recibe una respuesta seca, y el guía da una ayuda.",
     "hero": {
-      "0": "El Corn Exchange",
-      "1": "Ese es.",
-      "2": "Lo diseñó Cuthbert Brodrick. El mismo arquitecto del Ayuntamiento.",
-      "3": "La siguiente parada está a dos pasos.",
-      "4": "Hay café decente por el camino, por si alguien flaquea.",
-      "initial": "Edificio ovalado con cúpula. Lo construyeron para vender grano y ahora vende discos y tarta."
+      "0": "Parada tres. En algún punto de esta calle, una cara de piedra lleva cien años mirando a la gente que va de compras.",
+      "1": "¿Cuánto nos queda? A Dani ya no le responden las piernas",
+      "2": "Un kilómetro, más o menos, hasta el final. Dani sobrevivirá.",
+      "3": "¿Es la que está encima del banco?",
+      "4": "No exactamente. Mirad más arriba.",
+      "5": "Una pista, porfa",
+      "6": "Por encima de los letreros, por debajo de las palomas."
     },
     "howItWorks": {
       "0": "Bien. Hoy seré vuestro guía.",
       "1": "Yo mando las pistas. Vosotros averiguáis adónde ir.",
       "2": "¿Atascados? Pedid una pista. Intentaré no juzgaros.",
-      "3": "Preguntadme por cualquier cosa que veáis por el camino.",
+      "3": "¿Perdidos? Preguntadme por dónde se va. No se lo diré a los demás.",
       "4": "¿Todos listos?",
       "5": "Cuando quieras"
     }
   },
   "home": {
     "hero": {
-      "title": "Búsquedas del tesoro guiadas por IA en Leeds",
-      "subtitle": "Resolved pistas y explorad el centro juntos, con un guía en vuestro chat de grupo. Un solo precio para hasta 10 personas y sin app que descargar."
+      "title": "Una búsqueda del tesoro por Leeds, en vuestro chat de grupo",
+      "subtitle": "Resolved pistas por el centro con un guía que os contesta cuando le preguntáis. Todos jugáis en el mismo chat, cada uno desde su móvil, y no hay que descargar ninguna app.",
+      "demoCaption": "Unos mensajes de una partida"
     },
     "problem": {
       "text1": "<b>Sin guía turístico. Sin horarios.</b> Solo vuestro grupo, vuestros móviles y un rastro de pistas.",
@@ -127,7 +130,7 @@
     },
     "phone": {
       "title": "Solo necesitas el móvil",
-      "subtitle": "Sin app, sin material, sin mapa impreso. El juego funciona en el navegador del móvil, en un chat como cualquier otro chat de grupo.",
+      "subtitle": "Sin app, sin material, sin mapa impreso. El juego funciona en el navegador del móvil, en un chat como cualquier otro chat de grupo. El guía es una IA que trabaja con nuestras notas sobre la ruta, así que podéis preguntarle con vuestras propias palabras.",
       "features": {
         "0": "Funciona en cualquier smartphone actual",
         "1": "Nada que descargar ni instalar",
@@ -139,7 +142,7 @@
       "title": "Qué incluye",
       "subtitle": "Todo lo necesario para pasar unas horas por Leeds.",
       "items": {
-        "0": "Una ruta por el centro de Leeds de unos 4 km",
+        "0": "Una ruta por el centro de Leeds de unos {distance}",
         "1": "Pistas y acertijos que os llevan de parada en parada",
         "2": "Anécdotas e historia local de los sitios por los que pasáis",
         "3": "Pistas cuando las necesitéis, y la respuesta si de verdad hace falta",
@@ -170,8 +173,6 @@
     "pricing": {
       "title": "Un precio para todo el grupo",
       "subtitle": "Hasta 10 personas por reserva. Sin cobros por persona.",
-      "originalPriceLabel": "Antes",
-      "originalPrice": "£49",
       "price": "£29",
       "perGroup": "por grupo",
       "badge": "Precio de lanzamiento",
@@ -181,7 +182,71 @@
       "title": "¿No te ha convencido? Te devolvemos el dinero.",
       "description": "Si no te ha gustado, escríbenos en los 14 días siguientes a la partida y te devolvemos el importe íntegro. Sin preguntas."
     },
-    "faqTitle": "Preguntas frecuentes"
+    "faqTitle": "Preguntas frecuentes",
+    "compare": {
+      "title": "Cómo se compara",
+      "subtitle": "Frente a las alternativas habituales, a grandes rasgos. Las otras opciones varían, así que esas columnas describen lo típico, no lo que hace todo el mundo.",
+      "caption": "City Roam comparado con una ruta impresa, una búsqueda con app de pago por persona y una visita guiada a pie",
+      "scrollHint": "Desliza a los lados para ver todas las columnas",
+      "columns": {
+        "feature": "Comparación",
+        "cityRoam": "City Roam",
+        "printed": "Ruta impresa",
+        "appHunt": "Búsqueda con app, por persona",
+        "tour": "Visita guiada a pie"
+      },
+      "rows": {
+        "0": {
+          "label": "Precio",
+          "cityRoam": "{price} por todo el grupo, hasta {max} personas",
+          "printed": "Normalmente por ruta, para compartir entre unos pocos",
+          "appHunt": "Por jugador",
+          "tour": "Normalmente por persona"
+        },
+        "1": {
+          "label": "¿Hay que reservar fecha?",
+          "cityRoam": "No. Empezad cualquier día en los {days} días siguientes a la reserva",
+          "printed": "No",
+          "appHunt": "A veces",
+          "tour": "Sí, con horarios fijos"
+        },
+        "2": {
+          "label": "¿Hay que descargar una app?",
+          "cityRoam": "No. Funciona en el navegador",
+          "printed": "No. Va en papel",
+          "appHunt": "A menudo",
+          "tour": "No"
+        },
+        "3": {
+          "label": "¿Se pueden hacer preguntas por el camino?",
+          "cityRoam": "Sí. Escribid con vuestras palabras y el guía contesta",
+          "printed": "No",
+          "appHunt": "Normalmente solo pistas fijas",
+          "tour": "Sí, si conseguís que el guía os haga caso"
+        },
+        "4": {
+          "label": "¿A vuestro ritmo?",
+          "cityRoam": "Sí. Parad y terminad otro día",
+          "printed": "Sí",
+          "appHunt": "Normalmente",
+          "tour": "No. Hay que seguir al grupo"
+        },
+        "5": {
+          "label": "Idiomas",
+          "cityRoam": "Hasta cinco: inglés, español, francés, alemán y neerlandés",
+          "printed": "Normalmente solo inglés",
+          "appHunt": "Depende",
+          "tour": "Normalmente uno por visita"
+        },
+        "6": {
+          "label": "Grupo",
+          "cityRoam": "Hasta {max} en una reserva, cada uno con su móvil",
+          "printed": "Normalmente un ejemplar para todos",
+          "appHunt": "Normalmente equipos pequeños",
+          "tour": "A menudo compartida con otras reservas"
+        }
+      }
+    }
   },
   "families": {
     "hero": {
@@ -252,7 +317,7 @@
     "safety": {
       "title": "Seguridad e información práctica",
       "text1": "La ruta va por zonas concurridas del centro, con tiendas y cafeterías cerca en todo momento.",
-      "text2": "Son unos 4 km, casi todo llano, así que va bien para piernas pequeñas y carritos. Los niños deben ir con un adulto, y ojo con el tráfico cuando todo el mundo va mirando el móvil.",
+      "text2": "Son unos {distance}, casi todo llano, así que va bien para piernas pequeñas y carritos. Los niños deben ir con un adulto, y ojo con el tráfico cuando todo el mundo va mirando el móvil.",
       "text3": "Si cambia el tiempo o alguien se queda sin energía, pausad el juego y terminadlo otro día. El enlace funciona durante 90 días."
     },
     "faq": {
@@ -266,7 +331,7 @@
       },
       "2": {
         "question": "¿Cuánto se tarda con niños?",
-        "answer": "La mayoría de las familias tardan entre 2,5 y 3,5 horas, pausas incluidas. No hay límite de tiempo y podéis parar siempre que lo necesitéis."
+        "answer": "Calculamos {duration} para la ruta en sí. Con niños y pausas, contad con más. No hay límite de tiempo y podéis parar siempre que lo necesitéis."
       },
       "3": {
         "question": "¿Y si llueve o los niños se cansan?",
@@ -468,7 +533,7 @@
     "practical": {
       "title": "Información práctica",
       "text1": "Reserva online y paga con tarjeta. Si necesitas factura para justificar gastos o quieres reservar varios equipos a la vez, escríbenos.",
-      "text2": "La mayoría de los equipos tardan entre 2 y 3 horas, así que cabe en una mañana o una tarde. Empezad cuando os venga bien.",
+      "text2": "Calculamos {duration} para la ruta, más las paradas que hagáis, así que cabe en una mañana o una tarde. Empezad cuando os venga bien.",
       "text3": "Cada persona necesita calzado cómodo y un smartphone cargado con datos móviles. No hay nada más que organizar."
     },
     "faq": {
@@ -839,5 +904,15 @@
     "title": "Página no encontrada",
     "description": "Esa página no existe o se ha movido.",
     "backHome": "Volver al inicio"
+  },
+  "facts": {
+    "label": "De un vistazo",
+    "price": "{price} por grupo",
+    "players": "Hasta {max} jugadores",
+    "duration": "{hours, plural, =1 {Alrededor de una hora} other {Alrededor de # horas}}",
+    "durationInline": "{hours, plural, =1 {alrededor de una hora} other {alrededor de # horas}}",
+    "distance": "{km, number} km",
+    "validity": "Jugad cualquier día: el enlace dura {days} días",
+    "perHead": "Sale a unos {perHead} por persona en un grupo de {max}"
   }
 }

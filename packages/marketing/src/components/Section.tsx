@@ -17,17 +17,24 @@ export function Section({
   tone = "white",
   width = "wide",
   id,
+  bookZone = false,
   className = "",
   children,
 }: {
   tone?: Tone;
   width?: "wide" | "narrow";
   id?: string;
+  /** Marks a booking section: the mobile booking bar hides while it's on screen. */
+  bookZone?: boolean;
   className?: string;
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className={`${TONE_CLASSES[tone]} px-6 py-20 sm:py-24 ${className}`}>
+    <section
+      id={id}
+      data-book-cta={bookZone ? "" : undefined}
+      className={`${TONE_CLASSES[tone]} px-6 py-20 sm:py-24 ${className}`}
+    >
       <div className={`mx-auto ${width === "wide" ? "max-w-5xl" : "max-w-3xl"}`}>{children}</div>
     </section>
   );
@@ -197,20 +204,27 @@ function StepNumber({ n, className = "" }: { n: number; className?: string }) {
   );
 }
 
-/** Closing call to action band at the foot of each audience page. */
+/**
+ * Closing call to action band at the foot of each audience page. Its id is
+ * the target of the header's "Book now" on these pages, so the booking keeps
+ * the page's segment.
+ */
 export function CtaBand({
   text,
   note,
+  subnote,
   children,
 }: {
   text: string;
   note?: string;
+  subnote?: string;
   children: React.ReactNode;
 }) {
   return (
-    <Section tone="brand" width="narrow" className="text-center">
+    <Section id="book" bookZone tone="brand" width="narrow" className="scroll-mt-4 text-center">
       <p className="text-2xl font-bold leading-tight text-balance text-white sm:text-3xl">{text}</p>
       {note && <p className="mt-4 text-lg text-brand-50">{note}</p>}
+      {subnote && <p className="mt-1 text-base text-brand-50">{subnote}</p>}
       <div className="mt-10">{children}</div>
     </Section>
   );

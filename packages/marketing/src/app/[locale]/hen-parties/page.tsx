@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { CTAButton } from "@/components/CTAButton";
 import { FAQ } from "@/components/FAQ";
+import { KeyFacts } from "@/components/KeyFacts";
+import { StickyBookBar } from "@/components/StickyBookBar";
 import {
   Card,
   CardGrid,
@@ -12,6 +14,7 @@ import {
   Section,
   SectionHeading,
 } from "@/components/Section";
+import { factValues } from "@/lib/facts";
 import { buildMetadata } from "@/lib/metadata";
 
 export async function generateMetadata({
@@ -33,11 +36,14 @@ export default async function HenParties({
 
   const t = await getTranslations("henParties");
   const tc = await getTranslations("cta");
+  const tf = await getTranslations("facts");
+  const facts = factValues(tf);
 
   return (
     <main className="min-h-screen bg-white">
       <PageHero title={t("hero.title")} subtitle={t("hero.subtitle")}>
         <CTAButton location="hen-hero" segment="hen-parties" />
+        <KeyFacts />
       </PageHero>
 
       <Intro>
@@ -108,9 +114,15 @@ export default async function HenParties({
         <FAQ namespace="henParties.faq" count={6} />
       </Section>
 
-      <CtaBand text={t("cta.text")} note={tc("priceNote")}>
+      <CtaBand
+        text={t("cta.text")}
+        note={tc("priceNote", facts)}
+        subnote={tf("perHead", facts)}
+      >
         <CTAButton location="hen-cta" segment="hen-parties" variant="inverse" />
       </CtaBand>
+
+      <StickyBookBar location="hen-parties-sticky-bar" segment="hen-parties" />
     </main>
   );
 }

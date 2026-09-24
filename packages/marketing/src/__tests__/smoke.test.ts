@@ -2,7 +2,9 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { describe, it, expect } from "vitest";
+import { createTranslator } from "next-intl";
 import { locales, defaultLocale } from "../i18n/config";
+import { factValues } from "../lib/facts";
 
 const messagesDir = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -52,6 +54,44 @@ describe("marketing smoke", () => {
 
     for (const locale of locales) {
       expect(Object.keys(load(locale)).sort()).toEqual(expected);
+    }
+  });
+
+  it("formats every marketing message with the fact values in every locale", () => {
+    // A broken ICU placeholder in one translation (a stray apostrophe before
+    // a brace, a misspelt {duration}) only shows up at render time, as raw
+    // braces on the page or an error.
+    for (const locale of locales) {
+      const messages = load(locale);
+      const errors: string[] = [];
+      const t = createTranslator({
+        locale,
+        messages,
+        onError: (e) => errors.push(e.message),
+      }) as unknown as (key: string, values?: Record<string, string | number>) => string;
+      const values = factValues((key, v) => t(`facts.${key}`, v));
+
+      const walk = (value: unknown, key: string): void => {
+        if (value && typeof value === "object") {
+          for (const [k, v] of Object.entries(value)) walk(v, `${key}.${k}`);
+        } else if (typeof value === "string" && !value.includes("<")) {
+          // `year` is the footer copyright, filled in by the Footer itself.
+          const out = t(key, { ...values, year: 2026 });
+          expect(out, `${locale} ${key}`).not.toMatch(/[{}]/);
+        }
+      };
+      for (const [ns, value] of Object.entries(messages)) {
+        if (ns !== "legal") walk(value, ns);
+      }
+      expect(errors, locale).toEqual([]);
+    }
+  });
+
+  it("keeps exclamation marks out of the marketing copy", () => {
+    // House style (and the guide's voice): dry, no exclamation marks.
+    for (const locale of locales) {
+      const { legal: _legal, ...marketing } = load(locale);
+      expect(JSON.stringify(marketing), locale).not.toMatch(/[!¡]/);
     }
   });
 });

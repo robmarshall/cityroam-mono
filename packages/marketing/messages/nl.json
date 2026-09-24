@@ -40,7 +40,8 @@
     "loading": "Je gaat naar de betaalpagina…",
     "error": "We konden de betaalpagina niet openen. Probeer het opnieuw.",
     "retry": "Opnieuw proberen",
-    "priceNote": "£29 voor maximaal 10 personen. Niet tevreden? Je krijgt alles terug."
+    "priceNote": "{price} voor maximaal {max} personen. Niet tevreden? Je krijgt alles terug.",
+    "sticky": "Boeken · {price}"
   },
   "faq": {
     "0": {
@@ -49,7 +50,7 @@
     },
     "1": {
       "question": "Hoe lang duurt het?",
-      "answer": "De meeste groepen doen er 2 à 3 uur over, een tussenstop of twee meegerekend. Er loopt geen klok, dus neem gerust de tijd."
+      "answer": "We rekenen op {duration} voor de route zelf, plus de tijd die jullie stilstaan. Er loopt geen klok, dus neem gerust de tijd."
     },
     "2": {
       "question": "Wat hebben we nodig?",
@@ -57,7 +58,7 @@
     },
     "3": {
       "question": "Is het toegankelijk?",
-      "answer": "De route is ongeveer 4 km, over de stoepen van het stadscentrum en grotendeels vlak. Zit je in een rolstoel of heb je andere toegankelijkheidswensen? Mail ons voordat je boekt, dan vertellen we precies wat je kunt verwachten."
+      "answer": "De route is ongeveer {distance}, over de stoepen van het stadscentrum en grotendeels vlak. Zit je in een rolstoel of heb je andere toegankelijkheidswensen? Mail ons voordat je boekt, dan vertellen we precies wat je kunt verwachten."
     },
     "4": {
       "question": "Is het geschikt voor kinderen?",
@@ -86,28 +87,30 @@
   },
   "chatDemo": {
     "guideLabel": "Gids",
-    "ariaLabel": "Een voorbeeld van de groepschat: de gids stuurt een aanwijzing, een speler antwoordt, en de gids bevestigt het antwoord en stuurt de groep verder.",
+    "ariaLabel": "Een voorbeeld van de groepschat: de gids stuurt een aanwijzing, een speler vraagt hoe ver het nog is en krijgt een droog antwoord, en de gids geeft een hint.",
     "hero": {
-      "0": "De Corn Exchange",
-      "1": "Die is het.",
-      "2": "Ontworpen door Cuthbert Brodrick. Dezelfde architect als het stadhuis.",
-      "3": "De volgende stop is vlakbij.",
-      "4": "Onderweg zit behoorlijke koffie, voor wie begint in te kakken.",
-      "initial": "Ovaal gebouw, koepeldak. Gebouwd voor de graanhandel, nu verkopen ze er platen en taart."
+      "0": "Stop drie. Ergens in deze straat kijkt al honderd jaar een stenen gezicht naar het winkelend publiek.",
+      "1": "Hoe ver is het nog? Daan z'n benen zijn op",
+      "2": "Nog een kilometer of zo tot de finish. Daan overleeft het wel.",
+      "3": "Is het die boven de bank?",
+      "4": "Niet helemaal. Kijk hoger.",
+      "5": "Hint graag",
+      "6": "Boven de winkelborden, onder de duiven."
     },
     "howItWorks": {
       "0": "Goed. Ik ben vandaag jullie gids.",
       "1": "Ik stuur de aanwijzingen. Jullie zoeken uit waar je heen moet.",
       "2": "Kom je er niet uit? Vraag om een hint, ik oordeel zo min mogelijk.",
-      "3": "Vraag me gerust naar alles wat je onderweg tegenkomt.",
+      "3": "Verdwaald? Vraag mij de weg. Ik zeg het tegen niemand.",
       "4": "Iedereen klaar?",
       "5": "Wat ons betreft wel"
     }
   },
   "home": {
     "hero": {
-      "title": "AI-begeleide speurtochten in Leeds",
-      "subtitle": "Los samen aanwijzingen op en verken het stadscentrum, met een gids in jullie groepschat. Eén prijs voor maximaal 10 personen, en geen app nodig."
+      "title": "Een speurtocht door Leeds, in jullie groepschat",
+      "subtitle": "Los aanwijzingen op in het stadscentrum, met een gids die antwoord geeft als je iets vraagt. Iedereen speelt in dezelfde chat op z'n eigen telefoon, en je hoeft geen app te downloaden.",
+      "demoCaption": "Een paar berichten uit een spel"
     },
     "problem": {
       "text1": "<b>Geen rondleider. Geen vaste tijden.</b> Alleen jullie groep, jullie telefoons en een spoor van aanwijzingen.",
@@ -127,7 +130,7 @@
     },
     "phone": {
       "title": "Je telefoon is alles wat je nodig hebt",
-      "subtitle": "Geen app, geen spullen, geen uitgeprinte kaart. Het spel draait in de browser van je telefoon, in een chat die werkt als elke andere groepschat.",
+      "subtitle": "Geen app, geen spullen, geen uitgeprinte kaart. Het spel draait in de browser van je telefoon, in een chat die werkt als elke andere groepschat. De gids is een AI die werkt met onze aantekeningen over de route, dus je kunt hem gewoon in je eigen woorden iets vragen.",
       "features": {
         "0": "Werkt op elke moderne smartphone",
         "1": "Niets te downloaden of te installeren",
@@ -139,7 +142,7 @@
       "title": "Wat je krijgt",
       "subtitle": "Alles wat je nodig hebt voor een paar uur op pad in Leeds.",
       "items": {
-        "0": "Een route door het centrum van Leeds, ongeveer 4 km",
+        "0": "Een route door het centrum van Leeds, ongeveer {distance}",
         "1": "Aanwijzingen en raadsels die je van stop naar stop leiden",
         "2": "Verhalen en lokale geschiedenis over de plekken waar je langskomt",
         "3": "Hints als je ze nodig hebt, en het antwoord als het echt niet anders kan",
@@ -170,8 +173,6 @@
     "pricing": {
       "title": "Eén prijs voor de hele groep",
       "subtitle": "Tot 10 personen per boeking. Geen kosten per persoon.",
-      "originalPriceLabel": "Normaal",
-      "originalPrice": "£49",
       "price": "£29",
       "perGroup": "per groep",
       "badge": "Introductieprijs",
@@ -181,7 +182,71 @@
       "title": "Niet tevreden? Je krijgt je geld terug.",
       "description": "Vond je het niks? Mail ons binnen 14 dagen na het spelen en je krijgt het volledige bedrag terug. Zonder vragen."
     },
-    "faqTitle": "Veelgestelde vragen"
+    "faqTitle": "Veelgestelde vragen",
+    "compare": {
+      "title": "Vergeleken met de rest",
+      "subtitle": "Ten opzichte van de gebruikelijke alternatieven, in grote lijnen. Andere aanbieders verschillen, dus lees die kolommen als wat gebruikelijk is, niet als wat voor iedereen geldt.",
+      "caption": "City Roam vergeleken met een geprinte route, een app-speurtocht met prijs per persoon en een stadswandeling met gids",
+      "scrollHint": "Veeg opzij om alle kolommen te zien",
+      "columns": {
+        "feature": "Vergelijking",
+        "cityRoam": "City Roam",
+        "printed": "Geprinte route",
+        "appHunt": "App-speurtocht per persoon",
+        "tour": "Stadswandeling met gids"
+      },
+      "rows": {
+        "0": {
+          "label": "Prijs",
+          "cityRoam": "{price} voor de hele groep, tot {max} personen",
+          "printed": "Meestal per route, te delen met een paar mensen",
+          "appHunt": "Per speler",
+          "tour": "Meestal per persoon"
+        },
+        "1": {
+          "label": "Datum boeken?",
+          "cityRoam": "Nee. Begin op elke dag binnen {days} dagen na het boeken",
+          "printed": "Nee",
+          "appHunt": "Soms",
+          "tour": "Ja, op vaste tijden"
+        },
+        "2": {
+          "label": "App downloaden?",
+          "cityRoam": "Nee. Het werkt in je browser",
+          "printed": "Nee. Het is op papier",
+          "appHunt": "Vaak",
+          "tour": "Nee"
+        },
+        "3": {
+          "label": "Onderweg vragen stellen?",
+          "cityRoam": "Ja. Typ in je eigen woorden en de gids antwoordt",
+          "printed": "Nee",
+          "appHunt": "Meestal alleen vaste hints",
+          "tour": "Ja, als je de aandacht van de gids weet te trekken"
+        },
+        "4": {
+          "label": "Je eigen tempo?",
+          "cityRoam": "Ja. Pauzeer en maak het een andere dag af",
+          "printed": "Ja",
+          "appHunt": "Meestal",
+          "tour": "Nee. Je houdt de groep bij"
+        },
+        "5": {
+          "label": "Talen",
+          "cityRoam": "Tot vijf: Engels, Spaans, Frans, Duits en Nederlands",
+          "printed": "Meestal alleen Engels",
+          "appHunt": "Wisselend",
+          "tour": "Meestal één per rondleiding"
+        },
+        "6": {
+          "label": "Groep",
+          "cityRoam": "Tot {max} op één boeking, ieder op z'n eigen telefoon",
+          "printed": "Meestal één exemplaar voor iedereen",
+          "appHunt": "Meestal kleine teams",
+          "tour": "Vaak samen met andere boekingen"
+        }
+      }
+    }
   },
   "families": {
     "hero": {
@@ -252,7 +317,7 @@
     "safety": {
       "title": "Veiligheid en praktische informatie",
       "text1": "De route blijft in drukke delen van het centrum, met overal winkels en cafés in de buurt.",
-      "text2": "Hij is ongeveer 4 km en grotendeels vlak, dus prima voor kleine beentjes en kinderwagens. Kinderen blijven bij een volwassene, en let op het verkeer als iedereen naar een telefoon tuurt.",
+      "text2": "Hij is ongeveer {distance} en grotendeels vlak, dus prima voor kleine beentjes en kinderwagens. Kinderen blijven bij een volwassene, en let op het verkeer als iedereen naar een telefoon tuurt.",
       "text3": "Slaat het weer om of raakt iemand door z'n energie heen? Pauzeer het spel en maak het een andere dag af. Je link werkt 90 dagen."
     },
     "faq": {
@@ -266,7 +331,7 @@
       },
       "2": {
         "question": "Hoe lang duurt het met kinderen?",
-        "answer": "De meeste gezinnen doen er 2,5 tot 3,5 uur over, pauzes meegerekend. Er is geen tijdslimiet en je kunt pauzeren wanneer je wilt."
+        "answer": "We rekenen op {duration} voor de route zelf. Met kinderen en pauzes ben je langer bezig. Er is geen tijdslimiet en je kunt pauzeren wanneer je wilt."
       },
       "3": {
         "question": "En als het regent of de kinderen moe worden?",
@@ -468,7 +533,7 @@
     "practical": {
       "title": "Praktische informatie",
       "text1": "Boek online en betaal met je kaart. Heb je een factuur nodig voor de declaratie, of wil je meerdere teams tegelijk boeken? Mail ons.",
-      "text2": "De meeste teams doen er 2 à 3 uur over, dus het past in een ochtend of een middag. Begin wanneer het jullie uitkomt.",
+      "text2": "We rekenen op {duration} voor de route, plus eventuele stops, dus het past in een ochtend of een middag. Begin wanneer het jullie uitkomt.",
       "text3": "Iedereen heeft comfortabele schoenen nodig en een opgeladen smartphone met mobiele data. Verder hoeft er niets geregeld te worden."
     },
     "faq": {
@@ -839,5 +904,15 @@
     "title": "Pagina niet gevonden",
     "description": "Die pagina bestaat niet, of is verplaatst.",
     "backHome": "Terug naar de homepage"
+  },
+  "facts": {
+    "label": "In het kort",
+    "price": "{price} per groep",
+    "players": "Tot {max} spelers",
+    "duration": "{hours, plural, =1 {Ongeveer een uur} other {Ongeveer # uur}}",
+    "durationInline": "{hours, plural, =1 {ongeveer een uur} other {ongeveer # uur}}",
+    "distance": "{km, number} km",
+    "validity": "Speel op elke dag: de link blijft {days} dagen geldig",
+    "perHead": "Ongeveer {perHead} per persoon bij een groep van {max}"
   }
 }

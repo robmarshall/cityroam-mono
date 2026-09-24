@@ -36,6 +36,11 @@ export function Header() {
     return () => window.removeEventListener("keydown", onKey);
   }, [menuOpen, langOpen]);
 
+  // On an audience page, "Book now" goes to that page's own booking band so
+  // the checkout keeps its segment. Elsewhere it goes to the homepage price.
+  const onAudiencePage = NAV_LINKS.some((link) => link.href === pathname);
+  const bookHref = onAudiencePage ? `${pathname}#book` : "/#pricing";
+
   function switchLanguage(newLocale: SupportedLanguage) {
     setLangOpen(false);
     setMenuOpen(false);
@@ -61,7 +66,7 @@ export function Header() {
             </Link>
           ))}
           <Link
-            href="/#pricing"
+            href={bookHref}
             className={`rounded-button bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700 ${FOCUS}`}
           >
             {t("header.bookNow")}
@@ -116,7 +121,7 @@ export function Header() {
               </Link>
             ))}
             <Link
-              href="/#pricing"
+              href={bookHref}
               onClick={() => setMenuOpen(false)}
               className={`rounded-button bg-brand-600 px-5 py-3 text-center text-base font-semibold text-white transition-colors hover:bg-brand-700 ${FOCUS}`}
             >

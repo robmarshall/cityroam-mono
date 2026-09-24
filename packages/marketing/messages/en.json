@@ -40,7 +40,8 @@
     "loading": "Taking you to checkout…",
     "error": "We couldn't open the checkout. Please try again.",
     "retry": "Try again",
-    "priceNote": "£29 for up to 10 people. Full refund if you're not happy."
+    "priceNote": "{price} for up to {max} people. Full refund if you're not happy.",
+    "sticky": "Book · {price}"
   },
   "faq": {
     "0": {
@@ -49,7 +50,7 @@
     },
     "1": {
       "question": "How long does it take?",
-      "answer": "Most groups take 2 to 3 hours, including a stop or two. There's no clock running, so take as long as you like."
+      "answer": "We estimate {duration} for the route itself, plus however long you stop for. There's no clock running, so take as long as you like."
     },
     "2": {
       "question": "What do we need?",
@@ -57,7 +58,7 @@
     },
     "3": {
       "question": "Is it accessible?",
-      "answer": "The route is about 2.5 miles on city-centre pavements and is mostly flat. If you use a wheelchair or have other access needs, email us before you book and we'll tell you exactly what to expect."
+      "answer": "The route is about {distance} on city-centre pavements and is mostly flat. If you use a wheelchair or have other access needs, email us before you book and we'll tell you exactly what to expect."
     },
     "4": {
       "question": "Is it suitable for children?",
@@ -86,28 +87,30 @@
   },
   "chatDemo": {
     "guideLabel": "Guide",
-    "ariaLabel": "An example of the group chat: the guide sends a clue, a player answers, and the guide confirms it and moves the group on.",
+    "ariaLabel": "An example of the group chat: the guide sends a clue, a player asks how much further there is to go and gets a dry answer, and the guide gives a hint.",
     "hero": {
-      "0": "The Corn Exchange",
-      "1": "That's the one.",
-      "2": "Cuthbert Brodrick designed it. Same architect as the Town Hall.",
-      "3": "Next stop is a short walk away.",
-      "4": "There's decent coffee on the way, if anyone's flagging.",
-      "initial": "Oval building, domed roof. Built for trading grain, now it sells records and cake."
+      "0": "Stop three. Somewhere on this street, a stone face has been watching the shoppers for a hundred years.",
+      "1": "How much further have we got? Dave's legs have gone",
+      "2": "About a kilometre to the finish. Dave will live.",
+      "3": "Is it the one above the bank?",
+      "4": "Not quite. Look higher.",
+      "5": "Hint please",
+      "6": "Above the shop signs, below the pigeons."
     },
     "howItWorks": {
       "0": "Right. I'm your guide for today.",
       "1": "I send the clues. You work out where to go.",
       "2": "Stuck? Ask for a hint. I'll try not to judge.",
-      "3": "Ask me about anything you pass on the way.",
+      "3": "Lost? Ask me the way. I won't tell the others.",
       "4": "Everyone ready?",
       "5": "Ready when you are"
     }
   },
   "home": {
     "hero": {
-      "title": "AI-guided treasure hunts in Leeds",
-      "subtitle": "Solve clues and explore the city centre together, with a guide in your group chat. One price for up to 10 people, and no app to download."
+      "title": "A treasure hunt round Leeds, in your group chat",
+      "subtitle": "Solve clues around the city centre with a guide who replies when you ask. Everyone plays in the same chat on their own phone, and there's no app to download.",
+      "demoCaption": "A few messages from a game"
     },
     "problem": {
       "text1": "<b>No tour guide. No timetable.</b> Just your group, your phones and a trail of clues.",
@@ -127,7 +130,7 @@
     },
     "phone": {
       "title": "All you need is your phone",
-      "subtitle": "No app, no kit, no printed map. The game runs in your phone's browser, in a chat that works like any other group chat.",
+      "subtitle": "No app, no kit, no printed map. The game runs in your phone's browser, in a chat that works like any other group chat. The guide is an AI working from our notes on the route, so you can ask it things in your own words.",
       "features": {
         "0": "Works on any modern smartphone",
         "1": "Nothing to download or install",
@@ -139,7 +142,7 @@
       "title": "What's included",
       "subtitle": "Everything you need for a few hours out in Leeds.",
       "items": {
-        "0": "A route through Leeds city centre, about 2.5 miles",
+        "0": "A route through Leeds city centre, about {distance}",
         "1": "Clues and riddles that lead you from stop to stop",
         "2": "Stories and local history about the places you pass",
         "3": "Hints when you need them, and the answer if you really need it",
@@ -170,8 +173,6 @@
     "pricing": {
       "title": "One price for the whole group",
       "subtitle": "Up to 10 people on one booking. No per-person fees.",
-      "originalPriceLabel": "Was",
-      "originalPrice": "£49",
       "price": "£29",
       "perGroup": "per group",
       "badge": "Launch price",
@@ -181,7 +182,71 @@
       "title": "Not happy? Get a full refund.",
       "description": "If you didn't enjoy it, email us within 14 days of playing and we'll refund you in full. No questions asked."
     },
-    "faqTitle": "Frequently asked questions"
+    "faqTitle": "Frequently asked questions",
+    "compare": {
+      "title": "How it compares",
+      "subtitle": "Against the usual alternatives, in general terms. Other options vary, so read those columns as what's typical rather than true of everyone.",
+      "caption": "City Roam compared with a printed trail, a per-person app hunt and a guided walking tour",
+      "scrollHint": "Swipe sideways to see every column",
+      "columns": {
+        "feature": "Compared",
+        "cityRoam": "City Roam",
+        "printed": "Printed trail",
+        "appHunt": "Per-person app hunt",
+        "tour": "Guided walking tour"
+      },
+      "rows": {
+        "0": {
+          "label": "Price",
+          "cityRoam": "{price} for the whole group, up to {max} people",
+          "printed": "Usually per trail, shared by a few people",
+          "appHunt": "Per player",
+          "tour": "Usually per person"
+        },
+        "1": {
+          "label": "Book a date?",
+          "cityRoam": "No. Start any day within {days} days of booking",
+          "printed": "No",
+          "appHunt": "Sometimes",
+          "tour": "Yes, at set times"
+        },
+        "2": {
+          "label": "App to download?",
+          "cityRoam": "No. It runs in your browser",
+          "printed": "No. It's on paper",
+          "appHunt": "Often",
+          "tour": "No"
+        },
+        "3": {
+          "label": "Ask questions as you go?",
+          "cityRoam": "Yes. Type in your own words and the guide replies",
+          "printed": "No",
+          "appHunt": "Usually set hints only",
+          "tour": "Yes, if you can get the guide's attention"
+        },
+        "4": {
+          "label": "Go at your own pace?",
+          "cityRoam": "Yes. Pause and finish another day",
+          "printed": "Yes",
+          "appHunt": "Usually",
+          "tour": "No. You keep up with the group"
+        },
+        "5": {
+          "label": "Languages",
+          "cityRoam": "Up to five: English, Spanish, French, German and Dutch",
+          "printed": "Usually English only",
+          "appHunt": "Varies",
+          "tour": "Usually one per tour"
+        },
+        "6": {
+          "label": "Group",
+          "cityRoam": "Up to {max} on one booking, each on their own phone",
+          "printed": "Usually one copy between you",
+          "appHunt": "Usually small teams",
+          "tour": "Often shared with other bookings"
+        }
+      }
+    }
   },
   "families": {
     "hero": {
@@ -252,7 +317,7 @@
     "safety": {
       "title": "Safety and practical information",
       "text1": "The route stays in busy parts of the city centre, with shops and cafés close by throughout.",
-      "text2": "It's about 2.5 miles and mostly flat, so it suits little legs and pushchairs. Children should stay with an adult, and keep an eye on traffic when heads are down over a phone.",
+      "text2": "It's about {distance} and mostly flat, so it suits little legs and pushchairs. Children should stay with an adult, and keep an eye on traffic when heads are down over a phone.",
       "text3": "If the weather turns or someone runs out of energy, pause the game and finish it another day. Your link works for 90 days."
     },
     "faq": {
@@ -266,7 +331,7 @@
       },
       "2": {
         "question": "How long does it take with children?",
-        "answer": "Most families take 2.5 to 3.5 hours, including breaks. There's no time limit, and you can pause whenever you need to."
+        "answer": "We estimate {duration} for the route itself. With children and breaks, allow longer. There's no time limit, and you can pause whenever you need to."
       },
       "3": {
         "question": "What if it rains or the children get tired?",
@@ -468,7 +533,7 @@
     "practical": {
       "title": "Practical information",
       "text1": "Book online and pay by card. If you need an invoice for expenses, or want to book several teams at once, email us.",
-      "text2": "Most teams take 2 to 3 hours, which fits into a morning or an afternoon. Start whenever suits you.",
+      "text2": "We estimate {duration} for the route, plus any stops, so it fits into a morning or an afternoon. Start whenever suits you.",
       "text3": "Everyone needs comfortable shoes and a charged smartphone with mobile data. There's nothing else to organise."
     },
     "faq": {
@@ -839,5 +904,15 @@
     "title": "Page not found",
     "description": "That page doesn't exist, or it has moved.",
     "backHome": "Back to home"
+  },
+  "facts": {
+    "label": "At a glance",
+    "price": "{price} per group",
+    "players": "Up to {max} players",
+    "duration": "{hours, plural, =1 {About an hour} other {About # hours}}",
+    "durationInline": "{hours, plural, =1 {about an hour} other {about # hours}}",
+    "distance": "{km, number} km ({miles, number} miles)",
+    "validity": "Play any day: the link lasts {days} days",
+    "perHead": "About {perHead} each for a group of {max}"
   }
 }

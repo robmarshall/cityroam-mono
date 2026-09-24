@@ -40,7 +40,8 @@
     "loading": "Weiter zur Kasse …",
     "error": "Die Kasse ließ sich nicht öffnen. Bitte noch einmal versuchen.",
     "retry": "Erneut versuchen",
-    "priceNote": "£29 für bis zu 10 Personen. Volle Rückerstattung, wenn es euch nicht gefällt."
+    "priceNote": "{price} für bis zu {max} Personen. Volle Rückerstattung, wenn es euch nicht gefällt.",
+    "sticky": "Buchen · {price}"
   },
   "faq": {
     "0": {
@@ -49,7 +50,7 @@
     },
     "1": {
       "question": "Wie lange dauert es?",
-      "answer": "Die meisten Gruppen brauchen 2 bis 3 Stunden, inklusive ein, zwei Pausen. Es läuft keine Uhr, also lasst euch so viel Zeit, wie ihr wollt."
+      "answer": "Die Route selbst dauert {duration}, dazu kommen eure Pausen. Es läuft keine Uhr, also lasst euch so viel Zeit, wie ihr wollt."
     },
     "2": {
       "question": "Was brauchen wir?",
@@ -57,7 +58,7 @@
     },
     "3": {
       "question": "Ist es barrierefrei?",
-      "answer": "Die Route ist rund 4 km lang, verläuft über Gehwege in der Innenstadt und ist größtenteils flach. Wenn ihr im Rollstuhl unterwegs seid oder andere Anforderungen habt, schreibt uns vor der Buchung, und wir sagen euch genau, was euch erwartet."
+      "answer": "Die Route ist rund {distance} lang, verläuft über Gehwege in der Innenstadt und ist größtenteils flach. Wenn ihr im Rollstuhl unterwegs seid oder andere Anforderungen habt, schreibt uns vor der Buchung, und wir sagen euch genau, was euch erwartet."
     },
     "4": {
       "question": "Ist es für Kinder geeignet?",
@@ -86,28 +87,30 @@
   },
   "chatDemo": {
     "guideLabel": "Guide",
-    "ariaLabel": "Beispiel für den Gruppenchat: Der Guide schickt einen Hinweis, jemand aus der Gruppe antwortet, und der Guide bestätigt die Antwort und schickt die Gruppe weiter.",
+    "ariaLabel": "Ein Beispiel für den Gruppenchat: Der Guide schickt ein Rätsel, jemand fragt, wie weit es noch ist, und bekommt eine trockene Antwort, dann gibt der Guide einen Tipp.",
     "hero": {
-      "0": "Die Corn Exchange",
-      "1": "Genau die.",
-      "2": "Cuthbert Brodrick hat sie entworfen. Das Rathaus übrigens auch.",
-      "3": "Der nächste Halt ist nicht weit.",
-      "4": "Unterwegs gibt's ordentlichen Kaffee, falls jemand schlappmacht.",
-      "initial": "Ovaler Bau, Kuppeldach. Gebaut für den Getreidehandel, heute gibt's dort Schallplatten und Kuchen."
+      "0": "Station drei. Irgendwo in dieser Straße schaut seit hundert Jahren ein Steingesicht auf die Leute beim Einkaufen.",
+      "1": "Wie weit ist es noch? Tobi kann nicht mehr",
+      "2": "Etwa ein Kilometer bis zum Ziel. Tobi überlebt das.",
+      "3": "Ist es das über der Bank?",
+      "4": "Nicht ganz. Schaut weiter nach oben.",
+      "5": "Tipp bitte",
+      "6": "Über den Ladenschildern, unter den Tauben."
     },
     "howItWorks": {
       "0": "So. Ich bin heute euer Guide.",
       "1": "Ich schicke die Hinweise. Ihr findet heraus, wohin es geht.",
       "2": "Kommt ihr nicht weiter, fragt nach einem Tipp. Ich verkneife mir jeden Kommentar.",
-      "3": "Fragt mich ruhig nach allem, woran ihr unterwegs vorbeikommt.",
+      "3": "Verlaufen? Fragt mich nach dem Weg. Ich sag's auch keinem.",
       "4": "Alle bereit?",
       "5": "Von uns aus kann's losgehen"
     }
   },
   "home": {
     "hero": {
-      "title": "KI-geführte Schnitzeljagden in Leeds",
-      "subtitle": "Löst Rätsel und erkundet gemeinsam die Innenstadt, mit einem Guide in eurem Gruppenchat. Ein Preis für bis zu 10 Personen, keine App nötig."
+      "title": "Eine Schnitzeljagd durch Leeds, direkt in eurem Gruppenchat",
+      "subtitle": "Löst Rätsel in der Innenstadt, mit einem Guide, der antwortet, wenn ihr fragt. Alle spielen im selben Chat auf dem eigenen Handy, und eine App braucht ihr nicht.",
+      "demoCaption": "Ein paar Nachrichten aus einem Spiel"
     },
     "problem": {
       "text1": "<b>Kein Stadtführer. Kein Zeitplan.</b> Nur eure Gruppe, eure Handys und eine Spur aus Hinweisen.",
@@ -127,7 +130,7 @@
     },
     "phone": {
       "title": "Ihr braucht nur euer Handy",
-      "subtitle": "Keine App, keine Ausrüstung, kein ausgedruckter Stadtplan. Das Spiel läuft im Browser eures Handys, in einem Chat wie jeder andere Gruppenchat auch.",
+      "subtitle": "Keine App, keine Ausrüstung, kein ausgedruckter Stadtplan. Das Spiel läuft im Browser eures Handys, in einem Chat wie jeder andere Gruppenchat auch. Der Guide ist eine KI, die mit unseren Notizen zur Route arbeitet. Ihr könnt ihn also in euren eigenen Worten fragen.",
       "features": {
         "0": "Läuft auf jedem aktuellen Smartphone",
         "1": "Nichts herunterladen, nichts installieren",
@@ -139,7 +142,7 @@
       "title": "Was enthalten ist",
       "subtitle": "Alles, was ihr für ein paar Stunden unterwegs in Leeds braucht.",
       "items": {
-        "0": "Eine Route durch die Innenstadt von Leeds, rund 4 km",
+        "0": "Eine Route durch die Innenstadt von Leeds, rund {distance}",
         "1": "Hinweise und Rätsel, die euch von Station zu Station führen",
         "2": "Geschichten und Stadtgeschichte zu den Orten, an denen ihr vorbeikommt",
         "3": "Tipps, wenn ihr sie braucht, und die Lösung, wenn es gar nicht anders geht",
@@ -170,8 +173,6 @@
     "pricing": {
       "title": "Ein Preis für die ganze Gruppe",
       "subtitle": "Bis zu 10 Personen pro Buchung. Keine Gebühren pro Kopf.",
-      "originalPriceLabel": "Vorher",
-      "originalPrice": "£49",
       "price": "£29",
       "perGroup": "pro Gruppe",
       "badge": "Einführungspreis",
@@ -181,7 +182,71 @@
       "title": "Nicht zufrieden? Geld zurück.",
       "description": "Wenn es euch nicht gefallen hat, schreibt uns innerhalb von 14 Tagen nach dem Spiel, und ihr bekommt den vollen Betrag zurück. Ohne Nachfragen."
     },
-    "faqTitle": "Häufige Fragen"
+    "faqTitle": "Häufige Fragen",
+    "compare": {
+      "title": "Im Vergleich",
+      "subtitle": "Gegenüber den üblichen Alternativen, grob gesagt. Andere Angebote unterscheiden sich, die übrigen Spalten beschreiben also das Übliche, nicht jeden Anbieter.",
+      "caption": "City Roam im Vergleich mit einer gedruckten Rallye, einer App-Schnitzeljagd mit Preis pro Person und einer Stadtführung zu Fuß",
+      "scrollHint": "Seitlich wischen, um alle Spalten zu sehen",
+      "columns": {
+        "feature": "Vergleich",
+        "cityRoam": "City Roam",
+        "printed": "Gedruckte Rallye",
+        "appHunt": "App-Schnitzeljagd pro Person",
+        "tour": "Stadtführung zu Fuß"
+      },
+      "rows": {
+        "0": {
+          "label": "Preis",
+          "cityRoam": "{price} für die ganze Gruppe, bis zu {max} Personen",
+          "printed": "Meist pro Heft, für ein paar Leute",
+          "appHunt": "Pro Person",
+          "tour": "Meist pro Person"
+        },
+        "1": {
+          "label": "Termin buchen?",
+          "cityRoam": "Nein. Startet an einem beliebigen Tag innerhalb von {days} Tagen nach der Buchung",
+          "printed": "Nein",
+          "appHunt": "Manchmal",
+          "tour": "Ja, zu festen Zeiten"
+        },
+        "2": {
+          "label": "App herunterladen?",
+          "cityRoam": "Nein. Läuft im Browser",
+          "printed": "Nein. Ist auf Papier",
+          "appHunt": "Oft",
+          "tour": "Nein"
+        },
+        "3": {
+          "label": "Unterwegs Fragen stellen?",
+          "cityRoam": "Ja. Schreibt in euren eigenen Worten, der Guide antwortet",
+          "printed": "Nein",
+          "appHunt": "Meist nur feste Tipps",
+          "tour": "Ja, wenn ihr die Aufmerksamkeit der Führung bekommt"
+        },
+        "4": {
+          "label": "Eigenes Tempo?",
+          "cityRoam": "Ja. Pausiert und macht an einem anderen Tag weiter",
+          "printed": "Ja",
+          "appHunt": "Meistens",
+          "tour": "Nein. Ihr haltet mit der Gruppe Schritt"
+        },
+        "5": {
+          "label": "Sprachen",
+          "cityRoam": "Bis zu fünf: Englisch, Spanisch, Französisch, Deutsch und Niederländisch",
+          "printed": "Meist nur Englisch",
+          "appHunt": "Unterschiedlich",
+          "tour": "Meist eine pro Führung"
+        },
+        "6": {
+          "label": "Gruppe",
+          "cityRoam": "Bis zu {max} pro Buchung, alle auf dem eigenen Handy",
+          "printed": "Meist ein Exemplar für alle",
+          "appHunt": "Meist kleine Teams",
+          "tour": "Oft zusammen mit anderen Buchungen"
+        }
+      }
+    }
   },
   "families": {
     "hero": {
@@ -252,7 +317,7 @@
     "safety": {
       "title": "Sicherheit und Praktisches",
       "text1": "Die Route bleibt in belebten Teilen der Innenstadt, mit Geschäften und Cafés immer in der Nähe.",
-      "text2": "Sie ist rund 4 km lang und größtenteils flach, also gut für kurze Beine und Kinderwagen. Kinder sollten bei einem Erwachsenen bleiben, und achtet auf den Verkehr, wenn alle aufs Handy schauen.",
+      "text2": "Sie ist rund {distance} lang und größtenteils flach, also gut für kurze Beine und Kinderwagen. Kinder sollten bei einem Erwachsenen bleiben, und achtet auf den Verkehr, wenn alle aufs Handy schauen.",
       "text3": "Wenn das Wetter umschlägt oder jemandem die Puste ausgeht, pausiert das Spiel und spielt es an einem anderen Tag zu Ende. Euer Link gilt 90 Tage."
     },
     "faq": {
@@ -266,7 +331,7 @@
       },
       "2": {
         "question": "Wie lange dauert es mit Kindern?",
-        "answer": "Die meisten Familien brauchen 2,5 bis 3,5 Stunden, Pausen eingerechnet. Es gibt kein Zeitlimit, und ihr könnt jederzeit pausieren."
+        "answer": "Die Route selbst dauert {duration}. Mit Kindern und Pausen plant mehr Zeit ein. Es gibt kein Zeitlimit, und ihr könnt jederzeit pausieren."
       },
       "3": {
         "question": "Was, wenn es regnet oder die Kinder müde werden?",
@@ -468,7 +533,7 @@
     "practical": {
       "title": "Praktische Informationen",
       "text1": "Bucht online und zahlt per Karte. Wenn ihr eine Rechnung für die Spesenabrechnung braucht oder mehrere Teams auf einmal buchen wollt, schreibt uns.",
-      "text2": "Die meisten Teams brauchen 2 bis 3 Stunden, das passt in einen Vormittag oder Nachmittag. Startet, wann es euch passt.",
+      "text2": "Die Route dauert {duration}, dazu kommen Pausen. Das passt in einen Vormittag oder Nachmittag. Startet, wann es euch passt.",
       "text3": "Alle brauchen bequeme Schuhe und ein aufgeladenes Smartphone mit mobilen Daten. Mehr gibt es nicht zu organisieren."
     },
     "faq": {
@@ -839,5 +904,15 @@
     "title": "Seite nicht gefunden",
     "description": "Diese Seite gibt es nicht, oder sie ist umgezogen.",
     "backHome": "Zurück zur Startseite"
+  },
+  "facts": {
+    "label": "Auf einen Blick",
+    "price": "{price} pro Gruppe",
+    "players": "Bis zu {max} Personen",
+    "duration": "{hours, plural, =1 {Etwa eine Stunde} other {Etwa # Stunden}}",
+    "durationInline": "{hours, plural, =1 {etwa eine Stunde} other {etwa # Stunden}}",
+    "distance": "{km, number} km",
+    "validity": "Spielt an jedem beliebigen Tag: Der Link gilt {days} Tage",
+    "perHead": "Rund {perHead} pro Kopf bei {max} Personen"
   }
 }
