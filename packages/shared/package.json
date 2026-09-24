@@ -12,7 +12,7 @@
     "./tailwind": "./src/tailwind/preset.css",
     "./tailwind/values": "./src/tailwind/preset.ts",
     "./analytics": "./src/analytics/index.ts",
-    "./brand": "./src/brand/index.ts"
+    "./brand": "./src/brand/owl.ts"
   },
   "scripts": {
     "build": "tsc --noEmit",
