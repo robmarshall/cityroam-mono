@@ -41,7 +41,7 @@ export default async function TeamBuilding({
   const facts = factValues(tf);
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen">
       <PageHero title={t("hero.title")} subtitle={t("hero.subtitle")}>
         <CTAButton location="team-hero" segment="team-building" />
         <KeyFacts />
@@ -50,7 +50,7 @@ export default async function TeamBuilding({
       <Intro>
         <p>
           {t.rich("problem.text1", {
-            b: (chunks) => <strong className="text-gray-900">{chunks}</strong>,
+            b: (chunks) => <strong className="text-ink-900">{chunks}</strong>,
           })}
         </p>
         <p>{t("problem.text2")}</p>
@@ -70,7 +70,7 @@ export default async function TeamBuilding({
         </CardGrid>
       </Section>
 
-      <Section tone="muted">
+      <Section tone="white">
         <SectionHeading title={t("perfectFor.title")} subtitle={t("perfectFor.subtitle")} />
         <CardGrid columns={3}>
           {(["newTeam", "crossDept", "morale"] as const).map((key) => (
@@ -96,21 +96,21 @@ export default async function TeamBuilding({
         </CardGrid>
       </Section>
 
-      <Section tone="muted">
+      <Section tone="white">
         <SectionHeading title={t("benefits.title")} />
         <CheckList items={Array.from({ length: 6 }, (_, i) => t(`benefits.items.${i}`))} />
       </Section>
 
       <Section width="narrow">
         <SectionHeading align="left" title={t("practical.title")} />
-        <div className="mt-8 space-y-6 text-lg leading-relaxed text-gray-700">
+        <div className="mt-8 space-y-6 text-lg leading-relaxed text-ink-700">
           <p>{t("practical.text1")}</p>
           <p>{t("practical.text2", facts)}</p>
           <p>{t("practical.text3")}</p>
         </div>
       </Section>
 
-      <Section tone="muted">
+      <Section tone="white">
         <SectionHeading title={t("faq.title")} />
         <FAQ namespace="teamBuilding.faq" count={4} />
       </Section>
@@ -124,7 +124,7 @@ export default async function TeamBuilding({
           <CTAButton location="team-cta" segment="team-building" variant="inverse" />
           <a
             href={`mailto:${CONTACT_EMAIL}`}
-            className="rounded-button border-2 border-white px-8 py-[calc(1rem-2px)] text-lg font-semibold text-white transition-colors hover:bg-white hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="rounded-button border-2 border-white px-8 py-[calc(1rem-2px)] text-lg font-semibold text-white transition-colors hover:bg-white hover:text-brick-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             {t("cta.contactLabel")}
           </a>

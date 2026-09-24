@@ -18,7 +18,7 @@ export default function CheckoutSuccessPage() {
   return (
     <Suspense
       fallback={
-        <main className="flex min-h-screen items-center justify-center bg-white px-6 py-24">
+        <main className="flex min-h-screen items-center justify-center px-6 py-24">
           <div className="mx-auto w-full max-w-lg text-center">
             <LoadingState />
           </div>
@@ -136,7 +136,7 @@ function CheckoutSuccessContent() {
   }, [eventUrl, eventCode, t]);
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-white px-6 py-24">
+    <main className="flex min-h-screen items-center justify-center px-6 py-24">
       <div className="mx-auto w-full max-w-lg text-center">
         {status === "loading" && <LoadingState />}
         {status === "error" && <ErrorState onRetry={handleRetry} />}
@@ -159,9 +159,9 @@ function LoadingState() {
     <div role="status">
       <div
         aria-hidden="true"
-        className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-brand-600 motion-reduce:animate-none"
+        className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-stone-200 border-t-brick-500 motion-reduce:animate-none"
       />
-      <p className="mt-6 text-lg text-gray-600">{t("loading")}</p>
+      <p className="mt-6 text-lg text-muted">{t("loading")}</p>
     </div>
   );
 }
@@ -170,21 +170,21 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
   const t = useTranslations("checkout");
   return (
     <>
-      <h1 className="text-2xl font-bold text-gray-900" role="alert">
+      <h1 className="font-display text-2xl font-semibold text-ink-900" role="alert">
         {t("error.title")}
       </h1>
-      <p className="mt-4 text-gray-600 leading-relaxed">{t("error.description")}</p>
+      <p className="mt-4 text-muted leading-relaxed">{t("error.description")}</p>
       <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
         <button
           type="button"
           onClick={onRetry}
-          className="rounded-button bg-brand-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+          className="rounded-button bg-brick-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-brick-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)"
         >
           {t("error.tryAgain")}
         </button>
         <Link
           href="/"
-          className="rounded-button border border-gray-300 px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+          className="rounded-button border border-stone-300 px-6 py-3 font-semibold text-ink-700 transition-colors hover:bg-stone-100"
         >
           {t("error.backHome")}
         </Link>
@@ -207,10 +207,10 @@ function SuccessState({
   const t = useTranslations("checkout");
   return (
     <>
-      <h1 className="text-3xl font-bold text-gray-900">{t("success.title")}</h1>
+      <h1 className="font-display text-3xl font-semibold text-ink-900">{t("success.title")}</h1>
 
-      <div className="mt-8 rounded-card border border-gray-200 bg-gray-50 p-4">
-        <label htmlFor="event-link" className="block text-sm font-medium text-gray-600">
+      <div className="mt-8 rounded-card border border-stone-200 bg-stone-100 p-4">
+        <label htmlFor="event-link" className="block text-sm font-medium text-muted">
           {t("success.eventLinkLabel")}
         </label>
         <div className="mt-2 flex items-center gap-2">
@@ -219,39 +219,39 @@ function SuccessState({
             type="text"
             readOnly
             value={eventUrl}
-            className="min-w-0 flex-1 rounded-button border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 select-all"
+            className="min-w-0 flex-1 rounded-button border border-stone-300 bg-white px-3 py-2 text-sm text-ink-900 select-all"
             onClick={(e) => (e.target as HTMLInputElement).select()}
           />
           <button
             type="button"
             onClick={onCopy}
             aria-live="polite"
-            className="shrink-0 rounded-button border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+            className="shrink-0 rounded-button border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-ink-700 transition-colors hover:bg-stone-100"
           >
             {copied ? t("success.copied") : t("success.copy")}
           </button>
         </div>
-        <p className="mt-3 text-left text-sm text-gray-600">{t("success.validity")}</p>
+        <p className="mt-3 text-left text-sm text-muted">{t("success.validity")}</p>
       </div>
 
       <button
         type="button"
         onClick={onShare}
-        className="mt-6 inline-flex items-center justify-center rounded-button bg-brand-600 px-8 py-3 text-lg font-semibold text-white transition-colors hover:bg-brand-700 active:bg-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+        className="mt-6 inline-flex items-center justify-center rounded-button bg-brick-500 px-8 py-3 text-lg font-semibold text-white transition-colors hover:bg-brick-600 active:bg-brick-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)"
       >
         {t("success.share")}
       </button>
 
-      <div className="mt-8 rounded-card bg-gray-50 p-6 text-left">
-        <h2 className="font-semibold text-gray-900">{t("success.whatsNext")}</h2>
-        <p className="mt-2 text-sm text-gray-600 leading-relaxed">
+      <div className="mt-8 rounded-card bg-stone-100 p-6 text-left">
+        <h2 className="font-semibold text-ink-900">{t("success.whatsNext")}</h2>
+        <p className="mt-2 text-sm text-muted leading-relaxed">
           {t("success.whatsNextDescription")}
         </p>
       </div>
 
-      <p className="mt-6 text-sm text-gray-600">
+      <p className="mt-6 text-sm text-muted">
         {t("success.refundNote")}{" "}
-        <Link href="/refunds" className="font-medium text-brand-700 underline underline-offset-2">
+        <Link href="/refunds" className="font-medium text-brick-600 underline underline-offset-2">
           {t("success.refundLink")}
         </Link>
       </p>

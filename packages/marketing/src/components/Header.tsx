@@ -5,9 +5,10 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { SUPPORTED_LANGUAGES, LANGUAGE_NAMES } from "@cityroam/shared/constants";
 import type { SupportedLanguage } from "@cityroam/shared/types";
+import { OwlMark } from "@/components/OwlMark";
 
 const FOCUS =
-  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600";
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)";
 
 const NAV_LINKS = [
   { href: "/families" as const, labelKey: "header.families" },
@@ -48,10 +49,15 @@ export function Header() {
   }
 
   return (
-    <header className="border-b border-gray-100 bg-white">
+    <header className="border-b border-stone-200 bg-stone-50">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-        <Link href="/" className={`text-xl font-bold text-gray-900 ${FOCUS}`}>
-          {t("header.brand")}
+        {/* The owl is decorative: the wordmark beside it is the link's name. */}
+        <Link
+          href="/"
+          className={`-m-1 flex items-center gap-2 rounded-sm p-1 font-display text-xl font-semibold tracking-tight text-ink-900 ${FOCUS}`}
+        >
+          <OwlMark size={28} />
+          <span>{t("header.brand")}</span>
         </Link>
 
         {/* Desktop nav */}
@@ -60,14 +66,14 @@ export function Header() {
             <Link
               key={link.href}
               href={link.href}
-              className={`text-sm font-medium text-gray-600 transition-colors hover:text-gray-900 ${FOCUS}`}
+              className={`text-sm font-medium text-ink-700 underline-offset-4 transition-colors hover:text-ink-900 hover:underline hover:decoration-brick-500 ${FOCUS}`}
             >
               {t(link.labelKey)}
             </Link>
           ))}
           <Link
             href={bookHref}
-            className={`rounded-button bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700 ${FOCUS}`}
+            className={`rounded-button bg-brick-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brick-600 ${FOCUS}`}
           >
             {t("header.bookNow")}
           </Link>
@@ -84,7 +90,7 @@ export function Header() {
         <button
           type="button"
           onClick={() => setMenuOpen(!menuOpen)}
-          className={`-mr-2 p-2 text-gray-600 sm:hidden ${FOCUS}`}
+          className={`-mr-2 p-2 text-ink-700 sm:hidden ${FOCUS}`}
           aria-label={t("header.toggleMenu")}
           aria-expanded={menuOpen}
           aria-controls="mobile-nav"
@@ -108,14 +114,14 @@ export function Header() {
 
       {/* Mobile nav */}
       {menuOpen && (
-        <nav id="mobile-nav" className="border-t border-gray-100 px-6 py-4 sm:hidden">
+        <nav id="mobile-nav" className="border-t border-stone-200 px-6 py-4 sm:hidden">
           <div className="flex flex-col gap-4">
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMenuOpen(false)}
-                className={`text-base font-medium text-gray-600 transition-colors hover:text-gray-900 ${FOCUS}`}
+                className={`text-base font-medium text-ink-700 transition-colors hover:text-ink-900 ${FOCUS}`}
               >
                 {t(link.labelKey)}
               </Link>
@@ -123,11 +129,11 @@ export function Header() {
             <Link
               href={bookHref}
               onClick={() => setMenuOpen(false)}
-              className={`rounded-button bg-brand-600 px-5 py-3 text-center text-base font-semibold text-white transition-colors hover:bg-brand-700 ${FOCUS}`}
+              className={`rounded-button bg-brick-500 px-5 py-3 text-center text-base font-semibold text-white transition-colors hover:bg-brick-600 ${FOCUS}`}
             >
               {t("header.bookNow")}
             </Link>
-            <div className="border-t border-gray-100 pt-4">
+            <div className="border-t border-stone-200 pt-4">
               <div className="flex flex-wrap gap-2" role="group" aria-label={t("header.changeLanguage")}>
                 {SUPPORTED_LANGUAGES.map((lang) => (
                   <button
@@ -139,8 +145,8 @@ export function Header() {
                     aria-current={lang === locale ? "true" : undefined}
                     className={`rounded-button px-3 py-1.5 text-sm font-medium transition-colors ${FOCUS} ${
                       lang === locale
-                        ? "bg-brand-600 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        ? "bg-ink-900 text-stone-50"
+                        : "bg-stone-100 text-ink-700 hover:bg-stone-200"
                     }`}
                   >
                     {lang.toUpperCase()}
@@ -180,7 +186,7 @@ function LanguageSwitcher({
       <button
         type="button"
         onClick={() => setLangOpen(!langOpen)}
-        className={`flex items-center gap-1 rounded-button border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:border-gray-300 hover:text-gray-900 ${FOCUS}`}
+        className={`flex items-center gap-1 rounded-button border border-stone-300 px-3 py-1.5 text-sm font-medium text-ink-700 transition-colors hover:border-ink-500 hover:text-ink-900 ${FOCUS}`}
         aria-label={ariaLabel}
         aria-expanded={langOpen}
         aria-controls="language-menu"
@@ -196,7 +202,7 @@ function LanguageSwitcher({
       {langOpen && (
         <div
           id="language-menu"
-          className="absolute right-0 top-full z-50 mt-1 min-w-[140px] rounded-card border border-gray-200 bg-white py-1 shadow-lg"
+          className="absolute right-0 top-full z-50 mt-1 min-w-[140px] rounded-card border border-stone-200 bg-white py-1 shadow-lg"
         >
           {SUPPORTED_LANGUAGES.map((lang) => (
             <button
@@ -205,13 +211,13 @@ function LanguageSwitcher({
               lang={lang}
               onClick={() => switchLanguage(lang)}
               aria-current={lang === locale ? "true" : undefined}
-              className={`flex w-full items-center gap-2 px-4 py-2 text-left text-sm transition-colors focus-visible:bg-gray-100 focus-visible:outline-none ${
+              className={`flex w-full items-center gap-2 px-4 py-2 text-left text-sm transition-colors focus-visible:bg-stone-100 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--focus-ring) ${
                 lang === locale
-                  ? "bg-brand-50 font-medium text-brand-700"
-                  : "text-gray-700 hover:bg-gray-50"
+                  ? "bg-stone-100 font-semibold text-ink-900"
+                  : "text-ink-700 hover:bg-stone-100"
               }`}
             >
-              <span aria-hidden="true" className="w-6 font-medium text-gray-500">
+              <span aria-hidden="true" className="w-6 font-medium text-muted">
                 {lang.toUpperCase()}
               </span>
               <span>{LANGUAGE_NAMES[lang]}</span>

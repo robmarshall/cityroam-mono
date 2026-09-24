@@ -65,7 +65,7 @@ export function StickyBookBar({
         }}
         // `invisible` (visibility: hidden) takes the hidden bar out of the tab
         // order and the accessibility tree, not just off screen.
-        className={`fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white/95 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-4px_12px_rgba(0,0,0,0.06)] backdrop-blur transition-[transform,visibility] duration-200 motion-reduce:transition-none sm:hidden ${
+        className={`fixed inset-x-0 bottom-0 z-40 border-t border-stone-200 bg-stone-50/95 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-4px_12px_rgba(0,0,0,0.06)] backdrop-blur transition-[transform,visibility] duration-200 motion-reduce:transition-none sm:hidden ${
           show ? "visible translate-y-0" : "invisible translate-y-full"
         }`}
       >

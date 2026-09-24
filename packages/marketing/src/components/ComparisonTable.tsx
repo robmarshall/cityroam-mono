@@ -20,21 +20,21 @@ export function ComparisonTable() {
 
   return (
     <>
-      <p className="mt-8 text-center text-sm text-gray-600 md:hidden">{t("scrollHint")}</p>
+      <p className="mt-8 text-center text-sm text-muted md:hidden">{t("scrollHint")}</p>
       <div
         role="region"
         aria-label={t("caption")}
         // Focusable so keyboard users can scroll it sideways.
         tabIndex={0}
-        className="mt-4 overflow-x-auto md:mt-12 rounded-card ring-1 ring-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+        className="mt-4 overflow-x-auto md:mt-12 rounded-card bg-white ring-1 ring-stone-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)"
       >
         <table className="w-full min-w-[40rem] border-collapse text-left text-sm sm:text-base">
           <caption className="sr-only">{t("caption")}</caption>
           <thead>
-            <tr className="border-b border-gray-200">
+            <tr className="border-b border-stone-200">
               <th
                 scope="col"
-                className="sticky left-0 z-10 w-36 bg-white px-4 py-3 font-semibold text-gray-600 shadow-[1px_0_0_0_var(--color-gray-200)] sm:w-48"
+                className="sticky left-0 z-10 w-36 bg-white px-4 py-3 font-semibold text-muted shadow-[1px_0_0_0_var(--color-stone-200)] sm:w-48"
               >
                 <span className="sr-only">{t("columns.feature")}</span>
               </th>
@@ -43,7 +43,7 @@ export function ComparisonTable() {
                   key={col}
                   scope="col"
                   className={`px-4 py-3 align-bottom font-semibold ${
-                    col === "cityRoam" ? "bg-brand-50 text-brand-800" : "text-gray-900"
+                    col === "cityRoam" ? "bg-brick-100 text-brick-600" : "text-ink-900"
                   }`}
                 >
                   {t(`columns.${col}`)}
@@ -53,10 +53,10 @@ export function ComparisonTable() {
           </thead>
           <tbody>
             {Array.from({ length: ROW_COUNT }, (_, i) => (
-              <tr key={i} className="border-b border-gray-100 last:border-b-0">
+              <tr key={i} className="border-b border-stone-200 last:border-b-0">
                 <th
                   scope="row"
-                  className="sticky left-0 z-10 bg-white px-4 py-3 align-top font-medium text-gray-900 shadow-[1px_0_0_0_var(--color-gray-200)]"
+                  className="sticky left-0 z-10 bg-white px-4 py-3 align-top font-medium text-ink-900 shadow-[1px_0_0_0_var(--color-stone-200)]"
                 >
                   {t(`rows.${i}.label`)}
                 </th>
@@ -64,7 +64,7 @@ export function ComparisonTable() {
                   <td
                     key={col}
                     className={`px-4 py-3 align-top ${
-                      col === "cityRoam" ? "bg-brand-50 font-medium text-gray-900" : "text-gray-600"
+                      col === "cityRoam" ? "bg-brick-100 font-medium text-ink-900" : "text-muted"
                     }`}
                   >
                     {t(`rows.${i}.${col}`, values)}

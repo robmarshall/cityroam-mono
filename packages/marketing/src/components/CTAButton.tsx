@@ -19,12 +19,18 @@ export type CheckoutSegment =
   | "hen-parties"
   | "team-building";
 
+/**
+ * Contrast (see docs/plans/brand-direction-a.md and the contrast test):
+ * white on brick-500 is 5.45:1 and on brick-600 6.99:1; ink-900 on stone-50
+ * is 14.19:1. Brick on navy fails (2.93:1), so navy bands use `inverse`.
+ */
 const VARIANT_CLASSES = {
-  primary:
-    "bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800 focus-visible:outline-brand-600",
-  // For use on the brand-coloured band, where a blue button would disappear.
-  inverse:
-    "bg-white text-brand-700 hover:bg-brand-50 active:bg-brand-100 focus-visible:outline-white",
+  primary: "bg-brick-500 text-white hover:bg-brick-600 active:bg-brick-600",
+  // Quieter action on stone or white: a navy outline.
+  secondary:
+    "bg-transparent text-ink-900 ring-2 ring-inset ring-ink-900 hover:bg-ink-900 hover:text-stone-50 active:bg-ink-700",
+  // For navy bands, where a brick button would fail contrast.
+  inverse: "bg-stone-50 text-ink-900 hover:bg-white active:bg-stone-100",
 } as const;
 
 export function CTAButton({
@@ -96,7 +102,7 @@ export function CTAButton({
         onClick={handleClick}
         disabled={loading}
         aria-busy={loading}
-        className={`inline-flex items-center justify-center rounded-button font-semibold ${fullWidth ? "w-full px-6 py-3 text-base" : "px-8 py-4 text-lg"} transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-70 ${VARIANT_CLASSES[variant]}`}
+        className={`inline-flex items-center justify-center rounded-button font-semibold ${fullWidth ? "w-full px-6 py-3 text-base" : "px-8 py-4 text-lg"} transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring) motion-reduce:transition-none disabled:cursor-not-allowed disabled:opacity-70 ${VARIANT_CLASSES[variant]}`}
       >
         {loading ? t("loading") : displayLabel}
       </button>
@@ -105,14 +111,14 @@ export function CTAButton({
           role="alert"
           className={`flex flex-col items-center gap-1 ${align === "start-lg" ? "lg:items-start" : ""}`}
         >
-          <p className={`text-sm ${variant === "inverse" ? "text-white" : "text-red-700"}`}>
+          <p className={`text-sm ${variant === "inverse" ? "text-stone-50" : "text-red-700"}`}>
             {t("error")}
           </p>
           <button
             type="button"
             onClick={handleClick}
-            className={`text-sm font-medium underline ${
-              variant === "inverse" ? "text-white hover:text-brand-50" : "text-brand-600 hover:text-brand-700"
+            className={`text-sm font-medium underline underline-offset-2 ${
+              variant === "inverse" ? "text-stone-50 hover:text-white" : "text-brick-600 hover:text-ink-900"
             }`}
           >
             {t("retry")}

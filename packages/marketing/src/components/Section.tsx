@@ -5,16 +5,21 @@
  * on these so spacing, type scale and card styling stay consistent.
  */
 
-type Tone = "white" | "muted" | "brand";
+/**
+ * Stone is the page itself; white lifts a band off it; navy is for the few
+ * bands that close a page. `on-dark` flips the focus ring, and navy bands must
+ * never carry brick text or buttons (2.93:1): use CTAButton `inverse`.
+ */
+type Tone = "stone" | "white" | "navy";
 
 const TONE_CLASSES: Record<Tone, string> = {
+  stone: "bg-stone-50",
   white: "bg-white",
-  muted: "bg-gray-50",
-  brand: "bg-brand-600",
+  navy: "on-dark bg-ink-900 text-stone-50",
 };
 
 export function Section({
-  tone = "white",
+  tone = "stone",
   width = "wide",
   id,
   bookZone = false,
@@ -52,11 +57,11 @@ export function SectionHeading({
   const centred = align === "center";
   return (
     <div className={centred ? "text-center" : undefined}>
-      <h2 className="text-3xl font-bold tracking-tight text-balance text-gray-900 sm:text-4xl">
+      <h2 className="font-display text-3xl font-semibold tracking-tight text-balance text-ink-900 sm:text-4xl">
         {title}
       </h2>
       {subtitle && (
-        <p className={`mt-4 text-lg leading-relaxed text-gray-600 ${centred ? "mx-auto max-w-2xl" : ""}`}>
+        <p className={`mt-4 text-lg leading-relaxed text-muted ${centred ? "mx-auto max-w-2xl" : ""}`}>
           {subtitle}
         </p>
       )}
@@ -75,12 +80,12 @@ export function PageHero({
   children: React.ReactNode;
 }) {
   return (
-    <section className="bg-white px-6 py-20 text-center sm:py-28">
+    <section className="bg-stone-50 px-6 py-20 text-center sm:py-28">
       <div className="mx-auto max-w-3xl">
-        <h1 className="text-4xl font-bold tracking-tight text-balance text-gray-900 sm:text-6xl">
+        <h1 className="font-display text-4xl font-semibold tracking-tight text-balance text-ink-900 sm:text-6xl">
           {title}
         </h1>
-        <p className="mt-6 text-lg leading-8 text-gray-600 sm:text-xl">{subtitle}</p>
+        <p className="mt-6 text-lg leading-8 text-ink-700 sm:text-xl">{subtitle}</p>
         <div className="mt-10">{children}</div>
       </div>
     </section>
@@ -90,8 +95,8 @@ export function PageHero({
 /** Three short paragraphs under the hero; the first may carry a bold lead-in. */
 export function Intro({ children }: { children: React.ReactNode }) {
   return (
-    <Section tone="muted" width="narrow">
-      <div className="space-y-6 text-lg leading-relaxed text-gray-700 sm:text-xl">{children}</div>
+    <Section tone="white" width="narrow">
+      <div className="space-y-6 text-lg leading-relaxed text-ink-700 sm:text-xl">{children}</div>
     </Section>
   );
 }
@@ -106,9 +111,9 @@ export function Card({
   className?: string;
 }) {
   return (
-    <div className={`rounded-card bg-white p-6 ring-1 ring-gray-200 ${className}`}>
-      <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-      <p className="mt-2 leading-relaxed text-gray-600">{description}</p>
+    <div className={`rounded-card bg-white p-6 ring-1 ring-stone-200 ${className}`}>
+      <h3 className="font-display text-xl font-semibold text-ink-900">{title}</h3>
+      <p className="mt-2 leading-relaxed text-muted">{description}</p>
     </div>
   );
 }
@@ -131,7 +136,7 @@ function CheckIcon() {
   return (
     <svg
       aria-hidden="true"
-      className="mt-0.5 h-5 w-5 shrink-0 text-brand-600"
+      className="mt-1 h-5 w-5 shrink-0 text-brick-500"
       viewBox="0 0 20 20"
       fill="currentColor"
     >
@@ -148,7 +153,7 @@ export function CheckList({ items, className = "mt-12" }: { items: string[]; cla
   return (
     <ul className={`grid gap-x-8 gap-y-4 sm:grid-cols-2 ${className}`}>
       {items.map((item) => (
-        <li key={item} className="flex gap-3 text-lg leading-relaxed text-gray-700">
+        <li key={item} className="flex gap-3 text-lg leading-relaxed text-ink-700">
           <CheckIcon />
           <span>{item}</span>
         </li>
@@ -171,8 +176,8 @@ export function Steps({
           <li key={step.title} className="flex gap-4">
             <StepNumber n={i + 1} />
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">{step.title}</h3>
-              <p className="mt-1 leading-relaxed text-gray-600">{step.description}</p>
+              <h3 className="font-display text-xl font-semibold text-ink-900">{step.title}</h3>
+              <p className="mt-1 leading-relaxed text-muted">{step.description}</p>
             </div>
           </li>
         ))}
@@ -185,8 +190,8 @@ export function Steps({
       {steps.map((step, i) => (
         <li key={step.title} className="text-center">
           <StepNumber n={i + 1} className="mx-auto" />
-          <h3 className="mt-4 text-lg font-semibold text-gray-900">{step.title}</h3>
-          <p className="mt-2 leading-relaxed text-gray-600">{step.description}</p>
+          <h3 className="mt-4 font-display text-xl font-semibold text-ink-900">{step.title}</h3>
+          <p className="mt-2 leading-relaxed text-muted">{step.description}</p>
         </li>
       ))}
     </ol>
@@ -197,7 +202,7 @@ function StepNumber({ n, className = "" }: { n: number; className?: string }) {
   return (
     <span
       aria-hidden="true"
-      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-600 font-bold text-white ${className}`}
+      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-brick-500 font-display text-lg font-semibold text-brick-600 ${className}`}
     >
       {n}
     </span>
@@ -221,10 +226,10 @@ export function CtaBand({
   children: React.ReactNode;
 }) {
   return (
-    <Section id="book" bookZone tone="brand" width="narrow" className="scroll-mt-4 text-center">
-      <p className="text-2xl font-bold leading-tight text-balance text-white sm:text-3xl">{text}</p>
-      {note && <p className="mt-4 text-lg text-brand-50">{note}</p>}
-      {subnote && <p className="mt-1 text-base text-brand-50">{subnote}</p>}
+    <Section id="book" bookZone tone="navy" width="narrow" className="scroll-mt-4 text-center">
+      <p className="font-display text-2xl font-semibold leading-tight text-balance text-stone-50 sm:text-3xl">{text}</p>
+      {note && <p className="mt-4 text-lg text-stone-200">{note}</p>}
+      {subnote && <p className="mt-1 text-base text-stone-200">{subnote}</p>}
       <div className="mt-10">{children}</div>
     </Section>
   );

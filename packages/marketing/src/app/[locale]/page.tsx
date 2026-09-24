@@ -18,7 +18,7 @@ import { StickyBookBar } from "@/components/StickyBookBar";
 import { factValues } from "@/lib/facts";
 import { buildMetadata } from "@/lib/metadata";
 
-const HOME_FAQ_COUNT = 10;
+const HOME_FAQ_COUNT = 11;
 
 export async function generateMetadata({
   params,
@@ -43,15 +43,15 @@ export default async function Home({
     Array.from({ length: count }, (_, i) => t(`${key}.${i}`, facts));
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen">
       {/* Hero */}
       <section className="overflow-hidden px-6 py-16 sm:py-24">
         <div className="mx-auto flex max-w-5xl flex-col items-center gap-12 lg:flex-row lg:gap-16">
           <div className="flex-1 text-center lg:text-left">
-            <h1 className="text-4xl font-bold tracking-tight text-balance text-gray-900 sm:text-6xl">
+            <h1 className="font-display text-4xl font-semibold tracking-tight text-balance text-ink-900 sm:text-6xl">
               {t("hero.title")}
             </h1>
-            <p className="mt-6 text-lg leading-8 text-gray-600 sm:text-xl">{t("hero.subtitle")}</p>
+            <p className="mt-6 text-lg leading-8 text-ink-700 sm:text-xl">{t("hero.subtitle")}</p>
             <div className="mt-10">
               <CTAButton location="hero" align="start-lg" />
             </div>
@@ -68,11 +68,11 @@ export default async function Home({
       </section>
 
       {/* Intro */}
-      <Section tone="muted" width="narrow">
-        <div className="space-y-6 text-lg leading-relaxed text-gray-700 sm:text-xl">
+      <Section tone="white" width="narrow">
+        <div className="space-y-6 text-lg leading-relaxed text-ink-700 sm:text-xl">
           <p>
             {t.rich("problem.text1", {
-              b: (chunks) => <strong className="text-gray-900">{chunks}</strong>,
+              b: (chunks) => <strong className="text-ink-900">{chunks}</strong>,
             })}
           </p>
           <p>{t("problem.text2")}</p>
@@ -92,7 +92,7 @@ export default async function Home({
       </Section>
 
       {/* Just your phone */}
-      <Section tone="muted">
+      <Section tone="white">
         <div className="flex flex-col items-center gap-12 md:flex-row md:gap-16">
           <div className="flex-1">
             <SectionHeading
@@ -115,7 +115,7 @@ export default async function Home({
       </Section>
 
       {/* Why City Roam */}
-      <Section tone="muted">
+      <Section tone="white">
         <SectionHeading title={t("whyChoose.title")} subtitle={t("whyChoose.subtitle")} />
         <CardGrid>
           {(["localKnowledge", "justYourPhone", "playYourWay", "builtForGroups"] as const).map(
@@ -139,33 +139,33 @@ export default async function Home({
       {/* Pricing */}
       <Section
         id="pricing"
-        tone="muted"
+        tone="white"
         width="narrow"
         bookZone
         className="scroll-mt-4 text-center"
       >
         <SectionHeading title={t("pricing.title")} subtitle={t("pricing.subtitle")} />
-        <div className="mt-10 inline-block rounded-card bg-white px-6 py-8 ring-1 ring-gray-200 shadow-sm sm:px-10">
-          <p className="text-5xl font-bold tracking-tight text-gray-900">
+        <div className="mt-10 inline-block rounded-card bg-white px-6 py-8 ring-1 ring-stone-200 shadow-sm sm:px-10">
+          <p className="font-display text-5xl font-semibold tracking-tight text-ink-900">
             {t("pricing.price")}
-            <span className="ml-2 text-lg font-medium tracking-normal text-gray-600">
+            <span className="ml-2 font-sans text-lg font-medium tracking-normal text-muted">
               {t("pricing.perGroup")}
             </span>
           </p>
-          <PerHead className="mt-2 text-base text-gray-700" />
-          <p className="mt-2 text-sm font-medium text-brand-700">{t("pricing.badge")}</p>
+          <PerHead className="mt-2 text-base text-ink-700" />
+          <p className="mt-2 text-sm font-medium text-brick-600">{t("pricing.badge")}</p>
           <div className="mt-8">
             <CTAButton location="pricing" />
           </div>
-          <p className="mt-6 text-sm text-gray-600">{t("pricing.note")}</p>
+          <p className="mt-6 text-sm text-muted">{t("pricing.note")}</p>
         </div>
       </Section>
 
       {/* Refund promise */}
-      <section className="bg-brand-50 px-6 py-16">
+      <section className="bg-brick-100 px-6 py-16">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-2xl font-bold text-brand-800">{t("guarantee.title")}</h2>
-          <p className="mt-3 text-lg text-brand-800">{t("guarantee.description")}</p>
+          <h2 className="font-display text-2xl font-semibold text-ink-900 sm:text-3xl">{t("guarantee.title")}</h2>
+          <p className="mt-3 text-lg text-ink-700">{t("guarantee.description")}</p>
         </div>
       </section>
 

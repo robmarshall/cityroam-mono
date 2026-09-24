@@ -35,7 +35,7 @@ export function FAQ({
   }
 
   return (
-    <div className="mx-auto mt-12 max-w-2xl divide-y divide-gray-200 border-y border-gray-200">
+    <div className="mx-auto mt-12 max-w-2xl divide-y divide-stone-200 border-y border-stone-200">
       {Array.from({ length: count }, (_, index) => {
         const open = openIndex === index;
         const buttonId = `${baseId}-q${index}`;
@@ -49,12 +49,12 @@ export function FAQ({
                 aria-expanded={open}
                 aria-controls={panelId}
                 onClick={() => toggle(index)}
-                className="flex w-full items-center justify-between gap-4 py-5 text-left text-lg font-medium text-gray-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+                className="flex w-full items-center justify-between gap-4 py-5 text-left text-lg font-medium text-ink-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)"
               >
                 <span>{t(`${index}.question`)}</span>
                 <svg
                   aria-hidden="true"
-                  className={`h-5 w-5 shrink-0 text-gray-500 transition-transform motion-reduce:transition-none ${
+                  className={`h-5 w-5 shrink-0 text-muted transition-transform motion-reduce:transition-none ${
                     open ? "rotate-180" : ""
                   }`}
                   fill="none"
@@ -67,7 +67,7 @@ export function FAQ({
               </button>
             </h3>
             <div id={panelId} role="region" aria-labelledby={buttonId} hidden={!open}>
-              <p className="pb-5 leading-relaxed text-gray-600">{t(`${index}.answer`, values)}</p>
+              <p className="pb-5 leading-relaxed text-muted">{t(`${index}.answer`, values)}</p>
             </div>
           </div>
         );

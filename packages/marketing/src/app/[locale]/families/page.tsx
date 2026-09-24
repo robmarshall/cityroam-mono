@@ -41,7 +41,7 @@ export default async function Families({
   const facts = factValues(tf);
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen">
       <PageHero title={t("hero.title")} subtitle={t("hero.subtitle")}>
         <CTAButton location="families-hero" segment="families" />
         <KeyFacts />
@@ -50,7 +50,7 @@ export default async function Families({
       <Intro>
         <p>
           {t.rich("problem.text1", {
-            b: (chunks) => <strong className="text-gray-900">{chunks}</strong>,
+            b: (chunks) => <strong className="text-ink-900">{chunks}</strong>,
           })}
         </p>
         <p>{t("problem.text2")}</p>
@@ -70,7 +70,7 @@ export default async function Families({
         </CardGrid>
       </Section>
 
-      <Section tone="muted">
+      <Section tone="white">
         <SectionHeading title={t("perfectFor.title")} subtitle={t("perfectFor.subtitle")} />
         <CardGrid columns={3}>
           {(["grandparents", "weekend", "holidays"] as const).map((key) => (
@@ -94,21 +94,21 @@ export default async function Families({
         />
       </Section>
 
-      <Section tone="muted">
+      <Section tone="white">
         <SectionHeading title={t("features.title")} subtitle={t("features.subtitle")} />
         <CheckList items={Array.from({ length: 6 }, (_, i) => t(`features.items.${i}`))} />
       </Section>
 
       <Section width="narrow">
         <SectionHeading align="left" title={t("safety.title")} />
-        <div className="mt-8 space-y-6 text-lg leading-relaxed text-gray-700">
+        <div className="mt-8 space-y-6 text-lg leading-relaxed text-ink-700">
           <p>{t("safety.text1")}</p>
           <p>{t("safety.text2", facts)}</p>
           <p>{t("safety.text3")}</p>
         </div>
       </Section>
 
-      <Section tone="muted">
+      <Section tone="white">
         <SectionHeading title={t("faq.title")} />
         <FAQ namespace="families.faq" count={6} values={facts} />
       </Section>

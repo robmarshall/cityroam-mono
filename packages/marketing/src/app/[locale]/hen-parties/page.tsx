@@ -40,7 +40,7 @@ export default async function HenParties({
   const facts = factValues(tf);
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen">
       <PageHero title={t("hero.title")} subtitle={t("hero.subtitle")}>
         <CTAButton location="hen-hero" segment="hen-parties" />
         <KeyFacts />
@@ -49,7 +49,7 @@ export default async function HenParties({
       <Intro>
         <p>
           {t.rich("problem.text1", {
-            b: (chunks) => <strong className="text-gray-900">{chunks}</strong>,
+            b: (chunks) => <strong className="text-ink-900">{chunks}</strong>,
           })}
         </p>
         <p>{t("problem.text2")}</p>
@@ -69,7 +69,7 @@ export default async function HenParties({
         </CardGrid>
       </Section>
 
-      <Section tone="muted">
+      <Section tone="white">
         <SectionHeading title={t("styles.title")} subtitle={t("styles.subtitle")} />
         <CardGrid columns={3}>
           {(["daytime", "alternative", "mixed"] as const).map((key) => (
@@ -95,21 +95,21 @@ export default async function HenParties({
         </CardGrid>
       </Section>
 
-      <Section tone="muted">
+      <Section tone="white">
         <SectionHeading title={t("special.title")} />
         <CheckList items={Array.from({ length: 6 }, (_, i) => t(`special.items.${i}`))} />
       </Section>
 
       <Section width="narrow">
         <SectionHeading align="left" title={t("safety.title")} />
-        <div className="mt-8 space-y-6 text-lg leading-relaxed text-gray-700">
+        <div className="mt-8 space-y-6 text-lg leading-relaxed text-ink-700">
           <p>{t("safety.text1")}</p>
           <p>{t("safety.text2")}</p>
           <p>{t("safety.text3")}</p>
         </div>
       </Section>
 
-      <Section tone="muted">
+      <Section tone="white">
         <SectionHeading title={t("faq.title")} />
         <FAQ namespace="henParties.faq" count={6} />
       </Section>
