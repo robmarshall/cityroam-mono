@@ -23,6 +23,7 @@ import { chatMessageSchema, displayNameSchema } from "@cityroam/shared/validatio
 import { formatTimestamp } from "@cityroam/shared/utils";
 import { TYPING_INDICATOR_DEBOUNCE_MS, MAX_MESSAGE_LENGTH, MIN_DISPLAY_NAME_LENGTH, MAX_DISPLAY_NAME_LENGTH } from "@cityroam/shared/constants";
 import { POSTHOG_EVENTS } from "@cityroam/shared/analytics";
+import { OwlAvatar } from "../components/OwlAvatar";
 import type {
   ChatMessagePayload,
   ParticipantJoinedPayload,
@@ -1003,9 +1004,7 @@ export default function ChatPage() {
           <div className="mb-chat-gap flex justify-start">
             <div className="max-w-[75%]">
               <div className="mb-0.5 flex items-center gap-1 text-xs text-system-text">
-                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-                </svg>
+                <OwlAvatar size={14} className="h-3.5 w-3.5" />
                 <span>{t("chat.guideLabel")}</span>
               </div>
               <div className="inline-flex items-center gap-1 rounded-2xl rounded-bl-sm bg-bubble-guide px-4 py-3">
@@ -1351,9 +1350,7 @@ function GuideBubble({
       <div className="max-w-[75%]">
         {showLabel && (
           <div className="mb-0.5 flex items-center gap-1 text-xs text-system-text">
-            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-            </svg>
+            <OwlAvatar size={14} className="h-3.5 w-3.5" />
             <span>{t("chat.guideLabel")}</span>
           </div>
         )}

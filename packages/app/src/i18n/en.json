@@ -41,6 +41,7 @@
   },
   "lobby": {
     "title": "Waiting for players",
+    "aiDisclosure": "The Owl, your guide for this game, is an AI.",
     "leadBadge": "Lead",
     "youBadge": "You",
     "waitingForLead": "Waiting for {{name}} to start the game...",
@@ -77,7 +78,7 @@
     "leaveGame": "Leave Game",
     "inputPlaceholder": "Type a message...",
     "offlineError": "You're offline — message not sent.",
-    "guideLabel": "Guide",
+    "guideLabel": "The Owl",
     "typingOne": "{{name}} is typing...",
     "typingMultiple": "Multiple people are typing...",
     "waitingForLead": "Waiting for {{name}}...",
@@ -118,8 +119,8 @@
     "shared": "Shared!",
     "linkCopied": "Link Copied!",
     "doneButton": "Done",
-    "shareTitle": "City Roam - AI City Adventure",
-    "shareText": "I just completed an amazing AI-guided city adventure! Check it out:"
+    "shareTitle": "City Roam — a treasure hunt guided by the Owl",
+    "shareText": "We finished a City Roam treasure hunt, guided by the Owl. Worth a go:"
   },
   "error": {
     "title": "Something went wrong",

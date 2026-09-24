@@ -41,6 +41,7 @@
   },
   "lobby": {
     "title": "En attente des joueurs",
+    "aiDisclosure": "Le Hibou, ton guide pour cette partie, est une IA.",
     "leadBadge": "Chef",
     "youBadge": "Toi",
     "waitingForLead": "En attente que {{name}} lance la partie...",
@@ -77,7 +78,7 @@
     "leaveGame": "Quitter la partie",
     "inputPlaceholder": "Écris un message...",
     "offlineError": "Tu es hors ligne — message non envoyé.",
-    "guideLabel": "Guide",
+    "guideLabel": "Le Hibou",
     "typingOne": "{{name}} écrit...",
     "typingMultiple": "Plusieurs personnes écrivent...",
     "waitingForLead": "En attente de {{name}}...",
@@ -118,8 +119,8 @@
     "shared": "Partagé !",
     "linkCopied": "Lien copié !",
     "doneButton": "Terminé",
-    "shareTitle": "City Roam - Aventure urbaine guidée par l'IA",
-    "shareText": "Je viens de terminer une incroyable aventure urbaine guidée par l'IA ! Découvre ça :"
+    "shareTitle": "City Roam — chasse au trésor guidée par le Hibou",
+    "shareText": "On a terminé une chasse au trésor City Roam, guidés par le Hibou. Ça vaut le coup :"
   },
   "error": {
     "title": "Un problème est survenu",

@@ -41,6 +41,7 @@
   },
   "lobby": {
     "title": "Esperando jugadores",
+    "aiDisclosure": "El Búho, tu guía en esta partida, es una IA.",
     "leadBadge": "Líder",
     "youBadge": "Tú",
     "waitingForLead": "Esperando a que {{name}} inicie el juego...",
@@ -77,7 +78,7 @@
     "leaveGame": "Salir del juego",
     "inputPlaceholder": "Escribe un mensaje...",
     "offlineError": "Estás sin conexión, el mensaje no se envió.",
-    "guideLabel": "Guía",
+    "guideLabel": "El Búho",
     "typingOne": "{{name}} está escribiendo...",
     "typingMultiple": "Varias personas están escribiendo...",
     "waitingForLead": "Esperando a {{name}}...",
@@ -118,8 +119,8 @@
     "shared": "¡Compartido!",
     "linkCopied": "¡Enlace copiado!",
     "doneButton": "Listo",
-    "shareTitle": "City Roam - Aventura urbana con IA",
-    "shareText": "¡Acabo de completar una increíble aventura urbana guiada por IA! Échale un vistazo:"
+    "shareTitle": "City Roam — búsqueda del tesoro guiada por el Búho",
+    "shareText": "Hemos terminado una búsqueda del tesoro de City Roam, guiados por el Búho. Merece la pena:"
   },
   "error": {
     "title": "Algo salió mal",
