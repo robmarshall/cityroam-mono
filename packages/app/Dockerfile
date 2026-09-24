@@ -22,6 +22,7 @@ COPY packages/app/src packages/app/src
 COPY packages/app/tsconfig.json packages/app/
 COPY packages/app/vite.config.ts packages/app/
 COPY packages/app/index.html packages/app/
+COPY packages/app/public packages/app/public
 
 # Vite inlines `import.meta.env.VITE_*` at BUILD time, so every public value the
 # app reads must be supplied as a build arg. Without them the bundle keeps its

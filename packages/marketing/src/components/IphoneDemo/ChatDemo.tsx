@@ -1,14 +1,40 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { motion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
+import { motion, useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 
-type Message = {
+/**
+ * Three parties, drawn the way the player app draws them: "user" is the
+ * visitor's own phone (right, blue, no label), "player" is someone else in
+ * the group (left, grey bubble, named from `chatDemo.player`), and "guide"
+ * is the Owl (left, lighter bubble, named from `chatDemo.guideLabel`).
+ */
+type Sender = "guide" | "user" | "player";
+
+export type Message = {
   id: number;
-  sender: "guide" | "user";
+  sender: Sender;
+  /** Name shown above the bubble for another player. */
+  name?: string;
   text: string;
 };
+
+// Who sends each line of the two scripted conversations in `chatDemo.*`.
+const SCRIPTS: Record<"hero" | "howItWorks", Sender[]> = {
+  hero: ["guide", "user", "player", "guide", "user", "guide"],
+  howItWorks: ["guide", "guide", "guide", "guide", "guide", "user"],
+};
+
+export function useDemoMessages(variant: "hero" | "howItWorks"): Message[] {
+  const t = useTranslations("chatDemo");
+  return SCRIPTS[variant].map((sender, i) => ({
+    id: i,
+    sender,
+    name: sender === "player" ? t("player") : undefined,
+    text: t(`${variant}.${i}`),
+  }));
+}
 
 const animationVariants = {
   initial: { opacity: 0, y: 20, scale: 0.95 },
@@ -27,47 +53,64 @@ const animationVariants = {
 
 function TypingIndicator() {
   return (
-    <div className="flex justify-start mr-[25%] mb-1">
-      <div className="flex flex-col items-start">
-        <div className="bg-bubble-guide rounded-bubble rounded-bl-sm px-4 py-3 flex gap-1.5 items-center">
-          <span className="typing-dot h-2 w-2 rounded-full bg-gray-400" />
-          <span className="typing-dot h-2 w-2 rounded-full bg-gray-400" />
-          <span className="typing-dot h-2 w-2 rounded-full bg-gray-400" />
-        </div>
+    <div className="mb-1 mr-[25%] flex justify-start">
+      <div className="flex items-center gap-1.5 rounded-bubble rounded-bl-sm bg-bubble-guide px-4 py-3">
+        <span className="typing-dot h-2 w-2 rounded-full bg-gray-400" />
+        <span className="typing-dot h-2 w-2 rounded-full bg-gray-400" />
+        <span className="typing-dot h-2 w-2 rounded-full bg-gray-400" />
       </div>
     </div>
   );
 }
 
-function MessageBubble({
+export function MessageBubble({
   message,
   isFirstInGroup,
   guideLabel,
+  animate = false,
+  size = "xs",
 }: {
   message: Message;
   isFirstInGroup: boolean;
   guideLabel: string;
+  animate?: boolean;
+  size?: "xs" | "sm";
 }) {
   const isUser = message.sender === "user";
+  const isGuide = message.sender === "guide";
+  // Mirrors the player app (ChatPage.tsx): the guide and other players are
+  // named above their bubbles; your own messages are unlabelled.
+  const label = isGuide ? guideLabel : message.name;
 
   return (
     <motion.div
-      className={`flex ${isUser ? "justify-end ml-[25%]" : "justify-start mr-[25%]"} mb-chat-gap`}
+      className={`flex ${isUser ? "ml-[20%] justify-end" : "mr-[20%] justify-start"} mb-chat-gap`}
+      // Inline display on the layout boxes: the phone frame's CSS module sets
+      // every descendant to display:block, which beats the flex classes and
+      // would stretch every bubble to the full width.
+      style={{ display: "flex" }}
       variants={animationVariants}
-      initial="initial"
+      // `false` renders straight into the final state, so bubbles that are
+      // there on first paint never start invisible.
+      initial={animate ? "initial" : false}
       animate="animate"
     >
-      <div className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}>
-        {!isUser && isFirstInGroup && (
-          <div className="text-[10px] text-gray-500 ml-1 mb-0.5 font-medium">
-            {guideLabel}
+      <div
+        className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}
+        style={{ display: "flex" }}
+      >
+        {!isUser && isFirstInGroup && label && (
+          <div className={`mb-0.5 ml-1 font-medium text-gray-600 ${size === "sm" ? "text-xs" : "text-[10px]"}`}>
+            {label}
           </div>
         )}
         <div
-          className={`px-3 py-2 whitespace-pre-wrap text-xs leading-relaxed ${
+          className={`whitespace-pre-wrap px-3 py-2 leading-relaxed ${size === "sm" ? "text-sm" : "text-xs"} ${
             isUser
-              ? "bg-bubble-self text-white rounded-bubble rounded-br-sm"
-              : "bg-bubble-guide text-gray-900 rounded-bubble rounded-bl-sm"
+              ? // The snippet is real, readable text, so it uses the darker blue
+                // that passes AA with white. The phone mock keeps the app's own.
+                `rounded-bubble rounded-br-sm text-white ${size === "sm" ? "bg-brand-600" : "bg-bubble-self"}`
+              : `rounded-bubble rounded-bl-sm text-gray-900 ${isGuide ? "bg-bubble-guide" : "bg-bubble-other"}`
           }`}
         >
           {message.text}
@@ -77,112 +120,79 @@ function MessageBubble({
   );
 }
 
-export default function ChatDemo({
-  variant,
-}: {
-  variant: "hero" | "howItWorks";
-}) {
+/**
+ * The scripted conversation inside the phone mock.
+ *
+ * The first paint (including the server-rendered HTML) already shows the
+ * whole conversation bar its last line, so the phone never appears empty.
+ * With motion allowed, the last line then arrives after a short pause, with
+ * the typing indicator first if the guide is sending it. With reduced motion
+ * the finished conversation is shown and nothing moves.
+ */
+export default function ChatDemo({ variant }: { variant: "hero" | "howItWorks" }) {
   const t = useTranslations("chatDemo");
+  const allMessages = useDemoMessages(variant);
+  const reduceMotion = useReducedMotion() ?? false;
 
-  const heroMessages: Message[] = [
-    { id: 1, sender: "user", text: t("hero.0") },
-    { id: 2, sender: "guide", text: t("hero.1") },
-    { id: 3, sender: "guide", text: t("hero.2") },
-    { id: 4, sender: "guide", text: t("hero.3") },
-    { id: 5, sender: "guide", text: t("hero.4") },
-  ];
-
-  const howItWorksMessages: Message[] = [
-    { id: 1, sender: "guide", text: t("howItWorks.0") },
-    { id: 2, sender: "guide", text: t("howItWorks.1") },
-    { id: 3, sender: "guide", text: t("howItWorks.2") },
-    { id: 4, sender: "guide", text: t("howItWorks.3") },
-    { id: 5, sender: "guide", text: t("howItWorks.4") },
-    { id: 6, sender: "user", text: t("howItWorks.5") },
-  ];
-
-  const heroInitial: Message[] = [
-    { id: 0, sender: "guide", text: t("hero.initial") },
-  ];
-
-  const allMessages = variant === "hero" ? heroMessages : howItWorksMessages;
-  const initial = variant === "hero" ? heroInitial : [];
-
-  const [messages, setMessages] = useState<Message[]>(initial);
+  const [shown, setShown] = useState(allMessages.length - 1);
   const [isTyping, setIsTyping] = useState(false);
-  const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    let index = 0;
+    if (reduceMotion) {
+      setIsTyping(false);
+      setShown(allMessages.length);
+      return;
+    }
 
-    const scheduleNext = () => {
-      if (index >= allMessages.length) return;
+    const last = allMessages[allMessages.length - 1];
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const pause = variant === "hero" ? 1800 : 2400;
 
-      const msg = allMessages[index]!;
-      const isGuide = msg.sender === "guide";
-
-      // Show typing indicator for guide messages
-      if (isGuide) {
-        const typingDelay = variant === "hero" ? 800 : 1200;
-        const t1 = setTimeout(() => {
-          setIsTyping(true);
-        }, variant === "hero" ? 1000 : 1500);
-        timeoutsRef.current.push(t1);
-
-        const t2 = setTimeout(() => {
+    if (last?.sender === "guide") {
+      timers.push(setTimeout(() => setIsTyping(true), pause));
+      timers.push(
+        setTimeout(() => {
           setIsTyping(false);
-          setMessages((prev) => [...prev, msg]);
-          index++;
-          scheduleNext();
-        }, (variant === "hero" ? 1000 : 1500) + typingDelay + Math.random() * 500);
-        timeoutsRef.current.push(t2);
-      } else {
-        const delay = variant === "hero" ? 1200 : 1800;
-        const t = setTimeout(() => {
-          setMessages((prev) => [...prev, msg]);
-          index++;
-          scheduleNext();
-        }, delay);
-        timeoutsRef.current.push(t);
-      }
-    };
+          setShown(allMessages.length);
+        }, pause + 1400),
+      );
+    } else {
+      timers.push(setTimeout(() => setShown(allMessages.length), pause + 600));
+    }
 
-    const startDelay = setTimeout(scheduleNext, variant === "hero" ? 1500 : 1000);
-    timeoutsRef.current.push(startDelay);
+    return () => timers.forEach(clearTimeout);
+  }, [reduceMotion]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    return () => {
-      timeoutsRef.current.forEach(clearTimeout);
-      timeoutsRef.current = [];
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Auto-scroll to bottom
+  // Keep the newest message in view if the conversation outgrows the screen.
   useEffect(() => {
     if (containerRef.current) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
-  }, [messages, isTyping]);
+  }, [shown, isTyping]);
+
+  const messages = allMessages.slice(0, shown);
+  const initialCount = allMessages.length - 1;
 
   return (
-    <div
-      ref={containerRef}
-      className="flex flex-col h-full bg-white overflow-y-auto p-3 pt-8"
-    >
-      {messages.map((msg, idx) => {
-        const prev = messages[idx - 1];
-        const isFirstInGroup = !prev || prev.sender !== msg.sender;
-
-        return (
-          <MessageBubble
-            key={`${variant}-${msg.id}`}
-            message={msg}
-            isFirstInGroup={isFirstInGroup}
-            guideLabel={t("guideLabel")}
-          />
-        );
-      })}
-      {isTyping && <TypingIndicator />}
+    // overflow-hidden, not auto: the demo is decorative (aria-hidden), and a
+    // scrollable box would be a keyboard stop inside it.
+    <div ref={containerRef} className="flex h-full flex-col overflow-hidden bg-white p-3 pt-10">
+      <div className="mt-auto">
+        {messages.map((msg, idx) => {
+          const prev = messages[idx - 1];
+          return (
+            <MessageBubble
+              key={`${variant}-${msg.id}`}
+              message={msg}
+              isFirstInGroup={!prev || prev.sender !== msg.sender}
+              guideLabel={t("guideLabel")}
+              animate={!reduceMotion && idx >= initialCount}
+            />
+          );
+        })}
+        {isTyping && <TypingIndicator />}
+      </div>
     </div>
   );
 }

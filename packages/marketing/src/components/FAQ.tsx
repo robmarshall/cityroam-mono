@@ -1,14 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useTranslations } from "next-intl";
 import { POSTHOG_EVENTS } from "@cityroam/shared/analytics";
 import { trackEvent } from "@/lib/analytics";
 
-const FAQ_COUNT = 10;
-
-export function FAQ() {
-  const t = useTranslations("faq");
+/**
+ * Accordion of question/answer pairs read from `<namespace>.<i>.question` and
+ * `<namespace>.<i>.answer`. Answers stay in the HTML when collapsed (`hidden`)
+ * so they are still indexed and findable with in-page search.
+ */
+export function FAQ({
+  namespace,
+  count,
+  values,
+}: {
+  namespace: string;
+  count: number;
+  /** Placeholder values for answers that quote facts, e.g. `{duration}`. */
+  values?: Record<string, string | number>;
+}) {
+  const t = useTranslations(namespace);
+  const baseId = useId();
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   function toggle(index: number) {
@@ -22,31 +35,43 @@ export function FAQ() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl divide-y divide-gray-200">
-      {Array.from({ length: FAQ_COUNT }, (_, index) => (
-        <div key={index}>
-          <button
-            onClick={() => toggle(index)}
-            className="flex w-full items-center justify-between py-5 text-left text-lg font-medium text-gray-900"
-          >
-            <span>{t(`${index}.question`)}</span>
-            <svg
-              className={`h-5 w-5 shrink-0 text-gray-500 transition-transform ${
-                openIndex === index ? "rotate-180" : ""
-              }`}
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-              stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-          {openIndex === index && (
-            <p className="pb-5 text-gray-600 leading-relaxed">{t(`${index}.answer`)}</p>
-          )}
-        </div>
-      ))}
+    <div className="mx-auto mt-12 max-w-2xl divide-y divide-stone-200 border-y border-stone-200">
+      {Array.from({ length: count }, (_, index) => {
+        const open = openIndex === index;
+        const buttonId = `${baseId}-q${index}`;
+        const panelId = `${baseId}-a${index}`;
+        return (
+          <div key={index}>
+            <h3>
+              <button
+                type="button"
+                id={buttonId}
+                aria-expanded={open}
+                aria-controls={panelId}
+                onClick={() => toggle(index)}
+                className="flex w-full items-center justify-between gap-4 py-5 text-left text-lg font-medium text-ink-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)"
+              >
+                <span>{t(`${index}.question`)}</span>
+                <svg
+                  aria-hidden="true"
+                  className={`h-5 w-5 shrink-0 text-muted transition-transform motion-reduce:transition-none ${
+                    open ? "rotate-180" : ""
+                  }`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </h3>
+            <div id={panelId} role="region" aria-labelledby={buttonId} hidden={!open}>
+              <p className="pb-5 leading-relaxed text-muted">{t(`${index}.answer`, values)}</p>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

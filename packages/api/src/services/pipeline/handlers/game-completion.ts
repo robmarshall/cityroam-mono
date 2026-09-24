@@ -44,7 +44,7 @@ export async function handleGameCompletion(
   ctx: GameCompletionContext,
 ): Promise<void> {
   // Build template variables from route
-  const templateVars = await buildRouteTemplateVars(ctx.routeId);
+  const templateVars = await buildRouteTemplateVars(ctx.routeId, ctx.language);
 
   if (Object.keys(templateVars).length === 0) {
     log.error("route not found", { routeId: ctx.routeId });

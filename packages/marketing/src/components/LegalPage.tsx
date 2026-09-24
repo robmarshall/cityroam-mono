@@ -21,32 +21,34 @@ export function LegalPage({
   sections: LegalSection[];
 }) {
   return (
-    <main className="min-h-screen bg-white px-6 py-16 sm:py-24">
-      <div className="mx-auto max-w-3xl">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+    <main className="min-h-screen px-6 py-16 sm:py-24">
+      {/* ~65 characters a line: comfortable for long legal reading. */}
+      <div className="mx-auto max-w-[65ch]">
+        <h1 className="font-display text-4xl font-semibold tracking-tight text-balance text-ink-900 sm:text-5xl">
           {title}
         </h1>
-        <p className="mt-3 text-sm text-gray-500">{lastUpdated}</p>
-        <p className="mt-6 text-lg leading-relaxed text-gray-700">{intro}</p>
+        <p className="mt-3 text-sm text-muted">{lastUpdated}</p>
+        <div aria-hidden="true" className="mt-6 h-1 w-16 bg-brick-500" />
+        <p className="mt-6 text-lg leading-relaxed text-ink-700">{intro}</p>
 
         <div className="mt-12 space-y-10">
           {sections.map((section, i) => (
             <section key={i} aria-labelledby={`legal-section-${i}`}>
               <h2
                 id={`legal-section-${i}`}
-                className="text-xl font-semibold text-gray-900 sm:text-2xl"
+                className="font-display text-xl font-semibold text-ink-900 sm:text-2xl"
               >
                 {section.heading}
               </h2>
 
               {section.body?.map((paragraph, j) => (
-                <p key={j} className="mt-4 leading-relaxed text-gray-600">
+                <p key={j} className="mt-4 leading-relaxed text-ink-700">
                   {paragraph}
                 </p>
               ))}
 
               {section.bullets && (
-                <ul className="mt-4 list-disc space-y-2 pl-6 text-gray-600">
+                <ul className="mt-4 list-disc space-y-2 pl-6 text-ink-700 marker:text-brick-500">
                   {section.bullets.map((bullet, j) => (
                     <li key={j} className="leading-relaxed">
                       {bullet}
@@ -56,7 +58,7 @@ export function LegalPage({
               )}
 
               {section.after?.map((paragraph, j) => (
-                <p key={j} className="mt-4 leading-relaxed text-gray-600">
+                <p key={j} className="mt-4 leading-relaxed text-ink-700">
                   {paragraph}
                 </p>
               ))}
@@ -67,7 +69,7 @@ export function LegalPage({
         <div className="mt-16">
           <Link
             href="/"
-            className="text-sm font-medium text-gray-600 underline underline-offset-2 transition-colors hover:text-gray-900"
+            className="text-sm font-medium text-brick-600 underline underline-offset-2 transition-colors hover:text-ink-900"
           >
             {backHome}
           </Link>

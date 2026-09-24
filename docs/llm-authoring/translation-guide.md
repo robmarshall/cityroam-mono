@@ -16,6 +16,27 @@ This document explains how to translate an existing route into a new language. T
 
 ---
 
+## The Guide's Name
+
+The guide is called the Owl, and the name is translated. `{{GUIDE_NAME}}` resolves to the right one for the event's language, so route content keeps the variable and never spells the name out:
+
+| Code | `{{GUIDE_NAME}}` in a sentence | At the start of a sentence | Grammatical gender | First-person agreement |
+|------|--------------------------------|----------------------------|--------------------|------------------------|
+| `en` | the Owl | The Owl | — ("it") | none |
+| `es` | el Búho | El Búho | masculine | "estoy seguro", "listo" |
+| `fr` | le Hibou | Le Hibou | masculine | "je suis sûr", "prêt" |
+| `de` | die Eule | Die Eule | feminine | "deine Begleiterin", "die Erste" |
+| `nl` | de Uil | De Uil | de-word, "hij" | none |
+
+Rules:
+
+- **Keep `{{GUIDE_NAME}}` exactly where the source has it.** The intro's "I'm {{GUIDE_NAME}}." becomes "Soy {{GUIDE_NAME}}.", "Je suis {{GUIDE_NAME}}.", "Ich bin {{GUIDE_NAME}}.", "Ik ben {{GUIDE_NAME}}."
+- **The variable carries its article, in lower case mid-sentence.** "Soy {{GUIDE_NAME}}." reads "Soy el Búho."; at the start of a sentence (start of the text, a new line, or after ". ", "! ", "? ") the runtime capitalises it ("El Búho"). Use it only where the name stands alone (subject or complement). After a preposition the article contracts or declines — French "du Hibou", Spanish "del Búho", German "der Eule" — so rephrase rather than writing "de {{GUIDE_NAME}}".
+- **Agree with the name's gender** when the guide describes itself: masculine in Spanish and French, feminine in German. Most first-person lines need no agreement; when in doubt, choose a phrasing that needs none.
+- **Never translate an owl pun into the target language**, and do not add one. See [guide-personality.md > The Owl](guide-personality.md#the-owl).
+
+---
+
 ## Workflow
 
 ### Step 1 — Read the Source Route
@@ -65,7 +86,7 @@ Everything else — `city`, `estimated_duration_mins`, `estimated_distance_km`, 
 
 ### `message` blocks
 
-Translate the `content` field. Keep all template variables exactly as they are: `{{CITY_NAME}}`, `{{TOTAL_STOPS}}`, `{{DISTANCE_KM}}`, `{{REVIEW_LINK}}`.
+Translate the `content` field. Keep all template variables exactly as they are: `{{CITY_NAME}}`, `{{TOTAL_STOPS}}`, `{{DISTANCE_KM}}`, `{{REVIEW_LINK}}`, `{{GUIDE_NAME}}`.
 
 Source:
 ```json
@@ -205,7 +226,7 @@ Message bank entries must maintain the guide's personality in the target languag
 
 - **Google Maps URLs** — they display in the user's device language automatically
 - **Image URLs** — unless the image contains burned-in English text
-- **Template variable names** — `{{CITY_NAME}}`, `{{TOTAL_STOPS}}`, etc. are replaced at runtime
+- **Template variable names** — `{{CITY_NAME}}`, `{{TOTAL_STOPS}}`, `{{GUIDE_NAME}}`, etc. are replaced at runtime
 - **Block ordering and group structure** — the translated route must have the same number of groups, the same number of blocks per group, in the same order
 - **Delay timings** — pacing is tied to physical distances, not language
 - **City name in the route metadata** — keep the same `city` value (it is a proper noun)
@@ -241,7 +262,7 @@ Translating the first two groups of a Leeds route from English to Spanish.
         },
         {
           "type": "message",
-          "config": { "type": "message", "content": "I know these streets better than most. You just need to keep up." },
+          "config": { "type": "message", "content": "I'm {{GUIDE_NAME}}. I know these streets better than most — you just need to keep up." },
           "delay_ms": 1500
         },
         {
@@ -333,7 +354,7 @@ Translating the first two groups of a Leeds route from English to Spanish.
         },
         {
           "type": "message",
-          "config": { "type": "message", "content": "Conozco estas calles mejor que la mayoria. Vosotros solo teneis que seguir el ritmo." },
+          "config": { "type": "message", "content": "Soy {{GUIDE_NAME}}. Conozco estas calles mejor que la mayoria; vosotros solo teneis que seguir el ritmo." },
           "delay_ms": 1500
         },
         {
@@ -406,7 +427,7 @@ Translating the first two groups of a Leeds route from English to Spanish.
 - Route `name` and `description` translated
 - Group name "Introduction" translated to "Introduccion"
 - Group name "Leeds Town Hall" kept as-is (proper noun, no standard Spanish translation)
-- All message `content` translated, template variables preserved
+- All message `content` translated, template variables preserved (including `{{GUIDE_NAME}}` in the intro)
 - Question `clue` translated into a Spanish riddle
 - `accepted_answers` includes both English originals and Spanish equivalents ("Ayuntamiento de Leeds")
 - Hint `content` strings translated
@@ -430,7 +451,7 @@ Before submitting a translated route:
 8. All `delay_ms` values unchanged
 9. All `image_url` values unchanged
 10. All `google_maps_link` values unchanged
-11. All template variables (`{{CITY_NAME}}`, etc.) preserved exactly
+11. All template variables (`{{CITY_NAME}}`, `{{GUIDE_NAME}}`, etc.) preserved exactly, and first-person lines agree with the guide's name (masculine in es/fr, feminine in de)
 12. `accepted_answers` include both target-language names and original names where appropriate
 13. Guide personality adapted to target language — not a literal translation
 14. Message bank entries created for the target language (all 9 types)

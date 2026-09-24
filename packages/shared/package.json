@@ -11,12 +11,14 @@
     "./utils": "./src/utils/index.ts",
     "./tailwind": "./src/tailwind/preset.css",
     "./tailwind/values": "./src/tailwind/preset.ts",
-    "./analytics": "./src/analytics/index.ts"
+    "./analytics": "./src/analytics/index.ts",
+    "./brand": "./src/brand/owl.ts"
   },
   "scripts": {
     "build": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "icons": "tsx scripts/write-icons.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.2",

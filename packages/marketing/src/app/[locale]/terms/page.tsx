@@ -3,8 +3,9 @@
 
   The wording below is a good-faith draft written for a UK-based, consumer-facing
   self-guided treasure hunt sold through Stripe. It is not legal advice and it
-  has not been reviewed by a qualified adviser. The trader identity bullet still
-  contains a placeholder that must be completed before this page goes live.
+  has not been reviewed by a qualified adviser. The trader identity bullet
+  carries the company details from COMPANY in src/lib/site.ts as plain text
+  (smoke.test.ts checks they match).
 */
 
 import type { Metadata } from "next";

@@ -10,7 +10,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync, existsSync } from "fs";
 import { resolve } from "path";
-import { SUPPORTED_LANGUAGES } from "../constants/index.js";
+import { GUIDE_NAMES, SUPPORTED_LANGUAGES } from "../constants/index.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -87,6 +87,11 @@ describe("Player App i18n translations", () => {
     expect(enKeys.length).toBeGreaterThan(0);
   });
 
+  it.each(SUPPORTED_LANGUAGES.map((l) => [l]))("%s chat.guideLabel is the guide's name in that language", (lang) => {
+    const data = readJson(`${APP_I18N_DIR}/${lang}.json`) as { chat?: { guideLabel?: string } } | null;
+    expect(data?.chat?.guideLabel).toBe(GUIDE_NAMES[lang].label);
+  });
+
   for (const lang of SUPPORTED_LANGUAGES) {
     if (lang === "en") continue;
 
@@ -140,7 +145,6 @@ describe("Player App i18n translations", () => {
         // Keys that are expected to be the same across languages
         const allowedSameKeys = new Set([
           "chat.headerTitle", // "City Roam" brand
-          "chat.guideLabel", // "Guide" may stay same in some languages
           "language.en",
           "language.es",
           "language.fr",
@@ -332,6 +336,7 @@ describe("Route seed translations", () => {
       "{{CITY_NAME}}",
       "{{TOTAL_STOPS}}",
       "{{DISTANCE_KM}}",
+      "{{GUIDE_NAME}}", // the intro introduces the guide by name
     ];
 
     for (const lang of SUPPORTED_LANGUAGES) {

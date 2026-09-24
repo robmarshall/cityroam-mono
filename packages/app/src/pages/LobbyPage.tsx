@@ -16,6 +16,7 @@ import { friendlyError } from "../lib/errors";
 import { trackEvent } from "../lib/analytics";
 import { useParticipant } from "../contexts/ParticipantContext";
 import { useEvent } from "../contexts/EventContext";
+import { OwlAvatar } from "../components/OwlAvatar";
 import {
   useWebSocket,
   REJOIN_CLOSE_CODES,
@@ -280,9 +281,15 @@ export default function LobbyPage() {
       )}
 
       <div className="flex flex-1 flex-col items-center justify-center px-4">
-        <h1 className="mb-6 text-center text-2xl font-bold text-gray-900">
+        <h1 className="mb-3 text-center text-2xl font-bold text-gray-900">
           {t("lobby.title")}
         </h1>
+
+        {/* AI transparency: players are told up front that the guide is an AI. */}
+        <p className="mb-6 flex max-w-sm items-center justify-center gap-1.5 text-center text-sm text-system-text">
+          <OwlAvatar size={16} className="h-4 w-4 shrink-0" />
+          <span>{t("lobby.aiDisclosure")}</span>
+        </p>
 
         {/* Language selector — lead only, multiple languages available */}
         {isLead && available_languages.length > 1 && (

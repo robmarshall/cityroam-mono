@@ -41,6 +41,7 @@
   },
   "lobby": {
     "title": "Warten auf Spieler",
+    "aiDisclosure": "Die Eule, deine Begleiterin in diesem Spiel, ist eine KI.",
     "leadBadge": "Leitung",
     "youBadge": "Du",
     "waitingForLead": "Warte darauf, dass {{name}} das Spiel startet...",
@@ -77,7 +78,7 @@
     "leaveGame": "Spiel verlassen",
     "inputPlaceholder": "Nachricht eingeben...",
     "offlineError": "Du bist offline — Nachricht wurde nicht gesendet.",
-    "guideLabel": "Guide",
+    "guideLabel": "Die Eule",
     "typingOne": "{{name}} tippt...",
     "typingMultiple": "Mehrere Personen tippen...",
     "waitingForLead": "Warte auf {{name}}...",
@@ -110,16 +111,16 @@
     "actionOfflineError": "Du bist offline — Bestätigung fehlgeschlagen. Versuch es erneut."
   },
   "complete": {
-    "title": "Spiel abgeschlossen!",
-    "defaultSummary": "Gut gemacht! Du hast das Spiel abgeschlossen. Wir hoffen, dir hat die Erkundung der Stadt gefallen.",
-    "reviewPrompt": "Hat es dir gefallen? Hinterlasse uns eine Bewertung!",
+    "title": "Spiel abgeschlossen",
+    "defaultSummary": "Gut gemacht. Du hast das Spiel abgeschlossen. Wir hoffen, dir hat die Erkundung der Stadt gefallen.",
+    "reviewPrompt": "Hat es dir gefallen? Eine Bewertung hilft uns sehr.",
     "reviewButton": "Google Review schreiben",
     "shareButton": "Mit Freunden teilen",
-    "shared": "Geteilt!",
-    "linkCopied": "Link kopiert!",
+    "shared": "Geteilt",
+    "linkCopied": "Link kopiert",
     "doneButton": "Fertig",
-    "shareTitle": "City Roam - KI-Stadtabenteuer",
-    "shareText": "Ich habe gerade ein tolles KI-geführtes Stadtabenteuer abgeschlossen! Schau es dir an:"
+    "shareTitle": "City Roam — Schatzsuche mit der Eule",
+    "shareText": "Wir haben eine Schatzsuche von City Roam geschafft, geführt von der Eule. Lohnt sich:"
   },
   "error": {
     "title": "Etwas ist schiefgelaufen",

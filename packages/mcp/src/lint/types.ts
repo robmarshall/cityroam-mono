@@ -23,7 +23,8 @@ export type RuleId =
   | "accepted-answer-count"
   | "map-link-format"
   | "active-with-placeholders"
-  | "placeholder-not-uploaded";
+  | "placeholder-not-uploaded"
+  | "guide-pun";
 
 export interface Issue {
   rule: RuleId;

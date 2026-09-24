@@ -149,7 +149,7 @@ Authorization: Bearer <token>
       "blocks": [
         {
           "type": "message",
-          "config": { "type": "message", "content": "Welcome to {{CITY_NAME}}. I'll be your guide today." },
+          "config": { "type": "message", "content": "Welcome to {{CITY_NAME}}. I'm {{GUIDE_NAME}}, your guide today." },
           "delay_ms": 0
         },
         {
@@ -290,7 +290,7 @@ The `route` object also accepts `city` instead of `route_family_id` to auto-crea
           "group_id": "uuid",
           "position": 0,
           "type": "message",
-          "config": { "type": "message", "content": "Welcome to {{CITY_NAME}}. I'll be your guide today." },
+          "config": { "type": "message", "content": "Welcome to {{CITY_NAME}}. I'm {{GUIDE_NAME}}, your guide today." },
           "delay_ms": 0,
           "created_at": "2025-01-15T10:30:00.000Z"
         }

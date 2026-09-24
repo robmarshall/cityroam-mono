@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { lintRoute, type LintResult, type RuleId } from "../index.js";
-import { countSentences, successOpener } from "../text.js";
+import { countSentences, owlPun, successOpener } from "../text.js";
 import {
   action,
   closing,
@@ -146,6 +146,7 @@ describe("error: template-malformed", () => {
 
   it("passes well-formed variables", () => {
     expect(hasError(withText("Welcome to {{CITY_NAME}}, {{TOTAL_STOPS}} stops, {{DISTANCE_KM}}km. {{REVIEW_LINK}}"), "template-malformed")).toBe(false);
+    expect(hasError(withText("I'm {{GUIDE_NAME}}."), "template-malformed")).toBe(false);
   });
 
   it.each([
@@ -167,9 +168,16 @@ describe("error: template-malformed", () => {
 describe("error: template-unknown", () => {
   const withText = (content: string) => withLocation((g) => ({ ...g, blocks: [...g.blocks, msg(content)] }));
 
-  it("passes the four route variables in message and hint text", () => {
-    const q = question({ hints: [hint("You're in {{CITY_NAME}}."), hint("b")] });
+  it("passes the route variables in message and hint text", () => {
+    const q = question({ hints: [hint("You're in {{CITY_NAME}}."), hint("{{GUIDE_NAME}} again.")] });
     expect(hasError(withLocation((g) => ({ ...g, blocks: [q, ...g.blocks.slice(1)] })), "template-unknown")).toBe(false);
+    expect(hasError(withText("I'm {{GUIDE_NAME}}. Welcome to {{CITY_NAME}}."), "template-unknown")).toBe(false);
+  });
+
+  it("fails on {{GUIDE_NAME}} in a clue", () => {
+    const q = question({ clue: "{{GUIDE_NAME}} asks: which hall?" });
+    const r = lintRoute(withLocation((g) => ({ ...g, blocks: [q, ...g.blocks.slice(1)] })));
+    expect(r.errors[0]).toMatchObject({ rule: "template-unknown", path: "groups[1].blocks[0].config.clue" });
   });
 
   it.each([
@@ -425,6 +433,41 @@ describe("warning: placeholder-not-uploaded (uploadedSlugs)", () => {
 // ---------------------------------------------------------------------------
 // Admin GET shape
 // ---------------------------------------------------------------------------
+
+describe("warning: guide-pun", () => {
+  const withText = (content: string) => withLocation((g) => ({ ...g, blocks: [...g.blocks, msg(content, 2000)] }));
+
+  it.each([
+    ["hoot", "What a hoot."],
+    ["twit-twoo", "Twit-twoo, off we go."],
+    ["wise old owl", "Ask the wise old owl."],
+    ["owlsome", "That was owlsome."],
+    ["whooo", "Whooo knows."],
+    ["Spanish cliché", "Lo dice el búho sabio."],
+    ["German call", "Schuhu."],
+    ["Dutch call", "Oehoe."],
+  ])("warns on %s", (_label, content) => {
+    expect(hasWarning(withText(content), "guide-pun")).toBe(true);
+  });
+
+  it("checks hint text too", () => {
+    const q = question({ hints: [hint("Don't give a hoot about the door."), hint("b")] });
+    const r = lintRoute(withLocation((g) => ({ ...g, blocks: [q, ...g.blocks.slice(1)] })));
+    expect(r.warnings.find((w) => w.rule === "guide-pun")).toMatchObject({
+      path: "groups[1].blocks[0].config.hints[0][0].content",
+      citation: "guide-personality.md > The Owl",
+    });
+  });
+
+  it.each([
+    ["the name", "I'm {{GUIDE_NAME}}. I'll keep this brief."],
+    ["a plain owl mention", "There are owls on the city's coat of arms."],
+    ["words that contain the letters", "Shooting stars, who knows, the town's wholesale market."],
+  ])("passes %s", (_label, content) => {
+    expect(hasWarning(withText(content), "guide-pun")).toBe(false);
+    expect(owlPun(content)).toBeNull();
+  });
+});
 
 describe("admin GET /admin/routes/:id shape", () => {
   const ts = "2026-01-01T00:00:00.000Z";

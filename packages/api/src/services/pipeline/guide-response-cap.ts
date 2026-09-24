@@ -1,17 +1,20 @@
 import { eq, sql } from "drizzle-orm";
-import { MAX_GUIDE_RESPONSES_PER_EVENT } from "@cityroam/shared/constants";
+import { GUIDE_NAMES, MAX_GUIDE_RESPONSES_PER_EVENT } from "@cityroam/shared/constants";
 import type { ChatMessagePayload } from "@cityroam/shared/types";
 import type { SupportedLanguage } from "@cityroam/shared/types";
 import { db, schema } from "../../db/index.js";
 import { appendMessage, publishMessage } from "../../redis/index.js";
 
-/** Per-language guide cap messages. */
+/**
+ * Per-language guide cap messages. Both scripted ways out of a block stay open
+ * once the cap is reached (see handleMessageWhileCapped), so the notice says so.
+ */
 const CAP_MESSAGES: Record<SupportedLanguage, string> = {
-  en: "The guide has reached its message limit for this event.",
-  es: "El guía ha alcanzado su límite de mensajes para este evento.",
-  fr: "Le guide a atteint sa limite de messages pour cet événement.",
-  de: "Der Guide hat sein Nachrichtenlimit für dieses Event erreicht.",
-  nl: "De gids heeft de berichtenlimiet voor dit evenement bereikt.",
+  en: `${GUIDE_NAMES.en.label} has reached its message limit for this game. Answers and hint requests still work.`,
+  es: `${GUIDE_NAMES.es.label} ha alcanzado su límite de mensajes para esta partida. Las respuestas y las peticiones de pista siguen funcionando.`,
+  fr: `${GUIDE_NAMES.fr.label} a atteint sa limite de messages pour cette partie. Les réponses et les demandes d'indice fonctionnent toujours.`,
+  de: `${GUIDE_NAMES.de.label} hat ihr Nachrichtenlimit für dieses Spiel erreicht. Antworten und Hinweise funktionieren weiterhin.`,
+  nl: `${GUIDE_NAMES.nl.label} heeft zijn berichtenlimiet voor dit spel bereikt. Antwoorden en hints werken nog steeds.`,
 };
 
 /**
@@ -28,6 +31,11 @@ export async function isGuideResponseCapReached(
 
   if (!event) return true; // Defensive — treat missing event as capped
   return event.guide_response_count >= MAX_GUIDE_RESPONSES_PER_EVENT;
+}
+
+/** The cap notice for a language (English for unknown languages). */
+export function capReachedMessage(language: string): string {
+  return CAP_MESSAGES[language as SupportedLanguage] ?? CAP_MESSAGES.en;
 }
 
 /**
@@ -48,7 +56,7 @@ export async function sendCapReachedMessage(
       step_number: currentStop,
       sender_type: "system",
       sender_name: "System",
-      content: CAP_MESSAGES[language] ?? CAP_MESSAGES.en,
+      content: capReachedMessage(language),
       participant_id: null,
       image_url: null,
     })

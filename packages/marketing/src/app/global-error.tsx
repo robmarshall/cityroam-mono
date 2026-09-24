@@ -2,6 +2,7 @@
 
 import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
+import { CONTACT_EMAIL } from "@/lib/site";
 
 /**
  * Last-resort boundary for errors thrown in the root layout. Reports to Sentry
@@ -20,7 +21,7 @@ export default function GlobalError({
     <html lang="en">
       <body style={{ fontFamily: "system-ui, sans-serif", padding: "3rem 1rem", textAlign: "center" }}>
         <h1>Something went wrong</h1>
-        <p>Please refresh the page, or email hello@cityroam.co.uk if it keeps happening.</p>
+        <p>Please refresh the page, or email {CONTACT_EMAIL} if it keeps happening.</p>
       </body>
     </html>
   );

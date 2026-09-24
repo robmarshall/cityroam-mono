@@ -24,4 +24,25 @@ export const colors = {
   system: {
     text: "#8E8E93",
   },
+  stone: {
+    50: "#F5F1EA",
+    100: "#ECE6DB",
+    200: "#DDD5C6",
+    300: "#C9BEAB",
+  },
+  ink: {
+    500: "#4A5670",
+    700: "#2A3654",
+    900: "#14213D",
+  },
+  brick: {
+    100: "#F3DDD5",
+    500: "#B5452B",
+    600: "#9A3A24",
+  },
+  muted: "#5C5A55",
+} as const;
+
+export const fonts = {
+  display: "Georgia, serif",
 } as const;

@@ -16,6 +16,7 @@ export const ROUTE_TEMPLATE_VARIABLES = [
   "TOTAL_STOPS",
   "DISTANCE_KM",
   "REVIEW_LINK",
+  "GUIDE_NAME",
 ] as const;
 
 export interface TemplateProblem {

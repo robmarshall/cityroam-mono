@@ -38,6 +38,33 @@ export const LANGUAGE_NAMES: Record<SupportedLanguage, string> = {
   nl: "Dutch",
 };
 
+// The guide
+/**
+ * The AI guide's name as players see it, per language. It is translated, not
+ * transliterated: first-person copy must agree with it (El Búho and Le Hibou
+ * are masculine, Die Eule is feminine, De Uil takes "de").
+ *
+ * - `label` stands on its own: the chat sender label, headings, the start of
+ *   a sentence ("The Owl has reached its message limit").
+ * - `inSentence` is for running text, article in lower case: "I'm the Owl.",
+ *   "Soy el Búho.", "Ich bin die Eule." The `{{GUIDE_NAME}}` template variable
+ *   resolves to this form and is capitalised automatically when it opens a
+ *   sentence (packages/api/src/services/template-vars.ts).
+ */
+export const GUIDE_NAMES = {
+  en: { label: "The Owl", inSentence: "the Owl" },
+  es: { label: "El Búho", inSentence: "el Búho" },
+  fr: { label: "Le Hibou", inSentence: "le Hibou" },
+  de: { label: "Die Eule", inSentence: "die Eule" },
+  nl: { label: "De Uil", inSentence: "de Uil" },
+} as const satisfies Record<SupportedLanguage, { label: string; inSentence: string }>;
+export type GuideName = (typeof GUIDE_NAMES)[SupportedLanguage];
+
+/** The guide's name forms for a language code, falling back to English for unknown codes. */
+export function guideNameFor(language: string): GuideName {
+  return (GUIDE_NAMES as Record<string, GuideName>)[language] ?? GUIDE_NAMES.en;
+}
+
 // Admin API keys
 /**
  * Scopes an admin API key can carry. A session JWT implicitly holds all of

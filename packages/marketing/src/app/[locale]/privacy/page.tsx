@@ -5,8 +5,8 @@
   actually handles (buyer email, Stripe payment references, participant display
   names, in-game chat, gameplay progress, PostHog analytics, Resend email,
   DeepSeek for the AI guide). It is not legal advice and it has not been
-  reviewed by a qualified adviser. The controller identity bullet still contains
-  a placeholder. The retention periods stated here are enforced by a daily
+  reviewed by a qualified adviser. The controller identity bullet carries the
+  company details from COMPANY in src/lib/site.ts. The retention periods stated here are enforced by a daily
   sweep in packages/api/src/services/data-retention.ts (chat and participant
   rows deleted and event PII nulled 12 months after the hunt ends; Stripe
   references nulled 6 years after purchase). Change the two together.
