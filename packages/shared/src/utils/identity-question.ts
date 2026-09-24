@@ -128,6 +128,18 @@ function patternsFor(language: SupportedLanguage): Patterns[] {
   ];
 }
 
+/**
+ * Whether a reply opens with a no, in any supported language. Replies to the
+ * `machine` and `who` kinds must never do so (and `ai` replies don't): a
+ * leading "no" to "are you a bot?" reads as a false denial of being
+ * automated. Only `person` replies may, since "not a person, no" is true.
+ */
+export function opensWithNegation(reply: string): boolean {
+  return /^[\s"'“‘«„¿¡(]*(no|not|nope|nah|never|ni|nunca|non|pas|jamais|nein|nicht|kein|keine|nie|nee|niet|geen|nooit)(?![\p{L}\p{N}])/iu.test(
+    reply,
+  );
+}
+
 /** What kind of "what are you?" question the message is, or null if it isn't one. */
 export function classifyIdentityQuestion(
   text: string,

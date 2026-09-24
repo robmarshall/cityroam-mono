@@ -141,6 +141,25 @@ describe("message bank tools", () => {
     expect(textOf(result)).toContain("Warning: {{ANSWER}} is only substituted in hint-exhausted entries");
   });
 
+  it("warns when a bot or who identity line opens with a negation", async () => {
+    const { fetch } = echo();
+    const client = await connect(fetch);
+    const machine = await callTool(client, "create_message_bank_entry", {
+      type: "guide-identity-machine",
+      language: "en",
+      content: "No, I'm {{GUIDE_NAME}}.",
+      dry_run: true,
+    });
+    expect(textOf(machine)).toContain("Warning: guide-identity-machine lines must never open with a negation");
+    const person = await callTool(client, "create_message_bank_entry", {
+      type: "guide-identity-person",
+      language: "en",
+      content: "Not a person, no. I'm {{GUIDE_NAME}}.",
+      dry_run: true,
+    });
+    expect(textOf(person)).not.toContain("Warning");
+  });
+
   it("surfaces API errors verbatim", async () => {
     const { fetch } = fakeFetch(() => json({ error: "Message bank entry not found", code: "MESSAGE_BANK_NOT_FOUND" }, 404));
     const result = await callTool(await connect(fetch), "update_message_bank_entry", {

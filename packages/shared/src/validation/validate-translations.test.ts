@@ -197,6 +197,10 @@ describe("Message bank seed translations", () => {
     "over-length",
     "guide-degraded",
     "guide-busy",
+    "guide-identity-ai",
+    "guide-identity-machine",
+    "guide-identity-person",
+    "guide-identity-who",
   ];
 
   const nonEnLanguages = SUPPORTED_LANGUAGES.filter((l) => l !== "en");

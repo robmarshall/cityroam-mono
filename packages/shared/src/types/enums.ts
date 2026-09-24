@@ -21,7 +21,11 @@ export type MessageBankType =
   | "completion"
   | "over-length"
   | "guide-degraded"
-  | "guide-busy";
+  | "guide-busy"
+  | "guide-identity-ai"
+  | "guide-identity-machine"
+  | "guide-identity-person"
+  | "guide-identity-who";
 
 export type SupportedLanguage = "en" | "es" | "fr" | "de" | "nl";
 

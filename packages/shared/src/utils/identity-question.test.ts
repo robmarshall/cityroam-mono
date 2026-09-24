@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { SupportedLanguage } from "../types/index.js";
-import { classifyIdentityQuestion, type IdentityQuestionKind } from "./identity-question.js";
+import { classifyIdentityQuestion, opensWithNegation, type IdentityQuestionKind } from "./identity-question.js";
 
 const cases: Record<SupportedLanguage, [string, IdentityQuestionKind | null][]> = {
   en: [
@@ -112,5 +112,26 @@ describe("classifyIdentityQuestion", () => {
 
   it("defaults to English", () => {
     expect(classifyIdentityQuestion("are you human?")).toBe("person");
+  });
+});
+
+describe("opensWithNegation", () => {
+  it("spots a leading no in every supported language", () => {
+    for (const reply of [
+      "No. I'm the guide.", "Not a person, no.", "Nope.", "no, I'm the Owl", "\"No,\" said the Owl.",
+      "No, soy el guía.", "Ni idea.", "Non, je suis le guide.", "Pas une personne, non.",
+      "Nein, ich bin die Eule.", "Kein Mensch, nein.", "Nicht ganz.", "Nee, ik ben de Uil.", "Geen mens, nee.",
+    ]) {
+      expect(opensWithNegation(reply), reply).toBe(true);
+    }
+  });
+
+  it("ignores words that only start like a negation, and negations later on", () => {
+    for (const reply of [
+      "I'm the guide in your phone. No more questions.", "Nothing to see here.", "Now, the clue.",
+      "Nonetheless, onwards.", "Noted.", "Nieuw: de Uil.", "Soy el Búho.", "Notre guide, c'est moi.",
+    ]) {
+      expect(opensWithNegation(reply), reply).toBe(false);
+    }
   });
 });

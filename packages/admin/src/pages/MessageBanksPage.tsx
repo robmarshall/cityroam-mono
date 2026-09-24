@@ -25,6 +25,10 @@ const BANK_TYPES: { value: MessageBankType; label: string }[] = [
   { value: "over-length", label: "Over-length" },
   { value: "guide-degraded", label: "Guide Degraded" },
   { value: "guide-busy", label: "Guide Busy" },
+  { value: "guide-identity-ai", label: "Identity: AI" },
+  { value: "guide-identity-machine", label: "Identity: Bot" },
+  { value: "guide-identity-person", label: "Identity: Person" },
+  { value: "guide-identity-who", label: "Identity: Who" },
 ];
 
 const TEMPLATE_VARS: Partial<Record<MessageBankType, string[]>> = {
@@ -36,6 +40,10 @@ const TEMPLATE_VARS: Partial<Record<MessageBankType, string[]>> = {
     "{{GUIDE_NAME}}",
   ],
   "hint-exhausted": ["{{ANSWER}}"],
+  "guide-identity-ai": ["{{GUIDE_NAME}}"],
+  "guide-identity-machine": ["{{GUIDE_NAME}}"],
+  "guide-identity-person": ["{{GUIDE_NAME}}"],
+  "guide-identity-who": ["{{GUIDE_NAME}}"],
 };
 
 type MessageBank = AdminMessageBankListResponse["message_banks"][number];

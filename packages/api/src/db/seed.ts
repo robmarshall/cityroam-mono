@@ -75,6 +75,30 @@ export const messageBankSeedData = [
   { type: "guide-busy", content: "You're all talking at once. Ask me again in a second." },
   { type: "guide-busy", content: "Too many at once. Try that again shortly." },
 
+  // Guide identity messages — canned replies to "are you a bot?", "is this
+  // AI?", "who are you?" (services/pipeline/identity.ts), so their rules hold
+  // every time: the AI answer is honest and partial, and bot/who replies never
+  // open with a negation. {{GUIDE_NAME}} is substituted.
+  // Guide identity, asked directly about AI: an honest, partial answer
+  { type: "guide-identity-ai", content: "Partly. AI helps me word my replies, but the route and the clues are chosen and checked by people." },
+  { type: "guide-identity-ai", content: "In part. AI helps with the wording, and people pick the route and check every clue." },
+  { type: "guide-identity-ai", content: "Yes and no. AI helps me phrase things, but people choose the stops and check the clues before you get them." },
+
+  // Guide identity, bot / robot / computer: never opens with a negation
+  { type: "guide-identity-machine", content: "I'm {{GUIDE_NAME}}, the guide in your phone. The clue is still waiting." },
+  { type: "guide-identity-machine", content: "I'm the guide in your phone, replying to what your group types. The streets are the real bit." },
+  { type: "guide-identity-machine", content: "{{GUIDE_NAME}}, at your service, from inside your phone. Back to the clue when you're ready." },
+
+  // Guide identity, real person / human: may open with "not a person, no"
+  { type: "guide-identity-person", content: "Not a person, no. I'm {{GUIDE_NAME}}, the guide in your phone." },
+  { type: "guide-identity-person", content: "Not a person, no. Just the guide in your phone, keeping you on route." },
+  { type: "guide-identity-person", content: "No, I'm the guide in your phone. The city around you is the real bit." },
+
+  // Guide identity, who are you / what's your name: never opens with a negation
+  { type: "guide-identity-who", content: "I'm {{GUIDE_NAME}}, your guide for today. I know these streets and I keep the clues coming." },
+  { type: "guide-identity-who", content: "I'm {{GUIDE_NAME}}, the guide in your phone. I reply to what your group types and keep you on route." },
+  { type: "guide-identity-who", content: "{{GUIDE_NAME}}. I live in your phone and know this route better than most." },
+
   // Completion templates
   { type: "completion", content: "That's the last one. Well done — you've made it through all {{TOTAL_STOPS}} stops and covered roughly {{DISTANCE_KM}}km of {{CITY_NAME}}.\n\nIf you enjoyed it, a Google review goes a long way: {{REVIEW_LINK}}\n\nNow go find a drink. You've earned it." },
   { type: "completion", content: "And that's a wrap. {{TOTAL_STOPS}} stops, {{DISTANCE_KM}}km, and you didn't quit once.\n\nIf you had fun, we'd appreciate a review: {{REVIEW_LINK}}\n\nEnjoy the rest of your day." },

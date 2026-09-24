@@ -6,6 +6,11 @@ import { describe, it, expect, vi } from "vitest";
 vi.mock("postgres", () => ({ default: vi.fn(() => ({ end: vi.fn() })) }));
 
 import { messageBankSeedData, seedMessageBanks } from "../db/seed.js";
+import { translations } from "../db/seed-message-banks.js";
+import { messageBankSchema } from "@cityroam/shared/validation";
+import { opensWithNegation } from "@cityroam/shared/utils";
+import { GUIDE_NAMES, SUPPORTED_LANGUAGES } from "@cityroam/shared/constants";
+import type { SupportedLanguage } from "@cityroam/shared/types";
 import { routesByLanguage } from "../db/seed-routes.js";
 import { routeBlockSchema } from "@cityroam/shared/validation";
 import { parseImagePlaceholder } from "@cityroam/shared/utils";
@@ -73,6 +78,69 @@ describe("seedMessageBanks", () => {
     const successRows = inserted.filter((r) => r.type === "success");
     const allSuccess = messageBankSeedData.filter((e) => e.type === "success");
     expect(successRows).toHaveLength(allSuccess.length - 1);
+  });
+});
+
+describe("seeded message banks", () => {
+  const banks: Record<SupportedLanguage, readonly SeedEntry[]> = { en: messageBankSeedData, ...translations };
+  const allTypes = messageBankSchema.shape.type.options;
+  const identityTypes = allTypes.filter((t) => t.startsWith("guide-identity-"));
+  const of = (lang: SupportedLanguage, type: string) => banks[lang].filter((e) => e.type === type).map((e) => e.content);
+
+  it("uses only types the database check constraint allows", () => {
+    for (const lang of SUPPORTED_LANGUAGES) {
+      for (const e of banks[lang]) expect(allTypes, `${lang} ${e.type}`).toContain(e.type);
+    }
+  });
+
+  it("seeds all four identity banks, three lines each, in every language", () => {
+    expect(identityTypes).toEqual([
+      "guide-identity-ai",
+      "guide-identity-machine",
+      "guide-identity-person",
+      "guide-identity-who",
+    ]);
+    for (const lang of SUPPORTED_LANGUAGES) {
+      for (const type of identityTypes) expect(of(lang, type), `${lang} ${type}`).toHaveLength(3);
+    }
+  });
+
+  it("never opens a bot or who reply with a negation, in any language", () => {
+    // No false denial of being automated (EU AI Act). Only the person bank
+    // may say "not a person, no", because that is true.
+    for (const lang of SUPPORTED_LANGUAGES) {
+      for (const type of ["guide-identity-machine", "guide-identity-who", "guide-identity-ai"]) {
+        for (const line of of(lang, type)) expect(opensWithNegation(line), `${lang} ${type}: ${line}`).toBe(false);
+      }
+    }
+  });
+
+  it("answers \"are you AI?\" honestly: AI helps, people choose and check, nothing claimed as all hand-written", () => {
+    const aiWord: Record<SupportedLanguage, RegExp> = { en: /\bAI\b/, es: /\bIA\b/, fr: /\bIA\b/, de: /\bKI\b/, nl: /\bAI\b/ };
+    // Routes may be drafted with LLM help, so no line may claim they (or the
+    // replies) are written by hand or simply by people.
+    const absolute = /by hand|written by people|a mano|escrit\w* por personas|à la main|écrit\w* par des humains|von Hand|schreiben Menschen|met de hand|door mensen geschreven/i;
+    for (const lang of SUPPORTED_LANGUAGES) {
+      for (const line of of(lang, "guide-identity-ai")) {
+        expect(line, lang).toMatch(aiWord[lang]);
+        expect(line, lang).not.toMatch(absolute);
+      }
+    }
+  });
+
+  it("keeps identity lines in the guide's voice: two sentences at most, no exclamation marks", () => {
+    for (const lang of SUPPORTED_LANGUAGES) {
+      for (const type of identityTypes) {
+        for (const line of of(lang, type)) {
+          expect(line, `${lang} ${type}`).not.toMatch(/[!¡]/);
+          expect(line.split(/(?<=[.?])\s+/u).length, `${lang} ${type}: ${line}`).toBeLessThanOrEqual(2);
+          // {{GUIDE_NAME}} is the only variable substituted in these banks
+          for (const v of line.match(/\{\{[^}]+\}\}/g) ?? []) expect(v).toBe("{{GUIDE_NAME}}");
+          // The name comes from the variable, never hard-coded
+          expect(line, `${lang} ${type}`).not.toContain(GUIDE_NAMES[lang].inSentence);
+        }
+      }
+    }
   });
 });
 
