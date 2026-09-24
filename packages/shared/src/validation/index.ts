@@ -35,3 +35,11 @@ export {
   blockMoveSchema,
   adminApiKeyCreateSchema,
 } from "./admin-input.js";
+
+export {
+  createVoucherSessionSchema,
+  redeemVoucherSchema,
+  adminVoidVoucherSchema,
+  adminVoucherListQuerySchema,
+} from "./voucher.js";
+export type { CreateVoucherSessionInput, RedeemVoucherInput } from "./voucher.js";

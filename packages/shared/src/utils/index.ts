@@ -1,4 +1,11 @@
-import { EVENT_CODE_ALPHABET, EVENT_CODE_LENGTH } from "../constants/index.js";
+import {
+  EVENT_CODE_ALPHABET,
+  EVENT_CODE_LENGTH,
+  VOUCHER_CODE_ALPHABET,
+  VOUCHER_CODE_GROUPS,
+  VOUCHER_CODE_LENGTH,
+  VOUCHER_REDEEM_PATH,
+} from "../constants/index.js";
 
 /**
  * Generate a random event code using the allowed alphabet.
@@ -152,4 +159,72 @@ export function isValidEventCode(code: string): boolean {
     }
   }
   return true;
+}
+
+// ---------------------------------------------------------------------------
+// Gift voucher codes
+// ---------------------------------------------------------------------------
+
+/**
+ * Random voucher code, formatted XXXX-XXXX-XX. Uses rejection sampling so
+ * every alphabet character is equally likely (256 is not a multiple of 31).
+ */
+export function generateVoucherCode(): string {
+  const n = VOUCHER_CODE_ALPHABET.length;
+  const ceiling = 256 - (256 % n);
+  let raw = "";
+  while (raw.length < VOUCHER_CODE_LENGTH) {
+    const bytes = new Uint8Array(VOUCHER_CODE_LENGTH * 2);
+    crypto.getRandomValues(bytes);
+    for (const b of bytes) {
+      if (b >= ceiling) continue;
+      raw += VOUCHER_CODE_ALPHABET[b % n];
+      if (raw.length === VOUCHER_CODE_LENGTH) break;
+    }
+  }
+  return formatVoucherCode(raw);
+}
+
+/** Inserts the display dashes into a bare 10-character code. */
+export function formatVoucherCode(raw: string): string {
+  const parts: string[] = [];
+  let i = 0;
+  for (const size of VOUCHER_CODE_GROUPS) {
+    parts.push(raw.slice(i, i + size));
+    i += size;
+  }
+  return parts.join("-");
+}
+
+/**
+ * Canonical XXXX-XXXX-XX form of whatever a person typed: case, spaces and
+ * dashes are forgiven. Returns null when it cannot be a voucher code, so a
+ * typo is rejected before any database or rate-limit work.
+ */
+export function normalizeVoucherCode(input: unknown): string | null {
+  if (typeof input !== "string" || input.length > 40) return null;
+  const raw = input.toUpperCase().replace(/[\s-]/g, "");
+  if (raw.length !== VOUCHER_CODE_LENGTH) return null;
+  for (const ch of raw) {
+    if (!VOUCHER_CODE_ALPHABET.includes(ch)) return null;
+  }
+  return formatVoucherCode(raw);
+}
+
+/** True for a code already in canonical XXXX-XXXX-XX form. */
+export function isValidVoucherCode(code: string): boolean {
+  return normalizeVoucherCode(code) === code;
+}
+
+/**
+ * The marketing redemption link: `${marketingUrl}/<locale>/redeem?code=…`.
+ * Takes the base URL as a parameter to keep the shared package pure.
+ */
+export function buildVoucherRedeemUrl(
+  marketingUrl: string,
+  language: string,
+  code: string,
+): string {
+  const base = marketingUrl.endsWith("/") ? marketingUrl.slice(0, -1) : marketingUrl;
+  return `${base}/${language}${VOUCHER_REDEEM_PATH}?code=${encodeURIComponent(code)}`;
 }
