@@ -111,13 +111,13 @@
     "actionOfflineError": "Tu es hors ligne — confirmation impossible. Réessaie."
   },
   "complete": {
-    "title": "Partie terminée !",
-    "defaultSummary": "Bravo ! Tu as terminé la partie. On espère que tu as aimé explorer la ville.",
-    "reviewPrompt": "Tu as aimé l'expérience ? Laisse-nous un avis !",
+    "title": "Partie terminée",
+    "defaultSummary": "Bien joué. Tu as terminé la partie. On espère que tu as aimé explorer la ville.",
+    "reviewPrompt": "Ça t'a plu ? Un avis nous aide beaucoup.",
     "reviewButton": "Laisser un Google Review",
     "shareButton": "Partager avec des amis",
-    "shared": "Partagé !",
-    "linkCopied": "Lien copié !",
+    "shared": "Partagé",
+    "linkCopied": "Lien copié",
     "doneButton": "Terminé",
     "shareTitle": "City Roam — chasse au trésor guidée par le Hibou",
     "shareText": "On a terminé une chasse au trésor City Roam, guidés par le Hibou. Ça vaut le coup :"

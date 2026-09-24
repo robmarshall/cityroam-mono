@@ -111,13 +111,13 @@
     "actionOfflineError": "Je bent offline — bevestigen is niet gelukt. Probeer het opnieuw."
   },
   "complete": {
-    "title": "Spel voltooid!",
-    "defaultSummary": "Goed gedaan! Je hebt het spel voltooid. We hopen dat je genoten hebt van het verkennen van de stad.",
-    "reviewPrompt": "Was het leuk? Laat een review achter!",
+    "title": "Spel voltooid",
+    "defaultSummary": "Goed gedaan. Je hebt het spel voltooid. We hopen dat je genoten hebt van het verkennen van de stad.",
+    "reviewPrompt": "Was het leuk? Een review helpt ons enorm.",
     "reviewButton": "Laat een Google Review achter",
     "shareButton": "Deel met vrienden",
-    "shared": "Gedeeld!",
-    "linkCopied": "Link gekopieerd!",
+    "shared": "Gedeeld",
+    "linkCopied": "Link gekopieerd",
     "doneButton": "Klaar",
     "shareTitle": "City Roam — speurtocht met de Uil",
     "shareText": "We hebben een City Roam-speurtocht uitgespeeld, met de Uil als gids. Aanrader:"

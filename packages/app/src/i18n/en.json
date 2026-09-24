@@ -111,13 +111,13 @@
     "actionOfflineError": "You're offline — we couldn't confirm. Try again."
   },
   "complete": {
-    "title": "Game Complete!",
-    "defaultSummary": "Well done! You've completed the game. We hope you enjoyed exploring the city.",
-    "reviewPrompt": "Enjoyed the experience? Leave us a review!",
+    "title": "Game complete",
+    "defaultSummary": "Well done. You've completed the game. We hope you enjoyed exploring the city.",
+    "reviewPrompt": "Enjoyed it? A review goes a long way.",
     "reviewButton": "Leave a Google Review",
     "shareButton": "Share with Friends",
-    "shared": "Shared!",
-    "linkCopied": "Link Copied!",
+    "shared": "Shared",
+    "linkCopied": "Link copied",
     "doneButton": "Done",
     "shareTitle": "City Roam — a treasure hunt guided by the Owl",
     "shareText": "We finished a City Roam treasure hunt, guided by the Owl. Worth a go:"

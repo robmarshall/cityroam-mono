@@ -111,13 +111,13 @@
     "actionOfflineError": "Estás sin conexión: no se pudo confirmar. Inténtalo de nuevo."
   },
   "complete": {
-    "title": "¡Juego completado!",
-    "defaultSummary": "¡Bien hecho! Has completado el juego. Esperamos que hayas disfrutado explorando la ciudad.",
-    "reviewPrompt": "¿Te gustó la experiencia? ¡Déjanos una reseña!",
+    "title": "Juego completado",
+    "defaultSummary": "Bien hecho. Has completado el juego. Esperamos que hayas disfrutado explorando la ciudad.",
+    "reviewPrompt": "¿Te ha gustado? Una reseña nos ayuda mucho.",
     "reviewButton": "Dejar una Google Review",
     "shareButton": "Compartir con amigos",
-    "shared": "¡Compartido!",
-    "linkCopied": "¡Enlace copiado!",
+    "shared": "Compartido",
+    "linkCopied": "Enlace copiado",
     "doneButton": "Listo",
     "shareTitle": "City Roam — búsqueda del tesoro guiada por el Búho",
     "shareText": "Hemos terminado una búsqueda del tesoro de City Roam, guiados por el Búho. Merece la pena:"
