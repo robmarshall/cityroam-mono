@@ -10,6 +10,14 @@ export const SITE_NAME = "City Roam";
  */
 export const CONTACT_EMAIL = "hello@cityroam.co.uk";
 
+/**
+ * Launch price in pounds, per group. The charge itself comes from the Stripe
+ * price configured on the API (STRIPE_PRICE_ID); this copy feeds the JSON-LD
+ * offer and analytics, and must be kept in step with it and with the
+ * `home.pricing.price` message.
+ */
+export const PRICE_GBP = 29;
+
 /** Brand palette, mirrored from packages/shared/src/tailwind/preset.css. */
 export const BRAND = {
   blue500: "#007AFF",

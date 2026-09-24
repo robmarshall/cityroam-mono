@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 
 type Message = {
@@ -43,10 +43,12 @@ function MessageBubble({
   message,
   isFirstInGroup,
   guideLabel,
+  animate,
 }: {
   message: Message;
   isFirstInGroup: boolean;
   guideLabel: string;
+  animate: boolean;
 }) {
   const isUser = message.sender === "user";
 
@@ -54,7 +56,7 @@ function MessageBubble({
     <motion.div
       className={`flex ${isUser ? "justify-end ml-[25%]" : "justify-start mr-[25%]"} mb-chat-gap`}
       variants={animationVariants}
-      initial="initial"
+      initial={animate ? "initial" : false}
       animate="animate"
     >
       <div className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}>
@@ -108,12 +110,22 @@ export default function ChatDemo({
   const allMessages = variant === "hero" ? heroMessages : howItWorksMessages;
   const initial = variant === "hero" ? heroInitial : [];
 
+  // With reduced motion the finished conversation is shown straight away:
+  // no typing indicator, no messages sliding in, no scrolling.
+  const reduceMotion = useReducedMotion() ?? false;
+
   const [messages, setMessages] = useState<Message[]>(initial);
   const [isTyping, setIsTyping] = useState(false);
   const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (reduceMotion) {
+      setIsTyping(false);
+      setMessages([...initial, ...allMessages]);
+      return;
+    }
+
     let index = 0;
 
     const scheduleNext = () => {
@@ -155,7 +167,7 @@ export default function ChatDemo({
       timeoutsRef.current.forEach(clearTimeout);
       timeoutsRef.current = [];
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [reduceMotion]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -179,6 +191,7 @@ export default function ChatDemo({
             message={msg}
             isFirstInGroup={isFirstInGroup}
             guideLabel={t("guideLabel")}
+            animate={!reduceMotion}
           />
         );
       })}

@@ -30,6 +30,22 @@ describe("marketing smoke", () => {
     }
   });
 
+  it("keeps every locale's full key set in step with the default", () => {
+    // next-intl renders a missing nested key as the raw key path at runtime,
+    // so a top-level comparison alone lets a half-translated page ship.
+    const flatten = (value: unknown, prefix = ""): string[] =>
+      value && typeof value === "object"
+        ? Object.entries(value as Record<string, unknown>).flatMap(([k, v]) =>
+            flatten(v, prefix ? `${prefix}.${k}` : k),
+          )
+        : [prefix];
+
+    const expected = flatten(load(defaultLocale)).sort();
+    for (const locale of locales) {
+      expect(flatten(load(locale)).sort(), locale).toEqual(expected);
+    }
+  });
+
   it("keeps every locale's top-level keys in step with the default", () => {
     const expected = Object.keys(load(defaultLocale)).sort();
     expect(expected.length).toBeGreaterThan(0);

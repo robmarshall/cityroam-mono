@@ -156,10 +156,13 @@ function CheckoutSuccessContent() {
 function LoadingState() {
   const t = useTranslations("checkout");
   return (
-    <>
-      <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-brand-500" />
+    <div role="status">
+      <div
+        aria-hidden="true"
+        className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-brand-600 motion-reduce:animate-none"
+      />
       <p className="mt-6 text-lg text-gray-600">{t("loading")}</p>
-    </>
+    </div>
   );
 }
 
@@ -167,12 +170,15 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
   const t = useTranslations("checkout");
   return (
     <>
-      <h1 className="text-2xl font-bold text-gray-900">{t("error.title")}</h1>
+      <h1 className="text-2xl font-bold text-gray-900" role="alert">
+        {t("error.title")}
+      </h1>
       <p className="mt-4 text-gray-600 leading-relaxed">{t("error.description")}</p>
-      <div className="mt-8 flex items-center justify-center gap-4">
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
         <button
+          type="button"
           onClick={onRetry}
-          className="rounded-button bg-brand-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-brand-600"
+          className="rounded-button bg-brand-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
         >
           {t("error.tryAgain")}
         </button>
@@ -204,42 +210,50 @@ function SuccessState({
       <h1 className="text-3xl font-bold text-gray-900">{t("success.title")}</h1>
 
       <div className="mt-8 rounded-card border border-gray-200 bg-gray-50 p-4">
-        <label className="block text-sm font-medium text-gray-500">
+        <label htmlFor="event-link" className="block text-sm font-medium text-gray-600">
           {t("success.eventLinkLabel")}
         </label>
         <div className="mt-2 flex items-center gap-2">
           <input
+            id="event-link"
             type="text"
             readOnly
             value={eventUrl}
-            className="flex-1 rounded-button border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 select-all"
+            className="min-w-0 flex-1 rounded-button border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 select-all"
             onClick={(e) => (e.target as HTMLInputElement).select()}
           />
           <button
+            type="button"
             onClick={onCopy}
+            aria-live="polite"
             className="shrink-0 rounded-button border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
           >
             {copied ? t("success.copied") : t("success.copy")}
           </button>
         </div>
+        <p className="mt-3 text-left text-sm text-gray-600">{t("success.validity")}</p>
       </div>
 
       <button
+        type="button"
         onClick={onShare}
-        className="mt-6 inline-flex items-center justify-center rounded-button bg-brand-500 px-8 py-3 text-lg font-semibold text-white transition-colors hover:bg-brand-600 active:bg-brand-700"
+        className="mt-6 inline-flex items-center justify-center rounded-button bg-brand-600 px-8 py-3 text-lg font-semibold text-white transition-colors hover:bg-brand-700 active:bg-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
       >
         {t("success.share")}
       </button>
 
       <div className="mt-8 rounded-card bg-gray-50 p-6 text-left">
-        <p className="font-semibold text-gray-900">{t("success.whatsNext")}</p>
+        <h2 className="font-semibold text-gray-900">{t("success.whatsNext")}</h2>
         <p className="mt-2 text-sm text-gray-600 leading-relaxed">
           {t("success.whatsNextDescription")}
         </p>
       </div>
 
-      <p className="mt-6 text-sm text-gray-500">
-        {t("success.refundNote")}
+      <p className="mt-6 text-sm text-gray-600">
+        {t("success.refundNote")}{" "}
+        <Link href="/refunds" className="font-medium text-brand-700 underline underline-offset-2">
+          {t("success.refundLink")}
+        </Link>
       </p>
     </>
   );

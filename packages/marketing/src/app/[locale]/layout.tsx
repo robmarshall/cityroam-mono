@@ -7,7 +7,7 @@ import { PostHogProvider } from "@/components/PostHogProvider";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { locales } from "@/i18n/config";
-import { SITE_NAME, siteUrl } from "@/lib/site";
+import { PRICE_GBP, SITE_NAME, siteUrl } from "@/lib/site";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -63,7 +63,7 @@ export default async function LocaleLayout({
     },
     offers: {
       "@type": "Offer",
-      price: "29.00",
+      price: PRICE_GBP.toFixed(2),
       priceCurrency: "GBP",
       availability: "https://schema.org/InStock",
       url: `${siteUrl}/${locale}`,
@@ -83,7 +83,10 @@ export default async function LocaleLayout({
       <head>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\u003c") }}
+          // Escape "<" so a translated string can never close the script tag.
+          // The JS string must be backslash-backslash-u003c: the old single-backslash
+          // literal was the "<" character itself, so the replace did nothing.
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
         />
       </head>
       <body>

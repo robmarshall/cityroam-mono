@@ -28,3 +28,10 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .typing-dot {
+    animation: none;
+    opacity: 0.6;
+  }
+}
