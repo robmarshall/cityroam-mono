@@ -112,6 +112,37 @@ describe("marketing smoke", () => {
     }
   });
 
+  it("does not describe the guide as an AI anywhere in the marketing copy", () => {
+    // Owner decision (2026-09-24): the marketing site presents the Owl as the
+    // guide in your group chat, without calling it an AI. The legal pages are
+    // exempt: the privacy notice must name the AI provider as a processor.
+    // The player app's lobby still tells every player the Owl is an AI.
+    const shared = [
+      /\bA\.?I\b/, // case-sensitive: French "j'ai" and Dutch "ai" words must pass
+      /chat ?bots?/i,
+      /\bbots?\b/i,
+      /\bLLMs?\b/,
+      /\bGPT/,
+      /DeepSeek/i,
+      /machine learning/i,
+      /artificial intelligence/i,
+    ];
+    const terms: Record<string, RegExp[]> = {
+      en: shared,
+      es: [...shared, /\bIA\b/, /inteligencia artificial/i],
+      fr: [...shared, /\bIA\b/, /intelligence artificielle/i],
+      de: [...shared, /\bKI\b/, /künstliche[nr]? Intelligenz/i],
+      nl: [...shared, /kunstmatige intelligentie/i],
+    };
+    for (const locale of locales) {
+      const { legal: _legal, ...marketing } = load(locale);
+      const text = JSON.stringify(marketing);
+      for (const term of terms[locale] ?? shared) {
+        expect(text.match(term)?.[0], `${locale} ${term}`).toBeUndefined();
+      }
+    }
+  });
+
   it("keeps exclamation marks out of the marketing copy", () => {
     // House style (and the guide's voice): dry, no exclamation marks.
     for (const locale of locales) {

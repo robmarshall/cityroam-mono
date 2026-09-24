@@ -87,7 +87,7 @@
     },
     "10": {
       "question": "Qui est le Hibou ?",
-      "answer": "Le Hibou est votre guide pendant la partie, et c'est une IA, pas une personne. Il envoie les énigmes et les indices, et répond à vos questions à partir de l'énigme en cours, de nos notes sur le tronçon que vous parcourez et de la distance restante. Son nom est un clin d'œil aux hiboux des armoiries de Leeds."
+      "answer": "Le Hibou est votre guide, dans votre discussion de groupe. Il envoie les énigmes et les indices, et répond à vos questions à partir de l'énigme en cours, de nos notes sur le tronçon que vous parcourez et de la distance restante. Son nom est un clin d'œil aux hiboux des armoiries de Leeds."
     }
   },
   "chatDemo": {
@@ -135,7 +135,7 @@
     },
     "phone": {
       "title": "Votre téléphone suffit",
-      "subtitle": "Pas d'application, pas de matériel, pas de plan imprimé. Le jeu tourne dans le navigateur de votre téléphone, dans une discussion qui fonctionne comme n'importe quel groupe de messagerie. Le Hibou, votre guide, est une IA qui s'appuie sur nos notes sur le parcours : vous pouvez lui poser vos questions avec vos propres mots.",
+      "subtitle": "Pas d'application, pas de matériel, pas de plan imprimé. Le jeu tourne dans le navigateur de votre téléphone, dans une discussion qui fonctionne comme n'importe quel groupe de messagerie. Le Hibou, votre guide, s'appuie sur nos notes sur le parcours : vous pouvez lui poser vos questions avec vos propres mots.",
       "features": {
         "0": "Fonctionne sur tout smartphone récent",
         "1": "Rien à télécharger ni à installer",

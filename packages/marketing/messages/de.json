@@ -87,7 +87,7 @@
     },
     "10": {
       "question": "Wer ist die Eule?",
-      "answer": "Die Eule ist eure Begleiterin im Spiel, und sie ist eine KI, kein Mensch. Sie schickt die Rätsel und Tipps und beantwortet eure Fragen anhand des aktuellen Rätsels, unserer Notizen zum Wegstück, auf dem ihr gerade seid, und der restlichen Strecke. Der Name ist eine Anspielung auf die Eulen im Wappen von Leeds."
+      "answer": "Die Eule ist eure Begleiterin, direkt in eurem Gruppenchat. Sie schickt die Rätsel und Tipps und beantwortet eure Fragen anhand des aktuellen Rätsels, unserer Notizen zum Wegstück, auf dem ihr gerade seid, und der restlichen Strecke. Der Name ist eine Anspielung auf die Eulen im Wappen von Leeds."
     }
   },
   "chatDemo": {
@@ -135,7 +135,7 @@
     },
     "phone": {
       "title": "Ihr braucht nur euer Handy",
-      "subtitle": "Keine App, keine Ausrüstung, kein ausgedruckter Stadtplan. Das Spiel läuft im Browser eures Handys, in einem Chat wie jeder andere Gruppenchat auch. Die Eule, euer Guide, ist eine KI, die mit unseren Notizen zur Route arbeitet. Ihr könnt sie also in euren eigenen Worten fragen.",
+      "subtitle": "Keine App, keine Ausrüstung, kein ausgedruckter Stadtplan. Das Spiel läuft im Browser eures Handys, in einem Chat wie jeder andere Gruppenchat auch. Die Eule, euer Guide, arbeitet mit unseren Notizen zur Route. Ihr könnt sie also in euren eigenen Worten fragen.",
       "features": {
         "0": "Läuft auf jedem aktuellen Smartphone",
         "1": "Nichts herunterladen, nichts installieren",

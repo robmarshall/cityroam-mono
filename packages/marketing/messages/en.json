@@ -87,7 +87,7 @@
     },
     "10": {
       "question": "Who's the Owl?",
-      "answer": "The Owl is your guide in the game, and it's an AI, not a person. It sends the clues and hints, and answers questions using the current clue, our notes on the stretch you're walking and the distance left to go. The name is a nod to the owls on the Leeds coat of arms."
+      "answer": "The Owl is your guide, in your group chat. It sends the clues and hints, and answers questions using the current clue, our notes on the stretch you're walking and the distance left to go. The name is a nod to the owls on the Leeds coat of arms."
     }
   },
   "chatDemo": {
@@ -135,7 +135,7 @@
     },
     "phone": {
       "title": "All you need is your phone",
-      "subtitle": "No app, no kit, no printed map. The game runs in your phone's browser, in a chat that works like any other group chat. The Owl, your guide, is an AI working from our notes on the route, so you can ask it things in your own words.",
+      "subtitle": "No app, no kit, no printed map. The game runs in your phone's browser, in a chat that works like any other group chat. The Owl, your guide, works from our notes on the route, so you can ask it things in your own words.",
       "features": {
         "0": "Works on any modern smartphone",
         "1": "Nothing to download or install",

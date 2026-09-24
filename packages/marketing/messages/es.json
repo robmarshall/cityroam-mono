@@ -87,7 +87,7 @@
     },
     "10": {
       "question": "¿Quién es el Búho?",
-      "answer": "El Búho es vuestro guía en la partida, y es una IA, no una persona. Envía las pistas y las ayudas, y responde a vuestras preguntas con la pista actual, nuestras notas sobre el tramo que estáis recorriendo y la distancia que queda. El nombre es un guiño a los búhos del escudo de Leeds."
+      "answer": "El Búho es vuestro guía, en vuestro chat de grupo. Envía las pistas y las ayudas, y responde a vuestras preguntas con la pista actual, nuestras notas sobre el tramo que estáis recorriendo y la distancia que queda. El nombre es un guiño a los búhos del escudo de Leeds."
     }
   },
   "chatDemo": {
@@ -135,7 +135,7 @@
     },
     "phone": {
       "title": "Solo necesitas el móvil",
-      "subtitle": "Sin app, sin material, sin mapa impreso. El juego funciona en el navegador del móvil, en un chat como cualquier otro chat de grupo. El Búho, vuestro guía, es una IA que trabaja con nuestras notas sobre la ruta, así que podéis preguntarle con vuestras propias palabras.",
+      "subtitle": "Sin app, sin material, sin mapa impreso. El juego funciona en el navegador del móvil, en un chat como cualquier otro chat de grupo. El Búho, vuestro guía, trabaja con nuestras notas sobre la ruta, así que podéis preguntarle con vuestras propias palabras.",
       "features": {
         "0": "Funciona en cualquier smartphone actual",
         "1": "Nada que descargar ni instalar",

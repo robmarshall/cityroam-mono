@@ -87,7 +87,7 @@
     },
     "10": {
       "question": "Wie is de Uil?",
-      "answer": "De Uil is jullie gids in het spel, en hij is een AI, geen mens. Hij stuurt de aanwijzingen en hints, en beantwoordt vragen op basis van de huidige aanwijzing, onze aantekeningen over het stuk dat jullie lopen en de afstand die nog over is. De naam is een knipoog naar de uilen in het wapen van Leeds."
+      "answer": "De Uil is jullie gids, in jullie groepschat. Hij stuurt de aanwijzingen en hints, en beantwoordt vragen op basis van de huidige aanwijzing, onze aantekeningen over het stuk dat jullie lopen en de afstand die nog over is. De naam is een knipoog naar de uilen in het wapen van Leeds."
     }
   },
   "chatDemo": {
@@ -135,7 +135,7 @@
     },
     "phone": {
       "title": "Je telefoon is alles wat je nodig hebt",
-      "subtitle": "Geen app, geen spullen, geen uitgeprinte kaart. Het spel draait in de browser van je telefoon, in een chat die werkt als elke andere groepschat. De Uil, jullie gids, is een AI die werkt met onze aantekeningen over de route, dus je kunt hem gewoon in je eigen woorden iets vragen.",
+      "subtitle": "Geen app, geen spullen, geen uitgeprinte kaart. Het spel draait in de browser van je telefoon, in een chat die werkt als elke andere groepschat. De Uil, jullie gids, werkt met onze aantekeningen over de route, dus je kunt hem gewoon in je eigen woorden iets vragen.",
       "features": {
         "0": "Werkt op elke moderne smartphone",
         "1": "Niets te downloaden of te installeren",
