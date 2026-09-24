@@ -12,8 +12,9 @@ import { MessageBubble, useDemoMessages } from "./ChatDemo";
 export default function ChatSnippet({ className = "" }: { className?: string }) {
   const t = useTranslations("chatDemo");
   const th = useTranslations("home.hero");
-  // The clue, the off-script question and the guide's reply.
-  const messages = useDemoMessages("hero").slice(0, 3);
+  // The clue, your guess, another player's question and the guide's reply
+  // to both: enough to show it is a group chat.
+  const messages = useDemoMessages("hero").slice(0, 4);
 
   return (
     <figure className={`mx-auto w-full max-w-sm text-left ${className}`}>

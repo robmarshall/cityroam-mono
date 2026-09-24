@@ -92,15 +92,15 @@
   },
   "chatDemo": {
     "guideLabel": "Die Eule",
-    "ariaLabel": "Ein Beispiel für den Gruppenchat: Die Eule schickt ein Rätsel, jemand fragt, wie weit es noch ist, und bekommt eine trockene Antwort, dann gibt die Eule einen Tipp.",
+    "ariaLabel": "Ein Beispiel für den Gruppenchat: Die Eule schickt ein Rätsel, du rätst, Lena fragt, wie weit es noch ist, die Eule antwortet euch beiden und gibt dir dann einen Tipp.",
+    "player": "Lena",
     "hero": {
       "0": "Station drei. Irgendwo in dieser Straße schaut seit hundert Jahren ein Steingesicht auf die Leute beim Einkaufen.",
-      "1": "Wie weit ist es noch? Tobi kann nicht mehr",
-      "2": "Etwa ein Kilometer bis zum Ziel. Tobi überlebt das.",
-      "3": "Ist es das über der Bank?",
-      "4": "Nicht ganz. Schaut weiter nach oben.",
-      "5": "Tipp bitte",
-      "6": "Über den Ladenschildern, unter den Tauben."
+      "1": "Ist es das über der Bank?",
+      "2": "Übrigens, wie weit noch? Meine Füße beschweren sich",
+      "3": "Weiter oben. Noch etwa ein Kilometer, Lena, das schaffen deine Füße.",
+      "4": "Tipp bitte",
+      "5": "Über den Ladenschildern, unter den Tauben."
     },
     "howItWorks": {
       "0": "So. Ich bin die Eule. Heute führe ich euch.",

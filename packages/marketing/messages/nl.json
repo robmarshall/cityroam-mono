@@ -92,15 +92,15 @@
   },
   "chatDemo": {
     "guideLabel": "De Uil",
-    "ariaLabel": "Een voorbeeld van de groepschat: de Uil stuurt een aanwijzing, een speler vraagt hoe ver het nog is en krijgt een droog antwoord, en de Uil geeft een hint.",
+    "ariaLabel": "Een voorbeeld van de groepschat: de Uil stuurt een aanwijzing, jij doet een gok, Sanne vraagt hoe ver het nog is, de Uil antwoordt jullie allebei en geeft jou daarna een hint.",
+    "player": "Sanne",
     "hero": {
       "0": "Stop drie. Ergens in deze straat kijkt al honderd jaar een stenen gezicht naar het winkelend publiek.",
-      "1": "Hoe ver is het nog? Daan z'n benen zijn op",
-      "2": "Nog een kilometer of zo tot de finish. Daan overleeft het wel.",
-      "3": "Is het die boven de bank?",
-      "4": "Niet helemaal. Kijk hoger.",
-      "5": "Hint graag",
-      "6": "Boven de winkelborden, onder de duiven."
+      "1": "Is het die boven de bank?",
+      "2": "Trouwens, hoe ver nog? Mijn voeten klagen",
+      "3": "Hoger. Nog een kilometer of zo, Sanne, dat houden je voeten wel vol.",
+      "4": "Hint graag",
+      "5": "Boven de winkelborden, onder de duiven."
     },
     "howItWorks": {
       "0": "Goed. Ik ben de Uil, vandaag jullie gids.",

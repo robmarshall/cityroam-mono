@@ -4,17 +4,25 @@ import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 
-type Sender = "guide" | "user";
+/**
+ * Three parties, drawn the way the player app draws them: "user" is the
+ * visitor's own phone (right, blue, no label), "player" is someone else in
+ * the group (left, grey bubble, named from `chatDemo.player`), and "guide"
+ * is the Owl (left, lighter bubble, named from `chatDemo.guideLabel`).
+ */
+type Sender = "guide" | "user" | "player";
 
 export type Message = {
   id: number;
   sender: Sender;
+  /** Name shown above the bubble for another player. */
+  name?: string;
   text: string;
 };
 
 // Who sends each line of the two scripted conversations in `chatDemo.*`.
 const SCRIPTS: Record<"hero" | "howItWorks", Sender[]> = {
-  hero: ["guide", "user", "guide", "user", "guide", "user", "guide"],
+  hero: ["guide", "user", "player", "guide", "user", "guide"],
   howItWorks: ["guide", "guide", "guide", "guide", "guide", "user"],
 };
 
@@ -23,6 +31,7 @@ export function useDemoMessages(variant: "hero" | "howItWorks"): Message[] {
   return SCRIPTS[variant].map((sender, i) => ({
     id: i,
     sender,
+    name: sender === "player" ? t("player") : undefined,
     text: t(`${variant}.${i}`),
   }));
 }
@@ -68,19 +77,32 @@ export function MessageBubble({
   size?: "xs" | "sm";
 }) {
   const isUser = message.sender === "user";
+  const isGuide = message.sender === "guide";
+  // Mirrors the player app (ChatPage.tsx): the guide and other players are
+  // named above their bubbles; your own messages are unlabelled.
+  const label = isGuide ? guideLabel : message.name;
 
   return (
     <motion.div
       className={`flex ${isUser ? "ml-[20%] justify-end" : "mr-[20%] justify-start"} mb-chat-gap`}
+      // Inline display on the layout boxes: the phone frame's CSS module sets
+      // every descendant to display:block, which beats the flex classes and
+      // would stretch every bubble to the full width.
+      style={{ display: "flex" }}
       variants={animationVariants}
       // `false` renders straight into the final state, so bubbles that are
       // there on first paint never start invisible.
       initial={animate ? "initial" : false}
       animate="animate"
     >
-      <div className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}>
-        {!isUser && isFirstInGroup && (
-          <div className="mb-0.5 ml-1 text-[10px] font-medium text-gray-500">{guideLabel}</div>
+      <div
+        className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}
+        style={{ display: "flex" }}
+      >
+        {!isUser && isFirstInGroup && label && (
+          <div className={`mb-0.5 ml-1 font-medium text-gray-600 ${size === "sm" ? "text-xs" : "text-[10px]"}`}>
+            {label}
+          </div>
         )}
         <div
           className={`whitespace-pre-wrap px-3 py-2 leading-relaxed ${size === "sm" ? "text-sm" : "text-xs"} ${
@@ -88,7 +110,7 @@ export function MessageBubble({
               ? // The snippet is real, readable text, so it uses the darker blue
                 // that passes AA with white. The phone mock keeps the app's own.
                 `rounded-bubble rounded-br-sm text-white ${size === "sm" ? "bg-brand-600" : "bg-bubble-self"}`
-              : "rounded-bubble rounded-bl-sm bg-bubble-guide text-gray-900"
+              : `rounded-bubble rounded-bl-sm text-gray-900 ${isGuide ? "bg-bubble-guide" : "bg-bubble-other"}`
           }`}
         >
           {message.text}

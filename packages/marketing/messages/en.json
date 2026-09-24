@@ -92,15 +92,15 @@
   },
   "chatDemo": {
     "guideLabel": "The Owl",
-    "ariaLabel": "An example of the group chat: the Owl sends a clue, a player asks how much further there is to go and gets a dry answer, and the Owl gives a hint.",
+    "ariaLabel": "An example of the group chat: the Owl sends a clue, you make a guess, Priya asks how much further there is to go, the Owl answers you both, then gives you a hint.",
+    "player": "Priya",
     "hero": {
       "0": "Stop three. Somewhere on this street, a stone face has been watching the shoppers for a hundred years.",
-      "1": "How much further have we got? Dave's legs have gone",
-      "2": "About a kilometre to the finish. Dave will live.",
-      "3": "Is it the one above the bank?",
-      "4": "Not quite. Look higher.",
-      "5": "Hint please",
-      "6": "Above the shop signs, below the pigeons."
+      "1": "Is it the one above the bank?",
+      "2": "How much further, by the way? My feet have opinions",
+      "3": "Higher than that. About a kilometre to go, Priya, and your feet will cope.",
+      "4": "Hint please",
+      "5": "Above the shop signs, below the pigeons."
     },
     "howItWorks": {
       "0": "Right. I'm the Owl. I'll be your guide today.",

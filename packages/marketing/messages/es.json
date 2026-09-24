@@ -92,15 +92,15 @@
   },
   "chatDemo": {
     "guideLabel": "El Búho",
-    "ariaLabel": "Un ejemplo del chat de grupo: el Búho manda una pista, un jugador pregunta cuánto falta y recibe una respuesta seca, y el Búho da una ayuda.",
+    "ariaLabel": "Un ejemplo del chat de grupo: el Búho manda una pista, tú pruebas una respuesta, Lucía pregunta cuánto falta, el Búho os contesta a los dos y luego te da una pista.",
+    "player": "Lucía",
     "hero": {
       "0": "Parada tres. En algún punto de esta calle, una cara de piedra lleva cien años mirando a la gente que va de compras.",
-      "1": "¿Cuánto nos queda? A Dani ya no le responden las piernas",
-      "2": "Un kilómetro, más o menos, hasta el final. Dani sobrevivirá.",
-      "3": "¿Es la que está encima del banco?",
-      "4": "No exactamente. Mirad más arriba.",
-      "5": "Una pista, porfa",
-      "6": "Por encima de los letreros, por debajo de las palomas."
+      "1": "¿Es la que está encima del banco?",
+      "2": "Por cierto, ¿cuánto falta? Mis pies tienen quejas",
+      "3": "Más arriba. Queda un kilómetro, Lucía, y tus pies lo aguantarán.",
+      "4": "Una pista, porfa",
+      "5": "Por encima de los letreros, por debajo de las palomas."
     },
     "howItWorks": {
       "0": "Bien. Soy el Búho y hoy seré vuestro guía.",

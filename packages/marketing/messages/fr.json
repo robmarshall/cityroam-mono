@@ -92,15 +92,15 @@
   },
   "chatDemo": {
     "guideLabel": "Le Hibou",
-    "ariaLabel": "Un exemple de la discussion de groupe : le Hibou envoie une énigme, un joueur demande combien il reste à marcher et reçoit une réponse pince-sans-rire, puis le Hibou donne un indice.",
+    "ariaLabel": "Un exemple de la discussion de groupe : le Hibou envoie une énigme, vous tentez une réponse, Léa demande combien il reste à marcher, le Hibou vous répond à tous les deux, puis vous donne un indice.",
+    "player": "Léa",
     "hero": {
       "0": "Étape trois. Quelque part dans cette rue, un visage de pierre observe les passants depuis cent ans.",
-      "1": "Il reste combien ? Julien n'a plus de jambes",
-      "2": "Environ un kilomètre jusqu'à l'arrivée. Julien survivra.",
-      "3": "C'est celui au-dessus de la banque ?",
-      "4": "Pas tout à fait. Regardez plus haut.",
-      "5": "Un indice, svp",
-      "6": "Au-dessus des enseignes, en dessous des pigeons."
+      "1": "C'est celui au-dessus de la banque ?",
+      "2": "Au fait, il reste combien ? Mes pieds protestent",
+      "3": "Plus haut. Il reste environ un kilomètre, Léa, et tes pieds tiendront le coup.",
+      "4": "Un indice, svp",
+      "5": "Au-dessus des enseignes, en dessous des pigeons."
     },
     "howItWorks": {
       "0": "Bien. Je suis le Hibou, votre guide aujourd'hui.",
