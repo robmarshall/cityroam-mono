@@ -12,10 +12,14 @@ import { Card, CardGrid, CtaBand, PageHero, Section, SectionHeading } from "@/co
 import { StickyBookBar } from "@/components/StickyBookBar";
 import { TryTheOwl } from "@/components/TryTheOwl";
 import { factValues } from "@/lib/facts";
+import { loadRouteFacts } from "@/lib/load-route-facts";
 import { buildMetadata } from "@/lib/metadata";
 
 const FAQ_COUNT = 6;
 const SEGMENT = "treasure-hunt";
+
+// Re-read the route facts from the API hourly (ROUTE_FACTS_REVALIDATE_SECONDS).
+export const revalidate = 3600;
 
 export async function generateMetadata({
   params,
@@ -49,13 +53,14 @@ export default async function TreasureHunt({
   const th = await getTranslations("home.compare");
   const tc = await getTranslations("cta");
   const tf = await getTranslations("facts");
-  const facts = factValues(tf);
+  const routeFacts = await loadRouteFacts();
+  const facts = factValues(tf, routeFacts);
 
   return (
     <main className="min-h-screen">
       <PageHero title={t("hero.title")} subtitle={t("hero.subtitle")}>
         <CTAButton location="treasure-hunt-hero" segment={SEGMENT} />
-        <KeyFacts />
+        <KeyFacts route={routeFacts} />
       </PageHero>
 
       {/* How it differs from a traditional treasure hunt. */}

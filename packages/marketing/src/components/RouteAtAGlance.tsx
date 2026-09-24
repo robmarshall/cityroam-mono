@@ -1,20 +1,36 @@
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { startPointLabel } from "@cityroam/shared/route-facts";
+import type { SupportedLanguage } from "@cityroam/shared/types";
 import { factValues } from "@/lib/facts";
 import type { RouteFacts } from "@/lib/route-facts";
 
 /**
  * The practical facts about a route as a short definition list. Rows whose
  * value is null are left out entirely: the box only says what has been
- * checked, and grows as Rob fills in lib/route-facts.ts (later, the route
- * facts endpoint).
+ * checked, and grows as facts are entered in admin (route family > Route
+ * facts), read through lib/load-route-facts.ts.
  */
 export function RouteAtAGlance({ facts }: { facts: RouteFacts }) {
   const t = useTranslations("home.route");
   const tf = useTranslations("facts");
-  const values = factValues(tf);
+  const locale = useLocale() as SupportedLanguage;
+  const values = factValues(tf, facts);
 
-  const rows: [label: string, value: string][] = [];
-  if (facts.startPoint) rows.push([t("rows.start"), facts.startPoint]);
+  const rows: [label: string, value: React.ReactNode][] = [];
+  if (facts.startPoint) {
+    rows.push([
+      t("rows.start"),
+      <a
+        key="start"
+        href={facts.startPoint.mapUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="underline decoration-stone-300 underline-offset-4 hover:decoration-brick-500"
+      >
+        {startPointLabel(facts.startPoint, locale)}
+      </a>,
+    ]);
+  }
   if (facts.distanceKm != null) {
     const km = facts.distanceKm;
     rows.push([t("rows.distance"), tf("distance", { km, miles: Math.round(km * 0.621371 * 10) / 10 })]);
@@ -27,9 +43,7 @@ export function RouteAtAGlance({ facts }: { facts: RouteFacts }) {
   }
   if (facts.stepFree) rows.push([t("rows.stepFree"), t(`values.stepFree.${facts.stepFree}`)]);
   if (facts.dogs != null) rows.push([t("rows.dogs"), t(`values.dogs.${facts.dogs ? "yes" : "no"}`)]);
-  if (facts.toilets != null) {
-    rows.push([t("rows.toilets"), t(`values.toilets.${facts.toilets ? "yes" : "no"}`)]);
-  }
+  if (facts.toilets) rows.push([t("rows.toilets"), t(`values.toilets.${facts.toilets}`)]);
   if (facts.covered) rows.push([t("rows.covered"), t(`values.covered.${facts.covered}`)]);
 
   return (

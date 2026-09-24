@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { defaultLocale, locales } from "@/i18n/config";
 import { factValues } from "@/lib/facts";
+import { loadRouteFacts } from "@/lib/load-route-facts";
 import { SITE_NAME, siteUrl } from "@/lib/site";
 import { VOUCHER_EXPIRY_MONTHS } from "@cityroam/shared/constants";
 
@@ -14,7 +15,7 @@ export async function giftPageMetadata(locale: string): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: "gift.meta" });
   const tf = await getTranslations({ locale, namespace: "facts" });
   const tm = await getTranslations({ locale, namespace: "metadata.home" });
-  const values = { ...factValues(tf), months: VOUCHER_EXPIRY_MONTHS };
+  const values = { ...factValues(tf, await loadRouteFacts()), months: VOUCHER_EXPIRY_MONTHS };
 
   const title = t("title");
   const description = t("description", values);

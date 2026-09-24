@@ -187,6 +187,34 @@ actually uses.
      hand" wording in the AI replies.
 6. **Route facts in the database**: admin form (explicit Save, never
    autosave) and a public endpoint feeding the marketing facts.
+   - **Status (2026-09-24): built.** `RouteFacts` and its zod schema live in
+     `packages/shared/src/validation/route-facts.ts` (also exported as
+     `@cityroam/shared/route-facts`). Enums changed from the Phase 3 draft:
+     step-free `yes | mostly | no`, toilets `at_start | on_route | none`,
+     cover `none | some | most`; the start point is a label per language
+     (English required), lat/lng and a `https://maps.google.com/?q=` link.
+   - Stored in a new `route_family_facts` table (migration 0017), one row per
+     family, every column nullable. A separate table rather than columns on
+     `route_families`: the facts are marketing content with their own save
+     and timestamp, and the family row stays small. The family's distance and
+     walking time are canonical for marketing; `routes.estimated_*` stay for
+     the completion message.
+   - API: `GET`/`PUT /admin/route-families/:id/facts` (`routes:read` /
+     `routes:write`, audited) and the public, rate-limited, 5-minute
+     cacheable `GET /public/route-families/:id/facts` (families with an
+     active route only). MCP: `get_route_facts`, `update_route_facts`.
+   - Admin: a "Route facts" panel on the route family page with Save and
+     Discard and an unsaved-changes guard.
+   - Marketing: `src/lib/load-route-facts.ts` reads the endpoint at build
+     time with `revalidate: 3600` when `ROUTE_FACTS_FAMILY_ID` and
+     `NEXT_PUBLIC_API_URL` are set, and merges it fact by fact over
+     `LEEDS_ROUTE_FACTS` (so an unreachable API or an unset fact never
+     breaks a build). RouteAtAGlance, KeyFacts and every string quoting the
+     distance, walking time or stops read the merged facts; the start point
+     shows (linked to the map) only when set.
+   - Waiting on Rob: the route walk, then entering the facts on staging and
+     production and setting `ROUTE_FACTS_FAMILY_ID` on Vercel
+     (docs/launch-checklist.md, section 7c).
 
 - **Vouchers** run in parallel with phases 3–4 (before Christmas).
 - **Post-launch**: real demo sandbox; price A/B test (a second Stripe price, a

@@ -1,24 +1,28 @@
 import { useTranslations } from "next-intl";
-import { factValues } from "@/lib/facts";
+import { factValues, type QuotedRouteFacts } from "@/lib/facts";
 
 /**
  * The four things every visitor asks first, under the hero call to action:
- * price, group size, duration and when you can play. Numbers come from
- * lib/site.ts, so they match the FAQ and the checkout.
+ * price, group size, duration and when you can play. Price and group size
+ * come from lib/site.ts; the walking time from the page's loaded route facts
+ * (`route`), so they match the FAQ, the route box and the checkout.
  */
 export function KeyFacts({
   align = "center",
   tone = "light",
   hidePrice = false,
+  route,
 }: {
   align?: "center" | "start-lg" | "start";
   /** "dark" for text over the hero photo's navy fade: stone text, no brick. */
   tone?: "light" | "dark";
   /** Leave the price out where the hero already shows it (audience pages). */
   hidePrice?: boolean;
+  /** The page's route facts (lib/load-route-facts.ts); constants when left out. */
+  route?: QuotedRouteFacts;
 }) {
   const t = useTranslations("facts");
-  const values = factValues(t);
+  const values = factValues(t, route);
   const items = [
     ...(hidePrice ? [] : [t("price", values)]),
     t("players", values),

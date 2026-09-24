@@ -238,7 +238,7 @@
         "stops": "{stops}, and we're not saying where",
         "stepFree": {
           "yes": "Yes, all the way",
-          "partly": "Mostly",
+          "mostly": "Mostly",
           "no": "No, there are steps"
         },
         "dogs": {
@@ -246,13 +246,14 @@
           "no": "Best left at home"
         },
         "toilets": {
-          "yes": "Public toilets on the way",
-          "no": "None on the route itself"
+          "at_start": "At the start",
+          "on_route": "Public toilets on the way",
+          "none": "None on the route itself"
         },
         "covered": {
           "most": "Most of it",
           "some": "Some of it",
-          "little": "Not much. Bring a coat"
+          "none": "None of it. Bring a coat"
         }
       }
     },

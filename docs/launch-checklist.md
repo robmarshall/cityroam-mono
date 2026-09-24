@@ -38,6 +38,9 @@ done.
 - [ ] Run migration 0016 (`add_early_answer_bank_type`), which widens the
       same check to allow `early-answer`. It must be in place before the
       seeder adds that bank (until then players get the built-in fallback).
+- [ ] Run migration 0017 (`add_route_family_facts`) with the route facts
+      release. It only creates a new table, so there is nothing to check
+      first. It must be in place before that API code is deployed.
 - [ ] Seed message banks so the new `guide-degraded`, `guide-busy`,
       `guide-identity-*` and `early-answer` bank types exist in every language. In production use the message-banks-only
       seeder, `npm run docker:prod:seed:message-banks` (runs
@@ -93,6 +96,12 @@ done.
 - [ ] The frontend Dockerfiles still require their build args (app
       `VITE_API_URL`, `VITE_WS_URL`; admin `VITE_API_URL`; marketing
       `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SITE_URL`) if you ever self-host them.
+- [ ] `ROUTE_FACTS_FAMILY_ID` (marketing, server-only, optional): the Leeds
+      route family's id, so the marketing site reads its route facts from the
+      API. Set it on the marketing Vercel projects (staging and production,
+      each with its own environment's family id) for both build and runtime,
+      then redeploy. Unset, the site uses the built-in facts in
+      `packages/marketing/src/lib/route-facts.ts`. See section 7c.
 
 ## 4. Hosting
 
@@ -222,6 +231,30 @@ Sentry entirely.
       `/<locale>/redeem?code=…` against the API in `docs/vouchers.md`. The
       redeem URL is printed on every card, so it must not move once vouchers
       are on sale.
+
+## 7c. Route facts (after the route walk)
+
+The marketing site's "Route at a glance" box hides every fact that has not
+been checked on the ground. Once the live route has been walked:
+
+- [ ] In admin on **staging**, open Routes → the Leeds family → **Route
+      facts** and enter what the walk confirmed: the start point (a meeting
+      place that is never a stop; English label, other languages only if the
+      name differs, lat/lng, then "Use latitude/longitude" and check "Open in
+      Google Maps"), distance, walking time, stops, step-free, dogs, toilets
+      and cover. Leave anything unchecked as "Not checked". Press **Save**
+      (nothing saves on its own).
+- [ ] Do the same on **production**.
+- [ ] Set `ROUTE_FACTS_FAMILY_ID` on the marketing Vercel projects to that
+      family's id in each environment (section 3) and redeploy. Pages then
+      pick up later edits within an hour (ISR) without a deploy.
+- [ ] Check `https://<api>/public/route-families/<id>/facts` returns the
+      facts (it 404s until the family has an active route), then check the
+      home page and an audience page show the new rows.
+- [ ] If the walk changed the distance or walking time, the family's facts
+      are what the site quotes; also update the routes' own
+      `estimated_distance_km` / `estimated_duration_mins` so the game's
+      completion message agrees.
 
 ## 8. Known gaps left in place
 

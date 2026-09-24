@@ -238,7 +238,7 @@
         "stops": "{stops}, und wir verraten nicht, wo",
         "stepFree": {
           "yes": "Ja, auf der ganzen Strecke",
-          "partly": "Größtenteils",
+          "mostly": "Größtenteils",
           "no": "Nein, es gibt Stufen"
         },
         "dogs": {
@@ -246,13 +246,14 @@
           "no": "Lieber zu Hause lassen"
         },
         "toilets": {
-          "yes": "Öffentliche Toiletten unterwegs",
-          "no": "Keine direkt an der Route"
+          "at_start": "Am Start",
+          "on_route": "Öffentliche Toiletten unterwegs",
+          "none": "Keine direkt an der Route"
         },
         "covered": {
           "most": "Größtenteils",
           "some": "Teilweise",
-          "little": "Kaum. Nehmt eine Jacke mit"
+          "none": "Gar nicht. Nehmt eine Jacke mit"
         }
       }
     },

@@ -238,7 +238,7 @@
         "stops": "{stops}, et nous ne dirons pas où",
         "stepFree": {
           "yes": "Oui, sur tout le parcours",
-          "partly": "En grande partie",
+          "mostly": "En grande partie",
           "no": "Non, il y a des marches"
         },
         "dogs": {
@@ -246,13 +246,14 @@
           "no": "Mieux vaut les laisser à la maison"
         },
         "toilets": {
-          "yes": "Toilettes publiques en chemin",
-          "no": "Aucune sur le parcours"
+          "at_start": "Au départ",
+          "on_route": "Toilettes publiques en chemin",
+          "none": "Aucune sur le parcours"
         },
         "covered": {
           "most": "En grande partie",
           "some": "En partie",
-          "little": "Peu. Prévoyez un manteau"
+          "none": "Pas du tout. Prévoyez un manteau"
         }
       }
     },
