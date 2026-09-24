@@ -1,4 +1,4 @@
-import { OWL_PARTS, OWL_VIEWBOX, owlStrokeWidth } from "@cityroam/shared/brand";
+import { OWL_FILL_PATH, OWL_STROKE_PATH, OWL_VIEWBOX, owlStrokeWidth } from "@cityroam/shared/brand";
 
 /**
  * The City Roam owl (packages/shared/src/brand/owl.ts), drawn in currentColor
@@ -18,7 +18,7 @@ export function OwlMark({
   size?: number;
   /** Accessible name. Omit when the owl is decorative. */
   label?: string;
-  /** Override the stroke weight (grid units). */
+  /** Override the head's stroke weight (grid units). */
   strokeWidth?: number;
   className?: string;
 }) {
@@ -41,9 +41,8 @@ export function OwlMark({
       {...a11y}
     >
       {label && <title>{label}</title>}
-      {Object.values(OWL_PARTS).map((d) => (
-        <path key={d} d={d} />
-      ))}
+      <path d={OWL_STROKE_PATH} />
+      <path d={OWL_FILL_PATH} fill="currentColor" stroke="none" fillRule="evenodd" />
     </svg>
   );
 }

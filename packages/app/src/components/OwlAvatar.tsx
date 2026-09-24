@@ -1,8 +1,8 @@
-import { OWL_PARTS, OWL_VIEWBOX, owlStrokeWidth } from "@cityroam/shared/brand";
+import { OWL_FILL_PATH, OWL_STROKE_PATH, OWL_VIEWBOX, owlStrokeWidth } from "@cityroam/shared/brand";
 
 /**
  * The guide's avatar: the shared owl mark (packages/shared/src/brand/owl.ts),
- * drawn as strokes in the current text colour. Decorative by default, since it
+ * drawn in the current text colour (a stroked head, a filled face). Decorative by default, since it
  * always sits next to the guide's name; pass `title` when it stands alone.
  */
 export function OwlAvatar({
@@ -29,9 +29,8 @@ export function OwlAvatar({
       {...(title ? { role: "img", "aria-label": title } : { "aria-hidden": true })}
     >
       {title && <title>{title}</title>}
-      {Object.entries(OWL_PARTS).map(([part, d]) => (
-        <path key={part} d={d} />
-      ))}
+      <path d={OWL_STROKE_PATH} />
+      <path d={OWL_FILL_PATH} fill="currentColor" stroke="none" fillRule="evenodd" />
     </svg>
   );
 }

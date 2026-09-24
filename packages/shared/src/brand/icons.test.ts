@@ -2,26 +2,16 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { OWL_PATH } from "./owl.js";
+import { ICON_FILES, iconFileContents } from "./icon-files.js";
 
-// The square brand icon exists twice as a static file: the marketing site's
-// favicon (Next serves src/app/icon.svg) and the player app's favicon. Neither
-// build can import the other, so this test keeps them identical and on the
-// current owl drawing.
+// The favicons are static files (Next serves src/app/icon.svg; the app build
+// copies public/favicon.svg), so they are generated from owl.ts rather than
+// imported. If this fails, run `npm run icons -w @cityroam/shared`.
 const packagesDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
-const ICONS = ["marketing/src/app/icon.svg", "app/public/favicon.svg"];
-
-function read(rel: string): string {
-  return readFileSync(path.join(packagesDir, rel), "utf8").replace(/\r\n/g, "\n");
-}
 
 describe("brand icon files", () => {
-  it("keeps the app favicon identical to the marketing icon", () => {
-    const [marketing, app] = ICONS.map(read);
-    expect(app).toBe(marketing);
-  });
-
-  it.each(ICONS)("%s draws the owl from owl.ts", (rel) => {
-    expect(read(rel)).toContain(`d="${OWL_PATH}"`);
+  it.each(ICON_FILES)("%s is generated from the current owl", (rel) => {
+    const onDisk = readFileSync(path.join(packagesDir, rel), "utf8").replace(/\r\n/g, "\n");
+    expect(onDisk).toBe(iconFileContents());
   });
 });

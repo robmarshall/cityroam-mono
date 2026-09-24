@@ -17,7 +17,8 @@
   "scripts": {
     "build": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "icons": "tsx scripts/write-icons.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.2",

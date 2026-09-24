@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { getTranslations } from "next-intl/server";
-import { owlSvg } from "@cityroam/shared/brand";
+import { OWL_ICON_COLORS, owlIconSvg, owlSvg } from "@cityroam/shared/brand";
 import { BRAND, SITE_NAME, siteUrl } from "./site";
 
 /** Shared dimensions for the Open Graph and Twitter card images. */
@@ -106,29 +106,20 @@ export async function renderShareImage(locale: string) {
   );
 }
 
-/** Square app icon used for `apple-icon`: the white owl on brick, full bleed (iOS rounds it). */
+/**
+ * Square app icon used for `apple-icon`: the same drawing as the favicon
+ * (owlIconSvg, navy owl on stone), full bleed because iOS rounds it.
+ */
 export async function renderAppIcon(size: number) {
-  const owl = Math.round(size * 0.72);
-  // The drawing sits 0.75 grid units below the viewBox centre; lift it back.
-  const lift = Math.round((owl * 0.75) / 24);
+  const icon = owlIconSvg({ ...OWL_ICON_COLORS, size, radius: 0 });
   return new ImageResponse(
     (
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: BRAND.brick500,
-        }}
-      >
+      <div style={{ width: "100%", height: "100%", display: "flex" }}>
         <img
-          src={owlDataUrl(BRAND.white, owl, 1.6)}
-          width={owl}
-          height={owl}
+          src={`data:image/svg+xml;base64,${Buffer.from(icon).toString("base64")}`}
+          width={size}
+          height={size}
           alt=""
-          style={{ position: "relative", top: `-${lift}px` }}
         />
       </div>
     ),
