@@ -5,6 +5,12 @@ export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://cityroam.co.
 export const SITE_NAME = "City Roam";
 
 /**
+ * The Product name in the JSON-LD. Deliberately fixed and not translated:
+ * the title tags change with the SEO copy, the product doesn't.
+ */
+export const PRODUCT_NAME = "City Roam: Leeds city centre";
+
+/**
  * Contact address shown in the footer and the legal pages. Kept on the same
  * domain as the site itself (cityroam.co.uk) so the two never disagree.
  */

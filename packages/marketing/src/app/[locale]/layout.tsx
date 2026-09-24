@@ -8,7 +8,7 @@ import { PostHogProvider } from "@/components/PostHogProvider";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { locales } from "@/i18n/config";
-import { COMPANY, CONTACT_EMAIL, PRICE_GBP, SITE_NAME, siteUrl } from "@/lib/site";
+import { COMPANY, CONTACT_EMAIL, PRICE_GBP, PRODUCT_NAME, SITE_NAME, siteUrl } from "@/lib/site";
 
 // Fraunces for display (variable weight plus the optical size axis; WONK is
 // left out so the default, non-wonky forms are used) and Inter for body text.
@@ -92,9 +92,12 @@ export default async function LocaleLayout({
     },
   };
 
+  // A stable product name rather than the title tag, so the structured data
+  // doesn't change every time the SEO copy does. areaServed sits on the
+  // Offer: it isn't a Product property.
   const product = {
     "@type": "Product",
-    name: t("home.title"),
+    name: PRODUCT_NAME,
     description: t("home.description"),
     brand: {
       "@type": "Brand",
@@ -107,13 +110,13 @@ export default async function LocaleLayout({
       availability: "https://schema.org/InStock",
       url: `${siteUrl}/${locale}`,
       seller: { "@id": organizationId },
-    },
-    areaServed: {
-      "@type": "City",
-      name: "Leeds",
-      containedInPlace: {
-        "@type": "Country",
-        name: "United Kingdom",
+      areaServed: {
+        "@type": "City",
+        name: "Leeds",
+        containedInPlace: {
+          "@type": "Country",
+          name: "United Kingdom",
+        },
       },
     },
   };
