@@ -29,6 +29,9 @@ done.
 - [ ] Run migrations 0012 (`admin_api_keys`) and 0013 (`admin_audit_log`)
       with the MCP / admin API key release. Both only create new tables, so
       there is nothing to check first.
+- [ ] Run migration 0014 (`vouchers`) with the gift voucher release. It only
+      creates a new table, so there is nothing to check first. It must be in
+      place before that API code is deployed.
 - [ ] Seed message banks so the new `guide-degraded` and `guide-busy` bank
       types exist in every language. In production use the message-banks-only
       seeder, `npm run docker:prod:seed:message-banks` (runs
@@ -45,6 +48,12 @@ done.
   - `checkout.session.async_payment_succeeded` (delayed payment methods)
   - `charge.refunded` (dashboard refunds now mark the event REFUNDED)
   - `charge.dispute.created` (disputes now mark the event REFUNDED)
+- [ ] Gift vouchers need **no new webhook events**: they arrive on
+      `checkout.session.completed` / `async_payment_succeeded` with
+      `metadata.kind = "voucher"`, and refunds and disputes use the events
+      above. They reuse `STRIPE_PRICE_ID`. If a separate voucher price or
+      product name is wanted on receipts, that is a new env var and a code
+      change (see `docs/vouchers.md`).
 - [ ] Confirm the account has terms, privacy and refund URLs set to the new
       pages: `/{locale}/terms`, `/{locale}/privacy`, `/{locale}/refunds`.
 
@@ -188,6 +197,25 @@ Sentry entirely.
       no-questions-asked promise already used in marketing copy, split into
       before-start (any time while the code is valid) and after-play (within
       fourteen days), with codes valid for ninety days.
+
+- [ ] **Gift vouchers.** The privacy notice does not mention vouchers, and
+      the terms and refund policy need voucher wording (12-month validity,
+      90-day game window from redemption, refunds, expiry, bearer code). Full
+      list in `docs/vouchers.md` → "For Rob and the solicitor".
+
+## 7a. Accounting
+
+- [ ] **Unredeemed vouchers (breakage).** Voucher sales are deferred income
+      until redeemed, refunded or expired; agree with the accountant how
+      breakage from expired vouchers is recognised and confirm the VAT
+      treatment (single-purpose voucher). Details in `docs/vouchers.md`.
+
+## 7b. Marketing pages for gift vouchers
+
+- [ ] Build `/<locale>/gift`, `/<locale>/gift/success` and
+      `/<locale>/redeem?code=…` against the API in `docs/vouchers.md`. The
+      redeem URL is printed on every card, so it must not move once vouchers
+      are on sale.
 
 ## 8. Known gaps left in place
 
