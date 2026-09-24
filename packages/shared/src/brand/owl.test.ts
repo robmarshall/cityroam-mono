@@ -10,6 +10,7 @@ import {
   owlStrokeWidth,
   owlSvg,
 } from "./owl.js";
+import { colors } from "../tailwind/preset.js";
 
 describe("owl mark", () => {
   it("keeps every number on the 24-unit grid", () => {
@@ -54,6 +55,10 @@ describe("owl mark", () => {
     const svg = owlSvg({ color: "#123456" });
     expect(svg).toContain(`<path d="${OWL_STROKE_PATH}" fill="none" stroke="#123456"`);
     expect(svg).toContain(`<path d="${OWL_FILL_PATH}" fill="#123456" fill-rule="evenodd"/>`);
+  });
+
+  it("uses the brand stone-50 and ink-900 for the icon", () => {
+    expect(OWL_ICON_COLORS).toEqual({ background: colors.stone[50], color: colors.ink[900] });
   });
 
   it("builds the square icon from the same drawing", () => {

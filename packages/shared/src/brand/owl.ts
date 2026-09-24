@@ -20,8 +20,6 @@
  * favicon files) goes through these paths; owlIconSvg() writes the favicons.
  */
 
-import { colors } from "../tailwind/preset.js";
-
 export const OWL_VIEWBOX = "0 0 24 24" as const;
 
 /** Grid size the path data is drawn on. */
@@ -152,8 +150,13 @@ export function owlIconSvg({ background, color, size = 64, radius = 0.22, title 
   );
 }
 
-/** Icon colours: a navy owl on stone, the same as the site header. */
+/**
+ * Icon colours: a navy owl on stone (stone-50 and ink-900), the same as the
+ * site header. Written out rather than imported from ../tailwind/preset so
+ * this file stays self-contained (the marketing build resolves the `./brand`
+ * export on its own); owl.test.ts checks they match the preset.
+ */
 export const OWL_ICON_COLORS = {
-  background: colors.stone[50],
-  color: colors.ink[900],
+  background: "#F5F1EA",
+  color: "#14213D",
 } as const;
