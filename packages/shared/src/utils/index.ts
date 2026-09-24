@@ -228,3 +228,8 @@ export function buildVoucherRedeemUrl(
   const base = marketingUrl.endsWith("/") ? marketingUrl.slice(0, -1) : marketingUrl;
   return `${base}/${language}${VOUCHER_REDEEM_PATH}?code=${encodeURIComponent(code)}`;
 }
+
+// Answer normalisation and matching (the API pipeline and the marketing demo).
+// Also exported on its own as `@cityroam/shared/answer-match`, which has no
+// runtime imports, for bundles that only need the matcher.
+export * from "./answer-match.js";

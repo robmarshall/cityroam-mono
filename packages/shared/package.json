@@ -9,6 +9,7 @@
     "./validation/player": "./src/validation/player.ts",
     "./constants": "./src/constants/index.ts",
     "./utils": "./src/utils/index.ts",
+    "./answer-match": "./src/utils/answer-match.ts",
     "./tailwind": "./src/tailwind/preset.css",
     "./tailwind/values": "./src/tailwind/preset.ts",
     "./analytics": "./src/analytics/index.ts",

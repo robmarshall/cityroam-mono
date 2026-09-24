@@ -570,10 +570,10 @@ describe("Per-language word lists", () => {
 
 describe("Language-aware article stripping", () => {
   const matchFile = readFileText(
-    "packages/api/src/services/pipeline/deterministic-match.ts",
+    "packages/shared/src/utils/answer-match.ts",
   );
 
-  it("deterministic-match.ts exists", () => {
+  it("answer-match.ts (the matcher behind deterministic-match.ts) exists", () => {
     expect(matchFile).not.toBeNull();
   });
 
