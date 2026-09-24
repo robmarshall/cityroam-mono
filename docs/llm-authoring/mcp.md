@@ -18,8 +18,8 @@ Scopes the MCP server uses:
 
 | Scope | Needed for |
 |---|---|
-| `routes:read` | `list_route_families`, `get_route_family`, `list_routes`, `get_route`, `validate_route`, the route resource, and the route lookups inside every write tool |
-| `routes:write` | `create_route`, `update_route`, group and block tools |
+| `routes:read` | `list_route_families`, `get_route_family`, `get_route_facts`, `list_routes`, `get_route`, `validate_route`, the route resource, and the route lookups inside every write tool |
+| `routes:write` | `create_route`, `update_route`, `update_route_facts`, group and block tools |
 | `images:read` | `list_image_slugs`, and the overwrite check in `upload_image` |
 | `images:write` | `upload_image` |
 | `message-banks:read` | `list_message_banks` |
@@ -54,7 +54,7 @@ The server runs from source through `tsx` (the shared package ships TypeScript),
 
 **Claude Desktop** — see `packages/mcp/README.md` for a config with absolute Windows paths (Desktop does not expand variables).
 
-Check it: in Claude Code run `/mcp`; the `cityroam` server should be connected with 22 tools. Every tool result starts with `[staging]`, `[PRODUCTION]` or `[local]`.
+Check it: in Claude Code run `/mcp`; the `cityroam` server should be connected with 24 tools. Every tool result starts with `[staging]`, `[PRODUCTION]` or `[local]`.
 
 ---
 
@@ -83,6 +83,7 @@ The server checks at startup that the key's `crk_<env>_` segment matches `CITYRO
 |---|---|
 | `list_route_families` | Route families (optional `city` filter) |
 | `get_route_family` | One family and its language variants |
+| `get_route_facts` | A family's route facts (start point, distance, walking time, stops, step-free, dogs, toilets, cover), marking the unset ones that the marketing site hides |
 | `list_routes` | Routes, optionally filtered by family, language, active |
 | `get_route` | A route with its groups and blocks: `format: "compact"` (default, one line per block) or `"tree"` (full JSON) |
 | `list_message_banks` | Message bank entries, filtered by `type` and/or `language` |
@@ -99,6 +100,7 @@ The server checks at startup that the key's `crk_<env>_` segment matches `CITYRO
 | `add_block`, `update_block`, `patch_block_config`, `move_block`, `delete_block`, `reorder_blocks` | Blocks. `patch_block_config` deep-merges a partial config (objects merge, arrays replace) and cannot change the type. |
 | `upload_image` | JPEG/PNG ≤ 5 MB from a local file inside `CITYROAM_IMAGE_ROOTS` or an http(s) URL. With `slug` (JPEG only) it becomes the photo for every `{{IMAGE:slug}}`. |
 | `create_message_bank_entry`, `update_message_bank_entry` | Guide lines. No delete: deactivate with `is_active: false`. |
+| `update_route_facts` | A family's route facts, GET-merge-PUT: only the facts you give change, `null` clears one (hides it on the site), `startPoint` is replaced whole. The merged set is re-parsed with the shared `routeFactsInputSchema` before anything is sent; `dry_run` shows the request and a before/after list. Only enter facts checked on the ground; the start point must never be a stop. |
 
 Tools keyed by a block or group id accept an optional `route_id` hint; without it they search the routes to find the owner.
 
