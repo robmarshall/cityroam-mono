@@ -113,3 +113,14 @@ export type {
   AdminVoucherDetailResponse,
   AdminVoucherResendResponse,
 } from "./vouchers.js";
+
+export type {
+  RouteFacts,
+  RouteFactsInput,
+  RouteFactsStartPoint,
+  RouteFactsStepFree,
+  RouteFactsToilets,
+  RouteFactsCovered,
+  AdminRouteFactsResponse,
+  PublicRouteFactsResponse,
+} from "./route-facts.js";

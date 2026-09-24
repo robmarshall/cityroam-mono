@@ -8,6 +8,7 @@ This document explains how routes, groups, blocks, events, and the AI pipeline f
 
 ```
 Route Family
+  ├── has one Route Facts row (optional; marketing's "route at a glance")
   └── has many Routes (one per language variant)
         ├── has many Groups (ordered by position, 0-indexed)
         │     └── has many Blocks (ordered by position, 0-indexed)
@@ -38,6 +39,10 @@ Route families group language variants of the same logical route. A "Leeds City 
 
 Routes inherit their city from the family. When creating a route, either link it to an existing family via `route_family_id` or provide `city` to auto-create a new family.
 
+### Route Facts
+
+Each family can have one row of route facts (`route_family_facts`): start point (a label per language, lat/lng and a Google Maps link), distance, walking time, number of stops, step-free access, dogs, toilets and cover. The marketing site shows them; the game does not read them. Every fact is nullable and hidden while null. The family's distance and walking time are canonical for marketing; the per-route `estimated_*` fields below still feed the completion message. Endpoints and field rules: api-reference.md > Route Facts.
+
 ---
 
 ## Routes
@@ -51,7 +56,7 @@ A route is a language-specific variant of a treasure hunt within a route family.
 | name | Display name of the route |
 | description | Brief description for admin reference |
 | estimated_duration_mins | Expected total time in minutes |
-| estimated_distance_km | Expected total walking distance |
+| estimated_distance_km | Expected total walking distance (the completion message's `{{DISTANCE_KM}}`; marketing uses the family's route facts instead) |
 | total_stops | Automatically maintained — count of groups |
 | is_active | Whether the route is available for purchase |
 
