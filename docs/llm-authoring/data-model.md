@@ -281,6 +281,7 @@ Template variables in message block `content` fields (and in hint text) are repl
 | guide-identity-machine | 2 | 3 |
 | guide-identity-person | 2 | 3 |
 | guide-identity-who | 2 | 3 |
+| early-answer | 2 | 3 |
 
 ---
 

@@ -666,7 +666,7 @@ Authorization: Bearer <token>
 }
 ```
 
-Valid types: `success`, `failure`, `hint-exhausted`, `hint-offer`, `hint-decline`, `clarification`, `unknown-answer`, `completion`, `over-length`, `guide-degraded`, `guide-busy`, `guide-identity-ai`, `guide-identity-machine`, `guide-identity-person`, `guide-identity-who`
+Valid types: `success`, `failure`, `hint-exhausted`, `hint-offer`, `hint-decline`, `clarification`, `unknown-answer`, `completion`, `over-length`, `guide-degraded`, `guide-busy`, `guide-identity-ai`, `guide-identity-machine`, `guide-identity-person`, `guide-identity-who`, `early-answer`
 
 The four `guide-identity-*` types are the canned replies to "are you AI?", "are you a bot?", "are you a real person?" and "who are you?"; `{{GUIDE_NAME}}` is substituted in them. Machine and who lines must never open with a negation (guide-personality.md > Honest about being an AI).
 

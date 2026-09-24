@@ -210,6 +210,17 @@ Examples:
 - person: "Not a person, no. I'm {{GUIDE_NAME}}, the guide in your phone."
 - who: "I'm {{GUIDE_NAME}}, your guide for today. I know these streets and I keep the clues coming."
 
+### early-answer
+
+Sent when a player answers the next clue correctly while still walking to it. The answer is not accepted (the question block is still ahead), so the line neither confirms nor rejects it; it just asks them to hold it until they arrive. Nothing is substituted.
+
+**Tone:** dry, brief, unbothered. No exclamation marks.
+
+Examples:
+- "Hold that thought — you're not there yet. I'll ask you properly when you arrive."
+- "Bit early for that. Keep it until you get there."
+- "Save that one. The question comes when you're standing in the right spot."
+
 ### completion
 
 Sent when the player completes the final group.

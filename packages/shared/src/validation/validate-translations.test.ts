@@ -201,6 +201,7 @@ describe("Message bank seed translations", () => {
     "guide-identity-machine",
     "guide-identity-person",
     "guide-identity-who",
+    "early-answer",
   ];
 
   const nonEnLanguages = SUPPORTED_LANGUAGES.filter((l) => l !== "en");

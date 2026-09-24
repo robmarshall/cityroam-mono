@@ -35,8 +35,11 @@ done.
 - [ ] Run migration 0015 (`add_guide_identity_bank_types`), which widens the
       message bank type check. It must be in place before the seeder adds the
       identity banks.
-- [ ] Seed message banks so the new `guide-degraded`, `guide-busy` and
-      `guide-identity-*` bank types exist in every language. In production use the message-banks-only
+- [ ] Run migration 0016 (`add_early_answer_bank_type`), which widens the
+      same check to allow `early-answer`. It must be in place before the
+      seeder adds that bank (until then players get the built-in fallback).
+- [ ] Seed message banks so the new `guide-degraded`, `guide-busy`,
+      `guide-identity-*` and `early-answer` bank types exist in every language. In production use the message-banks-only
       seeder, `npm run docker:prod:seed:message-banks` (runs
       `start:seed:message-banks` in the `api-http` container). Do **not** run
       `docker:prod:seed` there: the full seed also creates the development
