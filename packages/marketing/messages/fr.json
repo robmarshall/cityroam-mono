@@ -1,19 +1,19 @@
 {
   "metadata": {
     "og": {
-      "tagline": "Chasse au trésor à Leeds, guidée par le Hibou"
+      "tagline": "Explorez Leeds, guidés par le Hibou"
     },
     "home": {
-      "title": "City Roam — Chasse au trésor à Leeds, guidée par le Hibou",
-      "description": "Une chasse au trésor en autonomie dans le centre de Leeds, jouée dans une discussion de groupe. Un seul prix jusqu'à 10 personnes, sans application.",
-      "ogImageAlt": "City Roam — Chasse au trésor à Leeds, guidée par le Hibou"
+      "title": "Visite de Leeds à pied en autonomie, avec énigmes — City Roam",
+      "description": "Explorez le centre de Leeds à pied, entre visite guidée et jeu de piste, dans une discussion de groupe sur vos téléphones. Un seul prix jusqu'à 10, sans appli.",
+      "ogImageAlt": "City Roam — Explorez Leeds, guidés par le Hibou"
     },
     "families": {
       "title": "Chasse au trésor en famille à Leeds — City Roam",
-      "description": "Une chasse au trésor dans le centre de Leeds pour les familles avec enfants dès 8 ans. À votre rythme, avec des pauses, et à finir un autre jour si besoin."
+      "description": "Une balade à énigmes dans le centre de Leeds, pour les familles avec enfants dès 8 ans. À votre rythme, avec des pauses, et à finir un autre jour si besoin."
     },
     "henParties": {
-      "title": "Chasse au trésor pour EVJF à Leeds — City Roam",
+      "title": "Activités EVJF à Leeds : une balade à énigmes — City Roam",
       "description": "Une activité d'EVJF en journée à Leeds : des énigmes dans le centre-ville, jouées dans une discussion de groupe sur vos téléphones. Un seul prix jusqu'à 10 personnes, sans date à réserver."
     },
     "teamBuilding": {
@@ -21,8 +21,12 @@
       "description": "Sortez votre équipe du bureau quelques heures. Une chasse au trésor en autonomie dans le centre de Leeds, jusqu'à 10 personnes, sans animateur."
     },
     "stagParties": {
-      "title": "Chasse au trésor pour EVG à Leeds — City Roam",
+      "title": "Activités EVG à Leeds : une balade à énigmes — City Roam",
       "description": "Une activité d'enterrement de vie de garçon en journée à Leeds : des énigmes dans le centre-ville, jouées dans une discussion de groupe. Un seul prix jusqu'à 10 personnes, sans date à réserver."
+    },
+    "treasureHunt": {
+      "title": "Chasse au trésor dans le centre de Leeds — City Roam",
+      "description": "Une chasse au trésor dans le centre de Leeds où les indices sont sur les bâtiments, jouée dans une discussion de groupe. Un seul prix jusqu'à 10, sans appli."
     }
   },
   "common": {
@@ -40,6 +44,7 @@
       "copyright": "© {year} City Roam. Tous droits réservés.",
       "company": "{name}. Société immatriculée en Angleterre et au pays de Galles, numéro {number}. Siège social : {address}.",
       "audienceNav": "Pour qui",
+      "treasureHunt": "Chasse au trésor",
       "gift": "Cartes cadeaux"
     },
     "legalNav": {
@@ -123,8 +128,8 @@
   },
   "home": {
     "hero": {
-      "title": "Une chasse au trésor à travers Leeds, dans votre groupe de discussion",
-      "subtitle": "Résolvez des énigmes dans le centre-ville avec le Hibou, un guide qui vous répond quand vous lui posez une question. Tout le monde joue dans la même discussion, chacun sur son téléphone, sans application à télécharger.",
+      "title": "Explorez Leeds avec un guide dans votre discussion de groupe",
+      "subtitle": "Entre visite guidée et jeu de piste. Le Hibou envoie des énigmes qui vous font lever les yeux, et un peu d'histoire sur ce que vous trouvez. Chacun joue sur son téléphone, sans application à télécharger.",
       "demoCaption": "Quelques messages d'une partie"
     },
     "notes": {
@@ -268,6 +273,10 @@
         }
       }
     },
+    "treasureBand": {
+      "text": "Vous cherchez une chasse au trésor à Leeds ? C'en est une, avec simplement plus de nez en l'air.",
+      "link": "Comment ça marche, côté chasse au trésor"
+    },
     "audiences": {
       "title": "Pour qui",
       "subtitle": "Un seul jeu, quatre façons d'y jouer.",
@@ -308,7 +317,7 @@
   },
   "families": {
     "hero": {
-      "title": "Une chasse au trésor en famille à travers Leeds",
+      "title": "Une journée en famille dans Leeds, avec des énigmes",
       "subtitle": "Des énigmes pour les enfants, des histoires pour les adultes, et un rythme dicté par les plus petites jambes. Tout le monde joue dans la même discussion de groupe, sans application à télécharger."
     },
     "notes": {
@@ -370,7 +379,7 @@
   },
   "henParties": {
     "hero": {
-      "title": "Une chasse au trésor pour votre EVJF à Leeds",
+      "title": "Une activité d'EVJF en journée à Leeds",
       "subtitle": "Le moment en journée du week-end : des énigmes dans le centre-ville, tout le monde dans la même discussion de groupe sur son propre téléphone, et la soirée exactement là où vous l'aviez prévue."
     },
     "notes": {
@@ -428,7 +437,7 @@
   },
   "teamBuilding": {
     "hero": {
-      "title": "Une chasse au trésor team building à Leeds",
+      "title": "Un team building dans Leeds, sans animateur",
       "subtitle": "Quelques heures hors du bureau, sans animateur et sans paperboard. Réservez, partagez le lien, et le Hibou envoie les énigmes."
     },
     "notes": {
@@ -487,7 +496,7 @@
   },
   "stagParties": {
     "hero": {
-      "title": "Une chasse au trésor pour votre EVG à Leeds",
+      "title": "Une activité d'EVG en journée à Leeds",
       "subtitle": "De quoi occuper la journée de l'enterrement de vie de garçon, avant que la soirée ne prenne le relais. Des énigmes dans le centre-ville, jusqu'à {max} personnes dans une même discussion de groupe, et rien à organiser pour le témoin à part un lien."
     },
     "notes": {
@@ -541,6 +550,79 @@
     },
     "cta": {
       "text": "Réglez la journée. La soirée se débrouillera toute seule."
+    }
+  },
+  "treasureHunt": {
+    "hero": {
+      "title": "Une chasse au trésor dont le trésor, c'est Leeds",
+      "subtitle": "Des énigmes qui vous font parcourir le centre-ville à pied, le nez levé vers des bâtiments devant lesquels presque tout le monde passe sans les voir. Le Hibou les envoie dans votre discussion de groupe, avec des indices quand vous séchez et le chemin quand vous êtes perdus."
+    },
+    "differs": {
+      "title": "Pas la chasse au trésor habituelle",
+      "intro": "Dans une chasse au trésor classique, quelqu'un cache quelque chose et vous suivez une piste d'indices pour le trouver. Ici, c'est l'inverse. Rien n'est caché. Les réponses sont déjà là, sur les bâtiments et dans les rues, et les énigmes consistent à les remarquer. C'est plutôt un jeu de piste.",
+      "items": {
+        "0": {
+          "title": "Rien à déterrer",
+          "text": "Ni coffre, ni accessoires, rien à porter. Chaque réponse est à la vue de tous, dans la rue. Tapez-la dans la discussion et l'énigme suivante arrive."
+        },
+        "1": {
+          "title": "Des énigmes qui font lever les yeux",
+          "text": "Leeds a gardé une partie de ses plus beaux détails pour le dessus des enseignes. Les énigmes vous y mènent, et le Hibou ajoute un peu d'histoire à chaque trouvaille."
+        },
+        "2": {
+          "title": "Un guide dans la discussion",
+          "text": "Le Hibou envoie chaque énigme, donne un indice quand vous le demandez et répond aux questions sur l'énigme, le tronçon que vous parcourez et la distance qui reste."
+        },
+        "3": {
+          "title": "Ni chrono ni classement",
+          "text": "Personne ne vous chronomètre et il n'y a pas de prix à la fin. Arrêtez-vous pour déjeuner, faites une pause et finissez un autre jour, ou prenez simplement votre temps."
+        }
+      }
+    },
+    "clue": {
+      "title": "À quoi ressemble une énigme",
+      "text": "Celle-ci vient de notre démo, pas du vrai parcours : elle ne dévoile rien. L'énigme arrive dans la discussion de groupe, tout le monde peut proposer une réponse et, si vous séchez, un indice resserre les recherches sans vous donner la solution.",
+      "note": "Chacun voit la même énigme au même moment, sur son propre téléphone. Pas d'application à télécharger : tout se passe dans le navigateur."
+    },
+    "notes": {
+      "clue": "Rien n'est enterré sur ce parcours. Tout est à la vue de tous, en général un étage ou deux plus haut."
+    },
+    "audiences": {
+      "title": "Quatre façons d'y jouer",
+      "subtitle": "Les mêmes énigmes, avec qui que vous veniez."
+    },
+    "compare": {
+      "title": "Face aux autres chasses et visites"
+    },
+    "faq": {
+      "0": {
+        "question": "Y a-t-il un prix à gagner ?",
+        "answer": "Non. Il n'y a ni prix ni classement. Ce que vous y gagnez, c'est quelques heures dans Leeds et deux ou trois choses à montrer à ceux qui n'ont jamais levé les yeux."
+      },
+      "1": {
+        "question": "Deux équipes peuvent-elles faire la course ?",
+        "answer": "Oui. Réservez une partie par équipe, jusqu'à {max} joueurs chacune, et partez ensemble. Les parties ne se connaissent pas : qui a bouclé le parcours en premier, c'est à vous de trancher."
+      },
+      "2": {
+        "question": "Est-ce un rallye photo ?",
+        "answer": "Pas vraiment. Vous trouvez des choses sans les ramasser : pas de photos à envoyer, pas de liste à cocher. Vous repérez la réponse, vous la tapez dans la discussion, et l'énigme suivante arrive."
+      },
+      "3": {
+        "question": "C'est seulement pour les enfants ?",
+        "answer": "Non. Des familles y jouent, mais aussi des EVJF, des EVG et des équipes de collègues. Les énigmes conviennent aux adultes, et les enfants dès 8 ans peuvent participer."
+      },
+      "4": {
+        "question": "Est-ce le Leeds Owl Trail ?",
+        "answer": "Non, et nous n'avons aucun lien avec lui. Le Leeds Owl Trail est un parcours distinct et gratuit à la découverte des hiboux disséminés dans la ville, et il vaut le détour. Notre Hibou, c'est le guide de votre discussion de groupe, baptisé d'après les hiboux des armoiries de Leeds."
+      },
+      "5": {
+        "question": "Combien de temps faut-il ?",
+        "answer": "Nous estimons {duration} pour le parcours, plus le temps de vos arrêts. Il n'y a pas de limite de temps, et votre lien reste valable {days} jours : vous pouvez finir un autre jour."
+      },
+      "title": "Questions sur la chasse au trésor"
+    },
+    "cta": {
+      "text": "Rassemblez le groupe. Les énigmes vous attendent déjà dehors."
     }
   },
   "checkout": {
@@ -923,6 +1005,7 @@
       "ticketPlayers": "Jusqu'à {max} joueurs",
       "note": "Il n'y a pas de classement entre les parties. Qui a bouclé le parcours en premier, c'est à vous de trancher."
     },
+    "treasureLink": "Comment ça marche, côté chasse au trésor",
     "route": {
       "title": "Le parcours",
       "subtitle": "Une boucle à pied dans le centre de Leeds. Les étapes restent secrètes jusqu'à ce que vous les trouviez."

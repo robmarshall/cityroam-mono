@@ -71,6 +71,9 @@ export function Footer() {
             {t(link.labelKey)}
           </Link>
         ))}
+        <Link href="/treasure-hunt" className={LINK}>
+          {t("footer.treasureHunt")}
+        </Link>
       </nav>
       {/* Company details the 2015 Business Names regulations require on the site. */}
       <p className="mx-auto mt-6 max-w-5xl border-t border-ink-700 pt-6 text-center text-xs text-stone-200 sm:text-left">

@@ -19,7 +19,7 @@ const NAV_LINKS = [
 ];
 
 /** Pages with their own booking band (`#book`) and checkout segment. */
-const AUDIENCE_PATHS: string[] = [...NAV_LINKS.map((link) => link.href), "/stag-parties"];
+const AUDIENCE_PATHS: string[] = [...NAV_LINKS.map((link) => link.href), "/stag-parties", "/treasure-hunt"];
 
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);

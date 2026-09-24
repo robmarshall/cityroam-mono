@@ -11,6 +11,7 @@ import { RouteAtAGlance } from "@/components/RouteAtAGlance";
 import { CtaBand, Section, SectionHeading } from "@/components/Section";
 import { StickyBookBar } from "@/components/StickyBookBar";
 import { TrustStrip } from "@/components/TrustStrip";
+import { Link } from "@/i18n/navigation";
 import { factValues } from "@/lib/facts";
 import type { PhotoSlotName } from "@/lib/photos";
 import { LEEDS_ROUTE_FACTS } from "@/lib/route-facts";
@@ -195,6 +196,16 @@ export async function AudiencePage({
               ))}
             </ul>
             <p className="mt-6 text-base text-muted">{ta("twoGroups.note")}</p>
+            {/* The one link from each audience page to the treasure-hunt page. */}
+            <p className="mt-4 text-base">
+              <Link
+                href="/treasure-hunt"
+                className="font-medium text-brick-600 underline underline-offset-2 hover:text-ink-900"
+              >
+                {ta("treasureLink")}
+                <span aria-hidden="true"> →</span>
+              </Link>
+            </p>
           </div>
           <TwoTickets
             game={(n) => ta("twoGroups.ticket", { n })}

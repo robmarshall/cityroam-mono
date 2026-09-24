@@ -1,19 +1,19 @@
 {
   "metadata": {
     "og": {
-      "tagline": "Speurtocht in Leeds, met de Uil als gids"
+      "tagline": "Ontdek Leeds, met de Uil als gids"
     },
     "home": {
-      "title": "City Roam — Speurtocht in Leeds, met de Uil als gids",
-      "description": "Een speurtocht op eigen gelegenheid door het centrum van Leeds, gespeeld in een groepschat op jullie telefoons. Eén prijs voor max. 10 personen, geen app nodig.",
-      "ogImageAlt": "City Roam — Speurtocht in Leeds, met de Uil als gids"
+      "title": "Stadswandeling door Leeds, met raadsels — City Roam",
+      "description": "Ontdek het centrum van Leeds te voet: half stadswandeling, half speurtocht, gespeeld in een groepschat op jullie telefoons. Eén prijs voor max. 10, geen app nodig.",
+      "ogImageAlt": "City Roam — Ontdek Leeds, met de Uil als gids"
     },
     "families": {
       "title": "Speurtocht voor gezinnen in Leeds — City Roam",
-      "description": "Een speurtocht door het centrum van Leeds voor gezinnen met kinderen vanaf 8 jaar. In je eigen tempo, stoppen wanneer je wilt en desnoods een andere dag verder."
+      "description": "Een wandeling met raadsels door het centrum van Leeds, voor gezinnen met kinderen vanaf 8 jaar. In je eigen tempo, stoppen wanneer je wilt en desnoods een andere dag verder."
     },
     "henParties": {
-      "title": "Speurtocht voor een vrijgezellenfeest in Leeds — City Roam",
+      "title": "Activiteiten voor een vrijgezellenfeest in Leeds — City Roam",
       "description": "Een vrijgezellenactiviteit overdag in Leeds: aanwijzingen in het centrum, gespeeld in een groepschat op jullie telefoons. Eén prijs voor max. 10 personen, en geen datum vastleggen."
     },
     "teamBuilding": {
@@ -21,8 +21,12 @@
       "description": "Haal je team een paar uur het kantoor uit. Een speurtocht op eigen gelegenheid door het centrum van Leeds, voor teams tot 10 personen. Zonder begeleider."
     },
     "stagParties": {
-      "title": "Speurtocht voor een vrijgezellenfeest voor mannen in Leeds — City Roam",
+      "title": "Activiteiten voor een vrijgezellenfeest voor mannen in Leeds — City Roam",
       "description": "Een vrijgezellenactiviteit voor mannen, overdag in Leeds: aanwijzingen in het centrum, gespeeld in een groepschat op jullie telefoons. Eén prijs voor max. 10 personen, en geen datum vastleggen."
+    },
+    "treasureHunt": {
+      "title": "Speurtocht door het centrum van Leeds — City Roam",
+      "description": "Een speurtocht door het centrum van Leeds waarbij de aanwijzingen op de gebouwen zitten, gespeeld in een groepschat. Eén prijs voor max. 10, geen app nodig."
     }
   },
   "common": {
@@ -40,6 +44,7 @@
       "copyright": "© {year} City Roam. Alle rechten voorbehouden.",
       "company": "{name}. Ingeschreven in Engeland en Wales, bedrijfsnummer {number}. Statutair adres: {address}.",
       "audienceNav": "Voor wie",
+      "treasureHunt": "Speurtocht",
       "gift": "Cadeaubonnen"
     },
     "legalNav": {
@@ -123,8 +128,8 @@
   },
   "home": {
     "hero": {
-      "title": "Een speurtocht door Leeds, in jullie groepschat",
-      "subtitle": "Los aanwijzingen op in het stadscentrum, met de Uil als gids, die antwoord geeft als je iets vraagt. Iedereen speelt in dezelfde chat op z'n eigen telefoon, en je hoeft geen app te downloaden.",
+      "title": "Ontdek Leeds met een gids in jullie groepschat",
+      "subtitle": "Half stadswandeling, half speurtocht. De Uil stuurt aanwijzingen waardoor je omhoog gaat kijken, en een stukje geschiedenis over wat je vindt. Iedereen speelt op z'n eigen telefoon, en je hoeft geen app te downloaden.",
       "demoCaption": "Een paar berichten uit een spel"
     },
     "notes": {
@@ -268,6 +273,10 @@
         }
       }
     },
+    "treasureBand": {
+      "text": "Op zoek naar een speurtocht in Leeds? Dit is er een, alleen kijk je vaker omhoog.",
+      "link": "Zo werkt het als speurtocht"
+    },
     "audiences": {
       "title": "Voor wie",
       "subtitle": "Eén spel, vier manieren om het te spelen.",
@@ -308,7 +317,7 @@
   },
   "families": {
     "hero": {
-      "title": "Een speurtocht voor het hele gezin in Leeds",
+      "title": "Een dagje uit met het gezin door Leeds, met raadsels",
       "subtitle": "Aanwijzingen voor de kinderen, verhalen voor de volwassenen, en een tempo dat de kortste beentjes bepalen. Iedereen speelt in dezelfde groepschat, en er is geen app nodig."
     },
     "notes": {
@@ -370,7 +379,7 @@
   },
   "henParties": {
     "hero": {
-      "title": "Een speurtocht voor je vrijgezellenfeest in Leeds",
+      "title": "Een vrijgezellenactiviteit overdag in Leeds",
       "subtitle": "Het deel van het weekend dat overdag valt: aanwijzingen in het centrum, iedereen in dezelfde groepschat op een eigen telefoon, en de avond blijft precies zoals jullie hem gepland hadden."
     },
     "notes": {
@@ -428,7 +437,7 @@
   },
   "teamBuilding": {
     "hero": {
-      "title": "Een teambuilding-speurtocht in Leeds",
+      "title": "Teambuilding door Leeds, zonder begeleider",
       "subtitle": "Een paar uur het kantoor uit, zonder begeleider en zonder flip-over. Boek, deel de link, en de Uil stuurt de aanwijzingen."
     },
     "notes": {
@@ -487,7 +496,7 @@
   },
   "stagParties": {
     "hero": {
-      "title": "Een speurtocht voor een vrijgezellenfeest voor mannen in Leeds",
+      "title": "Een vrijgezellenactiviteit voor mannen, overdag in Leeds",
       "subtitle": "Iets voor overdag, voordat de avond het overneemt. Aanwijzingen in het centrum, tot {max} man in één groepschat, en de getuige hoeft niets meer te regelen dan een link."
     },
     "notes": {
@@ -541,6 +550,79 @@
     },
     "cta": {
       "text": "Regel de dag. De avond regelt zichzelf wel."
+    }
+  },
+  "treasureHunt": {
+    "hero": {
+      "title": "Een speurtocht waarbij Leeds de schat is",
+      "subtitle": "Aanwijzingen die je te voet door het centrum sturen, langs gebouwen waar de meeste mensen zonder te kijken langslopen. De Uil stuurt ze naar jullie groepschat, met hints als je vastzit en de weg als je verdwaald bent."
+    },
+    "differs": {
+      "title": "Niet de gewone speurtocht",
+      "intro": "Bij een traditionele speurtocht heeft iemand iets verstopt en volg je een spoor van aanwijzingen om het te vinden. Deze werkt andersom. Er is niets verstopt. De antwoorden zijn er al, op de gebouwen en in de straten, en de aanwijzingen draaien erom dat je ze opmerkt.",
+      "items": {
+        "0": {
+          "title": "Niets op te graven",
+          "text": "Geen schatkist, geen attributen, niets om mee te sjouwen. Elk antwoord is gewoon te zien, op de openbare straat. Typ het in de chat en de volgende aanwijzing komt eraan."
+        },
+        "1": {
+          "title": "Aanwijzingen die je omhoog laten kijken",
+          "text": "Leeds heeft een deel van z'n mooiste werk bewaard voor boven de winkelborden. De aanwijzingen brengen je erheen, en de Uil vertelt bij elke vondst een stukje geschiedenis."
+        },
+        "2": {
+          "title": "Een gids in de chat",
+          "text": "De Uil stuurt elke aanwijzing, geeft een hint als je erom vraagt, en beantwoordt vragen over de aanwijzing, het stuk dat jullie lopen en hoe ver het nog is."
+        },
+        "3": {
+          "title": "Geen klok en geen scorebord",
+          "text": "Niemand houdt de tijd bij en er is geen prijs aan het eind. Stop voor de lunch, pauzeer en speel een andere dag verder, of neem gewoon de tijd."
+        }
+      }
+    },
+    "clue": {
+      "title": "Zo ziet een aanwijzing eruit",
+      "text": "Deze komt uit onze demo, niet van de echte route, dus hij verklapt niets. De aanwijzing verschijnt in de groepschat, iedereen kan een antwoord typen, en als je vastzit, helpt een hint je op weg zonder het antwoord weg te geven.",
+      "note": "Iedereen ziet dezelfde aanwijzing op hetzelfde moment, op z'n eigen telefoon. Er is geen app nodig: het werkt in je browser."
+    },
+    "notes": {
+      "clue": "Op deze route is niets begraven. Alles is gewoon te zien, meestal een verdieping of twee hoger."
+    },
+    "audiences": {
+      "title": "Vier manieren om te spelen",
+      "subtitle": "Dezelfde aanwijzingen, met wie je ook gaat."
+    },
+    "compare": {
+      "title": "Vergeleken met andere speurtochten en rondleidingen"
+    },
+    "faq": {
+      "0": {
+        "question": "Valt er iets te winnen?",
+        "answer": "Nee. Er is geen prijs en geen scorebord. Wat je krijgt, is een paar uur in Leeds en een paar dingen om aan te wijzen aan mensen die nog nooit omhoog hebben gekeken."
+      },
+      "1": {
+        "question": "Kunnen twee teams tegen elkaar racen?",
+        "answer": "Ja. Boek per team een spel, voor maximaal {max} spelers elk, en vertrek tegelijk. De spellen weten niets van elkaar, dus wie als eerste rond was, zoeken jullie zelf maar uit."
+      },
+      "2": {
+        "question": "Is het een fotospeurtocht?",
+        "answer": "Niet echt. Je vindt dingen in plaats van ze te verzamelen: geen foto's om te uploaden en geen lijstje om af te vinken. Je ziet het antwoord, typt het in de chat, en de volgende aanwijzing komt eraan."
+      },
+      "3": {
+        "question": "Is het alleen voor kinderen?",
+        "answer": "Nee. Gezinnen spelen het, maar ook vrijgezellengroepen en teams van het werk. De aanwijzingen werken voor volwassenen, en kinderen vanaf 8 jaar kunnen meedoen."
+      },
+      "4": {
+        "question": "Is het de Leeds Owl Trail?",
+        "answer": "Nee, en we hebben er niets mee te maken. De Leeds Owl Trail is een aparte, gratis wandeling langs de uilen die je door de hele stad kunt spotten, en die is de moeite waard. Onze Uil is de gids in jullie groepschat, vernoemd naar de uilen in het wapen van Leeds."
+      },
+      "5": {
+        "question": "Hoe lang duurt het?",
+        "answer": "We schatten {duration} voor de route, plus de tijd die je stilstaat. Er is geen tijdslimiet, en jullie link werkt {days} dagen, dus je kunt op een andere dag afmaken."
+      },
+      "title": "Vragen over de speurtocht"
+    },
+    "cta": {
+      "text": "Trommel de groep op. De aanwijzingen liggen al buiten klaar."
     }
   },
   "checkout": {
@@ -923,6 +1005,7 @@
       "ticketPlayers": "Tot {max} spelers",
       "note": "Er is geen scorebord tussen de spellen. Wie als eerste rond was, zoeken jullie zelf maar uit."
     },
+    "treasureLink": "Zo werkt het als speurtocht",
     "route": {
       "title": "De route",
       "subtitle": "Eén rondje te voet door het centrum van Leeds. De stops blijven geheim tot je ze vindt."

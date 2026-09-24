@@ -1,19 +1,19 @@
 {
   "metadata": {
     "og": {
-      "tagline": "Búsqueda del tesoro en Leeds, guiada por el Búho"
+      "tagline": "Explora Leeds con el Búho como guía"
     },
     "home": {
-      "title": "City Roam — Búsqueda del tesoro en Leeds, guiada por el Búho",
-      "description": "Una búsqueda del tesoro por libre en el centro de Leeds, en un chat de grupo desde el móvil. Un precio para hasta 10 personas y sin app que descargar.",
-      "ogImageAlt": "City Roam — Búsqueda del tesoro en Leeds, guiada por el Búho"
+      "title": "Ruta a pie autoguiada por Leeds, con pistas — City Roam",
+      "description": "Recorre el centro de Leeds: mitad ruta a pie, mitad búsqueda del tesoro, jugada en un chat de grupo desde el móvil. Un solo precio para hasta 10 y sin app que descargar.",
+      "ogImageAlt": "City Roam — Explora Leeds con el Búho como guía"
     },
     "families": {
       "title": "Búsqueda del tesoro en familia en Leeds — City Roam",
-      "description": "Búsqueda del tesoro por el centro de Leeds para familias con niños a partir de 8 años. A vuestro ritmo, con pausas y la opción de terminar otro día."
+      "description": "Un paseo con pistas por el centro de Leeds para familias con niños a partir de 8 años. A vuestro ritmo, con pausas y la opción de terminar otro día."
     },
     "henParties": {
-      "title": "Búsqueda del tesoro para despedidas de soltera en Leeds — City Roam",
+      "title": "Actividades para despedidas de soltera en Leeds — City Roam",
       "description": "Un plan de día para despedidas de soltera en Leeds: pistas por el centro, en un chat de grupo desde el móvil. Un solo precio para hasta 10 personas y sin fecha que reservar."
     },
     "teamBuilding": {
@@ -21,8 +21,12 @@
       "description": "Saca a tu equipo de la oficina un par de horas. Una búsqueda del tesoro por libre en el centro de Leeds para equipos de hasta 10, sin dinamizador."
     },
     "stagParties": {
-      "title": "Búsqueda del tesoro para despedidas de soltero en Leeds — City Roam",
+      "title": "Actividades para despedidas de soltero en Leeds — City Roam",
       "description": "Un plan de día para despedidas de soltero en Leeds: pistas por el centro, en un chat de grupo desde el móvil. Un solo precio para hasta 10 personas y sin fecha que reservar."
+    },
+    "treasureHunt": {
+      "title": "Búsqueda del tesoro en el centro de Leeds — City Roam",
+      "description": "Una búsqueda del tesoro por el centro de Leeds en la que las pistas están en los edificios, jugada en un chat de grupo desde el móvil. Un precio para hasta 10 y sin app."
     }
   },
   "common": {
@@ -40,6 +44,7 @@
       "copyright": "© {year} City Roam. Todos los derechos reservados.",
       "company": "{name}. Sociedad registrada en Inglaterra y Gales, número de sociedad {number}. Domicilio social: {address}.",
       "audienceNav": "Para quién es",
+      "treasureHunt": "Búsqueda del tesoro",
       "gift": "Tarjetas regalo"
     },
     "legalNav": {
@@ -123,8 +128,8 @@
   },
   "home": {
     "hero": {
-      "title": "Una búsqueda del tesoro por Leeds, en vuestro chat de grupo",
-      "subtitle": "Resolved pistas por el centro con el Búho, un guía que os contesta cuando le preguntáis. Todos jugáis en el mismo chat, cada uno desde su móvil, y no hay que descargar ninguna app.",
+      "title": "Explora Leeds con un guía en vuestro chat de grupo",
+      "subtitle": "Mitad ruta a pie, mitad búsqueda del tesoro. El Búho os manda pistas que os hacen mirar hacia arriba, y un poco de historia sobre lo que encontráis. Cada uno juega desde su móvil y no hay que descargar ninguna app.",
       "demoCaption": "Unos mensajes de una partida"
     },
     "notes": {
@@ -268,6 +273,10 @@
         }
       }
     },
+    "treasureBand": {
+      "text": "¿Os apetece una búsqueda del tesoro en Leeds? Esto es una, solo que aquí se mira mucho más hacia arriba.",
+      "link": "Cómo funciona como búsqueda del tesoro"
+    },
     "audiences": {
       "title": "Para quién es",
       "subtitle": "Un juego, cuatro maneras de jugarlo.",
@@ -308,7 +317,7 @@
   },
   "families": {
     "hero": {
-      "title": "Una búsqueda del tesoro en familia por Leeds",
+      "title": "Un día en familia por Leeds, con pistas",
       "subtitle": "Pistas para los niños, historias para los adultos y un ritmo que marcan las piernas más cortas. Todos jugáis en el mismo chat de grupo, y no hay que descargar ninguna app."
     },
     "notes": {
@@ -370,7 +379,7 @@
   },
   "henParties": {
     "hero": {
-      "title": "Búsqueda del tesoro para despedidas de soltera en Leeds",
+      "title": "Un plan de día para despedidas de soltera en Leeds",
       "subtitle": "La parte diurna del fin de semana: pistas por el centro, todas en el mismo chat de grupo desde su propio móvil, y la noche justo donde la teníais planeada."
     },
     "notes": {
@@ -428,7 +437,7 @@
   },
   "teamBuilding": {
     "hero": {
-      "title": "Una búsqueda del tesoro de team building en Leeds",
+      "title": "Team building por Leeds, sin dinamizador",
       "subtitle": "Un par de horas fuera de la oficina, sin dinamizador y sin rotafolios. Reservad, compartid el enlace y el Búho manda las pistas."
     },
     "notes": {
@@ -487,7 +496,7 @@
   },
   "stagParties": {
     "hero": {
-      "title": "Búsqueda del tesoro para despedidas de soltero en Leeds",
+      "title": "Un plan de día para despedidas de soltero en Leeds",
       "subtitle": "Algo para el día, antes de que llegue la noche. Pistas por el centro, hasta {max} en el mismo chat de grupo, y nada que organizar para el padrino más allá de un enlace."
     },
     "notes": {
@@ -541,6 +550,79 @@
     },
     "cta": {
       "text": "Resolved el día. La noche ya se apañará sola."
+    }
+  },
+  "treasureHunt": {
+    "hero": {
+      "title": "Una búsqueda del tesoro en la que el tesoro es Leeds",
+      "subtitle": "Pistas que os llevan a pie por el centro, fijándoos en edificios por delante de los que casi todo el mundo pasa sin mirar. El Búho os las manda al chat de grupo, con ayudas cuando os atascáis e indicaciones cuando os perdéis."
+    },
+    "differs": {
+      "title": "No es la búsqueda del tesoro de siempre",
+      "intro": "En una búsqueda del tesoro tradicional, alguien esconde algo y vosotros seguís un rastro de pistas hasta encontrarlo. Esta funciona al revés. No hay nada escondido. Las respuestas ya están ahí, en los edificios y en las calles, y las pistas consisten en fijarse en ellas.",
+      "items": {
+        "0": {
+          "title": "Nada que desenterrar",
+          "text": "Ni cofre, ni accesorios, ni nada que cargar. Cada respuesta está a la vista, en la vía pública. Escribidla en el chat y llega la siguiente pista."
+        },
+        "1": {
+          "title": "Pistas que os hacen mirar hacia arriba",
+          "text": "Leeds guardó parte de lo mejor para encima de los rótulos de las tiendas. Las pistas os llevan hasta ello, y el Búho añade un poco de historia cada vez que encontráis algo."
+        },
+        "2": {
+          "title": "Un guía en el chat",
+          "text": "El Búho envía cada pista, os da una ayuda cuando la pedís y responde a preguntas sobre la pista, el tramo que estáis recorriendo y lo que queda de camino."
+        },
+        "3": {
+          "title": "Sin reloj y sin marcador",
+          "text": "Nadie os cronometra y no hay premio al final. Parad a comer, haced una pausa y terminad otro día, o simplemente tomáoslo con calma."
+        }
+      }
+    },
+    "clue": {
+      "title": "Así es una pista",
+      "text": "Esta es de nuestra demo, no de la ruta real, así que no desvela nada. La pista llega al chat de grupo, cualquiera puede escribir una respuesta y, si os atascáis, una ayuda acota la búsqueda sin daros la solución.",
+      "note": "Todos veis la misma pista a la vez, cada uno en su móvil. No hay que descargar ninguna app: funciona en el navegador."
+    },
+    "notes": {
+      "clue": "En esta ruta no hay nada enterrado. Todo está a la vista, casi siempre un piso o dos más arriba."
+    },
+    "audiences": {
+      "title": "Cuatro maneras de jugarla",
+      "subtitle": "Las mismas pistas, vayáis con quien vayáis."
+    },
+    "compare": {
+      "title": "Frente a otras búsquedas y visitas"
+    },
+    "faq": {
+      "0": {
+        "question": "¿Hay premio?",
+        "answer": "No. No hay premio ni marcador. Lo que os lleváis es un par de horas por Leeds y unas cuantas cosas que señalar a quien nunca ha mirado hacia arriba."
+      },
+      "1": {
+        "question": "¿Pueden competir dos equipos?",
+        "answer": "Sí. Reservad una partida por equipo, de hasta {max} personas cada una, y salid a la vez. Las partidas no saben nada la una de la otra, así que quién terminó antes es cosa vuestra."
+      },
+      "2": {
+        "question": "¿Es como una gymkana?",
+        "answer": "Se parece. Aquí se encuentran cosas, no se recogen: no hay fotos que subir ni lista que ir tachando. Veis la respuesta, la escribís en el chat y llega la siguiente pista."
+      },
+      "3": {
+        "question": "¿Es solo para niños?",
+        "answer": "No. La juegan familias, pero también despedidas de soltera y de soltero y equipos de trabajo. Las pistas funcionan para adultos, y los niños a partir de 8 años pueden participar."
+      },
+      "4": {
+        "question": "¿Es el Leeds Owl Trail?",
+        "answer": "No, y no tenemos ninguna relación con él. El Leeds Owl Trail es una ruta aparte y gratuita para ver los búhos repartidos por la ciudad, y merece la pena. Nuestro Búho es el guía de vuestro chat de grupo, y su nombre viene de los búhos del escudo de Leeds."
+      },
+      "5": {
+        "question": "¿Cuánto se tarda?",
+        "answer": "Calculamos {duration} para la ruta, más lo que paréis. No hay límite de tiempo, y vuestro enlace funciona durante {days} días, así que podéis terminar otro día."
+      },
+      "title": "Preguntas sobre la búsqueda del tesoro"
+    },
+    "cta": {
+      "text": "Reunid al grupo. Las pistas ya están ahí fuera."
     }
   },
   "checkout": {
@@ -923,6 +1005,7 @@
       "ticketPlayers": "Hasta {max} jugadores",
       "note": "No hay marcador entre partidas. Quién terminó antes es cosa vuestra."
     },
+    "treasureLink": "Cómo funciona como búsqueda del tesoro",
     "route": {
       "title": "La ruta",
       "subtitle": "Una vuelta a pie por el centro de Leeds. Las paradas siguen siendo un secreto hasta que las encontréis."

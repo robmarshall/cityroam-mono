@@ -16,6 +16,7 @@ import { RouteAtAGlance } from "@/components/RouteAtAGlance";
 import { CheckList, CtaBand, Section, SectionHeading, Steps } from "@/components/Section";
 import { StickyBookBar } from "@/components/StickyBookBar";
 import { TrustStrip } from "@/components/TrustStrip";
+import { Link } from "@/i18n/navigation";
 import { factValues } from "@/lib/facts";
 import { buildMetadata } from "@/lib/metadata";
 import { LEEDS_ROUTE_FACTS } from "@/lib/route-facts";
@@ -192,6 +193,18 @@ export default async function Home({
       <Section>
         <SectionHeading title={t("compare.title")} subtitle={t("compare.subtitle")} />
         <ComparisonTable />
+        {/* Two lines for people who came looking for a treasure hunt, and the
+            internal link to the page that targets the term. */}
+        <p className="mx-auto mt-12 max-w-2xl text-center text-lg leading-relaxed text-ink-700">
+          {t("treasureBand.text")}{" "}
+          <Link
+            href="/treasure-hunt"
+            className="font-medium text-brick-600 underline underline-offset-2 hover:text-ink-900"
+          >
+            {t("treasureBand.link")}
+            <span aria-hidden="true"> →</span>
+          </Link>
+        </p>
       </Section>
 
       {/* Who it's for */}

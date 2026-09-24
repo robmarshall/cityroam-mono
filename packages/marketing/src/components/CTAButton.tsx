@@ -13,15 +13,17 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
  * Marketing segments the API maps to route families (CHECKOUT_ROUTE_FAMILY_IDS
  * in packages/api/src/services/route-selection.ts). "general" is the
  * homepage. The API accepts any lower-case slug here, and a segment with no
- * mapping of its own takes the "default" family, so "stag" plays the same
- * hunt as the homepage until a stag family is mapped.
+ * mapping of its own takes the "default" family, so "stag" and
+ * "treasure-hunt" play the same hunt as the homepage until a family is
+ * mapped for them.
  */
 export type CheckoutSegment =
   | "general"
   | "families"
   | "hen-parties"
   | "team-building"
-  | "stag";
+  | "stag"
+  | "treasure-hunt";
 
 /**
  * Contrast (see docs/plans/brand-direction-a.md and the contrast test):

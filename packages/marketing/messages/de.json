@@ -1,19 +1,19 @@
 {
   "metadata": {
     "og": {
-      "tagline": "Schnitzeljagd in Leeds, geführt von der Eule"
+      "tagline": "Entdeckt Leeds, geführt von der Eule"
     },
     "home": {
-      "title": "City Roam — Schnitzeljagd in Leeds, geführt von der Eule",
-      "description": "Eine Schnitzeljagd auf eigene Faust durch die Innenstadt von Leeds, gespielt im Gruppenchat auf euren Handys. Ein Preis für bis zu 10 Personen, ohne App.",
-      "ogImageAlt": "City Roam — Schnitzeljagd in Leeds, geführt von der Eule"
+      "title": "Leeds auf eigene Faust: Stadtrundgang mit Rätseln — City Roam",
+      "description": "Entdeckt die Innenstadt von Leeds zu Fuß: halb Stadtführung, halb Schnitzeljagd, gespielt im Gruppenchat auf euren Handys. Ein Preis für bis zu 10, ohne App.",
+      "ogImageAlt": "City Roam — Entdeckt Leeds, geführt von der Eule"
     },
     "families": {
       "title": "Schnitzeljagd für Familien in Leeds — City Roam",
-      "description": "Schnitzeljagd durch die Innenstadt von Leeds für Familien mit Kindern ab 8. In eurem Tempo, mit Pausen nach Belieben und notfalls an einem anderen Tag."
+      "description": "Ein Rundgang mit Rätseln durch die Innenstadt von Leeds, für Familien mit Kindern ab 8. In eurem Tempo, mit Pausen nach Belieben und notfalls an einem anderen Tag."
     },
     "henParties": {
-      "title": "Schnitzeljagd zum Junggesellinnenabschied in Leeds — City Roam",
+      "title": "Aktivitäten zum Junggesellinnenabschied in Leeds — City Roam",
       "description": "JGA-Programm für tagsüber in Leeds: Rätsel in der Innenstadt, gespielt im Gruppenchat auf euren Handys. Ein Preis für bis zu 10 Personen, ohne festen Termin."
     },
     "teamBuilding": {
@@ -21,8 +21,12 @@
       "description": "Holt euer Team für ein paar Stunden aus dem Büro. Eine Schnitzeljagd auf eigene Faust durch Leeds für Teams bis 10 Personen, ganz ohne Moderation."
     },
     "stagParties": {
-      "title": "Schnitzeljagd zum Junggesellenabschied in Leeds — City Roam",
+      "title": "Aktivitäten zum Junggesellenabschied in Leeds — City Roam",
       "description": "JGA-Programm für tagsüber in Leeds: Rätsel in der Innenstadt, gespielt im Gruppenchat auf euren Handys. Ein Preis für bis zu 10 Personen, ohne festen Termin."
+    },
+    "treasureHunt": {
+      "title": "Schnitzeljagd durch die Innenstadt von Leeds — City Roam",
+      "description": "Eine Schnitzeljagd durch die Innenstadt von Leeds, bei der die Hinweise an den Gebäuden stecken, gespielt im Gruppenchat. Ein Preis für bis zu 10, ohne App."
     }
   },
   "common": {
@@ -40,6 +44,7 @@
       "copyright": "© {year} City Roam. Alle Rechte vorbehalten.",
       "company": "{name}. Eingetragen in England und Wales, Firmennummer {number}. Sitz der Gesellschaft: {address}.",
       "audienceNav": "Für wen",
+      "treasureHunt": "Schnitzeljagd",
       "gift": "Geschenkgutscheine"
     },
     "legalNav": {
@@ -123,8 +128,8 @@
   },
   "home": {
     "hero": {
-      "title": "Eine Schnitzeljagd durch Leeds, direkt in eurem Gruppenchat",
-      "subtitle": "Löst Rätsel in der Innenstadt, mit der Eule, die antwortet, wenn ihr fragt. Alle spielen im selben Chat auf dem eigenen Handy, und eine App braucht ihr nicht.",
+      "title": "Entdeckt Leeds mit einem Guide im Gruppenchat",
+      "subtitle": "Halb Stadtführung, halb Schnitzeljagd. Die Eule schickt Rätsel, bei denen ihr nach oben schaut, und ein bisschen Geschichte zu dem, was ihr findet. Alle spielen auf dem eigenen Handy, und eine App braucht ihr nicht.",
       "demoCaption": "Ein paar Nachrichten aus einem Spiel"
     },
     "notes": {
@@ -268,6 +273,10 @@
         }
       }
     },
+    "treasureBand": {
+      "text": "Ihr sucht eine Schnitzeljagd in Leeds? Das hier ist eine, nur mit mehr Nach-oben-Schauen.",
+      "link": "So funktioniert es als Schnitzeljagd"
+    },
     "audiences": {
       "title": "Für wen",
       "subtitle": "Ein Spiel, vier Arten, es zu spielen.",
@@ -308,7 +317,7 @@
   },
   "families": {
     "hero": {
-      "title": "Eine Schnitzeljagd für Familien durch Leeds",
+      "title": "Ein Familienausflug durch Leeds, mit Rätseln",
       "subtitle": "Rätsel für die Kinder, Geschichten für die Erwachsenen und ein Tempo, das die kürzesten Beine bestimmen. Alle spielen im selben Gruppenchat, und eine App braucht ihr nicht."
     },
     "notes": {
@@ -370,7 +379,7 @@
   },
   "henParties": {
     "hero": {
-      "title": "Der JGA als Schnitzeljagd durch Leeds",
+      "title": "Tagesprogramm für den Junggesellinnenabschied in Leeds",
       "subtitle": "Der Teil des Wochenendes bei Tageslicht: Rätsel in der Innenstadt, alle im selben Gruppenchat auf dem eigenen Handy, und der Abend bleibt genau da, wo ihr ihn geplant habt."
     },
     "notes": {
@@ -428,7 +437,7 @@
   },
   "teamBuilding": {
     "hero": {
-      "title": "Eine Teambuilding-Schnitzeljagd in Leeds",
+      "title": "Teambuilding in Leeds, ganz ohne Moderation",
       "subtitle": "Ein paar Stunden raus aus dem Büro, ohne Moderation und ohne Flipchart. Buchen, Link teilen, und die Eule schickt die Rätsel."
     },
     "notes": {
@@ -487,7 +496,7 @@
   },
   "stagParties": {
     "hero": {
-      "title": "Der Junggesellenabschied als Schnitzeljagd durch Leeds",
+      "title": "Tagesprogramm für den Junggesellenabschied in Leeds",
       "subtitle": "Etwas für tagsüber, bevor der Abend übernimmt. Rätsel in der Innenstadt, bis zu {max} Leute in einem Gruppenchat, und der Trauzeuge muss nur einen Link verschicken."
     },
     "notes": {
@@ -541,6 +550,79 @@
     },
     "cta": {
       "text": "Der Tag ist geregelt. Der Abend kümmert sich um sich selbst."
+    }
+  },
+  "treasureHunt": {
+    "hero": {
+      "title": "Eine Schnitzeljagd, bei der Leeds der Schatz ist",
+      "subtitle": "Rätsel, die euch zu Fuß durch die Innenstadt schicken, zu Gebäuden, an denen die meisten achtlos vorbeigehen. Die Eule schickt sie in euren Gruppenchat, mit Tipps, wenn ihr festhängt, und dem Weg, wenn ihr euch verlaufen habt."
+    },
+    "differs": {
+      "title": "Keine gewöhnliche Schnitzeljagd",
+      "intro": "Bei einer klassischen Schnitzeljagd hat jemand etwas versteckt, und ihr folgt einer Spur aus Hinweisen, bis ihr es findet. Hier ist es umgekehrt. Versteckt ist nichts. Die Antworten sind längst da, an den Gebäuden und in den Straßen, und bei den Rätseln geht es darum, sie zu bemerken.",
+      "items": {
+        "0": {
+          "title": "Nichts auszugraben",
+          "text": "Keine Schatzkiste, keine Requisiten, nichts zu tragen. Jede Antwort ist offen sichtbar, auf öffentlichen Straßen. Tippt sie in den Chat, und das nächste Rätsel kommt."
+        },
+        "1": {
+          "title": "Rätsel, die den Blick nach oben lenken",
+          "text": "Leeds hat sich einiges vom Schönsten für oberhalb der Ladenschilder aufgehoben. Die Rätsel führen euch hin, und die Eule erzählt zu jedem Fund ein bisschen Geschichte."
+        },
+        "2": {
+          "title": "Ein Guide im Chat",
+          "text": "Die Eule schickt jedes Rätsel, gibt einen Tipp, wenn ihr fragt, und beantwortet Fragen zum Rätsel, zum Wegstück, auf dem ihr gerade seid, und zur restlichen Strecke."
+        },
+        "3": {
+          "title": "Keine Uhr, keine Rangliste",
+          "text": "Niemand stoppt die Zeit, und am Ende gibt es keinen Preis. Macht Mittagspause, spielt an einem anderen Tag weiter oder lasst euch einfach Zeit."
+        }
+      }
+    },
+    "clue": {
+      "title": "So sieht ein Rätsel aus",
+      "text": "Dieses stammt aus unserer Demo, nicht von der echten Route, verrät also nichts. Das Rätsel kommt in den Gruppenchat, alle können eine Antwort tippen, und wenn ihr festhängt, grenzt ein Tipp die Suche ein, ohne die Lösung zu verraten.",
+      "note": "Alle sehen dasselbe Rätsel im selben Moment, jeder auf dem eigenen Handy. Eine App braucht ihr nicht: Es läuft im Browser."
+    },
+    "notes": {
+      "clue": "Auf dieser Route ist nichts vergraben. Alles liegt offen da, meistens ein, zwei Stockwerke höher."
+    },
+    "audiences": {
+      "title": "Vier Arten, es zu spielen",
+      "subtitle": "Dieselben Rätsel, egal mit wem ihr unterwegs seid."
+    },
+    "compare": {
+      "title": "Im Vergleich mit anderen Rallyes und Führungen"
+    },
+    "faq": {
+      "0": {
+        "question": "Gibt es einen Preis?",
+        "answer": "Nein. Es gibt keinen Preis und keine Rangliste. Was ihr bekommt, sind ein paar Stunden in Leeds und einiges, das ihr Leuten zeigen könnt, die noch nie nach oben geschaut haben."
+      },
+      "1": {
+        "question": "Können zwei Teams gegeneinander antreten?",
+        "answer": "Ja. Bucht für jedes Team ein Spiel mit bis zu {max} Personen und startet gemeinsam. Die Spiele wissen nichts voneinander, also macht ihr unter euch aus, wer zuerst durch war."
+      },
+      "2": {
+        "question": "Ist das eine Stadtrallye?",
+        "answer": "So ähnlich, nur ohne Fragebogen. Ihr findet Dinge, statt sie einzusammeln: keine Fotos zum Hochladen, keine Liste zum Abhaken. Ihr entdeckt die Antwort, tippt sie in den Chat, und das nächste Rätsel kommt."
+      },
+      "3": {
+        "question": "Ist das nur etwas für Kinder?",
+        "answer": "Nein. Familien spielen es, aber auch Junggesellinnen- und Junggesellenabschiede und Teams aus dem Büro. Die Rätsel funktionieren für Erwachsene, und Kinder ab 8 können mitmachen."
+      },
+      "4": {
+        "question": "Ist das der Leeds Owl Trail?",
+        "answer": "Nein, und wir haben nichts mit ihm zu tun. Der Leeds Owl Trail ist ein eigener, kostenloser Rundgang zu den Eulen, die man überall in der Stadt entdecken kann, und er lohnt sich. Unsere Eule ist der Guide in eurem Gruppenchat, benannt nach den Eulen im Wappen von Leeds."
+      },
+      "5": {
+        "question": "Wie lange dauert es?",
+        "answer": "Wir schätzen {duration} für die Route, plus eure Pausen. Es gibt kein Zeitlimit, und euer Link gilt {days} Tage, ihr könnt also an einem anderen Tag fertig spielen."
+      },
+      "title": "Fragen zur Schnitzeljagd"
+    },
+    "cta": {
+      "text": "Trommelt die Gruppe zusammen. Die Rätsel warten schon draußen."
     }
   },
   "checkout": {
@@ -923,6 +1005,7 @@
       "ticketPlayers": "Bis zu {max} Personen",
       "note": "Eine Rangliste zwischen den Spielen gibt es nicht. Wer zuerst durch war, macht ihr unter euch aus."
     },
+    "treasureLink": "So funktioniert es als Schnitzeljagd",
     "route": {
       "title": "Die Route",
       "subtitle": "Eine Runde durch die Innenstadt von Leeds, zu Fuß. Die Stationen bleiben geheim, bis ihr sie findet."

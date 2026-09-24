@@ -1,19 +1,19 @@
 {
   "metadata": {
     "og": {
-      "tagline": "Treasure hunt in Leeds, guided by the Owl"
+      "tagline": "Explore Leeds, guided by the Owl"
     },
     "home": {
-      "title": "City Roam — Treasure hunt in Leeds, guided by the Owl",
-      "description": "A self-guided treasure hunt around Leeds city centre, played in a group chat on your phones. One price for up to 10 people, and no app to download.",
-      "ogImageAlt": "City Roam — Treasure hunt in Leeds, guided by the Owl"
+      "title": "Self-guided walking tour of Leeds, with clues — City Roam",
+      "description": "Explore Leeds city centre on foot: part walking tour, part treasure hunt, played in a group chat on your phones. One price for up to 10, no app to download.",
+      "ogImageAlt": "City Roam — Explore Leeds, guided by the Owl"
     },
     "families": {
       "title": "Family treasure hunt in Leeds — City Roam",
-      "description": "A treasure hunt around Leeds city centre for families with children aged 8 and up. Go at your own pace, stop when you like, and finish another day if you need to."
+      "description": "A walk round Leeds city centre with clues, for families with children aged 8 and up. Go at your own pace, stop when you like, and finish another day if you need to."
     },
     "henParties": {
-      "title": "Hen party treasure hunt in Leeds — City Roam",
+      "title": "Hen do activities in Leeds: a walk with clues — City Roam",
       "description": "A daytime hen do activity in Leeds: clues round the city centre, played in a group chat on your phones. One price for up to 10 people, and no date to book."
     },
     "teamBuilding": {
@@ -21,8 +21,12 @@
       "description": "Get your team out of the office for a couple of hours. A self-guided treasure hunt around Leeds city centre for teams of up to 10, with no facilitator needed."
     },
     "stagParties": {
-      "title": "Stag do treasure hunt in Leeds — City Roam",
+      "title": "Stag do activities in Leeds: a walk with clues — City Roam",
       "description": "A daytime stag do activity in Leeds: clues round the city centre, played in a group chat on your phones. One price for up to 10 people, and no date to book."
+    },
+    "treasureHunt": {
+      "title": "Treasure hunt in Leeds city centre — City Roam",
+      "description": "A treasure hunt round Leeds city centre where the clues are on the buildings, played in a group chat on your phones. One price for up to 10, no app to download."
     }
   },
   "common": {
@@ -40,6 +44,7 @@
       "copyright": "© {year} City Roam. All rights reserved.",
       "company": "{name}. Registered in England and Wales, company number {number}. Registered office: {address}.",
       "audienceNav": "Who it's for",
+      "treasureHunt": "Treasure hunt",
       "gift": "Gift vouchers"
     },
     "legalNav": {
@@ -123,8 +128,8 @@
   },
   "home": {
     "hero": {
-      "title": "A treasure hunt round Leeds, in your group chat",
-      "subtitle": "Solve clues around the city centre with the Owl, a guide that replies when you ask. Everyone plays in the same chat on their own phone, and there's no app to download.",
+      "title": "Explore Leeds with a guide in your group chat",
+      "subtitle": "Part walking tour, part treasure hunt. The Owl sends clues that make you look up, and a bit of history about what you find. Everyone plays on their own phone, and there's no app to download.",
       "demoCaption": "A few messages from a game"
     },
     "notes": {
@@ -268,6 +273,10 @@
         }
       }
     },
+    "treasureBand": {
+      "text": "Looking for a treasure hunt in Leeds? This is one, just with more looking up.",
+      "link": "How it works as a treasure hunt"
+    },
     "audiences": {
       "title": "Who it's for",
       "subtitle": "One game, played four different ways.",
@@ -308,7 +317,7 @@
   },
   "families": {
     "hero": {
-      "title": "A family treasure hunt round Leeds",
+      "title": "A family day out round Leeds, with clues",
       "subtitle": "Clues for the children, stories for the adults, and a pace set by the smallest legs. Everyone plays in the same group chat, and there's no app to download."
     },
     "notes": {
@@ -370,7 +379,7 @@
   },
   "henParties": {
     "hero": {
-      "title": "A hen do treasure hunt in Leeds",
+      "title": "A daytime hen do activity in Leeds",
       "subtitle": "The daytime bit of the weekend: clues round the city centre, everyone in the same group chat on their own phone, and the evening left exactly where you planned it."
     },
     "notes": {
@@ -428,7 +437,7 @@
   },
   "teamBuilding": {
     "hero": {
-      "title": "A team building treasure hunt in Leeds",
+      "title": "Team building round Leeds, with no facilitator",
       "subtitle": "A couple of hours out of the office, with no facilitator and no flipchart. Book it, share the link, and the Owl sends the clues."
     },
     "notes": {
@@ -487,7 +496,7 @@
   },
   "stagParties": {
     "hero": {
-      "title": "A stag do treasure hunt in Leeds",
+      "title": "A daytime stag do activity in Leeds",
       "subtitle": "Something for the daytime, before the evening takes over. Clues round the city centre, up to {max} of you in one group chat, and nothing for the best man to organise beyond a link."
     },
     "notes": {
@@ -541,6 +550,79 @@
     },
     "cta": {
       "text": "Sort the daytime. The evening can look after itself."
+    }
+  },
+  "treasureHunt": {
+    "hero": {
+      "title": "A treasure hunt where the treasure is Leeds",
+      "subtitle": "Clues that send you round the city centre on foot, looking at buildings most people walk straight past. The Owl sends them to your group chat, with hints when you're stuck and directions when you're lost."
+    },
+    "differs": {
+      "title": "Not the usual treasure hunt",
+      "intro": "A traditional treasure hunt means someone has hidden something, and you follow a trail of clues to find it. This one works the other way round. Nothing is hidden. The answers are already out there, on the buildings and in the streets, and the clues are about noticing them.",
+      "items": {
+        "0": {
+          "title": "Nothing to dig up",
+          "text": "No chest, no props and nothing to carry. Every answer is out in the open on public streets. Type it into the chat and the next clue arrives."
+        },
+        "1": {
+          "title": "Clues that make you look up",
+          "text": "Leeds saved some of its best work for above the shop signs. The clues send you to it, and the Owl adds a bit of history once you've found each one."
+        },
+        "2": {
+          "title": "A guide in the chat",
+          "text": "The Owl sends each clue, gives a hint when you ask, and answers questions about the clue, the stretch you're walking and how far there is to go."
+        },
+        "3": {
+          "title": "No clock and no scoreboard",
+          "text": "Nobody is timing you and there's no prize at the end. Stop for lunch, pause and finish another day, or just take your time."
+        }
+      }
+    },
+    "clue": {
+      "title": "What a clue looks like",
+      "text": "This one is from our demo rather than the real route, so it gives nothing away. The clue arrives in the group chat, anyone can type a guess, and if you're stuck a hint narrows it down without handing you the answer.",
+      "note": "Everyone sees the same clue at the same moment, on their own phone. There's no app to download: it runs in your browser."
+    },
+    "notes": {
+      "clue": "Nothing on this route is buried. It's all in plain sight, usually a floor or two up."
+    },
+    "audiences": {
+      "title": "Played four ways",
+      "subtitle": "The same clues, whoever you're with."
+    },
+    "compare": {
+      "title": "Against other hunts and tours"
+    },
+    "faq": {
+      "0": {
+        "question": "Is there a prize?",
+        "answer": "No. There's no prize and no scoreboard. What you get is a couple of hours in Leeds, and a few things to point out to people who've never looked up."
+      },
+      "1": {
+        "question": "Can two teams race each other?",
+        "answer": "Yes. Book a game for each team, of up to {max} each, and set off together. The games don't know about each other, so who got round first is for you to settle."
+      },
+      "2": {
+        "question": "Is it a scavenger hunt?",
+        "answer": "Close. You find things rather than collect them: there are no photos to upload and no list to tick off. You spot the answer, type it into the chat, and the next clue arrives."
+      },
+      "3": {
+        "question": "Is it just for children?",
+        "answer": "No. Families play it, and so do hen parties, stag dos and teams from work. The clues work for adults, and children aged 8 and up can join in."
+      },
+      "4": {
+        "question": "Is it the Leeds Owl Trail?",
+        "answer": "No, and we're not connected to it. The Leeds Owl Trail is a separate, free walk round the owls you can spot across the city, and it's worth doing. Our Owl is the guide in your group chat, named after the owls on the Leeds coat of arms."
+      },
+      "5": {
+        "question": "How long does it take?",
+        "answer": "We estimate {duration} for the route, plus however long you stop for. There's no time limit, and your link works for {days} days, so you can finish another day."
+      },
+      "title": "Treasure hunt questions"
+    },
+    "cta": {
+      "text": "Round up the group. The clues are already out there."
     }
   },
   "checkout": {
@@ -923,6 +1005,7 @@
       "ticketPlayers": "Up to {max} players",
       "note": "There's no scoreboard between games. Who got round first is for you to settle."
     },
+    "treasureLink": "How it works as a treasure hunt",
     "route": {
       "title": "The route",
       "subtitle": "One loop of Leeds city centre, on foot. The stops stay secret until you find them."
