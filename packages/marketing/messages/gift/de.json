@@ -1,0 +1,154 @@
+{
+  "gift": {
+    "meta": {
+      "title": "Ein City-Roam-Spiel verschenken | Geschenkcodes",
+      "description": "Eine Schatzsuche durch Leeds zum Verschenken: ein Spiel für bis zu {max} Personen, {price}. Die Beschenkten haben {months} Monate Zeit, den Code einzulösen, und ab dem Start {days} Tage zum Spielen.",
+      "successTitle": "Dein Geschenkcode | City Roam",
+      "redeemTitle": "Geschenkcode einlösen | City Roam",
+      "redeemDescription": "Du hast einen City-Roam-Geschenkcode bekommen? Gib ihn hier ein, um dein Spiel einzurichten."
+    },
+    "languages": {
+      "en": "Englisch",
+      "es": "Spanisch",
+      "fr": "Französisch",
+      "de": "Deutsch",
+      "nl": "Niederländisch"
+    },
+    "line": "<b>Als Geschenk?</b> <link>Verschenk lieber einen Geschenkcode</link> – die Beschenkten haben {months} Monate Zeit, ihn einzulösen.",
+    "page": {
+      "eyebrow": "Geschenkcodes",
+      "title": "Ein Spiel verschenken",
+      "subtitle": "Eine Schatzsuche durch Leeds, die jemand anderes spielt. Du kaufst den Code, die Beschenkten suchen sich den Tag aus.",
+      "note": "Muss nicht eingepackt werden und hat nie die falsche Größe.",
+      "getTitle": "Was die Beschenkten bekommen",
+      "get": {
+        "0": "Einen Code, den sie in den nächsten {months} Monaten jederzeit einlösen können",
+        "1": "{days} Tage zum Spielen, ab dem Einlösen des Codes, nicht ab dem Kauf",
+        "2": "Ein Spiel für bis zu {max} Personen, jede auf dem eigenen Handy",
+        "3": "Das Spiel in bis zu fünf Sprachen: Englisch, Spanisch, Französisch, Deutsch und Niederländisch. Die Wahl fällt beim Einlösen",
+        "4": "{price}, so viel wie eine normale Buchung"
+      },
+      "form": {
+        "title": "Geschenk kaufen",
+        "perGroup": "für bis zu {max} Personen",
+        "nameLabel": "Name der beschenkten Person",
+        "messageLabel": "Deine Nachricht",
+        "optional": "optional",
+        "nameHint": "Steht auf der Karte.",
+        "messageHint": "Steht auf der Karte, unter dem Namen.",
+        "counter": "{count} von {max} Zeichen",
+        "nameTooLong": "Der Name darf höchstens {max} Zeichen lang sein.",
+        "messageTooLong": "Die Nachricht darf höchstens {max} Zeichen lang sein.",
+        "languageNote": "Wir schicken dir den Code und eine Karte zum Ausdrucken per E-Mail, auf {language}.",
+        "submit": "Geschenk kaufen",
+        "loading": "Weiter zur Kasse …",
+        "secure": "Du bezahlst auf der sicheren Bezahlseite von Stripe.",
+        "errors": {
+          "noHunt": "Heute können wir keine Geschenkcodes verkaufen, weil gerade kein Spiel zum Einlösen verfügbar ist. Versuch es bitte morgen noch einmal oder schreib uns an {email}.",
+          "invalid": "Mit dem Namen oder der Nachricht hat etwas nicht geklappt. Bitte prüf beides und versuch es noch einmal.",
+          "generic": "Die Kasse ließ sich nicht öffnen. Bitte noch einmal versuchen."
+        }
+      },
+      "how": {
+        "title": "So funktioniert's",
+        "step1Title": "Du kaufst den Code",
+        "step1Desc": "Wir schicken dir den Code und eine Karte zum Ausdrucken per E-Mail, mit Namen und Nachricht, falls du welche angibst.",
+        "step2Title": "Du überreichst ihn",
+        "step2Desc": "Druck die Karte aus oder leite die E-Mail weiter. Der Code gilt {months} Monate.",
+        "step3Title": "Eingelöst wird, wenn es passt",
+        "step3Desc": "Die Beschenkten geben den Code auf unserer Website ein und bekommen einen Spiel-Link für ihre Gruppe. Dann beginnen die {days} Tage zum Spielen."
+      },
+      "faqTitle": "Fragen",
+      "faq": {
+        "0": {
+          "question": "Was, wenn der Code nicht rechtzeitig eingelöst wird?",
+          "answer": "Der Code funktioniert {months} Monate nach dem Kauf nicht mehr. Das Datum steht auf der Karte und in deiner E-Mail, du kannst also leicht daran erinnern."
+        },
+        "1": {
+          "question": "Kann in einer anderen Sprache gespielt werden?",
+          "answer": "Ja. Wer den Code einlöst, wählt dabei die Sprache: Englisch, Spanisch, Französisch, Deutsch oder Niederländisch. Gibt es die Schatzsuche in dieser Sprache noch nicht, wird sie auf Englisch eingerichtet, und wir sagen Bescheid. Die Sprache beim Kauf bestimmt nur deine E-Mail und die Karte."
+        },
+        "2": {
+          "question": "Muss sofort gespielt werden?",
+          "answer": "Nein. Nichts beginnt, bevor der Code eingelöst ist. Danach gilt der Spiel-Link {days} Tage, und man kann pausieren und an einem anderen Tag weiterspielen."
+        },
+        "3": {
+          "question": "Wer bekommt die E-Mail?",
+          "answer": "Du. Wir schicken den Code und die Karte an die Adresse, die du beim Bezahlen angibst. So entscheidest du, wie und wann du das Geschenk überreichst."
+        }
+      },
+      "refunds": "Für Rückerstattungen von Geschenkcodes gelten unsere <link>Rückerstattungsbedingungen</link>.",
+      "redeemPrompt": "Du hast einen Code bekommen? <link>Hier einlösen</link>."
+    },
+    "success": {
+      "loading": "Dein Geschenkcode wird geladen …",
+      "title": "Dein Geschenk ist bereit",
+      "codeLabel": "Geschenkcode",
+      "redeemBy": "Einlösbar bis {date}",
+      "linkLabel": "Link zum Einlösen",
+      "copyCode": "Code kopieren",
+      "copyLink": "Link kopieren",
+      "copied": "Kopiert",
+      "emailed": "Wir haben dir den Code auch per E-Mail geschickt, mit einer Karte zum Ausdrucken.",
+      "nextTitle": "Zum Überreichen",
+      "nextText": "Druck die Karte aus der E-Mail aus oder schick den Link weiter. Sobald die Beschenkten den Code eingeben, beginnen ihre {days} Tage zum Spielen.",
+      "pending": {
+        "title": "Dein Code ist unterwegs",
+        "text": "Wenn die Zahlung durchgegangen ist, kommen der Code und eine Karte zum Ausdrucken per E-Mail, meist innerhalb weniger Minuten. Diese Seite ist nur noch nicht auf dem neuesten Stand.",
+        "help": "Nach einer Stunde noch nichts da? Schreib uns an {email}, dann kümmern wir uns darum.",
+        "checkAgain": "Noch einmal prüfen",
+        "backHome": "Zur Startseite"
+      }
+    },
+    "redeem": {
+      "title": "Geschenkcode einlösen",
+      "subtitle": "Gib den Code von deiner Karte oder aus deiner E-Mail ein. Groß- und Kleinschreibung und Bindestriche sind egal.",
+      "codeLabel": "Geschenkcode",
+      "codeHint": "10 Buchstaben und Ziffern, zum Beispiel ABCD-EFGH-JK.",
+      "check": "Code prüfen",
+      "checking": "Wird geprüft …",
+      "valid": {
+        "title": "Dieser Code gilt für ein Spiel",
+        "redeemBy": "Einlösbar bis {date}.",
+        "family": "Für {name} in {city}.",
+        "window": "Deine {days} Tage zum Spielen beginnen, sobald du ihn einlöst."
+      },
+      "form": {
+        "emailLabel": "Deine E-Mail-Adresse",
+        "optional": "optional",
+        "emailHint": "Wir schicken dir den Spiel-Link auch dorthin.",
+        "languageLabel": "Spielsprache",
+        "submit": "Mein Spiel starten",
+        "submitting": "Dein Spiel wird eingerichtet …"
+      },
+      "done": {
+        "title": "Dein Spiel ist bereit",
+        "codeLabel": "Spielcode",
+        "open": "Spiel öffnen",
+        "share": "Teil diesen Link mit deiner Gruppe. Alle öffnen ihn auf dem eigenen Handy, und wer als Erstes beitritt, drückt auf Start.",
+        "linkLabel": "Spiel-Link",
+        "copy": "Link kopieren",
+        "copied": "Kopiert",
+        "expires": "Der Link gilt bis {date}.",
+        "emailed": "Wir haben dir den Link auch per E-Mail geschickt.",
+        "emailFailed": "Die E-Mail ließ sich nicht verschicken. Heb diesen Link also gut auf.",
+        "noEmail": "Heb diesen Link gut auf: Wir haben ihn niemandem geschickt.",
+        "fallbackLanguage": "Diese Schatzsuche gibt es noch nicht auf {requested}, darum ist dein Spiel auf {language}."
+      },
+      "problems": {
+        "notACode": "Das ist kein Geschenkcode. Codes haben 10 Buchstaben und Ziffern, zum Beispiel ABCD-EFGH-JK.",
+        "notFound": "Diesen Code finden wir nicht. Vergleich ihn mit der Karte: Codes enthalten nie die Buchstaben O, I oder L und nie die Ziffern 0 oder 1.",
+        "alreadyRedeemed": "Dieser Code wurde schon eingelöst. Wurde dabei eine E-Mail-Adresse angegeben, liegt der Spiel-Link in diesem Postfach. Kommst du nicht weiter? Schreib uns an {email}.",
+        "expired": "Dieser Code ist abgelaufen und kann nicht mehr eingelöst werden.",
+        "refunded": "Dieser Code wurde erstattet und funktioniert nicht mehr.",
+        "void": "Dieser Code wurde storniert. Wenn du glaubst, dass das ein Fehler ist, schreib uns an {email}.",
+        "rateLimited": "Zu viele Versuche von hier. Warte bitte {minutes, plural, =1 {eine Minute} other {# Minuten}} und versuch es dann noch einmal.",
+        "noHunt": "Gerade können wir kein Spiel einrichten. Dein Code wurde nicht verbraucht, versuch es also später noch einmal.",
+        "badEmail": "Diese E-Mail-Adresse sieht nicht richtig aus. Prüf sie oder lass das Feld leer.",
+        "unavailable": "Wir erreichen unseren Server nicht. Prüf deine Verbindung und versuch es noch einmal."
+      },
+      "tryAgain": "Erneut versuchen",
+      "another": "Anderen Code prüfen"
+    }
+  }
+}

@@ -1,0 +1,154 @@
+{
+  "gift": {
+    "meta": {
+      "title": "Offrir une partie City Roam | Codes cadeaux",
+      "description": "Une chasse au trésor dans Leeds à offrir : une partie jusqu'à {max} joueurs, {price}. Ils ont {months} mois pour utiliser le code, puis {days} jours pour jouer à partir du jour où ils commencent.",
+      "successTitle": "Votre code cadeau | City Roam",
+      "redeemTitle": "Utiliser un code cadeau | City Roam",
+      "redeemDescription": "On vous a offert un code City Roam ? Saisissez-le ici pour préparer votre partie."
+    },
+    "languages": {
+      "en": "anglais",
+      "es": "espagnol",
+      "fr": "français",
+      "de": "allemand",
+      "nl": "néerlandais"
+    },
+    "line": "<b>C'est pour offrir ?</b> <link>Offrez plutôt un code cadeau</link> : ils auront {months} mois pour l'utiliser.",
+    "page": {
+      "eyebrow": "Codes cadeaux",
+      "title": "Offrir une partie",
+      "subtitle": "Une chasse au trésor dans Leeds, pour que quelqu'un d'autre y joue. Vous achetez le code, ils choisissent le jour.",
+      "note": "Pas besoin de papier cadeau, et ce n'est jamais la mauvaise taille.",
+      "getTitle": "Ce qu'ils reçoivent",
+      "get": {
+        "0": "Un code à utiliser quand ils veulent pendant les {months} prochains mois",
+        "1": "{days} jours pour jouer, qui commencent quand ils utilisent le code, pas quand vous l'achetez",
+        "2": "Une partie jusqu'à {max} joueurs, chacun sur son téléphone",
+        "3": "Le jeu dans cinq langues au plus : anglais, espagnol, français, allemand et néerlandais. Ils choisissent en utilisant le code",
+        "4": "{price}, le même prix qu'une réservation"
+      },
+      "form": {
+        "title": "Acheter le cadeau",
+        "perGroup": "jusqu'à {max} joueurs",
+        "nameLabel": "Son prénom",
+        "messageLabel": "Votre message",
+        "optional": "facultatif",
+        "nameHint": "Affiché sur la carte.",
+        "messageHint": "Affiché sur la carte, sous son prénom.",
+        "counter": "{count} caractères sur {max}",
+        "nameTooLong": "Le prénom ne peut pas dépasser {max} caractères.",
+        "messageTooLong": "Le message ne peut pas dépasser {max} caractères.",
+        "languageNote": "Nous vous enverrons par e-mail le code et une carte à imprimer, en {language}.",
+        "submit": "Acheter le cadeau",
+        "loading": "Redirection vers le paiement…",
+        "secure": "Vous payez sur la page de paiement sécurisée de Stripe.",
+        "errors": {
+          "noHunt": "Nous ne pouvons pas vendre de code cadeau aujourd'hui : aucune partie n'est disponible pour l'utiliser. Réessayez demain, ou écrivez-nous à {email}.",
+          "invalid": "Le prénom ou le message n'est pas passé. Vérifiez-les et réessayez.",
+          "generic": "Impossible d'ouvrir la page de paiement. Veuillez réessayer."
+        }
+      },
+      "how": {
+        "title": "Comment ça marche",
+        "step1Title": "Vous achetez le code",
+        "step1Desc": "Nous vous envoyons par e-mail le code et une carte à imprimer, avec son prénom et votre message si vous les ajoutez.",
+        "step2Title": "Vous l'offrez",
+        "step2Desc": "Imprimez la carte ou transférez l'e-mail. Le code reste valable {months} mois.",
+        "step3Title": "Ils l'utilisent quand ils sont prêts",
+        "step3Desc": "Ils saisissent le code sur notre site et reçoivent un lien de partie à partager avec leur groupe. Les {days} jours pour jouer commencent à ce moment-là."
+      },
+      "faqTitle": "Questions",
+      "faq": {
+        "0": {
+          "question": "Et s'ils ne l'utilisent pas à temps ?",
+          "answer": "Le code ne fonctionne plus {months} mois après l'achat. La date limite figure sur la carte et dans votre e-mail, ce qui permet de la leur rappeler facilement."
+        },
+        "1": {
+          "question": "Peuvent-ils jouer dans une autre langue ?",
+          "answer": "Oui. La personne qui utilise le code choisit la langue à ce moment-là : anglais, espagnol, français, allemand ou néerlandais. Si le parcours n'existe pas encore dans sa langue, la partie est préparée en anglais et nous le lui indiquons. La langue de votre achat ne change que votre e-mail et la carte."
+        },
+        "2": {
+          "question": "Doivent-ils jouer tout de suite ?",
+          "answer": "Non. Rien ne commence avant qu'ils utilisent le code. Ensuite, le lien de la partie reste valable {days} jours, et ils peuvent faire une pause et reprendre un autre jour."
+        },
+        "3": {
+          "question": "Qui reçoit l'e-mail ?",
+          "answer": "Vous. Nous envoyons le code et la carte à imprimer à l'adresse indiquée lors du paiement : vous choisissez comment et quand l'offrir."
+        }
+      },
+      "refunds": "Les remboursements des codes cadeaux relèvent de notre <link>politique de remboursement</link>.",
+      "redeemPrompt": "On vous a offert un code ? <link>Utilisez-le ici</link>."
+    },
+    "success": {
+      "loading": "Récupération de votre code cadeau…",
+      "title": "Votre cadeau est prêt",
+      "codeLabel": "Code cadeau",
+      "redeemBy": "À utiliser avant le {date}",
+      "linkLabel": "Lien pour utiliser le code",
+      "copyCode": "Copier le code",
+      "copyLink": "Copier le lien",
+      "copied": "Copié",
+      "emailed": "Nous vous avons aussi envoyé le code par e-mail, avec une carte à imprimer.",
+      "nextTitle": "Pour l'offrir",
+      "nextText": "Imprimez la carte de l'e-mail, ou envoyez-leur le lien. Quand ils sont prêts, ils saisissent le code, et leurs {days} jours pour jouer commencent.",
+      "pending": {
+        "title": "Votre code arrive",
+        "text": "Si votre paiement est passé, le code et une carte à imprimer arrivent par e-mail, en général en quelques minutes. Cette page n'est simplement pas encore à jour.",
+        "help": "Rien reçu au bout d'une heure ? Écrivez-nous à {email} et nous réglerons ça.",
+        "checkAgain": "Vérifier à nouveau",
+        "backHome": "Retour à l'accueil"
+      }
+    },
+    "redeem": {
+      "title": "Utiliser un code cadeau",
+      "subtitle": "Saisissez le code de votre carte ou de votre e-mail. Majuscules et tirets n'ont pas d'importance.",
+      "codeLabel": "Code cadeau",
+      "codeHint": "10 lettres et chiffres, comme ABCD-EFGH-JK.",
+      "check": "Vérifier le code",
+      "checking": "Vérification…",
+      "valid": {
+        "title": "Ce code est valable pour une partie",
+        "redeemBy": "À utiliser avant le {date}.",
+        "family": "Pour {name}, à {city}.",
+        "window": "Vos {days} jours pour jouer commencent dès que vous l'utilisez."
+      },
+      "form": {
+        "emailLabel": "Votre e-mail",
+        "optional": "facultatif",
+        "emailHint": "Nous vous y enverrons aussi le lien de la partie.",
+        "languageLabel": "Langue de la partie",
+        "submit": "Lancer ma partie",
+        "submitting": "Préparation de votre partie…"
+      },
+      "done": {
+        "title": "Votre partie est prête",
+        "codeLabel": "Code de la partie",
+        "open": "Ouvrir la partie",
+        "share": "Partagez ce lien avec votre groupe. Chacun l'ouvre sur son téléphone, et la première personne à rejoindre la partie la lance.",
+        "linkLabel": "Lien de la partie",
+        "copy": "Copier le lien",
+        "copied": "Copié",
+        "expires": "Le lien reste valable jusqu'au {date}.",
+        "emailed": "Nous vous avons aussi envoyé le lien par e-mail.",
+        "emailFailed": "Nous n'avons pas pu envoyer l'e-mail : gardez ce lien en lieu sûr.",
+        "noEmail": "Gardez ce lien en lieu sûr : nous ne l'avons envoyé à personne.",
+        "fallbackLanguage": "Ce parcours n'existe pas encore en {requested}, votre partie est donc en {language}."
+      },
+      "problems": {
+        "notACode": "Ce n'est pas un code cadeau. Les codes comptent 10 lettres et chiffres, comme ABCD-EFGH-JK.",
+        "notFound": "Nous ne trouvons pas ce code. Comparez-le avec la carte : les codes n'utilisent jamais les lettres O, I ou L, ni les chiffres 0 ou 1.",
+        "alreadyRedeemed": "Ce code a déjà été utilisé. Si une adresse e-mail a été donnée à ce moment-là, le lien de la partie se trouve dans cette boîte de réception. Toujours bloqué ? Écrivez-nous à {email}.",
+        "expired": "La date limite de ce code est passée : il ne peut plus être utilisé.",
+        "refunded": "Ce code a été remboursé : il ne fonctionne plus.",
+        "void": "Ce code a été annulé. Si vous pensez qu'il s'agit d'une erreur, écrivez-nous à {email}.",
+        "rateLimited": "Trop de tentatives depuis cet appareil. Patientez {minutes, plural, =1 {une minute} other {# minutes}} et réessayez.",
+        "noHunt": "Nous ne pouvons pas préparer de partie pour le moment. Votre code n'a pas été utilisé : réessayez plus tard.",
+        "badEmail": "Cette adresse e-mail ne semble pas correcte. Vérifiez-la, ou laissez le champ vide.",
+        "unavailable": "Impossible de joindre notre serveur. Vérifiez votre connexion et réessayez."
+      },
+      "tryAgain": "Réessayer",
+      "another": "Vérifier un autre code"
+    }
+  }
+}

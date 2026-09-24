@@ -1,0 +1,154 @@
+{
+  "gift": {
+    "meta": {
+      "title": "Give a City Roam game | Gift codes",
+      "description": "A treasure hunt round Leeds as a present: one game for up to {max} players, {price}. They have {months} months to use the code, and {days} days to play from the day they start.",
+      "successTitle": "Your gift code | City Roam",
+      "redeemTitle": "Redeem a gift code | City Roam",
+      "redeemDescription": "Got a City Roam gift code? Enter it here to set up your game."
+    },
+    "languages": {
+      "en": "English",
+      "es": "Spanish",
+      "fr": "French",
+      "de": "German",
+      "nl": "Dutch"
+    },
+    "line": "<b>Buying as a gift?</b> <link>Get a gift code instead</link> — they have {months} months to use it.",
+    "page": {
+      "eyebrow": "Gift codes",
+      "title": "Give a game",
+      "subtitle": "A treasure hunt round Leeds, for someone else to play. You buy a code, they pick the day.",
+      "note": "It needs no wrapping, and it can't be the wrong size.",
+      "getTitle": "What they get",
+      "get": {
+        "0": "A code they can use any time in the next {months} months",
+        "1": "{days} days to play, starting when they redeem the code, not when you buy it",
+        "2": "One game for up to {max} players, each on their own phone",
+        "3": "The game in up to five languages: English, Spanish, French, German and Dutch. They choose when they redeem",
+        "4": "{price}, the same as booking a game"
+      },
+      "form": {
+        "title": "Buy the gift",
+        "perGroup": "for up to {max} players",
+        "nameLabel": "Their name",
+        "messageLabel": "Your message",
+        "optional": "optional",
+        "nameHint": "Shown on the card.",
+        "messageHint": "Shown on the card, under their name.",
+        "counter": "{count} of {max} characters",
+        "nameTooLong": "Keep the name to {max} characters.",
+        "messageTooLong": "Keep the message to {max} characters.",
+        "languageNote": "We'll email you the code and a printable card in {language}.",
+        "submit": "Buy the gift",
+        "loading": "Taking you to checkout…",
+        "secure": "You pay on Stripe's secure checkout page.",
+        "errors": {
+          "noHunt": "We can't sell a gift code today, because there's no game available to redeem it against. Please try again tomorrow, or email us at {email}.",
+          "invalid": "Something in the name or message didn't go through. Check them and try again.",
+          "generic": "We couldn't open the checkout. Please try again."
+        }
+      },
+      "how": {
+        "title": "How it works",
+        "step1Title": "You buy the code",
+        "step1Desc": "We email you the code and a printable card, with their name and your message if you add them.",
+        "step2Title": "You hand it over",
+        "step2Desc": "Print the card, or forward the email. The code works for {months} months.",
+        "step3Title": "They redeem it when they're ready",
+        "step3Desc": "They enter the code on our site and get a game link to share with their group. The {days} days to play start then."
+      },
+      "faqTitle": "Questions",
+      "faq": {
+        "0": {
+          "question": "What if they don't use it in time?",
+          "answer": "The code stops working {months} months after you buy it. The redeem-by date is printed on the card and in your email, so it's easy to remind them."
+        },
+        "1": {
+          "question": "Can they play in another language?",
+          "answer": "Yes. Whoever redeems the code picks the language then, from English, Spanish, French, German and Dutch. If the hunt isn't ready in their language yet, it's set up in English and we tell them so. The language you buy in only sets your email and the card."
+        },
+        "2": {
+          "question": "Do they have to play straight away?",
+          "answer": "No. Nothing starts until they redeem the code. After that the game link works for {days} days, and they can pause and carry on another day."
+        },
+        "3": {
+          "question": "Who gets the email?",
+          "answer": "You do. We send the code and the printable card to the address you give at checkout, so you choose how and when to hand it over."
+        }
+      },
+      "refunds": "Refunds on gift codes are covered by our <link>refund policy</link>.",
+      "redeemPrompt": "Been given a code? <link>Redeem it here</link>."
+    },
+    "success": {
+      "loading": "Fetching your gift code…",
+      "title": "Your gift is ready",
+      "codeLabel": "Gift code",
+      "redeemBy": "Redeem by {date}",
+      "linkLabel": "Redemption link",
+      "copyCode": "Copy code",
+      "copyLink": "Copy link",
+      "copied": "Copied",
+      "emailed": "We've also emailed you the code with a printable card.",
+      "nextTitle": "Handing it over",
+      "nextText": "Print the card from the email, or send them the link. When they're ready, they enter the code, and their {days} days to play begin.",
+      "pending": {
+        "title": "Your code is on its way",
+        "text": "If your payment went through, the code and a printable card are coming by email, usually within a few minutes. This page just hasn't caught up yet.",
+        "help": "Nothing after an hour? Email us at {email} and we'll sort it out.",
+        "checkAgain": "Check again",
+        "backHome": "Back to home"
+      }
+    },
+    "redeem": {
+      "title": "Redeem a gift code",
+      "subtitle": "Enter the code from your card or email. Capitals and dashes don't matter.",
+      "codeLabel": "Gift code",
+      "codeHint": "10 letters and numbers, like ABCD-EFGH-JK.",
+      "check": "Check the code",
+      "checking": "Checking…",
+      "valid": {
+        "title": "This code is good for one game",
+        "redeemBy": "Redeem by {date}.",
+        "family": "For {name} in {city}.",
+        "window": "Your {days} days to play start as soon as you redeem it."
+      },
+      "form": {
+        "emailLabel": "Your email",
+        "optional": "optional",
+        "emailHint": "We'll send the game link here too.",
+        "languageLabel": "Play in",
+        "submit": "Start my game",
+        "submitting": "Setting up your game…"
+      },
+      "done": {
+        "title": "Your game is ready",
+        "codeLabel": "Game code",
+        "open": "Open the game",
+        "share": "Share this link with your group. Everyone opens it on their own phone, and the first to join presses start.",
+        "linkLabel": "Game link",
+        "copy": "Copy link",
+        "copied": "Copied",
+        "expires": "The link works until {date}.",
+        "emailed": "We've emailed you the link as well.",
+        "emailFailed": "We couldn't send the email, so keep this link somewhere safe.",
+        "noEmail": "Keep this link somewhere safe: we haven't emailed it to anyone.",
+        "fallbackLanguage": "This hunt isn't available in {requested} yet, so your game is in {language}."
+      },
+      "problems": {
+        "notACode": "That isn't a gift code. They're 10 letters and numbers, like ABCD-EFGH-JK.",
+        "notFound": "We can't find that code. Check it against the card: codes never use the letters O, I or L, or the numbers 0 or 1.",
+        "alreadyRedeemed": "This code has already been used. If an email was given when it was redeemed, the game link is in that inbox. Still stuck? Email us at {email}.",
+        "expired": "This code has passed its redeem-by date, so it can't be used.",
+        "refunded": "This code was refunded, so it no longer works.",
+        "void": "This code has been cancelled. If you think that's a mistake, email us at {email}.",
+        "rateLimited": "Too many tries from here. Please wait {minutes, plural, =1 {a minute} other {# minutes}} and try again.",
+        "noHunt": "We can't set up a game right now. Your code hasn't been used, so please try again later.",
+        "badEmail": "That email address doesn't look right. Check it, or leave it blank.",
+        "unavailable": "We couldn't reach our server. Check your connection and try again."
+      },
+      "tryAgain": "Try again",
+      "another": "Check a different code"
+    }
+  }
+}
