@@ -40,8 +40,9 @@ locale routing all worked), but the content had drifted from the product:
    default with no `lang`. Fixed.
 
 The biggest remaining risks are owner decisions. See P1 items marked **Owner**
-or **Legal**, especially the £49 "was" price and the privacy page's cookie
-consent claims.
+or **Legal**, especially the privacy page's cookie consent claims and the
+unconfirmed route duration and distance. (The £49 "was" price was removed on
+2026-09-24.)
 
 ## Findings
 
@@ -58,14 +59,14 @@ Line numbers refer to the files **before** this round (`git show HEAD:<path>`).
 | 5 | `teamBuilding.practical.*`, `teamBuilding.faq.0/2/3` | Promises "proper invoicing", "expense-friendly pricing", "detailed briefing materials", "coordination for multiple teams", "full rescheduling for severe weather", start times "between 9am–4pm", and corporate discounts. None of these exist in the product or the Stripe setup (no `invoice_creation`). | Cut the promises you can't keep, and point invoice and multi-team questions to email. | **Fixed** (see also #6) |
 | 6 | `legal.terms` "Our liability" last paragraph vs the team-building page | The terms say "We supply hunts to consumers. If you buy for business purposes, the consumer protections … do not apply", but a whole page sells to businesses. | Ask the solicitor to add B2B terms, or at least confirm the wording works for company purchases. | **Legal** |
 | 7 | `home.howItWorks.step1Desc` | "Choose your starting point … from anywhere in the city centre". Routes have a fixed start and the lead player presses start. | Describe the real flow: book, share the link, start, go at your own pace. | **Fixed** |
-| 8 | `home.pricing.originalPrice` (£49, struck through) | A "was" price is only lawful if it was a genuine previous selling price for a reasonable period (CMA pricing guidance; DMCC Act). The site has never charged £49. | Remove the strikethrough, or reword it as "£29 launch price" with no reference price. See Proposal 4. | **Owner** (left as is; screen-reader text "Was" added so it's no longer read out as a bare second price) |
+| 8 | `home.pricing.originalPrice` (£49, struck through) | A "was" price is only lawful if it was a genuine previous selling price for a reasonable period (CMA pricing guidance; DMCC Act). The site has never charged £49. | Remove the strikethrough, or reword it as "£29 launch price" with no reference price. See Proposal 4. | **Fixed** (2026-09-24): reference price and its screen-reader label removed in all locales. The "Launch price" badge stays, with no comparison price |
 | 9 | `legal.privacy` "What we collect" and "Cookies" | (a) "any photos players send in the in-game chat": players can't send photos (spec §1.3, no upload UI). (b) "Analytics … if you accept analytics cookies" and "only if you accept", but PostHog loads unconditionally and there is no banner, as the same page later admits. (c) "remember your cookie choice": there is no choice. | Solicitor to correct. The launch checklist already records the consent decision. | **Legal** |
 | 10 | `legal.terms` / `legal.privacy` "Registered business name and address: [complete before launch]" | Placeholder is live on every locale. The trader's identity is a legal requirement for distance selling. | Fill it in before launch. | **Owner / Legal** |
-| 11 | `faq.1`, `families.faq.2`, `teamBuilding.practical.text2` vs `project-spec.md` (90 min / 1–2 h) and the seeded dev route (60 min, 2.5 km) | The site says 2–3 hours (2.5–3.5 with children) and "about 2.5 miles" (4 km). The spec says about 90 minutes. The dev route is 2.5 **km**. | Confirm the live route's real duration and distance, then update the numbers. The copy now uses them consistently, so it's a find-and-replace. | **Owner** |
+| 11 | `faq.1`, `families.faq.2`, `teamBuilding.practical.text2` vs `project-spec.md` (90 min / 1–2 h) and the seeded dev route (60 min, 2.5 km) | The site says 2–3 hours (2.5–3.5 with children) and "about 2.5 miles" (4 km). The spec says about 90 minutes. The dev route is 2.5 **km**. | Confirm the live route's real duration and distance, then update the numbers. | **Owner**. Since 2026-09-24 every duration and distance on the site reads from `ROUTE_FACTS` in `lib/site.ts`, currently the seed route's 60 min / 2.5 km, and the copy says "we estimate … for the route itself" plus stops. Confirm after walking the route and change the two numbers |
 | 12 | `faq.3`, `families.faq.1`, `home.included.items.5` | "The entire route is … wheelchair accessible … avoiding steps and steep hills". Not verifiable from the code, and it's a strong accessibility promise. | Now says "mostly flat, on city-centre pavements", with "email us before you book" for wheelchair users. Only restore a stronger claim once the route has been walked with that in mind. | **Fixed** (softened); **Owner** to confirm |
 | 13 | `components/CTAButton.tsx:70`, `Header.tsx`, step circles | White on `brand-500` (#007AFF) is 4.0:1, which fails AA for 16–18px text. Every primary button and the step numbers used it. | Use `brand-600` (#0062CC, 5.8:1) for filled buttons and badges. The shared preset is untouched, so the player app's bubbles don't change. | **Fixed** |
 | 14 | `families|hen-parties|team-building/page.tsx` CTA band | A blue button on a blue band: the button had no visible edge. | Add an inverse (white) button variant for brand-coloured backgrounds. | **Fixed** |
-| 15 | `messages/*.json` `chatDemo.*` | The demo guide said "That's right! Well done 🎉" and "Welcome to City Roam! 📱", breaking the guide's no-exclamation, no-emoji rules. "The Old Town Hall … golden clock" isn't a Leeds landmark. | Rewrite in the guide's voice with a true Leeds example (the Corn Exchange, by Cuthbert Brodrick). | **Fixed** (the demo now names the Corn Exchange; swap it if that's a live-route answer you'd rather not reveal) |
+| 15 | `messages/*.json` `chatDemo.*` | The demo guide said "That's right! Well done 🎉" and "Welcome to City Roam! 📱", breaking the guide's no-exclamation, no-emoji rules. "The Old Town Hall … golden clock" isn't a Leeds landmark. | Rewrite in the guide's voice with a true Leeds example (the Corn Exchange, by Cuthbert Brodrick). | **Fixed**. The Corn Exchange is an answer on the seed route, so on 2026-09-24 the demo was rewritten around an invented clue with no real landmark named |
 
 ### P2
 
@@ -90,7 +91,7 @@ Line numbers refer to the files **before** this round (`git show HEAD:<path>`).
 | 32 | Duplicate components | `FeatureCard`, `IconCard`, `NumberedStep`, section and heading class strings were copied across four pages and had drifted (different card backgrounds, shadows, icon rules). | Extract `components/Section.tsx` (Section, SectionHeading, PageHero, Intro, Card, CardGrid, CheckList, Steps, CtaBand). | **Fixed** (the four pages shrank by about 45%) |
 | 33 | Emoji used as icons (about 40 across the pages) | They render differently on every OS, look cheap next to the type, and clash with the brand's "no emoji" rule. | Remove them. Lists use one check icon, and cards are text-only. A proper icon set is part of Proposal 6. | **Fixed** |
 | 34 | Section rhythm | On the home page, "What's included" and "Why City Roam" were both white with no divider. On hen and team, the testimonials and FAQ alternated oddly once removed. | Alternate white and grey backgrounds consistently. | **Fixed** |
-| 35 | Header "Book now" on audience pages | Links to `/#pricing` on the homepage, so the booking loses the page's `segment` (for example, `families`) and any route family mapped to it. | Make the header CTA segment-aware, or scroll to the page's own CTA band. | **Owner** (harmless while one route family is live) |
+| 35 | Header "Book now" on audience pages | Links to `/#pricing` on the homepage, so the booking loses the page's `segment` (for example, `families`) and any route family mapped to it. | Make the header CTA segment-aware, or scroll to the page's own CTA band. | **Fixed** (2026-09-24): on audience pages it links to the page's own booking band (`#book`) |
 | 36 | `messages/fr.json` `faq.3` | "surfaces pavées" means cobbled, the opposite of the intended meaning. | Correct. | **Fixed** |
 | 37 | All locales | Message files mixed raw UTF-8 and `\uXXXX` escapes line by line. | Normalise to raw UTF-8. | **Fixed** (this makes the diff larger than the content change) |
 
@@ -137,6 +138,8 @@ days.
 
 ### 1. Lead with the experience, not "AI" — S
 
+**Status (2026-09-24):** H1 and subtitle done in all locales; "AI" now appears once, factually, in the "All you need is your phone" section. The title tag, OG tagline and OG alt still say "AI-guided": owner's call, as they affect search.
+
 **Why.** "AI-guided treasure hunts" is the H1, the title, the OG tagline and
 the subtitle. For families and hen parties "AI" is at best neutral and at worst
 a worry ("will it be a chatbot?"). The guide personality doc says the guide
@@ -171,6 +174,8 @@ audience cards.
 
 ### 3. Key-facts strip under the hero CTA — S
 
+**Status (2026-09-24):** Done on the home and audience heroes: price, up to 10 players, duration (from `ROUTE_FACTS`) and "play any day, the link lasts 90 days".
+
 **Why.** Price, group size, duration and "no app" are the four things every
 segment asks first. Right now they're scattered.
 
@@ -182,6 +187,8 @@ segment asks first. Right now they're scattered.
 ```
 
 ### 4. Price presentation — S
+
+**Status (2026-09-24):** Reference price removed; "about £3 each for a group of 10" (computed from `PRICE_GBP` / `MAX_PARTICIPANTS`) shown on the price card and the audience-page CTA bands.
 
 **Why.** See P1 #8. The £49 strikethrough is a legal risk unless £49 was
 genuinely charged. The price card also sits apart from what you get.
@@ -255,3 +262,45 @@ relatives. The answers are generic until the route has been checked.
 **Draft.** A short "Route at a glance" box on the families page: start point
 area, distance, number of stops, steps or slopes (yes/no), toilets en route,
 covered sections. Fill it in from a walk of the live route.
+
+## Quick wins shipped 2026-09-24
+
+From the design discussion (competitor review), all five locales:
+
+- **Hero:** experience-led H1 and subtitle, key-facts strip under the CTA,
+  "Was £49" removed (P1 #8, proposals 1, 3 and 4).
+- **Hero demo:** the phone renders the conversation on first paint (server
+  HTML included) and only the last line animates in; reduced motion shows the
+  finished chat. The script now has a player ask an off-script question ("how
+  much further?") that the guide really can answer (distance remaining is in
+  its prompt context), and no longer names a seed-route answer. Phones get a
+  three-message snippet right under the hero CTA.
+- **Sticky booking bar (phones):** "Book · £29" appears once the hero CTA has
+  scrolled away and hides while any other booking button, the pricing section
+  or the closing band is on screen. Same CTAButton checkout and segment as the
+  page; a spacer keeps it off the footer; hidden state is `visibility: hidden`
+  so it leaves the tab order; bottom padding includes
+  `env(safe-area-inset-bottom)`.
+- **Per-head framing** next to the price (proposal 4).
+- **Comparison table** on the home page before pricing: City Roam against a
+  printed trail, a per-person app hunt and a guided walking tour. Generic
+  categories only, hedged cells. Scrolls sideways on phones with the first
+  column pinned.
+- **Header "Book now"** keeps the audience segment (P2 #35).
+- Tests: every message now formats with the fact values in every locale (no
+  stray ICU braces), and non-legal copy is checked for exclamation marks.
+
+Needs the owner:
+
+- `ROUTE_FACTS` (60 min, 2.5 km) comes from the seed route. Walk the live
+  route and update it.
+- The guide answers only from the route's own content (current clue, the
+  leg's directions and facts, distance remaining; see
+  `packages/api/src/services/pipeline/handlers/question.ts`). The site
+  therefore says "ask questions … the guide replies", not "ask anything".
+  Richer block content is what makes the guide more knowledgeable.
+- The comparison table's "Languages: up to five" row assumes live routes
+  exist in all five languages (proposal 9). Trim it if they won't at launch.
+- Several lines still say "a few hours" / "a couple of hours" (included
+  subtitle, team-building meta description). Revisit once the duration is
+  confirmed.
