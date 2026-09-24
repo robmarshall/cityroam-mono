@@ -25,7 +25,8 @@ export type MessageBankType =
   | "guide-identity-ai"
   | "guide-identity-machine"
   | "guide-identity-person"
-  | "guide-identity-who";
+  | "guide-identity-who"
+  | "early-answer";
 
 export type SupportedLanguage = "en" | "es" | "fr" | "de" | "nl";
 

@@ -38,8 +38,8 @@ export const API_KEY_STATUS_COLORS: Record<ApiKeyStatus, string> = {
 export const OFFERED_SCOPES: readonly AdminApiKeyScope[] = ADMIN_API_KEY_GRANTABLE_SCOPES;
 
 export const SCOPE_DESCRIPTIONS: Partial<Record<AdminApiKeyScope, string>> = {
-  "routes:read": "Read route families, routes, groups and blocks",
-  "routes:write": "Create and edit routes, groups and blocks (never activate)",
+  "routes:read": "Read route families, route facts, routes, groups and blocks",
+  "routes:write": "Create and edit routes, route facts, groups and blocks (never activate)",
   "images:read": "Resolve route image slugs",
   "images:write": "Upload route images",
   "message-banks:read": "Read message bank entries",

@@ -6,6 +6,7 @@ import { registerResources } from "./resources.js";
 import { registerImageTools } from "./tools/images.js";
 import { registerMessageBankTools } from "./tools/message-banks.js";
 import { registerReadTools } from "./tools/read.js";
+import { registerRouteFactsTools } from "./tools/route-facts.js";
 import { registerWriteTools } from "./tools/write.js";
 
 export const SERVER_NAME = "cityroam";
@@ -36,6 +37,7 @@ export function createServer(config: Config, fetchImpl: FetchLike = fetch, optio
   // The injected fetch covers the presigned S3 PUT and URL downloads too, so tests never hit the network.
   registerImageTools(server, ctx, { fetchImpl });
   registerMessageBankTools(server, ctx);
+  registerRouteFactsTools(server, ctx);
   registerResources(server, ctx);
   registerPrompts(server, config);
   return server;

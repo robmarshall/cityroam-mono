@@ -19,9 +19,12 @@ import { TryTheOwl } from "@/components/TryTheOwl";
 import { Link } from "@/i18n/navigation";
 import { factValues } from "@/lib/facts";
 import { buildMetadata } from "@/lib/metadata";
-import { LEEDS_ROUTE_FACTS } from "@/lib/route-facts";
+import { loadRouteFacts } from "@/lib/load-route-facts";
 
 const HOME_FAQ_COUNT = 11;
+
+// Re-read the route facts from the API hourly (ROUTE_FACTS_REVALIDATE_SECONDS).
+export const revalidate = 3600;
 
 export async function generateMetadata({
   params,
@@ -54,7 +57,8 @@ export default async function Home({
   const td = await getTranslations("demo");
   const tc = await getTranslations("cta");
   const tf = await getTranslations("facts");
-  const facts = factValues(tf);
+  const routeFacts = await loadRouteFacts();
+  const facts = factValues(tf, routeFacts);
   const list = (key: string, count: number) =>
     Array.from({ length: count }, (_, i) => t(`${key}.${i}`, facts));
 
@@ -115,7 +119,7 @@ export default async function Home({
                   <span aria-hidden="true"> ›</span>
                 </a>
               </div>
-              <KeyFacts align={onPhoto ? "start" : "start-lg"} tone={onPhoto ? "dark" : "light"} />
+              <KeyFacts align={onPhoto ? "start" : "start-lg"} tone={onPhoto ? "dark" : "light"} route={routeFacts} />
             </>
           );
         }}
@@ -158,7 +162,7 @@ export default async function Home({
           <div>
             <SectionHeading align="left" title={t("route.title")} subtitle={t("route.subtitle")} />
             <div className="mt-8">
-              <RouteAtAGlance facts={LEEDS_ROUTE_FACTS} />
+              <RouteAtAGlance facts={routeFacts} />
             </div>
             <p className="mt-4 text-sm text-muted">{t("route.note")}</p>
           </div>

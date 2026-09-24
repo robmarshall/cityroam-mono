@@ -238,7 +238,7 @@
         "stops": "{stops}, en we zeggen niet waar",
         "stepFree": {
           "yes": "Ja, de hele route",
-          "partly": "Grotendeels",
+          "mostly": "Grotendeels",
           "no": "Nee, er zijn trappen"
         },
         "dogs": {
@@ -246,13 +246,14 @@
           "no": "Laat ze liever thuis"
         },
         "toilets": {
-          "yes": "Openbare toiletten onderweg",
-          "no": "Geen op de route zelf"
+          "at_start": "Bij de start",
+          "on_route": "Openbare toiletten onderweg",
+          "none": "Geen op de route zelf"
         },
         "covered": {
           "most": "Grotendeels",
           "some": "Deels",
-          "little": "Weinig. Neem een jas mee"
+          "none": "Niet. Neem een jas mee"
         }
       }
     },

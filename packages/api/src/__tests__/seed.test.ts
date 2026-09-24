@@ -142,6 +142,24 @@ describe("seeded message banks", () => {
       }
     }
   });
+
+  it("seeds the early-answer bank the walk handler reads, three dry lines in every language", () => {
+    // The handler asks for this exact type; until it was in the schema (and
+    // the check constraint) it could never be seeded and players always got
+    // the built-in fallback.
+    expect(allTypes).toContain("early-answer");
+    for (const lang of SUPPORTED_LANGUAGES) {
+      const lines = of(lang, "early-answer");
+      expect(lines, lang).toHaveLength(3);
+      for (const line of lines) {
+        expect(line, `${lang}: ${line}`).not.toMatch(/[!¡]/);
+        expect(line, `${lang}: ${line}`).not.toMatch(/\b(AI|IA|KI)\b/);
+        // Nothing is substituted in this bank
+        expect(line, `${lang}: ${line}`).not.toMatch(/\{\{/);
+        expect(line.split(/(?<=[.?])\s+/u).length, `${lang}: ${line}`).toBeLessThanOrEqual(2);
+      }
+    }
+  });
 });
 
 describe("the seeded development route", () => {

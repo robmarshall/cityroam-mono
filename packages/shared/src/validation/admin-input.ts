@@ -215,6 +215,7 @@ export const messageBankSchema = z.object({
     "guide-identity-machine",
     "guide-identity-person",
     "guide-identity-who",
+    "early-answer",
   ]),
   language: z.string().trim().min(2).max(5).optional().default("en"),
   content: z.string().trim().min(1, "Content is required"),

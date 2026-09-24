@@ -111,6 +111,11 @@ export const translations: Record<
     { type: "guide-identity-who", content: "Soy {{GUIDE_NAME}}, vuestro guía de hoy. Me conozco estas calles y os voy dando las pistas." },
     { type: "guide-identity-who", content: "Soy {{GUIDE_NAME}}, el guía que lleváis en el móvil. Respondo a lo que escribe vuestro grupo y os mantengo en la ruta." },
     { type: "guide-identity-who", content: "{{GUIDE_NAME}}. Vivo en vuestro móvil y me conozco esta ruta mejor que casi nadie." },
+
+    // Early answer: the next clue answered while still walking to it
+    { type: "early-answer", content: "Guardad esa respuesta: aún no habéis llegado. Os lo preguntaré como es debido al llegar." },
+    { type: "early-answer", content: "Un poco pronto para eso. Guardadlo hasta que lleguéis." },
+    { type: "early-answer", content: "Guardad esa para luego. La pregunta llega cuando estéis en el sitio." },
   ],
 
   // -------------------------------------------------------------------------
@@ -201,6 +206,11 @@ export const translations: Record<
     { type: "guide-identity-who", content: "Je suis {{GUIDE_NAME}}, votre guide du jour. Je connais ces rues et je vous donne les énigmes." },
     { type: "guide-identity-who", content: "Je suis {{GUIDE_NAME}}, le guide dans votre téléphone. Je réponds à ce que votre groupe écrit et je vous garde sur le parcours." },
     { type: "guide-identity-who", content: "{{GUIDE_NAME}}. J'habite dans votre téléphone et je connais ce parcours mieux que personne." },
+
+    // Early answer: the next clue answered while still walking to it
+    { type: "early-answer", content: "Gardez cette réponse — vous n'y êtes pas encore. Je vous poserai la question à votre arrivée." },
+    { type: "early-answer", content: "Un peu tôt pour ça. Gardez-le pour quand vous serez arrivés." },
+    { type: "early-answer", content: "Gardez celle-là pour plus tard. La question viendra quand vous serez au bon endroit." },
   ],
 
   // -------------------------------------------------------------------------
@@ -291,6 +301,11 @@ export const translations: Record<
     { type: "guide-identity-who", content: "Ich bin {{GUIDE_NAME}}, eure Begleiterin für heute. Ich kenne diese Straßen und liefere die Rätsel." },
     { type: "guide-identity-who", content: "Ich bin {{GUIDE_NAME}}, eure Begleiterin im Handy. Ich antworte auf das, was eure Gruppe schreibt, und halte euch auf der Route." },
     { type: "guide-identity-who", content: "{{GUIDE_NAME}}. Ich wohne in euren Handys und kenne diese Route besser als die meisten." },
+
+    // Early answer: the next clue answered while still walking to it
+    { type: "early-answer", content: "Merkt euch das — ihr seid noch nicht da. Ich frage euch richtig, wenn ihr ankommt." },
+    { type: "early-answer", content: "Etwas früh dafür. Behaltet das, bis ihr da seid." },
+    { type: "early-answer", content: "Hebt euch das für später auf. Die Frage kommt, wenn ihr an der richtigen Stelle steht." },
   ],
 
   // -------------------------------------------------------------------------
@@ -381,6 +396,11 @@ export const translations: Record<
     { type: "guide-identity-who", content: "Ik ben {{GUIDE_NAME}}, jullie gids voor vandaag. Ik ken deze straten en geef jullie de raadsels." },
     { type: "guide-identity-who", content: "Ik ben {{GUIDE_NAME}}, de gids in je telefoon. Ik reageer op wat jullie groep typt en houd jullie op de route." },
     { type: "guide-identity-who", content: "{{GUIDE_NAME}}. Ik woon in je telefoon en ken deze route beter dan de meesten." },
+
+    // Early answer: the next clue answered while still walking to it
+    { type: "early-answer", content: "Hou dat vast — jullie zijn er nog niet. Ik vraag het netjes zodra jullie er zijn." },
+    { type: "early-answer", content: "Iets te vroeg daarvoor. Bewaar het tot jullie er zijn." },
+    { type: "early-answer", content: "Hou die maar even achter de hand. De vraag komt als jullie op de juiste plek staan." },
   ],
 };
 

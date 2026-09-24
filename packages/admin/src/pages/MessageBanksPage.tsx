@@ -29,6 +29,7 @@ const BANK_TYPES: { value: MessageBankType; label: string }[] = [
   { value: "guide-identity-machine", label: "Identity: Bot" },
   { value: "guide-identity-person", label: "Identity: Person" },
   { value: "guide-identity-who", label: "Identity: Who" },
+  { value: "early-answer", label: "Early Answer" },
 ];
 
 const TEMPLATE_VARS: Partial<Record<MessageBankType, string[]>> = {

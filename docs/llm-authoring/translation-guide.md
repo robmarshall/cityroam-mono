@@ -221,6 +221,7 @@ Follow the same recommended counts as for English (see guide-personality.md):
 | guide-identity-machine | 2 | 3 |
 | guide-identity-person | 2 | 3 |
 | guide-identity-who | 2 | 3 |
+| early-answer | 2 | 3 |
 
 Message bank entries must maintain the guide's personality in the target language. The same rules apply: brief, dry, no exclamation marks, no emoji. Template variables (`{{ANSWER}}`, `{{TOTAL_STOPS}}`, etc.) stay as-is.
 

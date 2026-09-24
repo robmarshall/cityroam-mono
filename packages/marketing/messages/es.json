@@ -238,7 +238,7 @@
         "stops": "{stops}, y no vamos a decir dónde",
         "stepFree": {
           "yes": "Sí, en todo el recorrido",
-          "partly": "Casi todo",
+          "mostly": "Casi todo",
           "no": "No, hay escalones"
         },
         "dogs": {
@@ -246,13 +246,14 @@
           "no": "Mejor dejarlos en casa"
         },
         "toilets": {
-          "yes": "Aseos públicos por el camino",
-          "no": "Ninguno en la ruta"
+          "at_start": "En la salida",
+          "on_route": "Aseos públicos por el camino",
+          "none": "Ninguno en la ruta"
         },
         "covered": {
           "most": "Casi todo",
           "some": "Una parte",
-          "little": "Poco. Traed abrigo"
+          "none": "Nada. Traed abrigo"
         }
       }
     },

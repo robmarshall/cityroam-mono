@@ -941,6 +941,7 @@ describe("messageBankSchema", () => {
       "guide-identity-machine",
       "guide-identity-person",
       "guide-identity-who",
+      "early-answer",
     ] as const;
     for (const t of types) {
       expect(messageBankSchema.parse({ type: t, content: "msg" }).type).toBe(t);

@@ -14,7 +14,7 @@ import { TrustStrip } from "@/components/TrustStrip";
 import { Link } from "@/i18n/navigation";
 import { factValues } from "@/lib/facts";
 import type { PhotoSlotName } from "@/lib/photos";
-import { LEEDS_ROUTE_FACTS } from "@/lib/route-facts";
+import { loadRouteFacts } from "@/lib/load-route-facts";
 import { CONTACT_EMAIL, MAX_PARTICIPANTS } from "@/lib/site";
 
 export type AudienceKey = "families" | "henParties" | "teamBuilding" | "stagParties";
@@ -77,7 +77,8 @@ export async function AudiencePage({
   const tr = await getTranslations("home.route");
   const tc = await getTranslations("cta");
   const tf = await getTranslations("facts");
-  const facts = factValues(tf);
+  const routeFacts = await loadRouteFacts();
+  const facts = factValues(tf, routeFacts);
 
   return (
     <main className="min-h-screen">
@@ -128,7 +129,7 @@ export async function AudiencePage({
                   variant={onPhoto ? "inverse" : "primary"}
                 />
               </div>
-              <KeyFacts hidePrice align={onPhoto ? "start" : "start-lg"} tone={onPhoto ? "dark" : "light"} />
+              <KeyFacts hidePrice align={onPhoto ? "start" : "start-lg"} tone={onPhoto ? "dark" : "light"} route={routeFacts} />
             </>
           );
         }}
@@ -221,7 +222,7 @@ export async function AudiencePage({
           <div>
             <SectionHeading align="left" title={ta("route.title")} subtitle={ta("route.subtitle")} />
             <div className="mt-8">
-              <RouteAtAGlance facts={LEEDS_ROUTE_FACTS} />
+              <RouteAtAGlance facts={routeFacts} />
             </div>
             <p className="mt-4 text-sm text-muted">{tr("note")}</p>
           </div>

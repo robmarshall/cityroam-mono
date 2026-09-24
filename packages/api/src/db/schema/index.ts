@@ -9,3 +9,4 @@ export { routeBlocks } from "./route-blocks.js";
 export { adminApiKeys } from "./admin-api-keys.js";
 export { adminAuditLog } from "./admin-audit-log.js";
 export { vouchers } from "./vouchers.js";
+export { routeFamilyFacts } from "./route-family-facts.js";

@@ -10,8 +10,12 @@ import { giftPageMetadata } from "@/components/gift/metadata";
 import { linkClass } from "@/components/gift/styles";
 import { Link } from "@/i18n/navigation";
 import { factValues } from "@/lib/facts";
+import { loadRouteFacts } from "@/lib/load-route-facts";
 
 const GIFT_FAQ_COUNT = 4;
+
+// Re-read the route facts from the API hourly (ROUTE_FACTS_REVALIDATE_SECONDS).
+export const revalidate = 3600;
 
 export async function generateMetadata({
   params,
@@ -37,7 +41,7 @@ export default async function Gift({
 
   const t = await getTranslations("gift.page");
   const tf = await getTranslations("facts");
-  const values = { ...factValues(tf), months: VOUCHER_EXPIRY_MONTHS };
+  const values = { ...factValues(tf, await loadRouteFacts()), months: VOUCHER_EXPIRY_MONTHS };
   const link = (chunks: React.ReactNode) => (
     <Link href="/redeem" className={linkClass}>
       {chunks}

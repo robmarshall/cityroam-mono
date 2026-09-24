@@ -54,6 +54,11 @@ ENV NEXT_PUBLIC_SENTRY_DSN=$NEXT_PUBLIC_SENTRY_DSN
 ENV NEXT_PUBLIC_SENTRY_ENVIRONMENT=$NEXT_PUBLIC_SENTRY_ENVIRONMENT
 ENV NEXT_PUBLIC_SENTRY_RELEASE=$NEXT_PUBLIC_SENTRY_RELEASE
 
+# Optional, server-only: the route family whose route facts the pages read
+# (src/lib/load-route-facts.ts). Empty = the built-in facts.
+ARG ROUTE_FACTS_FAMILY_ID
+ENV ROUTE_FACTS_FAMILY_ID=$ROUTE_FACTS_FAMILY_ID
+
 # Fail the build rather than ship a bundle pointing at localhost.
 RUN if [ -z "$NEXT_PUBLIC_API_URL" ]; then echo "ERROR: build arg NEXT_PUBLIC_API_URL is required" >&2; exit 1; fi
 RUN if [ -z "$NEXT_PUBLIC_SITE_URL" ]; then echo "ERROR: build arg NEXT_PUBLIC_SITE_URL is required" >&2; exit 1; fi
@@ -69,6 +74,11 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+
+# Read again at runtime: hourly revalidation re-fetches the route facts, and
+# without the id it would fall back to the built-in ones.
+ARG ROUTE_FACTS_FAMILY_ID
+ENV ROUTE_FACTS_FAMILY_ID=$ROUTE_FACTS_FAMILY_ID
 
 # Copy standalone output
 COPY --from=builder /app/packages/marketing/.next/standalone ./

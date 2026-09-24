@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useBlocker, useNavigate, useParams } from "react-router-dom";
 import type {
   AdminRouteFamilyDetailResponse,
   Route,
@@ -9,6 +9,7 @@ import { SUPPORTED_LANGUAGES } from "@cityroam/shared/constants";
 import { api, ApiError } from "../lib/api";
 import { useAuthFetch } from "../contexts/AuthContext";
 import { formatDate } from "../lib/event-utils";
+import { RouteFactsPanel } from "../components/RouteFactsPanel";
 
 export default function RouteFamilyDetailPage() {
   const { familyId } = useParams<{ familyId: string }>();
@@ -17,8 +18,34 @@ export default function RouteFamilyDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddLanguageModal, setShowAddLanguageModal] = useState(false);
+  const [factsDirty, setFactsDirty] = useState(false);
   const authFetch = useAuthFetch();
   const navigate = useNavigate();
+
+  // Unsaved route facts: warn on tab close/reload and on in-app navigation
+  // (same guard as the route editor). Nothing is ever saved automatically.
+  useEffect(() => {
+    if (!factsDirty) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [factsDirty]);
+
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      factsDirty && currentLocation.pathname !== nextLocation.pathname,
+  );
+
+  useEffect(() => {
+    if (blocker.state !== "blocked") return;
+    const leave = window.confirm(
+      "You have unsaved route facts. Leave this page and discard them?",
+    );
+    if (leave) blocker.proceed();
+    else blocker.reset();
+  }, [blocker]);
 
   const fetchFamily = useCallback(async () => {
     if (!familyId) return;
@@ -44,7 +71,9 @@ export default function RouteFamilyDetailPage() {
     fetchFamily();
   }, [fetchFamily]);
 
-  if (loading) {
+  // Only the first load replaces the page. A refresh after editing the family
+  // keeps it mounted, so unsaved route facts are not thrown away.
+  if (loading && !data) {
     return (
       <div className="flex items-center justify-center py-20 text-gray-500">
         Loading route family...
@@ -188,6 +217,8 @@ export default function RouteFamilyDetailPage() {
           </table>
         </div>
       )}
+
+      <RouteFactsPanel familyId={familyId!} onDirtyChange={setFactsDirty} />
 
       {showEditModal && (
         <EditFamilyModal

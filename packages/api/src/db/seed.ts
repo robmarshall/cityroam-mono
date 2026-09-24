@@ -99,6 +99,13 @@ export const messageBankSeedData = [
   { type: "guide-identity-who", content: "I'm {{GUIDE_NAME}}, the guide in your phone. I reply to what your group types and keep you on route." },
   { type: "guide-identity-who", content: "{{GUIDE_NAME}}. I live in your phone and know this route better than most." },
 
+  // Early-answer messages — sent when a player answers the next clue correctly
+  // while still walking to it (handlers/answer-attempt.ts). The answer is not
+  // accepted yet, so the line neither confirms nor rejects it.
+  { type: "early-answer", content: "Hold that thought — you're not there yet. I'll ask you properly when you arrive." },
+  { type: "early-answer", content: "Bit early for that. Keep it until you get there." },
+  { type: "early-answer", content: "Save that one. The question comes when you're standing in the right spot." },
+
   // Completion templates
   { type: "completion", content: "That's the last one. Well done — you've made it through all {{TOTAL_STOPS}} stops and covered roughly {{DISTANCE_KM}}km of {{CITY_NAME}}.\n\nIf you enjoyed it, a Google review goes a long way: {{REVIEW_LINK}}\n\nNow go find a drink. You've earned it." },
   { type: "completion", content: "And that's a wrap. {{TOTAL_STOPS}} stops, {{DISTANCE_KM}}km, and you didn't quit once.\n\nIf you had fun, we'd appreciate a review: {{REVIEW_LINK}}\n\nEnjoy the rest of your day." },

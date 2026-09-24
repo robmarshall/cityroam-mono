@@ -388,3 +388,23 @@ export function checkVoucherRedeemRateLimit(clientIp: string): Promise<LoginRate
     VOUCHER_REDEEM_WINDOW_MS,
   );
 }
+
+// ---------------------------------------------------------------------------
+// Public route facts limiter
+// ---------------------------------------------------------------------------
+/**
+ * `GET /public/route-families/:id/facts` is read by the marketing site's
+ * build and its hourly revalidation, which fetch once per page, so the budget
+ * is generous. It is there to keep a scraper from using the endpoint as a
+ * free database load, and fails closed like the voucher limiters.
+ */
+export const PUBLIC_ROUTE_FACTS_LIMIT = 120;
+export const PUBLIC_ROUTE_FACTS_WINDOW_MS = 60 * 1000;
+
+export function checkPublicRouteFactsRateLimit(clientIp: string): Promise<LoginRateLimitResult> {
+  return checkIpRateLimit(
+    `ratelimit:public-route-facts:${clientIp}`,
+    PUBLIC_ROUTE_FACTS_LIMIT,
+    PUBLIC_ROUTE_FACTS_WINDOW_MS,
+  );
+}

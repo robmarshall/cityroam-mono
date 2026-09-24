@@ -1,7 +1,7 @@
 import { eq, and } from "drizzle-orm";
 import type { ChatMessagePayload, BlockType } from "@cityroam/shared/types";
 import type { QuestionBlockConfig, AnswerMatchResult } from "@cityroam/shared/types";
-import type { SupportedLanguage } from "@cityroam/shared/types";
+import type { MessageBankType, SupportedLanguage } from "@cityroam/shared/types";
 import { LANGUAGE_NAMES } from "@cityroam/shared/constants";
 import type { LLMService } from "../../llm/interface.js";
 import { db, schema } from "../../../db/index.js";
@@ -24,7 +24,7 @@ const log = createLogger("answer-attempt");
 const WRONG_ATTEMPTS_BEFORE_HINT_NUDGE = 3;
 
 /** Message bank type for "you're right, but you're not there yet". */
-export const EARLY_ANSWER_BANK_TYPE = "early-answer";
+export const EARLY_ANSWER_BANK_TYPE = "early-answer" satisfies MessageBankType;
 
 /**
  * Context needed by the answer-attempt handler.

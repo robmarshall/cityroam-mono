@@ -45,8 +45,8 @@ Authorization: Bearer crk_stg_<keyId>_<secret>
 
   | Scope | Allows |
   |---|---|
-  | `routes:read` | `GET` route families, routes, route detail |
-  | `routes:write` | Create and edit route metadata, route families, groups and blocks (bulk-groups, create, update, reorder, move, delete of groups and blocks) |
+  | `routes:read` | `GET` route families, routes, route detail, route facts |
+  | `routes:write` | Create and edit route metadata, route families, route facts, groups and blocks (bulk-groups, create, update, reorder, move, delete of groups and blocks) |
   | `images:read` | `GET /admin/route-images`, `GET /admin/route-images/:slug` |
   | `images:write` | `POST /admin/upload` |
   | `message-banks:read` | `GET /admin/message-banks` |
@@ -632,7 +632,60 @@ DELETE /admin/route-families/:id
 Authorization: Bearer <token>
 ```
 
-Fails with 409 if routes exist in the family.
+Fails with 409 if routes exist in the family (its route facts, if any, go with it).
+
+### Route Facts
+
+The practical facts the marketing site's "Route at a glance" box and key facts show for a family: start point, distance, walking time, number of stops, step-free access, dogs, toilets and cover. They belong to the family, not to one language's route. **The family's `distanceKm` and `durationMins` are canonical for marketing**; the per-language `estimated_distance_km` / `estimated_duration_mins` on routes still exist (the completion message quotes them) but the site does not read them.
+
+Every fact is nullable. `null` means "not checked on the ground yet" and the site hides that row (distance, walking time and stops fall back to the site's built-in values). Only enter facts someone has checked by walking the route. The start point must never be a stop: it would give an answer away.
+
+```
+GET /admin/route-families/:id/facts          (routes:read)
+PUT /admin/route-families/:id/facts          (routes:write)
+Authorization: Bearer <token>
+```
+
+`GET` returns the facts (all `null`, `updatedAt: null`, before the first save). `PUT` **replaces the whole set**: every key is required, `null` clears a fact, unknown keys (such as an echoed `updatedAt`) are ignored. Validated with the shared `routeFactsInputSchema` (`@cityroam/shared/route-facts`); a failure is `400 INVALID_INPUT` naming the field (`startPoint.mapUrl: Map URL must look like …`). Unknown family: `404 ROUTE_FAMILY_NOT_FOUND`.
+
+```json
+{
+  "startPoint": {
+    "label": { "en": "City Square", "es": null, "fr": null, "de": null, "nl": null },
+    "lat": 53.7963,
+    "lng": -1.5477,
+    "mapUrl": "https://maps.google.com/?q=53.7963,-1.5477"
+  },
+  "distanceKm": 2.5,
+  "durationMins": 60,
+  "stops": 4,
+  "stepFree": "mostly",
+  "dogs": true,
+  "toilets": "on_route",
+  "covered": "some"
+}
+```
+
+Response (both): `{ "route_family_id": "<uuid>", "facts": { ...the facts, "updatedAt": "2026-09-24T10:00:00.000Z" } }`
+
+| Field | Type | Rules |
+|---|---|---|
+| `startPoint` | object or `null` | All four parts or none. `label.en` required (1–80 chars, one line); `es`/`fr`/`de`/`nl` optional (blank or `null` shows the English label). `lat` −90…90, `lng` −180…180. `mapUrl` must be `https://maps.google.com/?q=…` (max 500 chars). |
+| `distanceKm` | number or `null` | More than 0, at most 100; rounded to 2 decimals |
+| `durationMins` | integer or `null` | Walking time, 1–1440 |
+| `stops` | integer or `null` | Answer stops, 1–100. Never name them. |
+| `stepFree` | `"yes"` \| `"mostly"` \| `"no"` \| `null` | `mostly`: with a short detour or a hand |
+| `dogs` | boolean or `null` | Whether dogs are welcome |
+| `toilets` | `"at_start"` \| `"on_route"` \| `"none"` \| `null` | Nearest public toilets |
+| `covered` | `"none"` \| `"some"` \| `"most"` \| `null` | How much of the walk is under a roof |
+
+**Public read (no auth):**
+
+```
+GET /public/route-families/:id/facts
+```
+
+Returns `{ "facts": { ... } }` only: no ids, names or anything else about the family. Answers only for a family with at least one **active** route; otherwise (or for a malformed id) `404 ROUTE_FAMILY_NOT_FOUND`. `Cache-Control: public, max-age=300`. Rate limited per IP (120 per minute, `429 RATE_LIMITED` with `Retry-After`). The marketing site reads it at build time and revalidates hourly.
 
 ---
 
@@ -666,7 +719,7 @@ Authorization: Bearer <token>
 }
 ```
 
-Valid types: `success`, `failure`, `hint-exhausted`, `hint-offer`, `hint-decline`, `clarification`, `unknown-answer`, `completion`, `over-length`, `guide-degraded`, `guide-busy`, `guide-identity-ai`, `guide-identity-machine`, `guide-identity-person`, `guide-identity-who`
+Valid types: `success`, `failure`, `hint-exhausted`, `hint-offer`, `hint-decline`, `clarification`, `unknown-answer`, `completion`, `over-length`, `guide-degraded`, `guide-busy`, `guide-identity-ai`, `guide-identity-machine`, `guide-identity-person`, `guide-identity-who`, `early-answer`
 
 The four `guide-identity-*` types are the canned replies to "are you AI?", "are you a bot?", "are you a real person?" and "who are you?"; `{{GUIDE_NAME}}` is substituted in them. Machine and who lines must never open with a negation (guide-personality.md > Honest about being an AI).
 

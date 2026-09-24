@@ -160,6 +160,23 @@ describe("message bank tools", () => {
     expect(textOf(person)).not.toContain("Warning");
   });
 
+  it("accepts early-answer entries, in the type enum both tools advertise", async () => {
+    const client = await connect(echo().fetch);
+    const { tools } = await client.listTools();
+    for (const tool of tools) {
+      const type = (tool.inputSchema as unknown as { properties: { type: { enum: string[] } } }).properties.type;
+      expect(type.enum, tool.name).toContain("early-answer");
+    }
+    const result = await callTool(client, "create_message_bank_entry", {
+      type: "early-answer",
+      language: "en",
+      content: "Bit early for that. Keep it until you get there.",
+      dry_run: true,
+    });
+    expect(result.isError).toBeFalsy();
+    expect(textOf(result)).not.toContain("Warning");
+  });
+
   it("surfaces API errors verbatim", async () => {
     const { fetch } = fakeFetch(() => json({ error: "Message bank entry not found", code: "MESSAGE_BANK_NOT_FOUND" }, 404));
     const result = await callTool(await connect(fetch), "update_message_bank_entry", {

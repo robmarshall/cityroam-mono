@@ -7,6 +7,7 @@
     "./types": "./src/types/index.ts",
     "./validation": "./src/validation/index.ts",
     "./validation/player": "./src/validation/player.ts",
+    "./route-facts": "./src/validation/route-facts.ts",
     "./constants": "./src/constants/index.ts",
     "./utils": "./src/utils/index.ts",
     "./answer-match": "./src/utils/answer-match.ts",

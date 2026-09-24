@@ -18,6 +18,7 @@ import {
 
 const READ_TOOLS = [
   "get_route",
+  "get_route_facts",
   "get_route_family",
   "list_image_slugs",
   "list_message_banks",
@@ -41,6 +42,7 @@ const WRITE_TOOLS = [
   "update_group",
   "update_message_bank_entry",
   "update_route",
+  "update_route_facts",
   "upload_image",
 ];
 
@@ -446,6 +448,9 @@ describe("structuredContent against the published output schemas", () => {
         return json({ route_families: [{ ...family, routes: [{ id: ROUTE_ID, language: "en", name: "Leeds", is_active: false, extra: true }] }] });
       }
       if (p === `/admin/route-families/${FAMILY_ID}`) return json({ route_family: family, routes: [routeListItem()] });
+      if (p === `/admin/route-families/${FAMILY_ID}/facts`) {
+        return json({ route_family_id: FAMILY_ID, facts: { startPoint: null, distanceKm: 2.5, updatedAt: null, future_field: 1 } });
+      }
       if (p === "/admin/message-banks") return json({ message_banks: [bank] });
       if (p === "/admin/route-images") return json({ images: [], truncated: false });
       return json({ error: "unexpected", code: "X" }, 500);
@@ -454,6 +459,7 @@ describe("structuredContent against the published output schemas", () => {
     const { tools } = await client.listTools();
     const withOutput = tools.filter((t) => t.outputSchema).map((t) => t.name).sort();
     expect(withOutput).toEqual([
+      "get_route_facts",
       "get_route_family",
       "list_image_slugs",
       "list_message_banks",
@@ -465,6 +471,7 @@ describe("structuredContent against the published output schemas", () => {
       ["list_routes", {}],
       ["list_route_families", {}],
       ["get_route_family", { family_id: FAMILY_ID }],
+      ["get_route_facts", { family_id: FAMILY_ID }],
       ["list_message_banks", {}],
       ["validate_route", { route_id: ROUTE_ID }],
       ["list_image_slugs", { route_id: ROUTE_ID }],
