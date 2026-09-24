@@ -37,7 +37,7 @@ vi.mock("../redis/client.js", () => ({
 import { PgDialect } from "drizzle-orm/pg-core";
 import { db } from "../db/index.js";
 import { redis } from "../redis/client.js";
-import { messages, participants, events, adminAuditLog } from "../db/schema/index.js";
+import { messages, participants, events, adminAuditLog, vouchers } from "../db/schema/index.js";
 import {
   anonymiseCandidateFilter,
   paymentRefCandidateFilter,
@@ -52,6 +52,10 @@ import {
   monthsBefore,
   adminAuditRetentionCutoff,
   pruneAdminAuditLogBatch,
+  anonymiseVoucherBatch,
+  stripVoucherPaymentRefBatch,
+  voucherAnonymiseCandidateFilter,
+  voucherPaymentRefCandidateFilter,
   ADMIN_AUDIT_RETENTION_DAYS,
   RETENTION_BATCH_SIZE,
   MAX_BATCHES_PER_RUN,
@@ -258,6 +262,79 @@ describe("pruneAdminAuditLogBatch", () => {
   });
 });
 
+// ── vouchers ──────────────────────────────────────────────────────
+describe("voucher retention", () => {
+  beforeEach(resetChains);
+  const now = new Date("2026-09-23T12:00:00Z");
+
+  it("targets ended vouchers 12 months after they ended that still hold PII", () => {
+    const { sql, params } = new PgDialect().sqlToQuery(
+      voucherAnonymiseCandidateFilter(eventRetentionCutoff(now))!,
+    );
+    expect(params).toEqual(expect.arrayContaining(["REDEEMED", "REFUNDED", "VOID", "EXPIRED"]));
+    expect(params).not.toContain("PURCHASED");
+    expect(sql).toContain(`WHEN 'REDEEMED' THEN COALESCE("vouchers"."redeemed_at", "vouchers"."expires_at")`);
+    expect(sql).toContain('"vouchers"."refunded_at"');
+    expect(sql).toContain('"vouchers"."voided_at"');
+    expect(params).toContain("2025-09-23T12:00:00.000Z");
+    for (const col of ["purchaser_email", "recipient_name", "message", "void_reason", "email_error"]) {
+      expect(sql).toContain(`"vouchers"."${col}" is not null`);
+    }
+  });
+
+  it("targets vouchers bought more than 6 years ago that still carry Stripe refs", () => {
+    const { sql, params } = new PgDialect().sqlToQuery(
+      voucherPaymentRefCandidateFilter(accountingRetentionCutoff(now))!,
+    );
+    expect(sql).toContain('"vouchers"."created_at" < ');
+    expect(sql).toContain('"vouchers"."stripe_payment_id" is not null');
+    expect(params).toContain("2020-09-23T12:00:00.000Z");
+  });
+
+  it("nulls the personal fields but keeps code, status and Stripe refs", async () => {
+    mockedDb.limit.mockResolvedValueOnce(ids(2, "v"));
+    mockedDb.returning.mockResolvedValueOnce(ids(2, "v"));
+
+    expect(await anonymiseVoucherBatch(now)).toBe(2);
+    expect(mockedDb.update).toHaveBeenCalledWith(vouchers);
+    expect(mockedDb.set).toHaveBeenCalledWith({
+      purchaser_email: null,
+      recipient_name: null,
+      message: null,
+      void_reason: null,
+      email_error: null,
+    });
+  });
+
+  it("nulls voucher Stripe refs after the accounting window", async () => {
+    mockedDb.limit.mockResolvedValueOnce(ids(1, "v"));
+    mockedDb.returning.mockResolvedValueOnce(ids(1, "v"));
+    expect(await stripVoucherPaymentRefBatch(now)).toBe(1);
+    expect(mockedDb.set).toHaveBeenCalledWith({ stripe_session_id: null, stripe_payment_id: null });
+  });
+
+  it("does nothing when no vouchers are due", async () => {
+    expect(await anonymiseVoucherBatch(now)).toBe(0);
+    expect(await stripVoucherPaymentRefBatch(now)).toBe(0);
+    expect(mockedDb.update).not.toHaveBeenCalled();
+  });
+
+  it("runs as part of the retention sweep", async () => {
+    // Events anonymise, events strip, audit: nothing. Vouchers: one batch.
+    mockedDb.limit
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce(ids(3, "v"));
+    mockedDb.returning.mockResolvedValueOnce(ids(3, "v"));
+    vi.spyOn(console, "log").mockImplementation(() => {});
+
+    const result = await runRetentionSweep(now);
+    expect(result.anonymisedVouchers).toBe(3);
+    vi.restoreAllMocks();
+  });
+});
+
 // ── runRetentionSweep ─────────────────────────────────────────────
 describe("runRetentionSweep", () => {
   beforeEach(() => {
@@ -274,6 +351,8 @@ describe("runRetentionSweep", () => {
       deletedParticipants: 0,
       strippedPaymentRefs: 0,
       prunedAuditRows: 0,
+      anonymisedVouchers: 0,
+      strippedVoucherPaymentRefs: 0,
     });
     expect(console.log).not.toHaveBeenCalledWith(
       expect.stringContaining('"component":"data-retention"'),
@@ -311,7 +390,8 @@ describe("runRetentionSweep", () => {
     await runRetentionSweep();
 
     expect(mockedDb.transaction).toHaveBeenCalledTimes(MAX_BATCHES_PER_RUN);
-    expect(mockedDb.update).toHaveBeenCalledTimes(MAX_BATCHES_PER_RUN);
+    // Event payment refs, voucher PII and voucher payment refs each run to the cap.
+    expect(mockedDb.update).toHaveBeenCalledTimes(MAX_BATCHES_PER_RUN * 3);
   });
 });
 
