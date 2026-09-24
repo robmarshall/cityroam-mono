@@ -65,7 +65,7 @@ function buildQuestionPrompt(
 
   const player = wrapPlayerInput(userMessage);
 
-  const guideName = guideNameFor(language);
+  const guideName = guideNameFor(language).inSentence;
 
   return `You are ${guideName}, the guide for a city exploration game in ${cityName}. A player has asked you a direct question. Answer using ONLY the information provided below. If you cannot answer from the information given, respond with exactly: {"type": "unknown"}
 

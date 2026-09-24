@@ -76,7 +76,7 @@ The dry run returns the exact request and a field-level diff. Block writes are n
 ### 6. Check
 
 - `validate_route` with the `route_id` should report no errors and no `guide-pun` or `message-too-long` warning on the intro.
-- On staging, start a test event in each language you changed. The intro should read "I'm The Owl." (or "Soy El Búho.", "Je suis Le Hibou.", "Ich bin Die Eule.", "Ik ben De Uil."), with no literal `{{GUIDE_NAME}}`.
+- On staging, start a test event in each language you changed. The intro should read "I'm the Owl." (or "Soy el Búho.", "Je suis le Hibou.", "Ich bin die Eule.", "Ik ben de Uil."), with no literal `{{GUIDE_NAME}}`.
 
 ---
 

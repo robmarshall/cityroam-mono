@@ -122,20 +122,30 @@ describe("GUIDE_NAMES", () => {
   it("names the guide in every supported language", async () => {
     const { GUIDE_NAMES, SUPPORTED_LANGUAGES } = await import("./index.js");
     for (const lang of SUPPORTED_LANGUAGES) {
-      expect(GUIDE_NAMES[lang]).toBeTruthy();
+      expect(GUIDE_NAMES[lang].label).toBeTruthy();
+      expect(GUIDE_NAMES[lang].inSentence).toBeTruthy();
     }
     expect(GUIDE_NAMES).toEqual({
-      en: "The Owl",
-      es: "El Búho",
-      fr: "Le Hibou",
-      de: "Die Eule",
-      nl: "De Uil",
+      en: { label: "The Owl", inSentence: "the Owl" },
+      es: { label: "El Búho", inSentence: "el Búho" },
+      fr: { label: "Le Hibou", inSentence: "le Hibou" },
+      de: { label: "Die Eule", inSentence: "die Eule" },
+      nl: { label: "De Uil", inSentence: "de Uil" },
     });
+  });
+
+  it("differs between label and in-sentence forms only in the article's first letter", async () => {
+    const { GUIDE_NAMES, SUPPORTED_LANGUAGES } = await import("./index.js");
+    for (const lang of SUPPORTED_LANGUAGES) {
+      const { label, inSentence } = GUIDE_NAMES[lang];
+      expect(label).toBe(inSentence.charAt(0).toUpperCase() + inSentence.slice(1));
+    }
   });
 
   it("guideNameFor falls back to English for an unknown language", async () => {
     const { guideNameFor } = await import("./index.js");
-    expect(guideNameFor("fr")).toBe("Le Hibou");
-    expect(guideNameFor("xx")).toBe("The Owl");
+    expect(guideNameFor("fr").label).toBe("Le Hibou");
+    expect(guideNameFor("xx").label).toBe("The Owl");
+    expect(guideNameFor("xx").inSentence).toBe("the Owl");
   });
 });

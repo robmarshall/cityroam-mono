@@ -377,14 +377,14 @@ describe("handleQuestion", () => {
 
     const prompt = llm.classify.mock.calls[0][0] as string;
     expect(prompt).toContain("Respond in Spanish");
-    expect(prompt).toContain("You are El Búho, the guide");
+    expect(prompt).toContain("You are el Búho, the guide");
   });
 
   it.each([
-    ["en", "The Owl"],
-    ["fr", "Le Hibou"],
-    ["de", "Die Eule"],
-    ["nl", "De Uil"],
+    ["en", "the Owl"],
+    ["fr", "le Hibou"],
+    ["de", "die Eule"],
+    ["nl", "de Uil"],
   ] as const)("names the guide in the event's language (%s)", async (language, name) => {
     (db.query.routeBlocks.findFirst as ReturnType<typeof vi.fn>)
       .mockResolvedValueOnce(makeMockQuestionBlock());

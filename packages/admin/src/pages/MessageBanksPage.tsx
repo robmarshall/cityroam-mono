@@ -33,6 +33,7 @@ const TEMPLATE_VARS: Partial<Record<MessageBankType, string[]>> = {
     "{{DISTANCE_KM}}",
     "{{CITY_NAME}}",
     "{{REVIEW_LINK}}",
+    "{{GUIDE_NAME}}",
   ],
   "hint-exhausted": ["{{ANSWER}}"],
 };

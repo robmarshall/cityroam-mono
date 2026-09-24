@@ -375,7 +375,7 @@ Message block content supports template variables that are replaced at runtime:
 | `{{TOTAL_STOPS}}` | Number of groups in the route |
 | `{{DISTANCE_KM}}` | Estimated distance in km |
 | `{{REVIEW_LINK}}` | Configured Google review URL |
-| `{{GUIDE_NAME}}` | The guide's name in the event's language: The Owl, El Búho, Le Hibou, Die Eule, De Uil |
+| `{{GUIDE_NAME}}` | The guide's name in the event's language, article in lower case for running text: the Owl, el Búho, le Hibou, die Eule, de Uil. Capitalised automatically when it starts a sentence ("The Owl", "El Búho") |
 
 The same variables are substituted in hint text (and in completion message-bank templates). They are **not** substituted in clues, accepted answers, action labels or map links.
 
@@ -404,7 +404,7 @@ The guide's core personality — dry, brief, knowledgeable — must survive tran
 
 - **Never translate literally** — adapt idioms and phrasing to sound natural in the target language
 - **Keep messages the same length** — if the English version is 1-2 sentences, the translation should be too
-- **Preserve template variables** — `{{CITY_NAME}}`, `{{TOTAL_STOPS}}`, `{{GUIDE_NAME}}`, etc. must remain as-is (they are replaced at runtime). `{{GUIDE_NAME}}` includes its capitalised article ("El Búho", "Die Eule"), so keep it where the name stands alone ("Soy {{GUIDE_NAME}}.") — see [translation-guide.md](translation-guide.md#the-guides-name)
+- **Preserve template variables** — `{{CITY_NAME}}`, `{{TOTAL_STOPS}}`, `{{GUIDE_NAME}}`, etc. must remain as-is (they are replaced at runtime). `{{GUIDE_NAME}}` includes its article ("el Búho", "die Eule", capitalised automatically at the start of a sentence), so keep it where the name stands alone ("Soy {{GUIDE_NAME}}.") — see [translation-guide.md](translation-guide.md#the-guides-name)
 - **Match the delay timing** — do not adjust `delay_ms` values; the pacing is designed for the walking route, not the language
 - **Translate accepted answers to the local name** — "Leeds Town Hall" stays "Leeds Town Hall" in Spanish because it's a proper noun, but the clue and hints must be in Spanish. Use the locally known name where one exists.
 - **Rhyming clues don't need to rhyme** — if the English clue rhymes, the translation should be an engaging riddle in the target language, but forcing a rhyme at the expense of clarity is worse than a clear non-rhyming clue

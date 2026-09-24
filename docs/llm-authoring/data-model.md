@@ -254,7 +254,7 @@ Some message types support template variables that are replaced at runtime:
 | `{{TOTAL_STOPS}}` | completion, message blocks | route.total_stops |
 | `{{DISTANCE_KM}}` | completion, message blocks | route.estimated_distance_km |
 | `{{REVIEW_LINK}}` | completion, message blocks | Configured review URL |
-| `{{GUIDE_NAME}}` | completion, message blocks | The guide's name in the event's language (`GUIDE_NAMES` in `packages/shared/src/constants`): The Owl, El Búho, Le Hibou, Die Eule, De Uil |
+| `{{GUIDE_NAME}}` | completion, message blocks | The guide's name in the event's language (`GUIDE_NAMES[lang].inSentence` in `packages/shared/src/constants`): the Owl, el Búho, le Hibou, die Eule, de Uil — capitalised automatically when it starts a sentence |
 
 Template variables in message block `content` fields (and in hint text) are replaced at runtime, so you can use `{{CITY_NAME}}`, `{{GUIDE_NAME}}` etc. in your block content. They are not replaced in clues, accepted answers, action labels or map links.
 

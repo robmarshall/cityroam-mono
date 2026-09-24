@@ -14,15 +14,17 @@ The guide has a name: **the Owl**. It is the same dry, brief local described bel
 
 The name is translated, not kept in English. Use the constant `GUIDE_NAMES` (`packages/shared/src/constants`) in code and the `{{GUIDE_NAME}}` template variable in route content.
 
-| Language | Name | Gender for agreement | In running prose |
-|----------|------|----------------------|------------------|
-| English (`en`) | The Owl | — (the Owl is "it") | "the Owl" |
-| Spanish (`es`) | El Búho | masculine | "el Búho", "del Búho", "al Búho" |
-| French (`fr`) | Le Hibou | masculine | "le Hibou", "du Hibou", "au Hibou" |
-| German (`de`) | Die Eule | feminine | "die Eule", "der Eule" |
-| Dutch (`nl`) | De Uil | masculine ("hij") | "de Uil" |
+| Language | Label (stands alone) | In running prose (`{{GUIDE_NAME}}`) | Gender for agreement | Other forms |
+|----------|----------------------|-------------------------------------|----------------------|-------------|
+| English (`en`) | The Owl | the Owl | — (the Owl is "it") | — |
+| Spanish (`es`) | El Búho | el Búho | masculine | "del Búho", "al Búho" |
+| French (`fr`) | Le Hibou | le Hibou | masculine | "du Hibou", "au Hibou" |
+| German (`de`) | Die Eule | die Eule | feminine | "der Eule" |
+| Dutch (`nl`) | De Uil | de Uil | masculine ("hij") | — |
 
-`{{GUIDE_NAME}}` resolves to the Name column, capitalised article included, so put it where the name stands on its own: "I'm {{GUIDE_NAME}}.", "Soy {{GUIDE_NAME}}.", "Ich bin {{GUIDE_NAME}}." Never put it after a preposition that contracts or declines the article (French "du", Spanish "del", German "von der") — write the name out in that language instead, or rephrase.
+Each entry in `GUIDE_NAMES` has two forms. `label` is for places where the name stands on its own, such as the chat sender label. `inSentence` is for running text, with the article in lower case.
+
+`{{GUIDE_NAME}}` resolves to the running-prose form, so "I'm {{GUIDE_NAME}}." reads "I'm the Owl.", "Soy el Búho.", "Ich bin die Eule." When the variable opens a sentence (the start of the text, a new line, or after ". ", "! ", "? ", "… ") it is capitalised automatically: "{{GUIDE_NAME}} knows the way." reads "The Owl knows the way." Never put it after a preposition that contracts or declines the article (French "du", Spanish "del", German "von der") — write the name out in that language instead, or rephrase.
 
 When the guide talks about itself in the first person, adjectives and participles agree with the name: Spanish and French masculine ("estoy seguro", "je suis sûr"), German feminine ("ich bin die Erste, die…", "deine Begleiterin"). Most first-person lines need no agreement at all; prefer those.
 

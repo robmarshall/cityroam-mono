@@ -89,7 +89,7 @@ describe("Player App i18n translations", () => {
 
   it.each(SUPPORTED_LANGUAGES.map((l) => [l]))("%s chat.guideLabel is the guide's name in that language", (lang) => {
     const data = readJson(`${APP_I18N_DIR}/${lang}.json`) as { chat?: { guideLabel?: string } } | null;
-    expect(data?.chat?.guideLabel).toBe(GUIDE_NAMES[lang]);
+    expect(data?.chat?.guideLabel).toBe(GUIDE_NAMES[lang].label);
   });
 
   for (const lang of SUPPORTED_LANGUAGES) {

@@ -10,11 +10,11 @@ import { appendMessage, publishMessage } from "../../redis/index.js";
  * once the cap is reached (see handleMessageWhileCapped), so the notice says so.
  */
 const CAP_MESSAGES: Record<SupportedLanguage, string> = {
-  en: `${GUIDE_NAMES.en} has reached its message limit for this game. Answers and hint requests still work.`,
-  es: `${GUIDE_NAMES.es} ha alcanzado su límite de mensajes para esta partida. Las respuestas y las peticiones de pista siguen funcionando.`,
-  fr: `${GUIDE_NAMES.fr} a atteint sa limite de messages pour cette partie. Les réponses et les demandes d'indice fonctionnent toujours.`,
-  de: `${GUIDE_NAMES.de} hat ihr Nachrichtenlimit für dieses Spiel erreicht. Antworten und Hinweise funktionieren weiterhin.`,
-  nl: `${GUIDE_NAMES.nl} heeft zijn berichtenlimiet voor dit spel bereikt. Antwoorden en hints werken nog steeds.`,
+  en: `${GUIDE_NAMES.en.label} has reached its message limit for this game. Answers and hint requests still work.`,
+  es: `${GUIDE_NAMES.es.label} ha alcanzado su límite de mensajes para esta partida. Las respuestas y las peticiones de pista siguen funcionando.`,
+  fr: `${GUIDE_NAMES.fr.label} a atteint sa limite de messages pour cette partie. Les réponses et les demandes d'indice fonctionnent toujours.`,
+  de: `${GUIDE_NAMES.de.label} hat ihr Nachrichtenlimit für dieses Spiel erreicht. Antworten und Hinweise funktionieren weiterhin.`,
+  nl: `${GUIDE_NAMES.nl.label} heeft zijn berichtenlimiet voor dit spel bereikt. Antwoorden en hints werken nog steeds.`,
 };
 
 /**

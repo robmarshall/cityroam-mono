@@ -20,18 +20,18 @@ This document explains how to translate an existing route into a new language. T
 
 The guide is called the Owl, and the name is translated. `{{GUIDE_NAME}}` resolves to the right one for the event's language, so route content keeps the variable and never spells the name out:
 
-| Code | `{{GUIDE_NAME}}` | Grammatical gender | First-person agreement |
-|------|------------------|--------------------|------------------------|
-| `en` | The Owl | — ("it") | none |
-| `es` | El Búho | masculine | "estoy seguro", "listo" |
-| `fr` | Le Hibou | masculine | "je suis sûr", "prêt" |
-| `de` | Die Eule | feminine | "deine Begleiterin", "die Erste" |
-| `nl` | De Uil | de-word, "hij" | none |
+| Code | `{{GUIDE_NAME}}` in a sentence | At the start of a sentence | Grammatical gender | First-person agreement |
+|------|--------------------------------|----------------------------|--------------------|------------------------|
+| `en` | the Owl | The Owl | — ("it") | none |
+| `es` | el Búho | El Búho | masculine | "estoy seguro", "listo" |
+| `fr` | le Hibou | Le Hibou | masculine | "je suis sûr", "prêt" |
+| `de` | die Eule | Die Eule | feminine | "deine Begleiterin", "die Erste" |
+| `nl` | de Uil | De Uil | de-word, "hij" | none |
 
 Rules:
 
 - **Keep `{{GUIDE_NAME}}` exactly where the source has it.** The intro's "I'm {{GUIDE_NAME}}." becomes "Soy {{GUIDE_NAME}}.", "Je suis {{GUIDE_NAME}}.", "Ich bin {{GUIDE_NAME}}.", "Ik ben {{GUIDE_NAME}}."
-- **The variable carries a capitalised article.** Use it only where the name stands alone (subject or complement). After a preposition the article contracts or declines — French "du Hibou", Spanish "del Búho", German "der Eule" — so rephrase rather than writing "de {{GUIDE_NAME}}".
+- **The variable carries its article, in lower case mid-sentence.** "Soy {{GUIDE_NAME}}." reads "Soy el Búho."; at the start of a sentence (start of the text, a new line, or after ". ", "! ", "? ") the runtime capitalises it ("El Búho"). Use it only where the name stands alone (subject or complement). After a preposition the article contracts or declines — French "du Hibou", Spanish "del Búho", German "der Eule" — so rephrase rather than writing "de {{GUIDE_NAME}}".
 - **Agree with the name's gender** when the guide describes itself: masculine in Spanish and French, feminine in German. Most first-person lines need no agreement; when in doubt, choose a phrasing that needs none.
 - **Never translate an owl pun into the target language**, and do not add one. See [guide-personality.md > The Owl](guide-personality.md#the-owl).
 

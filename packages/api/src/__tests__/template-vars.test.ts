@@ -21,6 +21,7 @@ vi.mock("../db/index.js", async () => {
 
 // ── Imports (after mocks) ───────────────────────────────────────────
 import { applyTemplateVars, buildRouteTemplateVars } from "../services/template-vars.js";
+import { guideNameFor } from "@cityroam/shared/constants";
 import { db } from "../db/index.js";
 
 const mockedDb = db as any;
@@ -103,7 +104,7 @@ describe("buildRouteTemplateVars", () => {
       TOTAL_STOPS: "5",
       DISTANCE_KM: "3.2",
       REVIEW_LINK: "https://review.test.com",
-      GUIDE_NAME: "The Owl",
+      GUIDE_NAME: "the Owl",
     });
   });
 
@@ -133,16 +134,16 @@ describe("buildRouteTemplateVars", () => {
       TOTAL_STOPS: "3",
       DISTANCE_KM: "1.5",
       REVIEW_LINK: "https://review.test.com",
-      GUIDE_NAME: "The Owl",
+      GUIDE_NAME: "the Owl",
     });
   });
 
   it.each([
-    ["en", "The Owl"],
-    ["es", "El Búho"],
-    ["fr", "Le Hibou"],
-    ["de", "Die Eule"],
-    ["nl", "De Uil"],
+    ["en", "the Owl"],
+    ["es", "el Búho"],
+    ["fr", "le Hibou"],
+    ["de", "die Eule"],
+    ["nl", "de Uil"],
   ])("resolves GUIDE_NAME for an event in %s", async (language, name) => {
     mockedDb.query.routes.findFirst.mockResolvedValueOnce({
       route_family_id: "family-1",
@@ -168,10 +169,59 @@ describe("buildRouteTemplateVars", () => {
 
     const vars = await buildRouteTemplateVars("route-1");
 
-    expect(vars.GUIDE_NAME).toBe("Die Eule");
+    expect(vars.GUIDE_NAME).toBe("die Eule");
   });
 
   it("substitutes GUIDE_NAME into an intro block", () => {
-    expect(applyTemplateVars("I'm {{GUIDE_NAME}}.", { GUIDE_NAME: "The Owl" })).toBe("I'm The Owl.");
+    expect(applyTemplateVars("I'm {{GUIDE_NAME}}.", { GUIDE_NAME: "the Owl" })).toBe("I'm the Owl.");
+  });
+});
+
+// =====================================================================
+// GUIDE_NAME: lower case in running text, capitalised at a sentence start
+// =====================================================================
+describe("applyTemplateVars with GUIDE_NAME", () => {
+  it.each([
+    ["en", "I'm {{GUIDE_NAME}}. I know these streets.", "I'm the Owl. I know these streets."],
+    ["es", "Soy {{GUIDE_NAME}}. Conozco estas calles.", "Soy el Búho. Conozco estas calles."],
+    ["fr", "Je suis {{GUIDE_NAME}}. Je connais ces rues.", "Je suis le Hibou. Je connais ces rues."],
+    ["de", "Ich bin {{GUIDE_NAME}}. Ich kenne diese Straßen.", "Ich bin die Eule. Ich kenne diese Straßen."],
+    ["nl", "Ik ben {{GUIDE_NAME}}. Ik ken deze straten.", "Ik ben de Uil. Ik ken deze straten."],
+  ] as const)("keeps the article lower case mid-sentence (%s)", (language, content, expected) => {
+    const vars = { GUIDE_NAME: guideNameFor(language).inSentence };
+    expect(applyTemplateVars(content, vars)).toBe(expected);
+  });
+
+  it.each([
+    ["en", "{{GUIDE_NAME}} knows the way.", "The Owl knows the way."],
+    ["es", "Welcome. {{GUIDE_NAME}} conoce el camino.", "Welcome. El Búho conoce el camino."],
+    ["fr", "Bienvenue ! {{GUIDE_NAME}} connaît le chemin.", "Bienvenue ! Le Hibou connaît le chemin."],
+    ["de", "Bereit? {{GUIDE_NAME}} kennt den Weg.", "Bereit? Die Eule kennt den Weg."],
+    ["nl", "Welkom.\n{{GUIDE_NAME}} kent de weg.", "Welkom.\nDe Uil kent de weg."],
+  ] as const)("capitalises the article at the start of a sentence (%s)", (language, content, expected) => {
+    const vars = { GUIDE_NAME: guideNameFor(language).inSentence };
+    expect(applyTemplateVars(content, vars)).toBe(expected);
+  });
+
+  it.each([
+    ['"{{GUIDE_NAME}} here," it said.', '"The Owl here," it said.'],
+    ["Done. (“{{GUIDE_NAME}}”)", "Done. (“The Owl”)"],
+    ["Right…  {{GUIDE_NAME}} again.", "Right…  The Owl again."],
+    ["  {{GUIDE_NAME}} again.", "  The Owl again."],
+    ["Ask {{GUIDE_NAME}}, then {{GUIDE_NAME}} answers.", "Ask the Owl, then the Owl answers."],
+    ["Stop 3: {{GUIDE_NAME}} waits.", "Stop 3: the Owl waits."],
+    ["{{CITY_NAME}}. {{GUIDE_NAME}} again.", "Leeds. The Owl again."],
+  ])("handles %j", (content, expected) => {
+    expect(applyTemplateVars(content, { GUIDE_NAME: "the Owl", CITY_NAME: "Leeds" })).toBe(expected);
+  });
+
+  it("only sentence-cases GUIDE_NAME, never other variables such as a link", () => {
+    expect(
+      applyTemplateVars("Leave a review. {{REVIEW_LINK}}", { REVIEW_LINK: "https://g.page/x" }),
+    ).toBe("Leave a review. https://g.page/x");
+  });
+
+  it("does not expand a placeholder inside a substituted value", () => {
+    expect(applyTemplateVars("{{A}} {{B}}", { A: "{{B}}", B: "b" })).toBe("{{B}} b");
   });
 });
