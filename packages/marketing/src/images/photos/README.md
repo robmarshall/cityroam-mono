@@ -31,9 +31,22 @@ is empty.
 | `families` | F1 parent and two children reading the phone | `families-wide.jpg`, `families-tall.jpg` | 16:9 at 2000×1125, 4:5 at 1600×2000 |
 | `henParties` | H1 hen group laughing over a phone, daytime | `hen-parties-wide.jpg`, `hen-parties-tall.jpg` | 16:9 at 2000×1125, 4:5 at 1600×2000 |
 | `teamBuilding` | T1 colleagues with two phones out | `team-building-wide.jpg`, `team-building-tall.jpg` | 16:9 at 2000×1125, 4:5 at 1600×2000 |
+| `stagParties` | S1 stag group on Call Lane, one reading the clue aloud | `stag-parties-wide.jpg`, `stag-parties-tall.jpg` | 16:9 at 2000×1125, 4:5 at 1600×2000 |
+| `familiesDetail` | F2 child pointing up at a detail, parent following their gaze | `families-detail.jpg` | 4:5 at 1600×2000 |
+| `henPartiesDetail` | H3 bride-to-be typing an answer, friends blurred behind | `hen-parties-detail.jpg` | 4:5 at 1600×2000 |
+| `teamBuildingDetail` | T2 two small teams comparing screens | `team-building-detail.jpg` | 4:5 at 1600×2000 |
 
-The audience shots appear as cards on the home page (4:3, cropped from the
-wide file) and will be the audience-page heroes in Phase 4.
+The four audience shots (`families`, `henParties`, `teamBuilding`,
+`stagParties`) lead their audience pages as full-bleed heroes, and appear as
+cards on the home page (4:3, cropped from the wide file). The `…Detail`
+shots sit beside the three reasons on each audience page, in a 4:5 box on
+desktop and 16:9 on phones, so give them a subject near the middle; a single
+4:5 file is enough (leave `mobile` out of the manifest entry).
+
+There is no stag detail slot on purpose: S2 is a pint stop, and the page
+doesn't sell the drinking. If an F2, H3 or T2 location is a stop on the
+route or on the avoid list (Kirkgate Market, suggested for F2, is on it),
+keep the building out of the frame or pick another spot.
 
 ## Spoiler rule
 

@@ -29,7 +29,13 @@ export type Photo = {
   alt: Record<SupportedLanguage, string>;
 };
 
-/** Slot names, with the shot-list numbers they're waiting for. */
+/**
+ * Slot names, with the shot-list numbers they're waiting for. The four
+ * audience slots lead their pages (PhotoHero) and fill the home page's
+ * audience cards; the `…Detail` slots sit beside each page's three reasons.
+ * The stag page has no detail slot: S2 is a pint stop, and the page doesn't
+ * sell the drinking.
+ */
 export type PhotoSlotName =
   /** M1: Victoria Quarter roof (M2 Thornton's Arcade or M12 blue hour as alternates). */
   | "homeHero"
@@ -38,11 +44,23 @@ export type PhotoSlotName =
   /** H1: a hen group laughing over a phone, daytime. */
   | "henParties"
   /** T1: colleagues, two phones out, one reading a clue aloud. */
-  | "teamBuilding";
+  | "teamBuilding"
+  /** S1: a stag group on Call Lane, one reading the clue aloud, the rest heckling. */
+  | "stagParties"
+  /** F2: a child pointing up at a detail, a parent following their gaze. */
+  | "familiesDetail"
+  /** H3: the bride-to-be typing an answer, friends blurred behind. */
+  | "henPartiesDetail"
+  /** T2: two small teams comparing screens. */
+  | "teamBuildingDetail";
 
 export const PHOTOS: Record<PhotoSlotName, Photo | null> = {
   homeHero: null,
   families: null,
   henParties: null,
   teamBuilding: null,
+  stagParties: null,
+  familiesDetail: null,
+  henPartiesDetail: null,
+  teamBuildingDetail: null,
 };
