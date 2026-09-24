@@ -87,7 +87,7 @@ The server checks at startup that the key's `crk_<env>_` segment matches `CITYRO
 | `get_route` | A route with its groups and blocks: `format: "compact"` (default, one line per block) or `"tree"` (full JSON) |
 | `list_message_banks` | Message bank entries, filtered by `type` and/or `language` |
 | `list_image_slugs` | `{{IMAGE:slug}}` placeholders used by a route, a family or every route, whether each has a photo uploaded in this environment, and uploaded slugs nothing uses |
-| `validate_route` | Lints a stored route (`route_id`) or a draft bulk payload (`payload`) against the shared schemas and the content-guide rules (hint counts, answer variants, image refs, map links, delays). Local, sends nothing for a payload. |
+| `validate_route` | Lints a stored route (`route_id`) or a draft bulk payload (`payload`) against the shared schemas and the content-guide rules (hint counts, answer variants, image refs, map links, delays, template variables including `{{GUIDE_NAME}}`, owl puns). Local, sends nothing for a payload. |
 
 ### Write
 
@@ -130,8 +130,8 @@ Docs are read at request time, so edits show up without restarting the server.
 
 | Prompt | Arguments | What it does |
 |---|---|---|
-| `author_route` | `city`, optional `theme`, `stops`, `language` (default `en`) | Attaches the four authoring docs and walks the model through research → draft → `validate_route` → `create_route` with `dry_run` → `create_route` → `list_image_slugs` → `upload_image`, reminding it the route is created inactive and a human activates it. |
-| `translate_route` | `route_id`, `target_language` | Attaches `translation-guide.md` and walks through reading the source route, checking the family for an existing variant, drafting the translated payload in the same family, validating, creating (inactive), and filling missing message bank entries for the language. |
+| `author_route` | `city`, optional `theme`, `stops`, `language` (default `en`) | Attaches the four authoring docs and walks the model through research → draft → `validate_route` → `create_route` with `dry_run` → `create_route` → `list_image_slugs` → `upload_image`, reminding it the route is created inactive and a human activates it. It also tells the model the guide is the Owl: introduce it once in the intro with `{{GUIDE_NAME}}`, no puns. |
+| `translate_route` | `route_id`, `target_language` | Attaches `translation-guide.md` and walks through reading the source route, checking the family for an existing variant, drafting the translated payload in the same family (keeping `{{GUIDE_NAME}}` and agreeing with the name's gender in the target language), validating, creating (inactive), and filling missing message bank entries for the language. |
 
 ---
 

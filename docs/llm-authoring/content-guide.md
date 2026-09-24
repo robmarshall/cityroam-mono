@@ -72,7 +72,7 @@ The introduction group sets the tone for the entire hunt. Break it into **5-6 sh
 ### Pattern
 
 1. **Greeting** (0ms) — personality-forward opener, 1 sentence
-2. **Character colour** (1500ms) — one sentence establishing who the guide is
+2. **Character colour** (1500ms) — the guide introduces itself by name with `{{GUIDE_NAME}}` ("I'm {{GUIDE_NAME}}."), plus one sentence establishing who it is. This is the only time the guide names itself in the whole route — see [guide-personality.md > The Owl](guide-personality.md#the-owl)
 3. **How it works** (2000ms) — one sentence on the game mechanic
 4. **What to expect** (2000ms) — stops and distance, use template variables
 5. **Hint mechanic** (2000ms) — one sentence on asking for hints
@@ -85,7 +85,7 @@ Each message is **1-2 sentences max**. The guide's personality should come throu
 ```json
 [
   { "type": "message", "config": { "type": "message", "content": "Right then. Welcome to {{CITY_NAME}}." }, "delay_ms": 0 },
-  { "type": "message", "config": { "type": "message", "content": "I know these streets better than most. You just need to keep up." }, "delay_ms": 1500 },
+  { "type": "message", "config": { "type": "message", "content": "I'm {{GUIDE_NAME}}. I know these streets better than most — you just need to keep up." }, "delay_ms": 1500 },
   { "type": "message", "config": { "type": "message", "content": "I'll give you a clue at each stop. You figure it out, we move on." }, "delay_ms": 2000 },
   { "type": "message", "config": { "type": "message", "content": "{{TOTAL_STOPS}} stops, roughly {{DISTANCE_KM}}km. Should take about an hour if you don't dawdle." }, "delay_ms": 2000 },
   { "type": "message", "config": { "type": "message", "content": "If you get stuck, ask for a hint. I won't judge. Much." }, "delay_ms": 2000 },
@@ -103,7 +103,9 @@ Each message is **1-2 sentences max**. The guide's personality should come throu
 ]
 ```
 
-The bad example crams mechanics into one message and lacks personality. The good example builds character across several short messages.
+The bad example crams mechanics into one message, lacks personality and never says who the guide is. The good example builds character across several short messages and introduces the guide by name once.
+
+Always use `{{GUIDE_NAME}}` for the name; never hard-code "the Owl" (or "El Búho", "Le Hibou", …) in route content. The variable resolves to the name in the event's language, so a translated route gets the right name even if a translator misses it, and a future rename needs no content edits.
 
 ---
 
@@ -373,9 +375,13 @@ Message block content supports template variables that are replaced at runtime:
 | `{{TOTAL_STOPS}}` | Number of groups in the route |
 | `{{DISTANCE_KM}}` | Estimated distance in km |
 | `{{REVIEW_LINK}}` | Configured Google review URL |
+| `{{GUIDE_NAME}}` | The guide's name in the event's language: The Owl, El Búho, Le Hibou, Die Eule, De Uil |
+
+The same variables are substituted in hint text (and in completion message-bank templates). They are **not** substituted in clues, accepted answers, action labels or map links.
 
 Useful for introduction and closing messages:
-- "Welcome to {{CITY_NAME}}. I'll be your guide today."
+- "I'm {{GUIDE_NAME}}. I know these streets better than most."
+- "Welcome to {{CITY_NAME}}."
 - "That's all {{TOTAL_STOPS}} stops done. You've covered roughly {{DISTANCE_KM}}km."
 
 ---
@@ -398,7 +404,7 @@ The guide's core personality — dry, brief, knowledgeable — must survive tran
 
 - **Never translate literally** — adapt idioms and phrasing to sound natural in the target language
 - **Keep messages the same length** — if the English version is 1-2 sentences, the translation should be too
-- **Preserve template variables** — `{{CITY_NAME}}`, `{{TOTAL_STOPS}}`, etc. must remain as-is (they are replaced at runtime)
+- **Preserve template variables** — `{{CITY_NAME}}`, `{{TOTAL_STOPS}}`, `{{GUIDE_NAME}}`, etc. must remain as-is (they are replaced at runtime). `{{GUIDE_NAME}}` includes its capitalised article ("El Búho", "Die Eule"), so keep it where the name stands alone ("Soy {{GUIDE_NAME}}.") — see [translation-guide.md](translation-guide.md#the-guides-name)
 - **Match the delay timing** — do not adjust `delay_ms` values; the pacing is designed for the walking route, not the language
 - **Translate accepted answers to the local name** — "Leeds Town Hall" stays "Leeds Town Hall" in Spanish because it's a proper noun, but the clue and hints must be in Spanish. Use the locally known name where one exists.
 - **Rhyming clues don't need to rhyme** — if the English clue rhymes, the translation should be an engaging riddle in the target language, but forcing a rhyme at the expense of clarity is worse than a clear non-rhyming clue
@@ -426,6 +432,8 @@ Avoid these common mistakes when authoring routes:
 - **Delay-free dumps** — 4+ blocks all with `delay_ms: 0`. The player gets a wall of content all at once.
 - **Over-commenting** — more than 3 en-route blocks per group, or commentary on a very short walk where there's nothing notable.
 - **Duplicating the success message** — adding a "Well done" or "Correct" block after a question. The message bank handles this automatically.
+- **Hard-coding the guide's name** — writing "the Owl" instead of `{{GUIDE_NAME}}`, or introducing the guide more than once.
+- **Owl puns** — "hoot", "twit-twoo", "wise old owl" and the like. At most one owl reference in a whole route, and never a pun.
 
 ---
 
@@ -454,7 +462,7 @@ Here's a well-structured 2-location route demonstrating all the patterns above:
         },
         {
           "type": "message",
-          "config": { "type": "message", "content": "I know these streets better than most. You just need to keep up." },
+          "config": { "type": "message", "content": "I'm {{GUIDE_NAME}}. I know these streets better than most — you just need to keep up." },
           "delay_ms": 1500
         },
         {

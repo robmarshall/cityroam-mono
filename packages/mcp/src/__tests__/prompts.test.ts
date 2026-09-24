@@ -51,6 +51,10 @@ describe("prompts", () => {
     expect([...positions].sort((a, b) => a - b)).toEqual(positions);
     expect(text).toContain("created inactive");
     expect(text).toMatch(/activates it in the admin UI/);
+    expect(text).toContain("The guide is the Owl");
+    expect(text).toContain('"Le Hibou"');
+    expect(text).toContain("{{GUIDE_NAME}}");
+    expect(text).toContain("no owl puns");
 
     const embedded = result.messages.slice(1).map((m) => m.content);
     expect(embedded).toHaveLength(4);
@@ -92,6 +96,8 @@ describe("prompts", () => {
     });
     const text = firstText(result);
     expect(text).toContain('Translate City Roam route r-123 into "es"');
+    expect(text).toContain('{{GUIDE_NAME}} becomes "El Búho"');
+    expect(text).toContain("grammatical gender");
     for (const step of ['get_route with route_id "r-123"', "get_route_family", "route_family_id", "validate_route", "create_route with dry_run: true", 'list_message_banks with language "es"', "list_image_slugs"]) {
       expect(text, step).toContain(step);
     }
