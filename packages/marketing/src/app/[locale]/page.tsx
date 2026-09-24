@@ -1,22 +1,24 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import type { SupportedLanguage } from "@cityroam/shared/types";
+import { Annotation } from "@/components/Annotation";
+import { AudienceCards } from "@/components/AudienceCards";
 import { ComparisonTable } from "@/components/ComparisonTable";
 import { CTAButton } from "@/components/CTAButton";
 import { FAQ } from "@/components/FAQ";
+import { GiftLine } from "@/components/GiftLine";
 import ChatSnippet from "@/components/IphoneDemo/ChatSnippet";
 import IphoneDemo from "@/components/IphoneDemo/IphoneDemo";
 import { KeyFacts, PerHead } from "@/components/KeyFacts";
-import {
-  Card,
-  CardGrid,
-  CheckList,
-  Section,
-  SectionHeading,
-  Steps,
-} from "@/components/Section";
+import { LineMap } from "@/components/LineMap";
+import { PhotoHero } from "@/components/PhotoHero";
+import { RouteAtAGlance } from "@/components/RouteAtAGlance";
+import { CheckList, CtaBand, Section, SectionHeading, Steps } from "@/components/Section";
 import { StickyBookBar } from "@/components/StickyBookBar";
+import { TrustStrip } from "@/components/TrustStrip";
 import { factValues } from "@/lib/facts";
 import { buildMetadata } from "@/lib/metadata";
+import { LEEDS_ROUTE_FACTS } from "@/lib/route-facts";
 
 const HOME_FAQ_COUNT = 11;
 
@@ -29,105 +31,161 @@ export async function generateMetadata({
   return buildMetadata(locale, "home");
 }
 
+/**
+ * The home page, in the order of docs/plans/brand-direction-a.md (Phase 3):
+ * hero, how it works, the route, what you get and the price, the comparison,
+ * who it's for, why it's safe to book, questions, and a closing band.
+ *
+ * The mobile booking bar appears once the hero button has scrolled away and
+ * hides while the price section or the closing band is on screen (both are
+ * `bookZone`s), so two "Book" buttons are never in view together.
+ */
 export default async function Home({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params;
+  const { locale } = (await params) as { locale: SupportedLanguage };
   setRequestLocale(locale);
 
   const t = await getTranslations("home");
-  const facts = factValues(await getTranslations("facts"));
+  const tc = await getTranslations("cta");
+  const tf = await getTranslations("facts");
+  const facts = factValues(tf);
   const list = (key: string, count: number) =>
     Array.from({ length: count }, (_, i) => t(`${key}.${i}`, facts));
 
   return (
     <main className="min-h-screen">
-      {/* Hero */}
-      <section className="overflow-hidden px-6 py-16 sm:py-24">
-        <div className="mx-auto flex max-w-5xl flex-col items-center gap-12 lg:flex-row lg:gap-16">
-          <div className="flex-1 text-center lg:text-left">
-            <h1 className="font-display text-4xl font-semibold tracking-tight text-balance text-ink-900 sm:text-6xl">
-              {t("hero.title")}
-            </h1>
-            <p className="mt-6 text-lg leading-8 text-ink-700 sm:text-xl">{t("hero.subtitle")}</p>
-            <div className="mt-10">
-              <CTAButton location="hero" align="start-lg" />
-            </div>
-            <KeyFacts align="start-lg" />
-            {/* Phones get a few lines of the chat instead of the tall mock. */}
-            <ChatSnippet className="mt-10 sm:hidden" />
+      {/* Hero: the photo (or its placeholder), two of the Owl's notes, the
+          promise, the button and the four key facts. */}
+      <PhotoHero
+        slot="homeHero"
+        locale={locale}
+        notes={
+          <>
+            <Annotation text={t("notes.roof")} at={{ x: 7, y: 9 }} tail="bottom-left" />
+            <Annotation
+              text={t("notes.briggate")}
+              at={{ x: 6, y: 58, fromRight: true }}
+              tail="top-right"
+              delay={500}
+              hideBelowMd
+            />
+          </>
+        }
+      >
+        {(ground) => {
+          const onPhoto = ground === "photo";
+          return (
+            <>
+              <h1
+                className={`font-display text-4xl font-semibold tracking-tight text-balance sm:text-6xl ${
+                  onPhoto ? "text-stone-50" : "text-ink-900"
+                }`}
+              >
+                {t("hero.title")}
+              </h1>
+              <p
+                className={`mt-6 text-lg leading-8 sm:text-xl ${onPhoto ? "text-stone-100" : "text-ink-700"}`}
+              >
+                {t("hero.subtitle")}
+              </p>
+              <div className="mt-10">
+                <CTAButton
+                  location="hero"
+                  align={onPhoto ? "start" : "start-lg"}
+                  variant={onPhoto ? "inverse" : "primary"}
+                />
+              </div>
+              <KeyFacts align={onPhoto ? "start" : "start-lg"} tone={onPhoto ? "dark" : "light"} />
+            </>
+          );
+        }}
+      </PhotoHero>
+
+      {/* How it works, beside the chat itself. */}
+      <Section tone="white">
+        <div className="grid items-center gap-12 md:grid-cols-[minmax(0,1fr)_auto] md:gap-16">
+          <div>
+            <SectionHeading align="left" title={t("howItWorks.title")} />
+            <Steps
+              layout="list"
+              steps={[1, 2, 3, 4].map((n) => ({
+                title: t(`howItWorks.step${n}Title`),
+                description: t(`howItWorks.step${n}Desc`),
+              }))}
+            />
           </div>
-          {/* The 700px-tall mock would push everything below the fold on
-              phones, so it starts at the sm breakpoint. */}
-          <div className="relative hidden shrink-0 rotate-3 sm:block lg:rotate-6">
+          {/* The 700px mock is too tall for phones; they get a few lines of
+              the same conversation. */}
+          <div className="relative mx-auto hidden shrink-0 rotate-2 sm:block">
             <IphoneDemo variant="hero" />
           </div>
-        </div>
-      </section>
-
-      {/* Intro */}
-      <Section tone="white" width="narrow">
-        <div className="space-y-6 text-lg leading-relaxed text-ink-700 sm:text-xl">
-          <p>
-            {t.rich("problem.text1", {
-              b: (chunks) => <strong className="text-ink-900">{chunks}</strong>,
-            })}
-          </p>
-          <p>{t("problem.text2")}</p>
-          <p>{t("problem.text3")}</p>
+          <ChatSnippet className="sm:hidden" />
         </div>
       </Section>
 
-      {/* How it works */}
+      {/* The route at a glance: facts on the left, the sketch map on the right. */}
       <Section>
-        <SectionHeading title={t("howItWorks.title")} />
-        <Steps
-          steps={[1, 2, 3, 4].map((n) => ({
-            title: t(`howItWorks.step${n}Title`),
-            description: t(`howItWorks.step${n}Desc`),
-          }))}
-        />
-      </Section>
-
-      {/* Just your phone */}
-      <Section tone="white">
-        <div className="flex flex-col items-center gap-12 md:flex-row md:gap-16">
-          <div className="flex-1">
-            <SectionHeading
-              align="left"
-              title={t("phone.title")}
-              subtitle={t("phone.subtitle")}
+        <div className="grid items-center gap-12 md:grid-cols-2 md:gap-16">
+          <div>
+            <SectionHeading align="left" title={t("route.title")} subtitle={t("route.subtitle")} />
+            <div className="mt-8">
+              <RouteAtAGlance facts={LEEDS_ROUTE_FACTS} />
+            </div>
+            <p className="mt-4 text-sm text-muted">{t("route.note")}</p>
+          </div>
+          {/* Room above and below the map for the Owl's notes to hang over its corners. */}
+          <div className="relative md:py-20">
+            <div className="aspect-[4/3] rounded-card bg-white p-3 ring-1 ring-stone-200 sm:p-5">
+              <LineMap label={t("route.mapLabel", facts)} startLabel={t("route.start")} />
+            </div>
+            <Annotation
+              text={t("notes.clock")}
+              at={{ x: -3, y: 0, fromRight: true }}
+              tail="bottom-right"
+              delay={1200}
+              className="mt-6 ml-auto"
             />
-            <CheckList items={list("phone.features", 4)} className="mt-8 sm:grid-cols-1" />
-          </div>
-          <div className="relative shrink-0 -rotate-2 md:rotate-3">
-            <IphoneDemo variant="howItWorks" />
+            <Annotation
+              text={t("notes.carving")}
+              at={{ x: -5, y: 76 }}
+              tail="top-left"
+              delay={1600}
+              className="mt-4"
+            />
           </div>
         </div>
       </Section>
 
-      {/* What's included */}
-      <Section>
-        <SectionHeading title={t("included.title")} subtitle={t("included.subtitle")} />
-        <CheckList items={list("included.items", 6)} />
-      </Section>
-
-      {/* Why City Roam */}
-      <Section tone="white">
-        <SectionHeading title={t("whyChoose.title")} subtitle={t("whyChoose.subtitle")} />
-        <CardGrid>
-          {(["localKnowledge", "justYourPhone", "playYourWay", "builtForGroups"] as const).map(
-            (key) => (
-              <Card
-                key={key}
-                title={t(`whyChoose.${key}.title`)}
-                description={t(`whyChoose.${key}.description`)}
-              />
-            ),
-          )}
-        </CardGrid>
+      {/* What you get and the price. The whole band is a booking zone. */}
+      <Section id="pricing" tone="white" bookZone className="scroll-mt-4">
+        <div className="grid gap-12 md:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] md:items-start md:gap-16">
+          <div>
+            <SectionHeading align="left" title={t("included.title")} subtitle={t("included.subtitle")} />
+            <CheckList items={list("included.items", 6)} columns={1} className="mt-8" />
+          </div>
+          <div>
+            <div className="rounded-card bg-stone-50 px-6 py-8 text-center ring-1 ring-stone-200 sm:px-8">
+              <h3 className="font-display text-2xl font-semibold text-ink-900">{t("pricing.title")}</h3>
+              <p className="mt-2 text-muted">{t("pricing.subtitle")}</p>
+              <p className="mt-6 font-display text-5xl font-semibold tracking-tight text-ink-900">
+                {t("pricing.price")}
+                <span className="ml-2 font-sans text-lg font-medium tracking-normal text-muted">
+                  {t("pricing.perGroup")}
+                </span>
+              </p>
+              <PerHead className="mt-2 text-base text-ink-700" />
+              <p className="mt-2 text-sm font-medium text-brick-600">{t("pricing.badge")}</p>
+              <div className="mt-8">
+                <CTAButton location="pricing" />
+              </div>
+              <p className="mt-6 text-sm text-muted">{t("pricing.note")}</p>
+            </div>
+            <GiftLine className="mt-6" />
+          </div>
+        </div>
       </Section>
 
       {/* How it compares */}
@@ -136,47 +194,26 @@ export default async function Home({
         <ComparisonTable />
       </Section>
 
-      {/* Pricing */}
-      <Section
-        id="pricing"
-        tone="white"
-        width="narrow"
-        bookZone
-        className="scroll-mt-4 text-center"
-      >
-        <SectionHeading title={t("pricing.title")} subtitle={t("pricing.subtitle")} />
-        <div className="mt-10 inline-block rounded-card bg-white px-6 py-8 ring-1 ring-stone-200 shadow-sm sm:px-10">
-          <p className="font-display text-5xl font-semibold tracking-tight text-ink-900">
-            {t("pricing.price")}
-            <span className="ml-2 font-sans text-lg font-medium tracking-normal text-muted">
-              {t("pricing.perGroup")}
-            </span>
-          </p>
-          <PerHead className="mt-2 text-base text-ink-700" />
-          <p className="mt-2 text-sm font-medium text-brick-600">{t("pricing.badge")}</p>
-          <div className="mt-8">
-            <CTAButton location="pricing" />
-          </div>
-          <p className="mt-6 text-sm text-muted">{t("pricing.note")}</p>
-        </div>
+      {/* Who it's for */}
+      <Section tone="white">
+        <SectionHeading title={t("audiences.title")} subtitle={t("audiences.subtitle")} />
+        <AudienceCards locale={locale} />
       </Section>
 
-      {/* Refund promise */}
-      <section className="bg-brick-100 px-6 py-16">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="font-display text-2xl font-semibold text-ink-900 sm:text-3xl">{t("guarantee.title")}</h2>
-          <p className="mt-3 text-lg text-ink-700">{t("guarantee.description")}</p>
-        </div>
-      </section>
+      {/* Why it's safe to book */}
+      <Section>
+        <TrustStrip note={<Annotation text={t("notes.owls")} tail="top-left" />} />
+      </Section>
 
       {/* FAQ */}
-      <Section>
+      <Section tone="white">
         <SectionHeading title={t("faqTitle")} />
         <FAQ namespace="faq" count={HOME_FAQ_COUNT} values={facts} />
-        <div className="mt-12 text-center">
-          <CTAButton location="faq" />
-        </div>
       </Section>
+
+      <CtaBand text={t("closing")} note={tc("priceNote", facts)} subnote={tf("perHead", facts)}>
+        <CTAButton location="closing" variant="inverse" />
+      </CtaBand>
 
       <StickyBookBar location="sticky-bar" />
     </main>

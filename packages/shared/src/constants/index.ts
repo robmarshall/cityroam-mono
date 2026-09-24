@@ -99,3 +99,25 @@ export const ADMIN_API_KEY_EXPIRY_DAYS = [30, 90, 365] as const;
 /** Deployment environments encoded in a key's prefix (`crk_<env>_…`). */
 export const ADMIN_API_KEY_ENVS = ["dev", "stg", "prd"] as const;
 export type AdminApiKeyEnv = (typeof ADMIN_API_KEY_ENVS)[number];
+
+// Gift vouchers
+/**
+ * Voucher codes are typed by hand from a printed card, so the alphabet drops
+ * every character that reads as another: no 0/O, 1/I/L. Upper case only;
+ * input is upper-cased before it is checked. 31^10 is about 8 x 10^14 codes.
+ */
+export const VOUCHER_CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+/** Characters in a voucher code, not counting the display dashes. */
+export const VOUCHER_CODE_LENGTH = 10;
+/** Display grouping: XXXX-XXXX-XX. */
+export const VOUCHER_CODE_GROUPS = [4, 4, 2] as const;
+/** A voucher can be redeemed for this long after purchase. */
+export const VOUCHER_EXPIRY_MONTHS = 12;
+export const VOUCHER_RECIPIENT_NAME_MAX_LENGTH = 60;
+export const VOUCHER_MESSAGE_MAX_LENGTH = 300;
+/**
+ * The marketing page that redeems a voucher, under the locale prefix:
+ * `${MARKETING_URL}/<locale>/redeem?code=XXXX-XXXX-XX`.
+ */
+export const VOUCHER_REDEEM_PATH = "/redeem";
+export const VOUCHER_STATUSES = ["PURCHASED", "REDEEMED", "REFUNDED", "EXPIRED", "VOID"] as const;

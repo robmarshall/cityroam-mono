@@ -1,6 +1,6 @@
 import { and, asc, inArray, isNotNull, lt, or, sql, type SQL } from "drizzle-orm";
 import { db } from "../db/index.js";
-import { adminAuditLog, events, messages, participants } from "../db/schema/index.js";
+import { adminAuditLog, events, messages, participants, vouchers } from "../db/schema/index.js";
 import { redis } from "../redis/client.js";
 import { createLogger } from "../lib/logger.js";
 
@@ -18,6 +18,18 @@ import { createLogger } from "../lib/logger.js";
  *    → the event row keeps its Stripe references until 6 years after purchase,
  *      then those are nulled too. The anonymised row (code, route, status,
  *      timings, counters) stays as non-personal gameplay data.
+ *
+ * Gift vouchers follow the same two periods. The privacy page does not
+ * mention vouchers yet (flagged for the solicitor in docs/vouchers.md), so the
+ * event periods are applied by analogy:
+ *
+ *  - 12 months after the voucher ends (redeemed, refunded, voided or expired)
+ *    → purchaser email, recipient name, gift message, void reason and email
+ *      delivery error are nulled. The code, status and dates stay.
+ *  - 6 years after purchase → the Stripe references are nulled.
+ *
+ * The redeemer's email, if they gave one, lives on the event row and goes
+ * with the event's own retention.
  *
  * It also prunes the admin audit log (admin_audit_log) after
  * ADMIN_AUDIT_RETENTION_DAYS: the rows name admin sessions and API keys and
@@ -55,6 +67,8 @@ export interface RetentionResult {
   deletedParticipants: number;
   strippedPaymentRefs: number;
   prunedAuditRows: number;
+  anonymisedVouchers: number;
+  strippedVoucherPaymentRefs: number;
 }
 
 /** Subtract calendar months (UTC), e.g. for "12 months after". */
@@ -209,6 +223,91 @@ export async function pruneAdminAuditLogBatch(now = new Date()): Promise<number>
   return deleted.length;
 }
 
+const TERMINAL_VOUCHER_STATUSES = ["REDEEMED", "REFUNDED", "VOID", "EXPIRED"];
+
+/**
+ * When a voucher "ended" for retention purposes: the redemption, refund or
+ * void date, or the expiry date. COALESCE to expires_at covers rows missing
+ * the specific timestamp.
+ */
+export function voucherRetentionAnchor(): SQL {
+  return sql`(CASE ${vouchers.status}
+    WHEN 'REDEEMED' THEN COALESCE(${vouchers.redeemed_at}, ${vouchers.expires_at})
+    WHEN 'REFUNDED' THEN COALESCE(${vouchers.refunded_at}, ${vouchers.created_at})
+    WHEN 'VOID' THEN COALESCE(${vouchers.voided_at}, ${vouchers.created_at})
+    ELSE ${vouchers.expires_at}
+  END)`;
+}
+
+/** Ended vouchers past the 12-month window that still hold personal data. */
+export function voucherAnonymiseCandidateFilter(cutoff: Date): SQL | undefined {
+  return and(
+    inArray(vouchers.status, TERMINAL_VOUCHER_STATUSES),
+    sql`${voucherRetentionAnchor()} < ${cutoff.toISOString()}`,
+    or(
+      isNotNull(vouchers.purchaser_email),
+      isNotNull(vouchers.recipient_name),
+      isNotNull(vouchers.message),
+      isNotNull(vouchers.void_reason),
+      isNotNull(vouchers.email_error),
+    ),
+  );
+}
+
+/** Vouchers older than the accounting window that still carry Stripe references. */
+export function voucherPaymentRefCandidateFilter(cutoff: Date): SQL | undefined {
+  return and(
+    lt(vouchers.created_at, cutoff),
+    or(isNotNull(vouchers.stripe_session_id), isNotNull(vouchers.stripe_payment_id)),
+  );
+}
+
+/** Null the personal fields on one batch of ended vouchers. */
+export async function anonymiseVoucherBatch(now = new Date()): Promise<number> {
+  const candidates = await db
+    .select({ id: vouchers.id })
+    .from(vouchers)
+    .where(voucherAnonymiseCandidateFilter(eventRetentionCutoff(now)))
+    .orderBy(vouchers.created_at)
+    .limit(RETENTION_BATCH_SIZE);
+
+  if (candidates.length === 0) return 0;
+
+  const updated = await db
+    .update(vouchers)
+    .set({
+      purchaser_email: null,
+      recipient_name: null,
+      message: null,
+      void_reason: null,
+      email_error: null,
+    })
+    .where(inArray(vouchers.id, candidates.map((c) => c.id)))
+    .returning({ id: vouchers.id });
+
+  return updated.length;
+}
+
+/** Null the Stripe references on one batch of vouchers past the accounting window. */
+export async function stripVoucherPaymentRefBatch(now = new Date()): Promise<number> {
+  const candidates = await db
+    .select({ id: vouchers.id })
+    .from(vouchers)
+    .where(voucherPaymentRefCandidateFilter(accountingRetentionCutoff(now)))
+    .orderBy(vouchers.created_at)
+    .limit(RETENTION_BATCH_SIZE);
+
+  if (candidates.length === 0) return 0;
+
+  const updated = await db
+    .update(vouchers)
+    .set({ stripe_session_id: null, stripe_payment_id: null })
+    .where(inArray(vouchers.id, candidates.map((c) => c.id)))
+    .returning({ id: vouchers.id });
+
+  return updated.length;
+}
+
 /**
  * Run a full retention pass. Loops each step in batches until a batch comes
  * back short or the per-run cap is hit (the next pass picks up the rest).
@@ -220,6 +319,8 @@ export async function runRetentionSweep(now = new Date()): Promise<RetentionResu
     deletedParticipants: 0,
     strippedPaymentRefs: 0,
     prunedAuditRows: 0,
+    anonymisedVouchers: 0,
+    strippedVoucherPaymentRefs: 0,
   };
 
   for (let i = 0; i < MAX_BATCHES_PER_RUN; i++) {
@@ -242,10 +343,23 @@ export async function runRetentionSweep(now = new Date()): Promise<RetentionResu
     if (pruned < RETENTION_BATCH_SIZE) break;
   }
 
+  for (let i = 0; i < MAX_BATCHES_PER_RUN; i++) {
+    const anonymised = await anonymiseVoucherBatch(now);
+    result.anonymisedVouchers += anonymised;
+    if (anonymised < RETENTION_BATCH_SIZE) break;
+  }
+
+  for (let i = 0; i < MAX_BATCHES_PER_RUN; i++) {
+    const stripped = await stripVoucherPaymentRefBatch(now);
+    result.strippedVoucherPaymentRefs += stripped;
+    if (stripped < RETENTION_BATCH_SIZE) break;
+  }
+
   const touched =
     result.anonymisedEvents + result.deletedMessages +
     result.deletedParticipants + result.strippedPaymentRefs +
-    result.prunedAuditRows;
+    result.prunedAuditRows + result.anonymisedVouchers +
+    result.strippedVoucherPaymentRefs;
   if (touched > 0) {
     log.info("retention sweep applied", { ...result });
   }

@@ -3,7 +3,11 @@ import type {
   AdminApiKeyListResponse,
   AdminApiKeyRevokeResponse,
   AdminAuditLogResponse,
+  AdminVoucherDetailResponse,
+  AdminVoucherListResponse,
+  AdminVoucherResendResponse,
   ApiErrorResponse,
+  VoucherStatus,
 } from "@cityroam/shared/types";
 import type { AdminApiKeyScope } from "@cityroam/shared/constants";
 
@@ -149,6 +153,40 @@ export const api = {
       if (params.offset !== undefined) query.set("offset", String(params.offset));
       const qs = query.toString();
       return request<AdminAuditLogResponse>("GET", `/admin/audit-log${qs ? `?${qs}` : ""}`);
+    },
+  },
+
+  /** Gift vouchers (session-only endpoints). */
+  vouchers: {
+    list(
+      params: { q?: string; status?: VoucherStatus; page?: number; per_page?: number } = {},
+    ): Promise<AdminVoucherListResponse> {
+      const query = new URLSearchParams();
+      if (params.q) query.set("q", params.q);
+      if (params.status) query.set("status", params.status);
+      if (params.page !== undefined) query.set("page", String(params.page));
+      if (params.per_page !== undefined) query.set("per_page", String(params.per_page));
+      const qs = query.toString();
+      return request<AdminVoucherListResponse>("GET", `/admin/vouchers${qs ? `?${qs}` : ""}`);
+    },
+
+    get(id: string): Promise<AdminVoucherDetailResponse> {
+      return request<AdminVoucherDetailResponse>("GET", `/admin/vouchers/${encodeURIComponent(id)}`);
+    },
+
+    void(id: string, reason?: string): Promise<AdminVoucherDetailResponse> {
+      return request<AdminVoucherDetailResponse>(
+        "POST",
+        `/admin/vouchers/${encodeURIComponent(id)}/void`,
+        reason ? { reason } : {},
+      );
+    },
+
+    resendEmail(id: string): Promise<AdminVoucherResendResponse> {
+      return request<AdminVoucherResendResponse>(
+        "POST",
+        `/admin/vouchers/${encodeURIComponent(id)}/resend-email`,
+      );
     },
   },
 } as const;

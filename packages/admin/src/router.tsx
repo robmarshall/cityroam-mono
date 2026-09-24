@@ -18,6 +18,8 @@ const RouteFamilyDetailPage = lazy(
 const RouteEditorPage = lazy(() => import("./pages/RouteEditorPage"));
 const MessageBanksPage = lazy(() => import("./pages/MessageBanksPage"));
 const ApiKeysPage = lazy(() => import("./pages/ApiKeysPage"));
+const VouchersListPage = lazy(() => import("./pages/VouchersListPage"));
+const VoucherDetailPage = lazy(() => import("./pages/VoucherDetailPage"));
 
 function SuspenseWrapper({ children }: { children: React.ReactNode }) {
   return (
@@ -79,6 +81,22 @@ export const router = createBrowserRouter(
           element: (
             <SuspenseWrapper>
               <EventDetailPage />
+            </SuspenseWrapper>
+          ),
+        },
+        {
+          path: "vouchers",
+          element: (
+            <SuspenseWrapper>
+              <VouchersListPage />
+            </SuspenseWrapper>
+          ),
+        },
+        {
+          path: "vouchers/:id",
+          element: (
+            <SuspenseWrapper>
+              <VoucherDetailPage />
             </SuspenseWrapper>
           ),
         },

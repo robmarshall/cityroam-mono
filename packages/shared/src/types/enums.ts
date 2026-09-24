@@ -24,3 +24,5 @@ export type MessageBankType =
   | "guide-busy";
 
 export type SupportedLanguage = "en" | "es" | "fr" | "de" | "nl";
+
+export type VoucherStatus = "PURCHASED" | "REDEEMED" | "REFUNDED" | "EXPIRED" | "VOID";

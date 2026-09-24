@@ -36,6 +36,8 @@ vi.mock("../db/index.js", () => {
       participants: { findFirst: vi.fn(), findMany: vi.fn(async () => []) },
       routes: { findFirst: vi.fn(), findMany: vi.fn() },
       messageBanks: { findFirst: vi.fn() },
+      // Refund webhooks look for a voucher bought with the payment first.
+      vouchers: { findFirst: vi.fn() },
     },
     select: vi.fn(() => mockDb),
     from: vi.fn(() => mockDb),

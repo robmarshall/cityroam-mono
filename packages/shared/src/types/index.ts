@@ -4,6 +4,7 @@ export type {
   ParticipantLeftReason,
   MessageBankType,
   SupportedLanguage,
+  VoucherStatus,
 } from "./enums.js";
 
 export type {
@@ -99,3 +100,16 @@ export type {
 } from "./redis.js";
 
 export type { SequenceItem } from "./sequence.js";
+
+export type {
+  VoucherCheckoutSessionResponse,
+  VoucherCheckoutSuccessResponse,
+  VoucherLookupResponse,
+  VoucherRedeemResponse,
+  VoucherErrorCode,
+  AdminVoucherListItem,
+  AdminVoucherListResponse,
+  AdminVoucherDetail,
+  AdminVoucherDetailResponse,
+  AdminVoucherResendResponse,
+} from "./vouchers.js";

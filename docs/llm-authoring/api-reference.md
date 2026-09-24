@@ -969,3 +969,10 @@ Common codes:
 - `DUPLICATE_BLOCK_IDS` (400) — Reorder array has duplicate IDs
 - `INCOMPLETE_BLOCK_LIST` (400) — Reorder array missing block IDs
 - Validation errors (400) — Zod validation details in the error message
+
+## Gift vouchers
+
+Voucher endpoints (public purchase, lookup and redemption, and the admin
+list, detail, void and resend) are documented in `docs/vouchers.md`. The admin
+voucher endpoints are session-only: every API key, whatever its scopes, gets
+`403 ADMIN_SESSION_REQUIRED`.

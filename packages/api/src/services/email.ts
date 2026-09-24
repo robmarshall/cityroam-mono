@@ -72,28 +72,14 @@ async function attemptSend(payload: {
 }
 
 /**
- * Sends the event-code email with bounded exponential backoff and records the
- * outcome on the event row.
- *
- * Never throws: the caller is either a Stripe webhook that must still answer
- * 200 once the event exists, or an admin endpoint that reports the failure to
- * the operator. A run that exhausts its attempts leaves `code_email_failed_at`
- * set so the admin event list can surface it and an operator can resend.
+ * Sends one email with bounded exponential backoff. Never throws. `label`
+ * names the email in log lines; `context` rides along on every line.
  */
-export async function sendEventCodeEmail(opts: {
-  eventId: string | null;
-  code: string;
-  buyerEmail: string;
-  language: SupportedLanguage;
-}): Promise<EmailSendOutcome> {
-  const eventUrl = buildEventUrl(env.APP_PUBLIC_URL, opts.code);
-  const payload = {
-    from: env.RESEND_FROM_EMAIL,
-    to: opts.buyerEmail,
-    subject: getEmailSubject(opts.language),
-    html: buildConfirmationEmail(eventUrl, opts.code, opts.language),
-  };
-
+export async function sendWithRetry(
+  payload: { from: string; to: string; subject: string; html: string },
+  label: string,
+  context: Record<string, unknown>,
+): Promise<EmailSendOutcome> {
   const maxAttempts = Math.max(1, emailRetryPolicy.maxAttempts);
   let lastError: string | null = null;
   let attempts = 0;
@@ -103,19 +89,15 @@ export async function sendEventCodeEmail(opts: {
     lastError = await attemptSend(payload);
 
     if (lastError === null) {
-      await recordOutcome(opts.eventId, { sent: true, attempts, error: null });
       if (attempt > 0) {
-        log.info("confirmation email sent after a retry", {
-          eventCode: opts.code,
-          attempts,
-        });
+        log.info(`${label} sent after a retry`, { ...context, attempts });
       }
       return { sent: true, attempts, error: null };
     }
 
     const isLast = attempt === maxAttempts - 1;
-    log.warn("confirmation email attempt failed", {
-      eventCode: opts.code,
+    log.warn(`${label} attempt failed`, {
+      ...context,
       attempt: attempts,
       willRetry: !isLast,
       error: lastError,
@@ -126,13 +108,46 @@ export async function sendEventCodeEmail(opts: {
     }
   }
 
-  log.error("confirmation email failed after every attempt", {
-    eventCode: opts.code,
+  log.error(`${label} failed after every attempt`, {
+    ...context,
     attempts,
     error: lastError,
   });
-  await recordOutcome(opts.eventId, { sent: false, attempts, error: lastError });
   return { sent: false, attempts, error: lastError };
+}
+
+/**
+ * Sends the event-code email with bounded exponential backoff and records the
+ * outcome on the event row.
+ *
+ * Never throws: the caller is either a Stripe webhook that must still answer
+ * 200 once the event exists, or an admin endpoint that reports the failure to
+ * the operator. A run that exhausts its attempts leaves `code_email_failed_at`
+ * set so the admin event list can surface it and an operator can resend.
+ *
+ * `variant: "gift"` is for an event created by redeeming a voucher: the
+ * recipient did not pay, so the refund line is replaced.
+ */
+export async function sendEventCodeEmail(opts: {
+  eventId: string | null;
+  code: string;
+  buyerEmail: string;
+  language: SupportedLanguage;
+  variant?: ConfirmationEmailVariant;
+}): Promise<EmailSendOutcome> {
+  const eventUrl = buildEventUrl(env.APP_PUBLIC_URL, opts.code);
+  const payload = {
+    from: env.RESEND_FROM_EMAIL,
+    to: opts.buyerEmail,
+    subject: getEmailSubject(opts.language),
+    html: buildConfirmationEmail(eventUrl, opts.code, opts.language, opts.variant),
+  };
+
+  const outcome = await sendWithRetry(payload, "confirmation email", {
+    eventCode: opts.code,
+  });
+  await recordOutcome(opts.eventId, outcome);
+  return outcome;
 }
 
 /**
@@ -189,6 +204,7 @@ const EMAIL_CONTENT: Record<SupportedLanguage, {
   howBody: string;
   expiry: string;
   refund: string;
+  giftFooter: string;
 }> = {
   en: {
     subject: "Your City Roam game is booked",
@@ -201,6 +217,7 @@ const EMAIL_CONTENT: Record<SupportedLanguage, {
     howBody: "Share this link with your group. Everyone opens it, enters their name, and the lead person starts when ready.",
     expiry: "Your event is available for 90 days.",
     refund: "Not happy? Reply to this email for a full refund, no questions asked.",
+    giftFooter: "This game was a gift. Questions? Reply to this email.",
   },
   es: {
     subject: "Tu partida de City Roam está reservada",
@@ -213,6 +230,7 @@ const EMAIL_CONTENT: Record<SupportedLanguage, {
     howBody: "Comparte este enlace con tu grupo. Todos lo abren, escriben su nombre, y la persona líder empieza cuando estén listos.",
     expiry: "Tu evento está disponible durante 90 días.",
     refund: "¿No estás contento? Responde a este email para un reembolso completo, sin preguntas.",
+    giftFooter: "Esta partida es un regalo. ¿Alguna pregunta? Responde a este email.",
   },
   fr: {
     subject: "Votre partie City Roam est réservée",
@@ -225,6 +243,7 @@ const EMAIL_CONTENT: Record<SupportedLanguage, {
     howBody: "Partagez ce lien avec votre groupe. Tout le monde l'ouvre, entre son nom, et la personne responsable démarre quand tout le monde est prêt.",
     expiry: "Votre événement est disponible pendant 90 jours.",
     refund: "Pas satisfait ? Répondez à cet email pour un remboursement complet, sans questions.",
+    giftFooter: "Cette partie est un cadeau. Une question ? Répondez à cet email.",
   },
   de: {
     subject: "Dein Spiel bei City Roam ist gebucht",
@@ -237,6 +256,7 @@ const EMAIL_CONTENT: Record<SupportedLanguage, {
     howBody: "Teile diesen Link mit deiner Gruppe. Alle öffnen ihn, geben ihren Namen ein, und die leitende Person startet, wenn alle bereit sind.",
     expiry: "Dein Event ist 90 Tage lang verfügbar.",
     refund: "Nicht zufrieden? Antworte auf diese E-Mail für eine vollständige Rückerstattung, ohne Fragen.",
+    giftFooter: "Dieses Spiel ist ein Geschenk. Fragen? Antworte auf diese E-Mail.",
   },
   nl: {
     subject: "Je City Roam-spel is geboekt",
@@ -249,6 +269,7 @@ const EMAIL_CONTENT: Record<SupportedLanguage, {
     howBody: "Deel deze link met je groep. Iedereen opent hem, vult hun naam in, en de leider start wanneer iedereen klaar is.",
     expiry: "Je evenement is 90 dagen beschikbaar.",
     refund: "Niet tevreden? Antwoord op deze e-mail voor een volledige terugbetaling, zonder vragen.",
+    giftFooter: "Dit spel is een cadeau. Vragen? Antwoord op deze e-mail.",
   },
 };
 
@@ -256,8 +277,16 @@ export function getEmailSubject(language: SupportedLanguage): string {
   return (EMAIL_CONTENT[language] ?? EMAIL_CONTENT.en).subject;
 }
 
-export function buildConfirmationEmail(eventUrl: string, eventCode: string, language: SupportedLanguage = "en"): string {
+export type ConfirmationEmailVariant = "purchase" | "gift";
+
+export function buildConfirmationEmail(
+  eventUrl: string,
+  eventCode: string,
+  language: SupportedLanguage = "en",
+  variant: ConfirmationEmailVariant = "purchase",
+): string {
   const t = EMAIL_CONTENT[language] ?? EMAIL_CONTENT.en;
+  const footer = variant === "gift" ? t.giftFooter : t.refund;
   return `
 <!DOCTYPE html>
 <html>
@@ -286,7 +315,7 @@ export function buildConfirmationEmail(eventUrl: string, eventCode: string, lang
   <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;">
 
   <p style="color: #999; font-size: 13px;">
-    ${t.refund}
+    ${footer}
   </p>
 </body>
 </html>`.trim();

@@ -10,7 +10,7 @@ type Translate = (key: string, values?: Record<string, string | number>) => stri
 
 /**
  * Values for the `facts.*` messages and for any message that quotes the
- * price, group size, duration or distance. Everything comes from the
+ * price, group size, duration, distance or number of stops. Everything comes from the
  * constants in lib/site.ts so the numbers can't drift between pages.
  *
  * `t` is a translator for the `facts` namespace.
@@ -27,6 +27,7 @@ export function factValues(t: Translate) {
     hours,
     km,
     miles: Math.round(km * 0.621371 * 10) / 10,
+    stops: ROUTE_FACTS.stops,
   };
   return {
     ...base,

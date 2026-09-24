@@ -149,9 +149,18 @@ function CheckIcon() {
   );
 }
 
-export function CheckList({ items, className = "mt-12" }: { items: string[]; className?: string }) {
+export function CheckList({
+  items,
+  columns = 2,
+  className = "mt-12",
+}: {
+  items: string[];
+  /** Columns from the sm breakpoint up. */
+  columns?: 1 | 2;
+  className?: string;
+}) {
   return (
-    <ul className={`grid gap-x-8 gap-y-4 sm:grid-cols-2 ${className}`}>
+    <ul className={`grid gap-x-8 gap-y-4 ${columns === 2 ? "sm:grid-cols-2" : ""} ${className}`}>
       {items.map((item) => (
         <li key={item} className="flex gap-3 text-lg leading-relaxed text-ink-700">
           <CheckIcon />

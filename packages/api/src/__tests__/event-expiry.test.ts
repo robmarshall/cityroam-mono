@@ -24,9 +24,12 @@ vi.mock("../db/index.js", () => {
 import { db } from "../db/index.js";
 import {
   sweepExpiredEvents,
+  sweepExpiredVouchers,
   startExpirySweep,
   stopExpirySweep,
 } from "../services/event-expiry.js";
+import { PgDialect } from "drizzle-orm/pg-core";
+import { vouchers } from "../db/schema/index.js";
 
 // ── sweepExpiredEvents ────────────────────────────────────────────
 describe("sweepExpiredEvents", () => {
@@ -87,6 +90,48 @@ describe("sweepExpiredEvents", () => {
       expect.stringContaining('"component":"expiry-sweep"'),
     );
     consoleSpy.mockRestore();
+  });
+});
+
+// ── sweepExpiredVouchers ──────────────────────────────────────────
+describe("sweepExpiredVouchers", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    const mockDb = db as any;
+    mockDb.update.mockReturnValue(mockDb);
+    mockDb.set.mockReturnValue(mockDb);
+    mockDb.where.mockReturnValue(mockDb);
+    mockDb.returning.mockResolvedValue([]);
+  });
+
+  it("marks only unredeemed vouchers past expires_at as EXPIRED", async () => {
+    const mockDb = db as any;
+    mockDb.returning.mockResolvedValue([{ id: "v1" }]);
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    const now = new Date("2027-01-01T00:00:00Z");
+
+    expect(await sweepExpiredVouchers(now)).toBe(1);
+
+    expect(mockDb.update).toHaveBeenCalledWith(vouchers);
+    expect(mockDb.set).toHaveBeenCalledWith({ status: "EXPIRED" });
+    const { sql, params } = new PgDialect().sqlToQuery(mockDb.where.mock.calls[0][0]);
+    expect(sql).toContain('"vouchers"."status" = $1');
+    expect(sql).toContain('"vouchers"."expires_at" < $2');
+    expect(params[0]).toBe("PURCHASED");
+    vi.restoreAllMocks();
+  });
+
+  it("runs after the event sweep on every tick", async () => {
+    const mockDb = db as any;
+    vi.useFakeTimers();
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    stopExpirySweep();
+    startExpirySweep();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(mockDb.update).toHaveBeenNthCalledWith(2, vouchers);
+    stopExpirySweep();
+    vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 });
 

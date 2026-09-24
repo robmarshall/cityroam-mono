@@ -5,21 +5,37 @@ import { eq, and, sql } from "drizzle-orm";
 import type {
   CheckoutSessionResponse,
   CheckoutSuccessResponse,
+  VoucherCheckoutSessionResponse,
+  VoucherCheckoutSuccessResponse,
 } from "@cityroam/shared/types";
 import type { SupportedLanguage } from "@cityroam/shared/types";
-import { generateEventCode, buildEventUrl } from "@cityroam/shared/utils";
 import {
-  EVENT_EXPIRY_DAYS,
-  SUPPORTED_LANGUAGES,
-  DEFAULT_LANGUAGE,
-} from "@cityroam/shared/constants";
+  generateEventCode,
+  buildEventUrl,
+  buildVoucherRedeemUrl,
+} from "@cityroam/shared/utils";
+import { EVENT_EXPIRY_DAYS, DEFAULT_LANGUAGE } from "@cityroam/shared/constants";
+import { createVoucherSessionSchema } from "@cityroam/shared/validation";
 import { env } from "../env.js";
 import { db } from "../db/index.js";
-import { events, routes } from "../db/schema/index.js";
+import { events, routes, vouchers } from "../db/schema/index.js";
 import { AppError } from "../middleware/index.js";
 import { createLogger } from "../lib/logger.js";
 import { findEventByStripeRefs, markEventRefunded } from "../services/refund.js";
 import { sendEventCodeEmail } from "../services/email.js";
+import {
+  UUID_RE,
+  SEGMENT_RE,
+  ROUTE_HAS_GROUPS,
+  normaliseLanguage,
+  resolveRouteFamilyId,
+  resolveRouteInFamily,
+} from "../services/route-selection.js";
+import {
+  VOUCHER_METADATA_KIND,
+  applyVoucherRefund,
+  fulfilVoucherSession,
+} from "../services/vouchers.js";
 
 export const checkoutRoutes = new Hono();
 
@@ -27,151 +43,6 @@ const log = createLogger("checkout");
 
 function getStripe(): Stripe {
   return new Stripe(env.STRIPE_SECRET_KEY);
-}
-
-// ---------------------------------------------------------------------------
-// Route family selection
-// ---------------------------------------------------------------------------
-/**
- * Route families have no slug column, so marketing segments are mapped to
- * family UUIDs through the CHECKOUT_ROUTE_FAMILY_IDS environment variable.
- *
- * Accepted values:
- *   - a bare UUID — used for every segment
- *   - a JSON object keyed by marketing segment, with an optional "default":
- *     {"default":"<uuid>","hen-parties":"<uuid>","team-building":"<uuid>"}
- *
- * Read lazily (not at module load) so deployments and tests can change it
- * without a restart of the module graph.
- */
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-const SEGMENT_RE = /^[a-z0-9][a-z0-9-]{0,63}$/;
-
-function segmentFamilyMap(): Record<string, string> {
-  const raw = env.CHECKOUT_ROUTE_FAMILY_IDS?.trim();
-  if (!raw) return {};
-
-  if (UUID_RE.test(raw)) return { default: raw };
-
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-      throw new Error("expected a JSON object");
-    }
-    const map: Record<string, string> = {};
-    for (const [key, value] of Object.entries(parsed as Record<string, unknown>)) {
-      if (typeof value === "string" && UUID_RE.test(value.trim())) {
-        map[key] = value.trim();
-      } else {
-        log.warn("ignoring non-UUID entry in CHECKOUT_ROUTE_FAMILY_IDS", { key });
-      }
-    }
-    return map;
-  } catch (err) {
-    log.error("CHECKOUT_ROUTE_FAMILY_IDS is not a UUID or JSON object — ignoring", {
-      error: err instanceof Error ? err.message : String(err),
-    });
-    return {};
-  }
-}
-
-/**
- * Resolves the route family for a purchase. Never guesses between several
- * candidates: if the mapping is absent it will only use a family that is the
- * single active one in the database.
- */
-async function resolveRouteFamilyId(
-  explicitFamilyId: string | undefined,
-  segment: string | undefined,
-): Promise<{ familyId: string; source: string } | null> {
-  if (explicitFamilyId) {
-    return { familyId: explicitFamilyId, source: "request" };
-  }
-
-  const map = segmentFamilyMap();
-  if (segment && map[segment]) {
-    return { familyId: map[segment], source: `segment:${segment}` };
-  }
-  if (map.default) {
-    return { familyId: map.default, source: "segment:default" };
-  }
-
-  // No mapping configured. Only safe if the database offers exactly one
-  // choice — otherwise the buyer would get an arbitrary hunt.
-  const activeRoutes = await db.query.routes.findMany({
-    where: and(eq(routes.is_active, true), ROUTE_HAS_GROUPS),
-    columns: { route_family_id: true },
-  });
-  const familyIds = [...new Set(activeRoutes.map((r) => r.route_family_id))];
-
-  if (familyIds.length === 1) {
-    log.warn(
-      "CHECKOUT_ROUTE_FAMILY_IDS is unset — using the only active route family",
-      { familyId: familyIds[0], segment: segment ?? null },
-    );
-    return { familyId: familyIds[0], source: "sole-active-family" };
-  }
-
-  log.error("cannot resolve a route family for checkout", {
-    segment: segment ?? null,
-    activeFamilyCount: familyIds.length,
-    mappingConfigured: Object.keys(map).length > 0,
-  });
-  return null;
-}
-
-/**
- * A route with no groups is not a hunt: `startEvent` fails with "Route has no
- * groups" the moment the lead presses start, after the money has changed
- * hands. An empty active route is easy to create — a fresh route defaults to
- * active and has no groups until content is added — so checkout refuses to see
- * one rather than trusting `is_active` alone.
- *
- * The subquery names route_groups literally: inside a relational-query `where`
- * drizzle rewrites every column reference to the outer table's alias, so a
- * `routeGroups.route_id` chunk would silently become `routes.route_id`.
- */
-const ROUTE_HAS_GROUPS = sql`EXISTS (SELECT 1 FROM "route_groups" AS g WHERE g."route_id" = ${routes.id})`;
-
-/**
- * Finds the sellable route for a family in the requested language, falling back
- * to the English variant *of the same family* only. Sellable means active and
- * carrying at least one group.
- */
-async function resolveRouteInFamily(familyId: string, language: string) {
-  const exact = await db.query.routes.findFirst({
-    where: and(
-      eq(routes.route_family_id, familyId),
-      eq(routes.language, language),
-      eq(routes.is_active, true),
-      ROUTE_HAS_GROUPS,
-    ),
-  });
-  if (exact) return exact;
-
-  if (language === DEFAULT_LANGUAGE) return null;
-
-  return (
-    (await db.query.routes.findFirst({
-      where: and(
-        eq(routes.route_family_id, familyId),
-        eq(routes.language, DEFAULT_LANGUAGE),
-        eq(routes.is_active, true),
-        ROUTE_HAS_GROUPS,
-      ),
-    })) ?? null
-  );
-}
-
-function normaliseLanguage(value: unknown): string {
-  if (typeof value !== "string") return DEFAULT_LANGUAGE;
-  const lower = value.trim().toLowerCase().slice(0, 5);
-  const base = lower.split(/[-_]/)[0];
-  return (SUPPORTED_LANGUAGES as readonly string[]).includes(base)
-    ? base
-    : DEFAULT_LANGUAGE;
 }
 
 // ---------------------------------------------------------------------------
@@ -251,6 +122,89 @@ checkoutRoutes.post("/checkout/create-session", async (c) => {
 });
 
 // ---------------------------------------------------------------------------
+// POST /checkout/create-voucher-session
+// ---------------------------------------------------------------------------
+/**
+ * Starts a Stripe Checkout for a gift voucher. Same price as a game
+ * (STRIPE_PRICE_ID). No event is created on payment; the webhook creates a
+ * voucher instead (metadata.kind = "voucher") and emails the buyer the code.
+ */
+checkoutRoutes.post("/checkout/create-voucher-session", async (c) => {
+  const body = await c.req.json().catch(() => ({}));
+  const data = createVoucherSessionSchema.parse(body ?? {});
+  const language = data.language ?? DEFAULT_LANGUAGE;
+  const familyId = data.route_family_id ?? null;
+
+  // Refuse before payment if the voucher could not be redeemed today. A
+  // family-specific voucher needs a sellable route in that family; an
+  // any-family voucher needs the default family to resolve.
+  if (familyId) {
+    if (!(await resolveRouteInFamily(familyId, language))) {
+      throw new AppError(400, "No hunt is currently available for this selection", "INVALID_INPUT");
+    }
+  } else if (!(await resolveRouteFamilyId(undefined, undefined))) {
+    throw new AppError(400, "No hunt is configured for this selection", "INVALID_INPUT");
+  }
+
+  const metadata: Record<string, string> = {
+    kind: VOUCHER_METADATA_KIND,
+    language,
+    route_family_id: familyId ?? "",
+  };
+  if (data.recipient_name) metadata.recipient_name = data.recipient_name;
+  if (data.message) metadata.message = data.message;
+
+  const stripe = getStripe();
+  const session = await stripe.checkout.sessions.create({
+    mode: "payment",
+    line_items: [{ price: env.STRIPE_PRICE_ID, quantity: 1 }],
+    success_url: `${env.MARKETING_URL}/${language}/gift/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${env.MARKETING_URL}/${language}/gift`,
+    metadata,
+    // Tags the payment too, so a voucher sale is recognisable in the Stripe
+    // dashboard when someone refunds it there.
+    payment_intent_data: { metadata: { kind: VOUCHER_METADATA_KIND } },
+  });
+
+  if (!session.url) {
+    throw new AppError(500, "Failed to create checkout session", "INTERNAL_ERROR");
+  }
+
+  const response: VoucherCheckoutSessionResponse = { url: session.url };
+  return c.json(response, 200);
+});
+
+// ---------------------------------------------------------------------------
+// GET /checkout/voucher-success
+// ---------------------------------------------------------------------------
+/**
+ * What the voucher purchase success page shows. 404 until the webhook has
+ * created the voucher, so the page polls, like /checkout/success.
+ */
+checkoutRoutes.get("/checkout/voucher-success", async (c) => {
+  const sessionId = c.req.query("session_id");
+  if (!sessionId) {
+    throw new AppError(400, "Missing session_id parameter", "INVALID_INPUT");
+  }
+
+  const voucher = await db.query.vouchers.findFirst({
+    where: eq(vouchers.stripe_session_id, sessionId),
+  });
+  if (!voucher) {
+    throw new AppError(404, "Voucher not found for this session", "VOUCHER_NOT_FOUND");
+  }
+
+  const language = normaliseLanguage(voucher.language) as SupportedLanguage;
+  const response: VoucherCheckoutSuccessResponse = {
+    voucher_code: voucher.code,
+    expires_at: voucher.expires_at.toISOString(),
+    redeem_url: buildVoucherRedeemUrl(env.MARKETING_URL, language, voucher.code),
+    language,
+  };
+  return c.json(response, 200);
+});
+
+// ---------------------------------------------------------------------------
 // POST /webhook/stripe
 // ---------------------------------------------------------------------------
 checkoutRoutes.post("/webhook/stripe", async (c) => {
@@ -289,6 +243,10 @@ checkoutRoutes.post("/webhook/stripe", async (c) => {
         paymentStatus: session.payment_status ?? null,
       });
       return c.json({ received: true }, 200);
+    }
+
+    if (session.metadata?.kind === VOUCHER_METADATA_KIND) {
+      return await fulfilVoucherCheckout(c, session);
     }
 
     return await fulfilCheckoutSession(c, session);
@@ -363,9 +321,22 @@ async function applyRefundToEvent(
     return c.json({ received: true }, 200);
   }
 
-  const event = await findEventByStripeRefs({
+  // A voucher sale has no event until it is redeemed. An unredeemed voucher
+  // is refunded on its own; a redeemed one falls through to its event.
+  const voucherOutcome = await applyVoucherRefund(opts.paymentIntentId, opts.source);
+  if (voucherOutcome.kind === "voucher-refunded") {
+    return c.json({ received: true }, 200);
+  }
+
+  let event = await findEventByStripeRefs({
     paymentIntentId: opts.paymentIntentId,
   });
+  if (!event && voucherOutcome.kind === "voucher-redeemed" && voucherOutcome.eventId) {
+    event =
+      (await db.query.events.findFirst({
+        where: eq(events.id, voucherOutcome.eventId),
+      })) ?? null;
+  }
 
   if (!event) {
     log.warn("no event matches the refunded payment — ignoring", {
@@ -515,6 +486,23 @@ async function fulfilCheckoutSession(
     });
   }
 
+  return c.json({ received: true }, 200);
+}
+
+/** Webhook wrapper: a database failure answers 500 so Stripe retries. */
+async function fulfilVoucherCheckout(
+  c: Context,
+  session: Stripe.Checkout.Session,
+) {
+  try {
+    await fulfilVoucherSession(session);
+  } catch (err) {
+    log.error("failed to create voucher — returning 500 so Stripe retries", {
+      sessionId: session.id,
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return c.json({ error: "Voucher creation failed" }, 500);
+  }
   return c.json({ received: true }, 200);
 }
 

@@ -99,6 +99,13 @@
       "when": 1790173275315,
       "tag": "0013_add_admin_audit_log",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1790246176540,
+      "tag": "0014_add_vouchers",
+      "breakpoints": true
     }
   ]
 }

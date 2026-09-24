@@ -48,6 +48,8 @@ const USED: Pair[] = [
   { fg: "muted", bg: "stone50", min: AA_TEXT, where: "secondary text, small print" },
   { fg: "muted", bg: "white", min: AA_TEXT, where: "card descriptions" },
   { fg: "muted", bg: "stone100", min: AA_TEXT, where: "checkout success boxes" },
+  { fg: "ink500", bg: "white", min: AA_TEXT, where: "the Owl's signature on annotations" },
+  { fg: "stone100", bg: "ink900", min: AA_TEXT, where: "hero facts over the photo's navy fade" },
   // Brick accents on light grounds
   { fg: "brick500", bg: "stone50", min: AA_TEXT, where: "brick text on the page" },
   { fg: "brick600", bg: "stone50", min: AA_TEXT, where: "links, step numbers, 404 label" },
@@ -70,6 +72,8 @@ const USED: Pair[] = [
   { fg: "stone50", bg: "ink900", min: AA_UI, where: "focus ring on navy" },
   { fg: "brick500", bg: "stone50", min: AA_UI, where: "check icons, fact markers, rules" },
   { fg: "brick500", bg: "white", min: AA_UI, where: "check icons on white" },
+  { fg: "brick500", bg: "stone100", min: AA_UI, where: "route line on photo placeholders" },
+  { fg: "ink900", bg: "white", min: AA_UI, where: "stop dots on the line map" },
 ];
 
 describe("brand colour contrast", () => {

@@ -103,6 +103,25 @@ actually uses.
 3. **Home redesign**: PhotoHero / PhotoSlot, Annotation, LineMap,
    RouteAtAGlance, TrustStrip, GiftLine, AudienceCards, Footer with company
    details.
+   - **Status (2026-09-24): built.** Home order: hero (PhotoHero, or a
+     PhotoPlaceholder panel beside the headline until the photo exists) →
+     how it works with the chat demo → route at a glance (LineMap +
+     RouteAtAGlance) → what you get, price card and GiftLine → comparison →
+     AudienceCards → TrustStrip → FAQ → navy closing band. The old intro,
+     "just your phone", "why City Roam" and refund bands were folded in or
+     dropped. Footer has audience links above the company line.
+   - Photos: `packages/marketing/src/images/photos/README.md` lists the
+     expected files; `src/lib/photos.ts` maps slots (`homeHero`, `families`,
+     `henParties`, `teamBuilding`) to `null` until then. Adding a photo is
+     the file plus one manifest entry; the hero is preloaded per crop.
+   - Route facts: `src/lib/route-facts.ts` (`RouteFacts`, the shape Phase 6's
+     endpoint should return). Only distance, duration and stops are filled
+     in; start point, step-free, dogs, toilets and cover are null (hidden)
+     until Rob's route walk.
+   - The Owl's margin notes (5 lines, all locales, none about a stop):
+     `home.notes.*`.
+   - Waiting on Rob: M1, F1, H1, T1 photos; the route walk; a start point
+     that isn't the first answer. Stag card and footer link: Phase 4.
 4. **Audience pages v2** plus a stag page; success, 404 and legal styling.
 5. **Scripted "Try the Owl" demo** (canned, honest about what the Owl can
    answer).

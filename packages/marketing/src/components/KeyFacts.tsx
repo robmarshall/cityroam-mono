@@ -6,7 +6,14 @@ import { factValues } from "@/lib/facts";
  * price, group size, duration and when you can play. Numbers come from
  * lib/site.ts, so they match the FAQ and the checkout.
  */
-export function KeyFacts({ align = "center" }: { align?: "center" | "start-lg" }) {
+export function KeyFacts({
+  align = "center",
+  tone = "light",
+}: {
+  align?: "center" | "start-lg" | "start";
+  /** "dark" for text over the hero photo's navy fade: stone text, no brick. */
+  tone?: "light" | "dark";
+}) {
   const t = useTranslations("facts");
   const values = factValues(t);
   const items = [
@@ -19,7 +26,7 @@ export function KeyFacts({ align = "center" }: { align?: "center" | "start-lg" }
   return (
     <ul
       aria-label={t("label")}
-      className={`mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm font-medium text-ink-700 sm:text-base ${
+      className={`mt-6 flex flex-wrap ${align === "start" ? "justify-start" : "justify-center"} gap-x-5 gap-y-2 text-sm font-medium sm:text-base ${tone === "dark" ? "text-stone-100" : "text-ink-700"} ${
         align === "start-lg" ? "lg:justify-start" : ""
       }`}
     >
@@ -27,7 +34,10 @@ export function KeyFacts({ align = "center" }: { align?: "center" | "start-lg" }
         // Each fact carries its own marker, so a wrapped line never starts
         // with a stray separator.
         <li key={item} className="flex items-center gap-2">
-          <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0 rotate-45 bg-brick-500" />
+          <span
+            aria-hidden="true"
+            className={`h-1.5 w-1.5 shrink-0 rotate-45 ${tone === "dark" ? "bg-stone-200" : "bg-brick-500"}`}
+          />
           <span>{item}</span>
         </li>
       ))}
