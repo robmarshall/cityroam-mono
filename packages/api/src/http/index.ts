@@ -13,6 +13,8 @@ import { eventRoutes } from "../routes/events.js";
 import { checkoutRoutes } from "../routes/checkout.js";
 import { adminRoutes } from "../routes/admin.js";
 import { adminApiKeyRoutes } from "../routes/admin-api-keys.js";
+import { voucherRoutes } from "../routes/vouchers.js";
+import { adminVoucherRoutes } from "../routes/admin-vouchers.js";
 import { startExpirySweep, stopExpirySweep } from "../services/event-expiry.js";
 import {
   startGroupReconciler,
@@ -79,6 +81,10 @@ app.route("/", adminRoutes);
 
 // Admin API key management + audit log (session-only)
 app.route("/", adminApiKeyRoutes);
+
+// Gift vouchers: public lookup/redeem and session-only admin
+app.route("/", voucherRoutes);
+app.route("/", adminVoucherRoutes);
 
 // Start server
 const port = Number(env.PORT);

@@ -337,3 +337,54 @@ export async function recordInvalidAdminApiKeyAttempt(clientIp: string): Promise
     });
   }
 }
+
+// ---------------------------------------------------------------------------
+// Public voucher limiters
+// ---------------------------------------------------------------------------
+/**
+ * Voucher codes are bearer secrets, so the public lookup and redeem endpoints
+ * are limited per client IP to keep guessing pointless (31^10 codes). Lookups
+ * get a looser budget than redemptions because the redemption page checks the
+ * code as it is typed.
+ *
+ * Fails closed like the gameplay limiters: a Redis error propagates and the
+ * request answers 500 rather than letting unthrottled guesses through.
+ */
+export const VOUCHER_LOOKUP_LIMIT = 30;
+export const VOUCHER_LOOKUP_WINDOW_MS = 60 * 1000;
+export const VOUCHER_REDEEM_LIMIT = 10;
+export const VOUCHER_REDEEM_WINDOW_MS = 15 * 60 * 1000;
+
+async function checkIpRateLimit(
+  bucket: string,
+  limit: number,
+  windowMs: number,
+): Promise<LoginRateLimitResult> {
+  const windowSeconds = Math.ceil(windowMs / 1000);
+  const { count, ttl } = readCountAndTtl(
+    await redis.eval(RATE_LIMIT_WITH_TTL_LUA, 1, bucket, String(windowSeconds)),
+  );
+  const allowed = count <= limit;
+  return {
+    allowed,
+    current: count,
+    limit,
+    retryAfterSeconds: allowed ? 0 : retryAfter(ttl, windowSeconds),
+  };
+}
+
+export function checkVoucherLookupRateLimit(clientIp: string): Promise<LoginRateLimitResult> {
+  return checkIpRateLimit(
+    `ratelimit:voucher-lookup:${clientIp}`,
+    VOUCHER_LOOKUP_LIMIT,
+    VOUCHER_LOOKUP_WINDOW_MS,
+  );
+}
+
+export function checkVoucherRedeemRateLimit(clientIp: string): Promise<LoginRateLimitResult> {
+  return checkIpRateLimit(
+    `ratelimit:voucher-redeem:${clientIp}`,
+    VOUCHER_REDEEM_LIMIT,
+    VOUCHER_REDEEM_WINDOW_MS,
+  );
+}
